@@ -1,5 +1,5 @@
 """
-Chandra.ACA provides convenience methods for the Aspect Camera Assembly.  
+Chandra.ACA provides convenience methods for the Aspect Camera Assembly.
 It now includes coordinate conversions between ACA Pixels and ACA Y-angle, Z-angle.
 """
 
@@ -22,19 +22,23 @@ ACA2PIX_coeff = np.array(
 # coefficients for converting from pixels to ACA angle in radians
 PIX2ACA_coeff = np.array(
     [[1.471572165932506e-04, -1.195271491928579e-04],
-     [4.554462091388806e-08,  2.421478755190295e-05], 
-     [-2.420905844425065e-05, 4.005224006503938e-08], 
-     [-4.989939217701764e-12, 1.188134673090465e-11], 
-     [-6.116309500303049e-12, 1.832694593246024e-11], 
-     [-2.793916972292602e-11, 5.823266376976988e-12], 
+     [4.554462091388806e-08,  2.421478755190295e-05],
+     [-2.420905844425065e-05, 4.005224006503938e-08],
+     [-4.989939217701764e-12, 1.188134673090465e-11],
+     [-6.116309500303049e-12, 1.832694593246024e-11],
+     [-2.793916972292602e-11, 5.823266376976988e-12],
      [2.420403450703432e-16,  -5.923401659857833e-13],
      [5.751137659424387e-13,  -1.666025332027183e-15],
      [-9.934587837231732e-16, -5.847450395792513e-13],
-     [5.807475081470944e-13,   -1.842673748068349e-15]]) 
+     [5.807475081470944e-13,   -1.842673748068349e-15]])
 
-def pixels_to_yagzag(row, col, allow_bad=False):       
+ACA_MAG0 = 10.32
+ACA_CNT_RATE_MAG0 = 5263.0
+
+
+def pixels_to_yagzag(row, col, allow_bad=False):
     """
-    Convert ACA row/column positions to ACA y-angle, z-angle.  
+    Convert ACA row/column positions to ACA y-angle, z-angle.
     It is expected that the row and column input arguments have the same length.
 
     :param row: ACA pixel row (single value, list, or 1-d numpy array)
@@ -52,6 +56,7 @@ def pixels_to_yagzag(row, col, allow_bad=False):
     yrad, zrad = _poly_convert(row, col, PIX2ACA_coeff)
     # convert to arcsecs from radians
     return 3600 * np.degrees(yrad), 3600 * np.degrees(zrad)
+
 
 def yagzag_to_pixels(yang, zang, allow_bad=False):
     """
@@ -73,6 +78,7 @@ def yagzag_to_pixels(yang, zang, allow_bad=False):
         raise ValueError("Coordinate off CCD")
     return row, col
 
+
 def _poly_convert(y, z, coeffs):
     if y.size != z.size:
         raise ValueError("Mismatched number of Y/Z coords")
@@ -83,3 +89,31 @@ def _poly_convert(y, z, coeffs):
     newz = np.sum(coeffs[:, 1] * poly.transpose(), axis=-1)
     return newy, newz
 
+
+def mag_to_count_rate(mag):
+    """
+    Convert ACA mag to count rate in e- / sec
+
+    Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
+    columns mag0=10.32 and cnt_rate_mag0=5263.0.  To convert to raw telemetered
+    counts (ADU), divide e- by the gain of 5.0 e-/ADU.
+
+    :param mag: star magnitude in ACA mag
+    :returns: count rate (e-/sec)
+    """
+    count_rate = ACA_CNT_RATE_MAG0 * 10.0 ** ((ACA_MAG0 - mag) / 2.5)
+    return count_rate
+
+
+def count_rate_to_mag(count_rate):
+    """
+    Convert count rate in e- / sec to ACA mag
+
+    Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
+    columns mag0=10.32 and cnt_rate_mag0=5263.0.
+
+    :param count_rate: count rate (e-/sec)
+    :returns: magnitude (ACA mag)
+    """
+    mag = ACA_MAG0 - 2.5 * np.log10(count_rate / ACA_CNT_RATE_MAG0)
+    return mag
