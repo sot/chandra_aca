@@ -1,5 +1,5 @@
 """
-Chandra.ACA provides convenience methods for the Aspect Camera Assembly.
+chandra_aca provides convenience methods for the Aspect Camera Assembly.
 It now includes coordinate conversions between ACA Pixels and ACA Y-angle, Z-angle.
 """
 
