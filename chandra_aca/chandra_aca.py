@@ -4,7 +4,10 @@ It now includes coordinate conversions between ACA Pixels and ACA Y-angle, Z-ang
 """
 
 from __future__ import division
+
 import numpy as np
+
+from Quaternion import Quat
 
 # coefficients for converting from ACA angle to pixels
 ACA2PIX_coeff = np.array(
@@ -117,3 +120,44 @@ def count_rate_to_mag(count_rate):
     """
     mag = ACA_MAG0 - 2.5 * np.log10(count_rate / ACA_CNT_RATE_MAG0)
     return mag
+
+
+def calc_aca_from_targ(targ, y_off, z_off, si_align):
+    """
+    Calculate the PCAD (ACA) pointing attitude from target attitude and
+    Y,Z offset (per OR-list).
+
+    :param targ: science target from OR/Obscat (Quat-compliant object)
+    :param y_off: Y offset (deg, sign per OR-list convention)
+    :param z_off: Z offset (deg, sign per OR-list convention)
+    :param si_align: SI ALIGN matrix (default=ODB_SI_ALIGN)
+
+    :rtype: q_aca (Quat)
+    """
+    q_si_align = Quat(si_align)
+    q_targ = Quat(targ)
+    q_off = Quat([y_off, z_off, 0])
+    q_aca = q_targ * q_off.inv() * q_si_align.inv()
+
+    return q_aca
+
+
+def calc_targ_from_aca(aca, y_off, z_off, si_align):
+    """
+    Calculate the target attitude from ACA (PCAD) pointing attitude and
+    Y,Z offset (per OR-list).
+
+    :param aca: ACA (PCAD) pointing attitude (any Quat-compliant object)
+    :param y_off: Y offset (deg, sign per OR-list convention)
+    :param z_off: Z offset (deg, sign per OR-list convention)
+    :param si_align: SI ALIGN matrix
+
+    :rtype: q_targ (Quat)
+    """
+    q_si_align = Quat(si_align)
+    q_aca = Quat(aca)
+    q_off = Quat([y_off, z_off, 0])
+
+    q_targ = q_aca * q_si_align * q_off
+
+    return q_targ
