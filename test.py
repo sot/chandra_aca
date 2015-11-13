@@ -1,8 +1,10 @@
 import numpy as np
 from astropy.io import ascii
 
-import chandra_aca
 from Quaternion import Quat
+
+import chandra_aca
+from chandra_aca.star_probs import t_ccd_warm_limit
 
 TOLERANCE = 0.05
 
@@ -66,3 +68,13 @@ def test_aca_targ_transforms():
     assert np.degrees(np.abs(dq.q[0] * 2)) < 30 / 3600.
     assert np.degrees(np.abs(dq.q[1] * 2)) < 1 / 3600.
     assert np.degrees(np.abs(dq.q[2] * 2)) < 1 / 3600.
+
+
+def test_t_ccd_warm_limit():
+    out = t_ccd_warm_limit([9.8] * 6, date='2015:001', min_n_acq=(2, 8e-3))
+    assert np.allclose(out[0], -13.3341, atol=0.01)
+    assert np.allclose(out[1], 0.008, atol=0.0001)
+
+    out = t_ccd_warm_limit([9.8] * 6, date='2015:001', min_n_acq=5.0)
+    assert np.allclose(out[0], -13.2155, atol=0.01)
+    assert np.allclose(out[1], 5.0, atol=0.01)

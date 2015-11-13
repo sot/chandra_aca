@@ -40,37 +40,61 @@ SOTA_FIT_ONLY_1P5 = [8.541709287866361,
                      0.30973569068842272]
 
 
-def t_ccd_warm_limit(date, mags, colors=0,
-                     min_n_acq=5.0,
-                     cold_t_ccd=-21,
-                     warm_t_ccd=-5):
+def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
+                     cold_t_ccd=-21, warm_t_ccd=-5):
     """
-    Find the warmest CCD temperature at which at least ``min_n_acq`` acquisition stars
-    expected.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
+    Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars
+    criterion.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
     cold end the result may be below ``min_n_acq``, in which case the star catalog
     may be rejected.
 
-    :param date: observation date (any Chandra.Time valid format)
-    :param mags: star ACA mags
-    :param colors: star B-V colors
-    :param min_n_acq: minimum required expected stars
-    :param cold_t_ccd: coldest CCD temperature to consider
-    :param warm_t_ccd: warmest CCD temperature to consider
+    The ``min_n_acq`` argument can be specified in one of two ways:
 
-    :returns: (t_ccd, n_acq) tuple with CCD temperature upper limit and number of
-              expected ACQ stars at that temperature.
+     - Scalar float value: expected number of acquired stars must exceed threshold.
+         Expected number is the sum of the individual probabilities.
+     - Tuple (n, prob): computed probability of acquiring ``n`` or fewer stars
+         must not exceed ``prob``.
+
+    :param mags: list of star ACA mags
+    :param date: observation date (any Chandra.Time valid format)
+    :param colors: list of star B-V colors (optional, default=0.0)
+    :param min_n_acq: float or tuple (see above)
+    :param cold_t_ccd: coldest CCD temperature to consider (default=-21 C)
+    :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
+
+    :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit and:
+              - number of expected ACQ stars at that temperature (scalar min_n_acq)
+              - probability of acquiring ``n`` or fewer stars (tuple min_n_acq)
     """
+    if isinstance(min_n_acq, tuple):
+        n_or_fewer, prob_n_or_fewer = min_n_acq
 
     def n_acq_above_min(t_ccd):
+        """
+        This will be positive if the expected number of stars is above the
+        minimum number of stars.  Positive => more expected stars.
+        """
         probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors)
         return np.sum(probs) - min_n_acq
 
-    if n_acq_above_min(warm_t_ccd) >= 0:
+    def prob_n_or_fewer_below_max(t_ccd):
+        """
+        This will be positive if the computed probability of acquiring n_or_fewer
+        stars is less than the threshold.  Positive => lower prob. of safing action.
+        """
+        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors)
+        n_acq_probs, n_or_fewer_probs = prob_n_acq(probs)
+        return prob_n_or_fewer - n_or_fewer_probs[n_or_fewer]
+
+    merit_func = (prob_n_or_fewer_below_max if isinstance(min_n_acq, tuple)
+                  else n_acq_above_min)
+
+    if merit_func(warm_t_ccd) >= 0:
         # If there are enough ACQ stars at the warmest reasonable CCD temperature
         # then use that temperature.
         t_ccd = warm_t_ccd
 
-    elif n_acq_above_min(cold_t_ccd) <= 0:
+    elif merit_func(cold_t_ccd) <= 0:
         # If there are not enough ACQ stars at the coldest CCD temperature then stop there
         # as well.  The ACA thermal model will never predict a temperature below this
         # value so this catalog will fail thermal check.
@@ -78,11 +102,15 @@ def t_ccd_warm_limit(date, mags, colors=0,
 
     else:
         # At this point there must be a zero in the range [cold_t_ccd, warm_t_ccd]
-        t_ccd = brentq(n_acq_above_min, cold_t_ccd, warm_t_ccd, xtol=1e-4, rtol=1e-4)
+        t_ccd = brentq(merit_func, cold_t_ccd, warm_t_ccd, xtol=1e-4, rtol=1e-4)
 
-    n_acq = n_acq_above_min(t_ccd) + min_n_acq
+    out = merit_func(t_ccd)
+    if isinstance(min_n_acq, tuple):
+        out = prob_n_or_fewer - out
+    else:
+        out = out + min_n_acq
 
-    return t_ccd, n_acq
+    return t_ccd, out
 
 
 @jit(nopython=True)
