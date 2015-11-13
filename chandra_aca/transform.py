@@ -1,6 +1,9 @@
 """
-chandra_aca provides convenience methods for the Aspect Camera Assembly.
-It now includes coordinate conversions between ACA Pixels and ACA Y-angle, Z-angle.
+The transform modules includes:
+
+- Coordinate conversions between ACA Pixels and ACA Y-angle, Z-angle
+- Mag to count conversions
+- Science target coordinate to ACA frame conversions
 """
 
 from __future__ import division
