@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 from astropy.table import hstack, Table
 import agasc
-from Chandra.Time import DateTime
 import Quaternion
 from Ska.quatutil import radec2yagzag
 
@@ -98,18 +97,19 @@ def _plot_catalog_items(ax, catalog):
                s=175)
 
 
-def _plot_field_stars(ax, stars, quat, red_mag_lim=None, bad_stars=None):
+def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     """
     Plot plot field stars in yang and zang on the supplied
     axes object in place.
 
     :param ax: matplotlib axes
     :param stars: astropy.table compatible set of records of agasc entries of stars
-    :param quat: attitude quaternion as a Quat
+    :param attitude: Quaternion-compatible attitude
     :param red_mag_lim: faint limit
     :param bad_stars: boolean mask of stars to be plotted in red
     """
     stars = Table(stars)
+    quat = Quaternion.Quat(attitude)
 
     # Add star Y angle and Z angle in arcsec to the stars table
     yagzags = (radec2yagzag(star['RA_PMCORR'], star['DEC_PMCORR'], quat)
@@ -152,7 +152,7 @@ def _plot_field_stars(ax, stars, quat, red_mag_lim=None, bad_stars=None):
                    alpha=BAD_STAR_ALPHA)
 
 
-def star_plot(catalog=None, attitude=None, stars=None, title=None,
+def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=None,
               red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
@@ -169,6 +169,14 @@ def star_plot(catalog=None, attitude=None, stars=None, title=None,
                       to be selected as acq stars
     :returns: matplotlib figure
     """
+    if stars is None:
+        quat = Quaternion.Quat(attitude)
+        stars = agasc.get_agasc_cone(quat.ra, quat.dec,
+                                     radius=1.5,
+                                     date=starcat_time)
+    if bad_stars is None:
+        bad_stars = bad_acq_stars(stars)
+
     fig = plt.figure(figsize=(5.325, 5.325))
     ax = fig.add_subplot(1, 1, 1)
     plt.subplots_adjust(top=0.95)
@@ -210,7 +218,7 @@ def star_plot(catalog=None, attitude=None, stars=None, title=None,
     if stars is not None:
         if attitude is None:
             raise ValueError("Must supply attitude to plot field stars")
-        _plot_field_stars(ax, stars, Quaternion.Quat(attitude),
+        _plot_field_stars(ax, stars, attitude=attitude,
                           bad_stars=bad_stars, red_mag_lim=red_mag_lim)
     # plot starcheck catalog
     if catalog is not None:
@@ -233,57 +241,6 @@ def bad_acq_stars(stars):
             (stars['ASPQ2'] > 0) |
             (stars['ASPQ3'] > 999) |
             (stars['VAR'] > -9999))
-
-
-def plot_catalog(ra, dec, roll, catalog, starcat_time=DateTime(),
-                 stars=None, bad_stars=None, red_mag_lim=None, title=None):
-    """
-    Make standard catalog plot with a star field and the elements of a catalog.
-
-    :param ra: RA in degrees
-    :param dec: Dec in degrees
-    :param roll: Roll in degrees
-    :param catalog: list of dicts or other astropy.table compatible record structure with
-                    conventional catalog parameters for a set of
-                    ACQ/BOT/GUI/FID/MON items.
-    :param starcat_time: star catalog time.  Used as time for proper motion correction.
-    :param stars: astropy table compatible set of agasc records of stars.  If not supplied,
-                  these will be fetched for the supplied attitude
-    :param bad_stars: mask of stars that should be plotted in BAD_STAR_COLOR
-    :param title: string to be used as suptitle for the figure
-    :returns: matplotlib figure
-    """
-    if stars is None:
-        stars = agasc.get_agasc_cone(ra, dec,
-                                     radius=1.5,
-                                     date=DateTime(starcat_time).date)
-    fig = star_plot(catalog, attitude=[ra, dec, roll], stars=stars, title=title,
-                    bad_stars=bad_stars, red_mag_lim=red_mag_lim)
-    return fig
-
-
-def plot_star_field(ra, dec, roll, starcat_time=DateTime(), stars=None, bad_stars=None,
-                    red_mag_lim=None, title=None):
-    """
-    Make standard star field plot.
-
-    :param ra: RA in degrees
-    :param dec: Dec in degrees
-    :param roll: Roll in degrees
-    :param starcat_time: star catalog time.  Used as time for proper motion correction.
-    :param stars: astropy table compatible set of agasc records of stars.  If not supplied,
-                  these will be fetched for the supplied attitude
-    :param bad_stars: mask of stars that should be plotted in BAD_STAR_COLOR
-    :param title: string to be used as suptitle for the figure
-    :returns: matplotlib figure
-    """
-    if stars is None:
-        stars = agasc.get_agasc_cone(ra, dec,
-                                     radius=1.5,
-                                     date=DateTime(starcat_time).date)
-    fig = star_plot(catalog=None, attitude=[ra, dec, roll], stars=stars, title=title,
-                    quad_bound=False, red_mag_lim=red_mag_lim, bad_stars=bad_stars)
-    return fig
 
 
 def plot_compass(roll):
