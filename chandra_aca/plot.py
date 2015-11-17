@@ -128,8 +128,8 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         mag_error_low_limit = 1.5
         randerr = 0.26
         caterr = stars['MAG_ACA_ERR'] / 100.
-        error = nsigma * np.sqrt(randerr*randerr + caterr*caterr)
-        error[error < mag_error_low_limit] = mag_error_low_limit
+        error = nsigma * np.sqrt(randerr**2 + caterr**2)
+        error = np.clip(error, a_min=mag_error_low_limit, a_max=None)
         faint = ((stars['MAG_ACA'] >= red_mag_lim)
                  & ((stars['MAG_ACA'] - error) < red_mag_lim))
         too_dim_to_plot = ((stars['MAG_ACA'] >= red_mag_lim)
