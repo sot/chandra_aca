@@ -119,6 +119,11 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     ok = np.ones(len(stars), dtype='bool')
 
     if red_mag_lim:
+        # Mark stars with the FAINT_STAR_COLOR if they have MAG_ACA
+        # that is fainter than red_mag_lim but MAG_ACA - a rough mag error
+        # is brighter than that limit.  The rough mag error calculation is
+        # based on the SAUSAGE acq stage 1 check, which uses nsigma of
+        # 3.0, a mag low limit of 1.5, and a random error of 0.26.
         nsigma = 3.0
         mag_error_low_limit = 1.5
         randerr = 0.26
