@@ -65,14 +65,14 @@ def _plot_catalog_items(ax, catalog):
                edgecolors='green',
                s=100)
     for acq_star in acq:
-        acq_box = plt.Rectangle(
+        box = plt.Rectangle(
             (acq_star['yang'] - acq_star['halfw'],
              acq_star['zang'] - acq_star['halfw']),
             width=acq_star['halfw'] * 2,
             height=acq_star['halfw'] * 2,
             color='blue',
             fill=False)
-        ax.add_patch(acq_box)
+        ax.add_patch(box)
     for mon_box in mon:
         # starcheck convention was to plot monitor boxes at 2X halfw
         box = plt.Rectangle(
