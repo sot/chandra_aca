@@ -111,12 +111,20 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     stars = Table(stars)
     quat = Quaternion.Quat(attitude)
 
+    if bad_stars is None:
+        bad_stars = np.zeros(len(stars), dtype=bool)
+
     # Add star Y angle and Z angle in arcsec to the stars table
     yagzags = (radec2yagzag(star['RA_PMCORR'], star['DEC_PMCORR'], quat)
                for star in stars)
     yagzags = Table(rows=[(y * 3600, z * 3600) for y, z in yagzags], names=['yang', 'zang'])
     stars = hstack([stars, yagzags])
-    ok = np.ones(len(stars), dtype='bool')
+
+    # Initialize array of colors for the stars, default is black
+    colors = np.zeros(len(stars), dtype='S20')
+    colors[:] = 'black'
+
+    colors[bad_stars] = BAD_STAR_COLOR
 
     if red_mag_lim:
         # Mark stars with the FAINT_STAR_COLOR if they have MAG_ACA
@@ -132,29 +140,28 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         error = np.clip(error, a_min=mag_error_low_limit, a_max=None)
         faint = ((stars['MAG_ACA'] >= red_mag_lim)
                  & ((stars['MAG_ACA'] - error) < red_mag_lim))
+        # Faint and bad stars will keep their BAD_STAR_COLOR
+        # Only use the faint mask on stars that are not bad
+        faint = faint & ~bad_stars
+        colors[faint] = FAINT_STAR_COLOR
+        # Don't plot those for which MAG_ACA - error is fainter than red_mag_lim
+        # This overrides any that may be 'bad'
         too_dim_to_plot = ((stars['MAG_ACA'] >= red_mag_lim)
                             & ((stars['MAG_ACA'] - error) >= red_mag_lim))
-        # All of the indices are on stars, so reindex without too_dim_to_plot
-        stars = stars[~too_dim_to_plot]
-        faint = faint[~too_dim_to_plot]
-        ok = ok[~too_dim_to_plot]
-        ok[faint] = False
-        if bad_stars is not None:
-            bad_stars = bad_stars[~too_dim_to_plot]
-    if bad_stars is not None:
-        ok[bad_stars] = False
+        colors[too_dim_to_plot] = 'none'
 
     size = symsize(stars['MAG_ACA'])
-    ax.scatter(stars[ok]['yang'], stars[ok]['zang'],
-               c='black', s=size[ok])
-    if red_mag_lim:
-        ax.scatter(stars[faint]['yang'], stars[faint]['zang'],
-                   c=FAINT_STAR_COLOR, s=size[faint], edgecolor='none',
-                   alpha=FAINT_STAR_ALPHA)
-    if bad_stars is not None:
-        ax.scatter(stars[bad_stars]['yang'], stars[bad_stars]['zang'],
-                   c=BAD_STAR_COLOR, s=size[bad_stars], edgecolor='none',
-                   alpha=BAD_STAR_ALPHA)
+    # scatter() does not take an array of alphas, and rgba is
+    # awkward for color='none', so plot these in a loop.
+    for color, alpha in [(FAINT_STAR_COLOR, FAINT_STAR_ALPHA),
+                         (BAD_STAR_COLOR, BAD_STAR_ALPHA),
+                         ('none', 1.0),
+                         ('black', 1.0)]:
+        colormatch = colors == color
+        ax.scatter(stars[colormatch]['yang'],
+                   stars[colormatch]['zang'],
+                   c=color, s=size[colormatch], edgecolor='none',
+                   alpha=alpha)
 
 
 def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=None,
