@@ -183,7 +183,8 @@ def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=
     :param quad_bound: boolean, plot inner quadrant boundaries
     :param grid: boolean, plot axis grid
     :param bad_stars: boolean mask on 'stars' of those that don't meet minimum requirements
-                      to be selected as acq stars
+                      to be selected as acq stars.  If None, bad_stars will be set by a call
+                      to bad_acq_stars().
     :returns: matplotlib figure
     """
     if stars is None:
