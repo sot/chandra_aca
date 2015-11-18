@@ -172,8 +172,12 @@ def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=
     If supplying a star field, an attitude must also be supplied.
 
     :param catalog: Records describing catalog.  Must be astropy table compatible.
+                    Required fields are ['idx', 'type', 'yang', 'zang', 'halfw']
     :param attitude: A Quaternion compatible attitude for the pointing
     :param stars: astropy table compatible set of agasc records of stars
+          Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
+          If bad_acq_stars will be called (bad_stars is None), additional required fields
+          ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
     :param title: string to be used as suptitle for the figure
     :param red_mag_lim: faint limit for field star plotting.
     :param quad_bound: boolean, plot inner quadrant boundaries
@@ -244,7 +248,9 @@ def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=
 def bad_acq_stars(stars):
     """
     Return mask of 'bad' stars, by evaluating AGASC star parameters.
-    :param stars: astropy table-compatible set of agasc records of stars
+
+    :param stars: astropy table-compatible set of agasc records of stars. Required fields
+          are ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
     :returns: boolean mask true for 'bad' stars
     """
     return ((stars['CLASS'] != 0) |
