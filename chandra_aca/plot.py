@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from astropy.table import hstack, Table
+from astropy.table import Table
 import agasc
 import Quaternion
 from Ska.quatutil import radec2yagzag
@@ -114,11 +114,12 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     if bad_stars is None:
         bad_stars = np.zeros(len(stars), dtype=bool)
 
-    # Add star Y angle and Z angle in arcsec to the stars table
-    yagzags = (radec2yagzag(star['RA_PMCORR'], star['DEC_PMCORR'], quat)
-               for star in stars)
-    yagzags = Table(rows=[(y * 3600, z * 3600) for y, z in yagzags], names=['yang', 'zang'])
-    stars = hstack([stars, yagzags])
+    if 'yang' not in stars.colnames or 'zang' not in stars.colnames:
+        # Add star Y angle and Z angle in arcsec to the stars table.
+        # radec2yagzag returns degrees.
+        yags, zags = radec2yagzag(stars['RA_PMCORR'], stars['DEC_PMCORR'], quat)
+        stars['yang'] = yags * 3600
+        stars['zang'] = zags * 3600
 
     # Initialize array of colors for the stars, default is black
     colors = np.zeros(len(stars), dtype='S20')
