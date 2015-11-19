@@ -163,7 +163,7 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
                    alpha=alpha)
 
 
-def star_plot(attitude, catalog=None, stars=None, title=None, starcat_time=None,
+def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
               red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
