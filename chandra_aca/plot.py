@@ -129,8 +129,8 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
 
     if red_mag_lim:
         # Mark stars with the FAINT_STAR_COLOR if they have MAG_ACA
-        # that is fainter than red_mag_lim but MAG_ACA - a rough mag error
-        # is brighter than that limit.  The rough mag error calculation is
+        # that is fainter than red_mag_lim but brighter than red_mag_lim
+        # plus a rough mag error.  The rough mag error calculation is
         # based on the SAUSAGE acq stage 1 check, which uses nsigma of
         # 3.0, a mag low limit of 1.5, and a random error of 0.26.
         nsigma = 3.0
@@ -139,16 +139,14 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         caterr = stars['MAG_ACA_ERR'] / 100.
         error = nsigma * np.sqrt(randerr**2 + caterr**2)
         error = np.clip(error, a_min=mag_error_low_limit, a_max=None)
-        faint = ((stars['MAG_ACA'] >= red_mag_lim)
-                 & ((stars['MAG_ACA'] - error) < red_mag_lim))
+        faint = (stars['MAG_ACA'] >= red_mag_lim) & (stars['MAG_ACA'] < red_mag_lim + error)
         # Faint and bad stars will keep their BAD_STAR_COLOR
         # Only use the faint mask on stars that are not bad
         faint = faint & ~bad_stars
         colors[faint] = FAINT_STAR_COLOR
-        # Don't plot those for which MAG_ACA - error is fainter than red_mag_lim
+        # Don't plot those for which MAG_ACA is fainter than red_mag_lim + error
         # This overrides any that may be 'bad'
-        too_dim_to_plot = ((stars['MAG_ACA'] >= red_mag_lim)
-                            & ((stars['MAG_ACA'] - error) >= red_mag_lim))
+        too_dim_to_plot = stars['MAG_ACA'] >= red_mag_lim + error
         colors[too_dim_to_plot] = 'none'
 
     size = symsize(stars['MAG_ACA'])
@@ -178,6 +176,8 @@ def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=
           Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
           If bad_acq_stars will be called (bad_stars is None), additional required fields
           ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
+          If stars is None, stars will be fetched from the AGASC for the
+          supplied attitude.
     :param title: string to be used as suptitle for the figure
     :param red_mag_lim: faint limit for field star plotting.
     :param quad_bound: boolean, plot inner quadrant boundaries
