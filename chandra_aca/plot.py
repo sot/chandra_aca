@@ -138,7 +138,7 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         randerr = 0.26
         caterr = stars['MAG_ACA_ERR'] / 100.
         error = nsigma * np.sqrt(randerr**2 + caterr**2)
-        error = np.clip(error, a_min=mag_error_low_limit, a_max=None)
+        error = error.clip(mag_error_low_limit)
         faint = (stars['MAG_ACA'] >= red_mag_lim) & (stars['MAG_ACA'] < red_mag_lim + error)
         # Faint and bad stars will keep their BAD_STAR_COLOR
         # Only use the faint mask on stars that are not bad
