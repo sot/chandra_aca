@@ -163,15 +163,15 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
                    alpha=alpha)
 
 
-def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=None,
+def star_plot(attitude, catalog=None, stars=None, title=None, starcat_time=None,
               red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
     If supplying a star field, an attitude must also be supplied.
 
+    :param attitude: A Quaternion compatible attitude for the pointing
     :param catalog: Records describing catalog.  Must be astropy table compatible.
                     Required fields are ['idx', 'type', 'yang', 'zang', 'halfw']
-    :param attitude: A Quaternion compatible attitude for the pointing
     :param stars: astropy table compatible set of agasc records of stars
           Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
           If bad_acq_stars will be called (bad_stars is None), additional required fields
@@ -232,12 +232,9 @@ def star_plot(catalog=None, attitude=None, stars=None, title=None, starcat_time=
         yag, zag = pixels_to_yagzag(pix_range, minus_half_pix)
         ax.plot(yag, zag, color='magenta', alpha=.4)
 
-    # plot field if present
-    if stars is not None:
-        if attitude is None:
-            raise ValueError("Must supply attitude to plot field stars")
-        _plot_field_stars(ax, stars, attitude=attitude,
-                          bad_stars=bad_stars, red_mag_lim=red_mag_lim)
+    # plot stars
+    _plot_field_stars(ax, stars, attitude=attitude,
+                      bad_stars=bad_stars, red_mag_lim=red_mag_lim)
     # plot starcheck catalog
     if catalog is not None:
         _plot_catalog_items(ax, catalog)
