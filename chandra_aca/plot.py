@@ -154,7 +154,6 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     # awkward for color='none', so plot these in a loop.
     for color, alpha in [(FAINT_STAR_COLOR, FAINT_STAR_ALPHA),
                          (BAD_STAR_COLOR, BAD_STAR_ALPHA),
-                         ('none', 1.0),
                          ('black', 1.0)]:
         colormatch = colors == color
         ax.scatter(stars[colormatch]['yang'],
