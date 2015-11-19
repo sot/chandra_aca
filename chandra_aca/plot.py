@@ -163,7 +163,7 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
 
 
 def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
-              red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None):
+               red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
     If supplying a star field, an attitude must also be supplied.
@@ -178,6 +178,8 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
           If stars is None, stars will be fetched from the AGASC for the
           supplied attitude.
     :param title: string to be used as suptitle for the figure
+    :param starcat_time: DateTime-compatible time.  Used in ACASC fetch for proper
+                         motion correction.  Not used if stars is not None.
     :param red_mag_lim: faint limit for field star plotting.
     :param quad_bound: boolean, plot inner quadrant boundaries
     :param grid: boolean, plot axis grid
