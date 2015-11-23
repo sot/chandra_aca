@@ -139,15 +139,14 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         caterr = stars['MAG_ACA_ERR'] / 100.
         error = nsigma * np.sqrt(randerr**2 + caterr**2)
         error = error.clip(mag_error_low_limit)
-        faint = (stars['MAG_ACA'] >= red_mag_lim) & (stars['MAG_ACA'] < red_mag_lim + error)
         # Faint and bad stars will keep their BAD_STAR_COLOR
         # Only use the faint mask on stars that are not bad
-        faint = faint & ~bad_stars
-        colors[faint] = FAINT_STAR_COLOR
+        colors[(stars['MAG_ACA'] >= red_mag_lim)
+               & (stars['MAG_ACA'] < red_mag_lim + error)
+               & ~bad_stars] = FAINT_STAR_COLOR
         # Don't plot those for which MAG_ACA is fainter than red_mag_lim + error
         # This overrides any that may be 'bad'
-        too_dim_to_plot = stars['MAG_ACA'] >= red_mag_lim + error
-        colors[too_dim_to_plot] = 'none'
+        colors[stars['MAG_ACA'] >= red_mag_lim + error] = 'none'
 
     size = symsize(stars['MAG_ACA'])
     # scatter() does not take an array of alphas, and rgba is
