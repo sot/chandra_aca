@@ -51,20 +51,20 @@ def _plot_catalog_items(ax, catalog):
                     astropy.table.Table(catalog).  A list of dicts is the convention.
     """
     cat = Table(catalog)
-    gui = cat[(cat['type'] == 'GUI') | (cat['type'] == 'BOT')]
-    acq = cat[(cat['type'] == 'ACQ') | (cat['type'] == 'BOT')]
-    fid = cat[cat['type'] == 'FID']
-    mon = cat[cat['type'] == 'MON']
+    gui_stars = cat[(cat['type'] == 'GUI') | (cat['type'] == 'BOT')]
+    acq_stars = cat[(cat['type'] == 'ACQ') | (cat['type'] == 'BOT')]
+    fids = cat[cat['type'] == 'FID']
+    mon_wins = cat[cat['type'] == 'MON']
     for row in cat:
         ax.annotate("%s" % row['idx'],
                     xy=(row['yang'] - 120, row['zang'] + 60),
                     color='red',
                     fontsize=12)
-    ax.scatter(gui['yang'], gui['zang'],
+    ax.scatter(gui_stars['yang'], gui_stars['zang'],
                facecolors='none',
                edgecolors='green',
                s=100)
-    for acq_star in acq:
+    for acq_star in acq_stars:
         box = plt.Rectangle(
             (acq_star['yang'] - acq_star['halfw'],
              acq_star['zang'] - acq_star['halfw']),
@@ -73,7 +73,7 @@ def _plot_catalog_items(ax, catalog):
             color='blue',
             fill=False)
         ax.add_patch(box)
-    for mon_box in mon:
+    for mon_box in mon_wins:
         # starcheck convention was to plot monitor boxes at 2X halfw
         box = plt.Rectangle(
             (mon_box['yang'] - (mon_box['halfw'] * 2),
@@ -83,13 +83,13 @@ def _plot_catalog_items(ax, catalog):
             color='orange',
             fill=False)
         ax.add_patch(box)
-    ax.scatter(fid['yang'], fid['zang'],
+    ax.scatter(fids['yang'], fids['zang'],
                facecolors='none',
                edgecolors='red',
                linewidth=.5,
                marker='o',
                s=175)
-    ax.scatter(fid['yang'], fid['zang'],
+    ax.scatter(fids['yang'], fids['zang'],
                facecolors='none',
                edgecolors='red',
                marker='+',
