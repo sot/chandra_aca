@@ -4,7 +4,7 @@ from astropy.io import ascii
 from Quaternion import Quat
 
 import chandra_aca
-from chandra_aca.star_probs import t_ccd_warm_limit
+from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq
 
 TOLERANCE = 0.05
 
@@ -78,3 +78,8 @@ def test_t_ccd_warm_limit():
     out = t_ccd_warm_limit([9.8] * 6, date='2015:001', min_n_acq=5.0)
     assert np.allclose(out[0], -13.2155, atol=0.01)
     assert np.allclose(out[1], 5.0, atol=0.01)
+
+
+def test_mag_for_p_acq():
+    mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0)
+    assert np.allclose(mag, 10.282, rtol=0, atol=0.01)
