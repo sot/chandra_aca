@@ -256,7 +256,8 @@ def broadcast_arrays(*args):
 def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0):
     """
     For a given ``date`` and ``t_ccd``, find the star magnitude that has an
-    acquisition probability of ``p_acq``.
+    acquisition probability of ``p_acq``.  Star magnitude is defined/limited
+    to the range 5.0 - 12.0 mag.
 
     :param p_acq: acquisition probability (0 to 1.0)
     :param date: observation date (any Chandra.Time valid format)
