@@ -12,10 +12,10 @@ Camera Assembly and associated aspect functionality.
 .. toctree::
    :maxdepth: 2
 
-Transformations
----------------
+Plotting
+--------
 
-.. automodule:: chandra_aca.transform
+.. automodule:: chandra_aca.plot
    :members:
 
 Star probabilities
@@ -24,5 +24,9 @@ Star probabilities
 .. automodule:: chandra_aca.star_probs
    :members:
 
+Transformations
+---------------
 
+.. automodule:: chandra_aca.transform
+   :members:
 
