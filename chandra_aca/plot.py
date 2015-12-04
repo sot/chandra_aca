@@ -86,14 +86,13 @@ def _plot_catalog_items(ax, catalog):
     ax.scatter(fids['yang'], fids['zang'],
                facecolors='none',
                edgecolors='red',
-               linewidth=.5,
+               linewidth=1,
                marker='o',
                s=175)
     ax.scatter(fids['yang'], fids['zang'],
-               facecolors='none',
-               edgecolors='red',
+               facecolors='red',
                marker='+',
-               linewidth=.5,
+               linewidth=1,
                s=175)
 
 
