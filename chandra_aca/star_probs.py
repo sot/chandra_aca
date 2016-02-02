@@ -51,7 +51,18 @@ SOTA_FIT_ONLY_1P5_NO_MS = [4.786710417762472, 4.839392687262392, 1.8646719319052
 
 
 # Default global values using NO_MS settings.  Kinda ugly.
-def set_fit_pars(ms_enabled=False):
+def set_fit_pars(ms_enabled=True):
+    """
+    Choose one of two sets of acquisition model fit parameters based
+    on ``ms_enabled``:
+
+    - True: MS filtering enabled (prior to FEB0816 loads), where stars would
+      be rejected if MS flag was set
+    - False: MS filtering disabled (including and after FEB0816 loads)
+
+    This sets a global (module-wide) variable that controls which fit params
+    are used.  The default is ``True`` for back-compatibility.
+    """
     global SOTA_FIT_NO_1P5
     global SOTA_FIT_ONLY_1P5
     if ms_enabled:
@@ -61,6 +72,7 @@ def set_fit_pars(ms_enabled=False):
         SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_NO_MS
         SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_NO_MS
 
+# Use the *_WITH_MS parameters by default.
 set_fit_pars(ms_enabled=True)
 
 
