@@ -60,6 +60,8 @@ def set_acq_model_ms_filter(ms_enabled=False):
       be rejected if MS flag was set
     - False: MS filtering disabled (including and after FEB0816 loads)
 
+    The selected fit parameters are global/module-wide.
+
     """
     global SOTA_FIT_NO_1P5
     global SOTA_FIT_ONLY_1P5
