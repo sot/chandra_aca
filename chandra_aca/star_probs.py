@@ -17,7 +17,8 @@ from Chandra.Time import DateTime
 
 # Scale and offset fit of polynomial to acq failures in log space.
 # Derived in the fit_sota_model_probit.ipynb IPython notebook for data
-# covering 2007-Jan-01 - 2015-July-01.  This is in the state_of_aca repo.
+# covering 2007-Jan-01 - 2015-July-01.  This is in the aca_stats repo.
+# (Previously in state_of_aca but moved 2016-Feb-2).
 #
 # scale = scl2 * m10**2 + scl1 * m10 + scl0, where m10 = mag - 10,
 # and likewise for offset.
@@ -25,19 +26,54 @@ from Chandra.Time import DateTime
 
 WARM_THRESHOLD = 100  # Value (N100) used for fitting
 
-SOTA_FIT_NO_1P5 = [9.6887121605441173,  # scl0
-                   9.1613040261776177,  # scl1
-                   -0.41919343599067715,  # scl2
-                   -2.3829996965532048,  # off0
-                   0.54998934814773903,  # off1
-                   0.47839260691599156]  # off2
+SOTA_FIT_NO_1P5_WITH_MS = [9.6887121605441173,  # scl0
+                           9.1613040261776177,  # scl1
+                           -0.41919343599067715,  # scl2
+                           -2.3829996965532048,  # off0
+                           0.54998934814773903,  # off1
+                           0.47839260691599156]  # off2
 
-SOTA_FIT_ONLY_1P5 = [8.541709287866361,
-                     0.44482688155644085,
-                     -3.5137852251178465,
-                     -1.3505424393223699,
-                     1.5278061271148755,
-                     0.30973569068842272]
+SOTA_FIT_ONLY_1P5_WITH_MS = [8.541709287866361,
+                             0.44482688155644085,
+                             -3.5137852251178465,
+                             -1.3505424393223699,
+                             1.5278061271148755,
+                             0.30973569068842272]
+
+# Multiple stars flag disabled (starting operationally with FEB0816).  Fit
+# with fit_sota_model_probit_no_ms.ipynb in the aca_stats repo.
+
+SOTA_FIT_NO_1P5_NO_MS = [4.092016310373646, 6.5415918325159641, 1.8191919043258409,
+                         -2.2301709573082413, 0.30337711472920426, 0.10116735012955963]
+
+SOTA_FIT_ONLY_1P5_NO_MS = [4.786710417762472, 4.839392687262392, 1.8646719319052267,
+                           -1.4926740399312248, 0.76412972998935347, -0.20229644263097146]
+
+
+# Default global values using NO_MS settings.  Kinda ugly.
+def set_acq_model_ms_filter(ms_enabled=False):
+    """
+    Choose one of two sets of acquisition model fit parameters based
+    on ``ms_enabled``.  The default is ``False``:
+
+    - True: MS filtering enabled (prior to FEB0816 loads), where stars would
+      be rejected if MS flag was set
+    - False: MS filtering disabled (including and after FEB0816 loads)
+
+    The selected fit parameters are global/module-wide.
+
+    """
+    global SOTA_FIT_NO_1P5
+    global SOTA_FIT_ONLY_1P5
+    if ms_enabled:
+        SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_WITH_MS
+        SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_WITH_MS
+    else:
+        SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_NO_MS
+        SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_NO_MS
+
+# Use the *_NO_MS parameters by default.
+set_acq_model_ms_filter(ms_enabled=False)
 
 
 def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
