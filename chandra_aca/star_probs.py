@@ -54,14 +54,12 @@ SOTA_FIT_ONLY_1P5_NO_MS = [4.786710417762472, 4.839392687262392, 1.8646719319052
 def set_acq_model_ms_filter(ms_enabled=False):
     """
     Choose one of two sets of acquisition model fit parameters based
-    on ``ms_enabled``:
+    on ``ms_enabled``.  The default is ``False``:
 
     - True: MS filtering enabled (prior to FEB0816 loads), where stars would
       be rejected if MS flag was set
     - False: MS filtering disabled (including and after FEB0816 loads)
 
-    This sets a global (module-wide) variable that controls which fit params
-    are used.  The default is ``False``.
     """
     global SOTA_FIT_NO_1P5
     global SOTA_FIT_ONLY_1P5
