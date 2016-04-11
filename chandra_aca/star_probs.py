@@ -51,7 +51,7 @@ SOTA_FIT_ONLY_1P5_NO_MS = [4.786710417762472, 4.839392687262392, 1.8646719319052
 
 
 # Default global values using NO_MS settings.  Kinda ugly.
-def set_fit_pars(ms_enabled=False):
+def set_acq_model_ms_filter(ms_enabled=False):
     """
     Choose one of two sets of acquisition model fit parameters based
     on ``ms_enabled``:
@@ -73,7 +73,7 @@ def set_fit_pars(ms_enabled=False):
         SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_NO_MS
 
 # Use the *_NO_MS parameters by default.
-set_fit_pars(ms_enabled=False)
+set_acq_model_ms_filter(ms_enabled=False)
 
 
 def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
