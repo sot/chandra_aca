@@ -32,7 +32,8 @@ DRIFT_Z_PARS = dict(scale=1.067,
 # Define transform from aspect solution DY, DZ (mm) to CHIPX, CHIPY for
 # nominal target position.  This uses the transform:
 # CHIPX, CHIPY = c0 + cyz * [DY, DZ]  (dot product)
-
+# These values come from the aimpoint_mon/asol_to_chip_transforms notebook:
+# https://github.com/sot/aimpoint_mon/blob/cebe5010/asol_to_chip_transforms.ipynb
 ASOL_TO_CHIP = {('ACIS-I', 0): {'c0': [1100.806, 1110.299],
                                 'cyz': [[0.001, 41.742], [-41.742, 0.105]]},
                 ('ACIS-I', 1): {'c0': [-76.208, 962.413],
