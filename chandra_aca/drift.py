@@ -13,7 +13,7 @@ import numpy as np
 # https://github.com/sot/aimpoint_mon/blob/8259a23/fit_aimpoint_drift.ipynb
 # These are used below to instantiate corresponding AcaDriftModel objects.
 
-DRIFT_Y_PARS = dict(scale=2.183,
+DRIFT_Y_PARS = dict(scale=2.183,  # drift per degF (NOT degC as elsewhere in this module)
                     offset=-5.606,
                     trend=-1.363,
                     jumps=(('2015:006', -4.234),
@@ -89,9 +89,13 @@ class AcaDriftModel(object):
         the scale factor 20.493 arcsec/mm.
 
         :param times: array of times (CXC secs)
-        :param t_ccd: CCD temperatures (degF)
+        :param t_ccd: CCD temperatures (degC)
         :returns: array of ASOL SIM DY/DZ (mm)
         """
+        # The drift model is calibrated assuming t_ccd is in degF, but we want inputs
+        # in degC, so convert at this point.
+        t_ccd = t_ccd * 1.8 + 32.0
+
         times, t_ccd = np.broadcast_arrays(times, t_ccd)
         is_scalar = times.ndim == 0 and t_ccd.ndim == 0
         times = DateTime(np.atleast_1d(times)).secs
@@ -133,7 +137,7 @@ def simple_test_aca_drift():
     Match: YES.
     """
     times = DateTime(np.arange(2013.0, 2016.5, 0.01), format='frac_year').secs
-    t_ccd = 7.0 * np.ones_like(times)
+    t_ccd = -13.8888889 * np.ones_like(times)  # degC, equivalent to +7.0 degC
     dy = DRIFT_Y.calc(times, t_ccd)
     dz = DRIFT_Z.calc(times, t_ccd)
 
@@ -151,7 +155,7 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
     :param chipy: zero-offset aimpoint CHIPY
     :param chip_id: zero-offset aimpoint CHIP ID
     :param time: time(s) of observation (any Chandra.Time compatible format)
-    :param t_ccd: ACA CCD temperature(s) (degF)
+    :param t_ccd: ACA CCD temperature(s) (degC)
 
     :returns: aca_offset_y, aca_offset_z (arcsec)
     """
