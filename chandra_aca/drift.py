@@ -3,6 +3,9 @@ Function(s) related to ACA alignment.
 
 In particular compute the dynamical pointing offset required to achieve
 a desired zero-offset target aimpoint.
+
+A key element of this module is the fitting analysis here:
+https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift.ipynb
 """
 
 from Chandra.Time import DateTime
@@ -126,22 +129,6 @@ class AcaDriftModel(object):
 # Define model instances using calibrated parameters
 DRIFT_Y = AcaDriftModel(**DRIFT_Y_PARS)
 DRIFT_Z = AcaDriftModel(**DRIFT_Z_PARS)
-
-
-def simple_test_aca_drift():
-    """
-    Qualitatively test the implementation of drift model by plotting (outside
-    of this function) the returned drift values and comparing with plots in
-    https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift.ipynb
-
-    Match: YES.
-    """
-    times = DateTime(np.arange(2013.0, 2016.5, 0.01), format='frac_year').secs
-    t_ccd = -13.8888889 * np.ones_like(times)  # degC, equivalent to +7.0 degC
-    dy = DRIFT_Y.calc(times, t_ccd)
-    dz = DRIFT_Z.calc(times, t_ccd)
-
-    return dy, dz, times
 
 
 def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):

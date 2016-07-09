@@ -1,10 +1,16 @@
+import os
+
 import numpy as np
 from astropy.io import ascii
 
 from Quaternion import Quat
+from Chandra.Time import DateTime
 
 import chandra_aca
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq
+from chandra_aca import drift
+
+dirname = os.path.dirname(__file__)
 
 TOLERANCE = 0.05
 
@@ -15,7 +21,7 @@ SI_ALIGN_CLASSIC = np.array([[1.0, 3.3742E-4, 2.7344E-4],
 
 
 def test_pix_to_angle():
-    pix_to_angle = ascii.read(open('test_data/pix_to_angle.txt'))
+    pix_to_angle = ascii.read(open(os.path.join(dirname, 'data', 'pix_to_angle.txt')))
 
     print "testing {} row/col pairs match to {} arcsec".format(
         len(pix_to_angle), TOLERANCE)
@@ -27,7 +33,7 @@ def test_pix_to_angle():
 
 
 def test_angle_to_pix():
-    angle_to_pix = ascii.read(open('test_data/angle_to_pix.txt'))
+    angle_to_pix = ascii.read(open(os.path.join(dirname, 'data', 'angle_to_pix.txt')))
     print "testing {} yang/zang pairs match to {} pixels".format(
         len(angle_to_pix), TOLERANCE)
     pyrow, pycol = chandra_aca.yagzag_to_pixels(
@@ -71,15 +77,52 @@ def test_aca_targ_transforms():
 
 
 def test_t_ccd_warm_limit():
-    out = t_ccd_warm_limit([9.8] * 6, date='2015:001', min_n_acq=(2, 8e-3))
-    assert np.allclose(out[0], -13.3341, atol=0.01)
+    out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=(2, 8e-3))
+    assert np.allclose(out[0], -15.2449, atol=0.01)
     assert np.allclose(out[1], 0.008, atol=0.0001)
 
-    out = t_ccd_warm_limit([9.8] * 6, date='2015:001', min_n_acq=5.0)
-    assert np.allclose(out[0], -13.2155, atol=0.01)
+    out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=5.0)
+    assert np.allclose(out[0], -15.143, atol=0.01)
     assert np.allclose(out[1], 5.0, atol=0.01)
 
 
 def test_mag_for_p_acq():
     mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0)
-    assert np.allclose(mag, 10.282, rtol=0, atol=0.01)
+    assert np.allclose(mag, 10.821, rtol=0, atol=0.01)
+
+
+def simple_test_aca_drift():
+    """
+    Qualitatively test the implementation of drift model by plotting (outside
+    of this function) the returned drift values and comparing with plots in
+    https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift.ipynb
+
+    Match: YES.
+    """
+    times = DateTime(np.arange(2013.0, 2016.5, 0.01), format='frac_year').secs
+    t_ccd = -13.8888889 * np.ones_like(times)  # degC, equivalent to +7.0 degC
+    dy = drift.DRIFT_Y.calc(times, t_ccd)
+    dz = drift.DRIFT_Z.calc(times, t_ccd)
+
+    return dy, dz, times
+
+
+def test_get_aca_offsets():
+    """
+    Test that ACA offsets are reasonable, and regression test particular values
+    corresponding to cycle 17 zero-offset aimpoints used below for chip_x, chip_y inputs.
+
+    The output reference values here have been validated as being "reasonable" for the
+    given inputs.
+    """
+    offsets = drift.get_aca_offsets('ACIS-I', 3, 930.2, 1009.6, '2016:180', -15.0)
+    assert np.allclose(offsets, (11.83637884563926, 2.6860740140775334), atol=0.1)
+
+    offsets = drift.get_aca_offsets('ACIS-S', 7, 200.7, 476.9, '2016:180', -15.0)
+    assert np.allclose(offsets, (13.360706170615167, 3.8670874955935481), atol=0.1)
+
+    offsets = drift.get_aca_offsets('HRC-I', 0, 7591, 7936, '2016:180', -15.0)
+    assert np.allclose(offsets, (14.728718419826098, 0.7925650626134555), atol=0.1)
+
+    offsets = drift.get_aca_offsets('HRC-S', 2, 2041, 9062, '2016:180', -15.0)
+    assert np.allclose(offsets, (17.269560057119545, 3.4474216529603225), atol=0.1)

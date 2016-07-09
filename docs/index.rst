@@ -30,3 +30,9 @@ Transformations
 .. automodule:: chandra_aca.transform
    :members:
 
+ACA alignment drift
+-------------------
+
+.. automodule:: chandra_aca.drift
+   :members:
+
