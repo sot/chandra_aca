@@ -20,4 +20,6 @@ def test(*args, **kwargs):
     os.chdir(os.path.join(*pkg_paths))
     pkg_dir = os.path.join(*pkg_names)
 
-    pytest.main([pkg_dir] + list(args), **kwargs)
+    n_fail = pytest.main([pkg_dir] + list(args), **kwargs)
+
+    return n_fail
