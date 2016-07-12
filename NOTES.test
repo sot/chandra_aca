@@ -1,4 +1,10 @@
 Testing
 ========
 
-  $ py.test test.py
+  $ python setup.py test
+
+OR
+
+  >>> import chandra_aca
+  >>> chandra_aca.test()
+
