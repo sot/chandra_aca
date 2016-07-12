@@ -27,6 +27,7 @@ setup(name='chandra_aca',
       version=__version__,
       zip_safe=False,
       packages=['chandra_aca', 'chandra_aca.tests'],
+      package_data={'chandra_aca.tests': ['data/*.txt']},
       tests_require=['pytest'],
       cmdclass={'test': PyTest},
       )
