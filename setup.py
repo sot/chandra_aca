@@ -26,7 +26,7 @@ setup(name='chandra_aca',
       author_email='jconnelly@cfa.harvard.edu',
       version=__version__,
       zip_safe=False,
-      packages=['chandra_aca'],
+      packages=['chandra_aca', 'chandra_aca.tests'],
       tests_require=['pytest'],
       cmdclass={'test': PyTest},
       )
