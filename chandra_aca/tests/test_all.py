@@ -64,12 +64,12 @@ def test_aca_targ_transforms():
     # Offsets from OR (Target DY, DZ) in degrees
     y_off, z_off = 0.002500, -0.004167
 
-    q_targ = chandra_aca.calc_targ_from_aca(q_aca, y_off, z_off, SI_ALIGN_CLASSIC)
+    q_targ = chandra_aca.calc_targ_from_aca(q_aca, y_off, z_off)
 
     assert np.allclose(ra_targ, q_targ.ra, atol=1e-5, rtol=0)
     assert np.allclose(dec_targ, q_targ.dec, atol=1e-5, rtol=0)
 
-    q_aca_rt = chandra_aca.calc_aca_from_targ(q_targ, y_off, z_off, SI_ALIGN_CLASSIC)
+    q_aca_rt = chandra_aca.calc_aca_from_targ(q_targ, y_off, z_off)
     dq = q_aca_rt.inv() * q_aca
     assert np.degrees(np.abs(dq.q[0] * 2)) < 30 / 3600.
     assert np.degrees(np.abs(dq.q[1] * 2)) < 1 / 3600.
