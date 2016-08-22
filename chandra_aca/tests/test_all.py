@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 from astropy.io import ascii
+from astropy.table import Table
 
 from Quaternion import Quat
 from Chandra.Time import DateTime
@@ -103,6 +104,13 @@ def test_get_aimpoint():
         assert chipx == answer[0]
         assert chipy == answer[1]
         assert chip_id == answer[2]
+    zot = Table.read("""date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
+2012-12-15      15               ACIS-I    888   999   -1        1.6""", format='ascii')
+    chipx, chipy, chip_id = drift.get_target_aimpoint('2016-08-22', 15, 'ACIS-I', zero_offset_table=zot)
+    assert chipx == 888
+    assert chipy == 999
+    assert chip_id == -1
+
 
 
 def simple_test_aca_drift():
