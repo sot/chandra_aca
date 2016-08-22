@@ -211,6 +211,7 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
     """
     if zero_offset_table is None:
         zero_offset_table = get_default_zero_offset_table()
+    zero_offset_table.sort(['date_effective', 'cycle_effective'])
     date = DateTime(date).iso[:10]
     # Entries for this detector before the 'date' given
     ok = (zero_offset_table['detector'] == detector) & (zero_offset_table['date_effective'] <= date)
