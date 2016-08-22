@@ -202,15 +202,12 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
     """
     if zero_offset_table is None:
         zero_offset_table = get_web_zero_offset_table()
-    # Get entries for this detector before the 'date' given
-    filtered_table = zero_offset_table[
-        (zero_offset_table['detector'] == detector)
-        & (DateTime(zero_offset_table['date_effective']).secs <=
-           DateTime(date).secs)]
-    # If this is a TOO, return the most recent entry values
-    if too:
-        return filtered_table[['chipx', 'chipy', 'chip_id']][-1]
-    # Otherwise, return the last match earlier than the effective cycle
-    else:
-        return filtered_table[['chipx', 'chipy', 'chip_id']][
-            filtered_table['cycle_effective'] <= cycle][-1]
+    date = DateTime(date).iso[:10]
+    # Entries for this detector before the 'date' given
+    ok = (zero_offset_table['detector'] == detector) & (zero_offset_table['date_effective'] <= date)
+    # If a regular observation, the entry must also be before or equal to proposal cycle
+    if not too:
+        ok = ok & (zero_offset_table['cycle_effective'] <= cycle)
+    filtered_table = zero_offset_table[ok]
+    # Return the desired keys in the most recent [-1] row that matches
+    return filtered_table[['chipx', 'chipy', 'chip_id']][-1]
