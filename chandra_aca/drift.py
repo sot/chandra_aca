@@ -9,7 +9,8 @@ https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift.ipynb
 """
 
 from Chandra.Time import DateTime
-
+from astropy.table import Table
+import requests
 import numpy as np
 
 # Capture best fit model parameters for ACA drift model.
@@ -173,3 +174,42 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
     ddz = dz_chip - dz_pred
 
     return ddy, ddz
+
+
+def get_web_zero_offset_table():
+    """
+    Get official SOT MP zero offset aimpoint table:
+
+    :returns: zero offset aimpoint table as astropy.Table
+    """
+    ZOA = "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt"
+    page = requests.get(ZOA)
+    table_lines = page.content.strip().split("\n")
+    return Table.read(table_lines, format="ascii")
+
+
+def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None):
+    """
+    Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id
+
+    :param date: observation date
+    :param cycle: proposal cycle of observation
+    :param detector: target detector
+    :param too: boolean. If target is TOO use current cycle not proposal cycle.
+
+    :returns: astropy table row of chipx, chipy, chip_id
+    """
+    if zero_offset_table is None:
+        zero_offset_table = get_web_zero_offset_table()
+    # Get entries for this detector before the 'date' given
+    filtered_table = zero_offset_table[
+        (zero_offset_table['detector'] == detector)
+        & (DateTime(zero_offset_table['date_effective']).secs <=
+           DateTime(date).secs)]
+    # If this is a TOO, return the most recent entry values
+    if too:
+        return filtered_table[['chipx', 'chipy', 'chip_id']][-1]
+    # Otherwise, return the last match earlier than the effective cycle
+    else:
+        return filtered_table[['chipx', 'chipy', 'chip_id']][
+            filtered_table['cycle_effective'] <= cycle][-1]

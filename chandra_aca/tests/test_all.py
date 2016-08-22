@@ -91,6 +91,20 @@ def test_mag_for_p_acq():
     assert np.allclose(mag, 10.821, rtol=0, atol=0.01)
 
 
+def test_get_aimpoint():
+    obstests = [('2016-08-22', 15, 'ACIS-S'),
+               ('2014-08-22', 16, 'HRC-I', True),
+               ('2017-09-01', 18, 'ACIS-I')]
+    answers = [(224.0, 490.0, 7),
+               (7606.0, 7941.0, 0),
+               (970.0, 975.0, 3)]
+    for obstest, answer in zip(obstests, answers):
+        chipx, chipy, chip_id = drift.get_target_aimpoint(*obstest)
+        assert chipx == answer[0]
+        assert chipy == answer[1]
+        assert chip_id == answer[2]
+
+
 def simple_test_aca_drift():
     """
     Qualitatively test the implementation of drift model by plotting (outside
