@@ -10,7 +10,6 @@ https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift.ipynb
 
 from Chandra.Time import DateTime
 from astropy.table import Table
-import requests
 import numpy as np
 
 # Capture best fit model parameters for ACA drift model.
@@ -69,6 +68,8 @@ ASOL_TO_CHIP = {('ACIS-I', 0): {'c0': [1100.806, 1110.299],
 
 SIM_MM_TO_ARCSEC = 20.493
 
+# Cache for the zero offset table
+CACHE = {}
 
 class AcaDriftModel(object):
     """
@@ -176,15 +177,23 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
     return ddy, ddz
 
 
-def get_web_zero_offset_table():
+def get_default_zero_offset_table():
     """
     Get official SOT MP zero offset aimpoint table:
 
     :returns: zero offset aimpoint table as astropy.Table
     """
-    ZOA = "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt"
-    page = requests.get(ZOA)
-    return Table.read(page.content, format="ascii")
+    if 'ZERO_OFFSET_TABLE' in CACHE:
+        return CACHE['ZERO_OFFSET_TABLE']
+    try:
+        CACHE['ZERO_OFFSET_TABLE'] = Table.read(
+            '/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt',
+            format='ascii')
+    except:
+        CACHE['ZERO_OFFSET_TABLE'] = Table.read(
+            "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt",
+            format='ascii')
+    return CACHE['ZERO_OFFSET_TABLE']
 
 
 def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None):
@@ -201,7 +210,7 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
     :returns: astropy table row of chipx, chipy, chip_id
     """
     if zero_offset_table is None:
-        zero_offset_table = get_web_zero_offset_table()
+        zero_offset_table = get_default_zero_offset_table()
     date = DateTime(date).iso[:10]
     # Entries for this detector before the 'date' given
     ok = (zero_offset_table['detector'] == detector) & (zero_offset_table['date_effective'] <= date)
