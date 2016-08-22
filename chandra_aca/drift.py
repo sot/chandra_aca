@@ -184,8 +184,7 @@ def get_web_zero_offset_table():
     """
     ZOA = "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt"
     page = requests.get(ZOA)
-    table_lines = page.content.strip().split("\n")
-    return Table.read(table_lines, format="ascii")
+    return Table.read(page.content, format="ascii")
 
 
 def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None):
