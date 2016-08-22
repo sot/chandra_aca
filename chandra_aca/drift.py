@@ -207,7 +207,7 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
     :param zero_offset_able: table (astropy or numpy) of zero offset aimpoint table
     defaults to official SOT MP version if not supplied.
 
-    :returns: astropy table row of chipx, chipy, chip_id
+    :returns: tuple of chipx, chipy, chip_id
     """
     if zero_offset_table is None:
         zero_offset_table = get_default_zero_offset_table()
@@ -219,4 +219,4 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
         ok = ok & (zero_offset_table['cycle_effective'] <= cycle)
     filtered_table = zero_offset_table[ok]
     # Return the desired keys in the most recent [-1] row that matches
-    return filtered_table[['chipx', 'chipy', 'chip_id']][-1]
+    return tuple(filtered_table[['chipx', 'chipy', 'chip_id']][-1])
