@@ -209,39 +209,6 @@ def plot_ccd_edges(ax, row_pad=15, col_pad=8):
     ax.plot(y4, z4, color='black')
     # end of lines for CCD boundary polygon
 
-    # Grey polygon that starts at the edges
-    out_y = np.hstack([y1, y2, y3, y4])
-    out_z = np.hstack([z1, z2, z3, z4])
-    out_v = np.vstack([out_y, out_z]).transpose()
-    grey = plt.Polygon(out_v, fill=True, color='grey')
-    ax.add_patch(grey)
-
-    # Make a white polygon to fill the center so we're left with a grey
-    # border.  Use "reduced" mins and maxes to describe this
-    r_row_max = row_max - row_pad
-    r_row_min = row_min + row_pad
-    r_col_max = col_max - col_pad
-    r_col_min = col_min + col_pad
-    r_row_range = np.arange(r_row_min, r_row_max + 1)
-    r_col_range = np.arange(r_col_min, r_col_max + 1)
-    ry1, rz1 = pixels_to_yagzag(
-        np.repeat(r_row_min, len(r_col_range)),
-        r_col_range)
-    ry2, rz2 = pixels_to_yagzag(
-        r_row_range,
-        np.repeat(r_col_max, len(r_row_range)))
-    ry3, rz3 = pixels_to_yagzag(
-        np.repeat(r_row_max, len(r_col_range)),
-        r_col_range[::-1])
-    ry4, rz4 = pixels_to_yagzag(
-        r_row_range[::-1],
-        np.repeat(r_col_min, len(r_row_range)))
-    r_out_y = np.hstack([ry1, ry2, ry3, ry4])
-    r_out_z = np.hstack([rz1, rz2, rz3, rz4])
-    r_out_v = np.vstack([r_out_y, r_out_z]).transpose()
-    white = plt.Polygon(r_out_v, fill=True, color='white')
-    ax.add_patch(white)
-
 
 def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
                red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None):
