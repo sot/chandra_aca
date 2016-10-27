@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 from astropy.io import ascii
+from astropy.table import Table
 
 from Quaternion import Quat
 from Chandra.Time import DateTime
@@ -89,6 +90,27 @@ def test_t_ccd_warm_limit():
 def test_mag_for_p_acq():
     mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0)
     assert np.allclose(mag, 10.821, rtol=0, atol=0.01)
+
+
+def test_get_aimpoint():
+    obstests = [('2016-08-22', 15, 'ACIS-S'),
+               ('2014-08-22', 16, 'HRC-I', True),
+               ('2017-09-01', 18, 'ACIS-I')]
+    answers = [(224.0, 490.0, 7),
+               (7606.0, 7941.0, 0),
+               (970.0, 975.0, 3)]
+    for obstest, answer in zip(obstests, answers):
+        chipx, chipy, chip_id = drift.get_target_aimpoint(*obstest)
+        assert chipx == answer[0]
+        assert chipy == answer[1]
+        assert chip_id == answer[2]
+    zot = Table.read("""date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
+2012-12-15      15               ACIS-I    888   999   -1        1.6""", format='ascii')
+    chipx, chipy, chip_id = drift.get_target_aimpoint('2016-08-22', 15, 'ACIS-I', zero_offset_table=zot)
+    assert chipx == 888
+    assert chipy == 999
+    assert chip_id == -1
+
 
 
 def simple_test_aca_drift():
