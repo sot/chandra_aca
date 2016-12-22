@@ -56,6 +56,7 @@ initialize from array data or create a new array of zeros.
 
 One can easily create a new ``ACAImage`` as shown below.  Note that it must
 always be 2-dimensional.  The initial ``row0`` and ``col0`` values default
+to zero.
 ::
 
   >>> from chandra_aca.aca_image import ACAImage
