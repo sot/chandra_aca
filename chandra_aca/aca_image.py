@@ -26,9 +26,15 @@ class ACAImage(np.ndarray):
 
     def __new__(cls, *args, **kwargs):
 
-        row0 = kwargs.pop('row0', 0)
-        col0 = kwargs.pop('col0', 0)
         meta = kwargs.pop('meta', {})
+
+        # Set default row0 and col0 to 0 (if not already in meta), and
+        # then override with like-named kwargs.  row0 attribute => meta['IMGROW0']
+        for ax in ('row0', 'col0'):
+            imgax = 'IMG' + ax.upper()
+            meta.setdefault(imgax, 0)
+            if ax in kwargs:
+                meta[imgax] = kwargs.pop(ax)
 
         try:
             arr = np.array(*args, **kwargs)
@@ -43,8 +49,6 @@ class ACAImage(np.ndarray):
             raise ValueError('{} must be 2-d'.format(cls.__name__))
 
         # add the new attribute to the created instance
-        obj.row0 = row0
-        obj.col0 = col0
         obj.meta = meta
         obj._aca_coords = False
 
@@ -56,8 +60,6 @@ class ACAImage(np.ndarray):
         if obj is None:
             return
 
-        self.row0 = getattr(obj, 'row0', 0)
-        self.col0 = getattr(obj, 'col0', 0)
         self.meta = deepcopy(getattr(obj, 'meta', {}))
         self._aca_coords = getattr(obj, '_aca_coords', False)
 
@@ -145,3 +147,19 @@ class ACAImage(np.ndarray):
     @override__dir__
     def __dir__(self):
         return list(self.meta)
+
+    @property
+    def row0(self):
+        return self.meta['IMGROW0']
+
+    @row0.setter
+    def row0(self, value):
+        self.meta['IMGROW0'] = value
+
+    @property
+    def col0(self):
+        return self.meta['IMGCOL0']
+
+    @col0.setter
+    def col0(self, value):
+        self.meta['IMGCOL0'] = value
