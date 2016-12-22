@@ -20,7 +20,8 @@ class ACAImage(np.ndarray):
         Return a light copy (same data) of self but with the _aca_coords
         attribute switched on so that indexing is absolute.
         """
-        obj = self[()]
+        obj = self.view(self.__class__)
+        obj.meta = self.meta
         obj._aca_coords = True
         return obj
 
@@ -118,13 +119,18 @@ class ACAImage(np.ndarray):
                 out.row0 = row0
             if col0 is not None:
                 out.col0 = col0
+            out._aca_coords = False
 
         return out
 
     def __setitem__(self, item, value):
         item, row0, col0 = self._adjust_item(item)
-
-        super(ACAImage, self).__setitem__(item, value)
+        aca_coords = self._aca_coords
+        try:
+            self._aca_coords = False
+            super(ACAImage, self).__setitem__(item, value)
+        finally:
+            self._aca_coords = aca_coords
 
     def __repr__(self):
         out = '<{} row0={} col0={}\n{}>'.format(self.__class__.__name__,
