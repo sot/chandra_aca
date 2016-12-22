@@ -72,7 +72,7 @@ class ACAImage(np.ndarray):
 
         # Input array is an already formed ndarray instance
         # We first cast to be our class type
-        obj = np.asarray(arr).view(cls)
+        obj = arr.view(cls)
 
         if obj.ndim != 2:
             raise ValueError('{} must be 2-d'.format(cls.__name__))
@@ -134,10 +134,6 @@ class ACAImage(np.ndarray):
         return item, out_rc[0], out_rc[1]
 
     def __getitem__(self, item):
-        # New values after getitem
-        row0 = None
-        col0 = None
-
         item, row0, col0 = self._adjust_item(item)
 
         out = super(ACAImage, self).__getitem__(item)
@@ -153,6 +149,7 @@ class ACAImage(np.ndarray):
 
     def __setitem__(self, item, value):
         item, row0, col0 = self._adjust_item(item)
+
         aca_coords = self._aca_coords
         try:
             self._aca_coords = False
