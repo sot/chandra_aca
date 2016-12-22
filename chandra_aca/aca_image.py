@@ -4,14 +4,42 @@ from copy import deepcopy
 import numpy as np
 from astropy.utils.compat.misc import override__dir__
 
+__all__ = ['ACAImage']
+
 
 class ACAImage(np.ndarray):
     """
-    Ndarray subclass that supports functionality for the Chandra ACA.
-    Most importantly it allows image indexing and slicing in absolute
+    ACAImage is an ndarray subclass that supports functionality for the Chandra
+    ACA. Most importantly it allows image indexing and slicing in absolute
     "aca" coordinates, where the image lower left coordinate is specified
-    by object ``row0`` and ``col0`` attributes.  It also provides a
-    ``meta`` dict that can be used to store additional useful information.
+    by object ``row0`` and ``col0`` attributes.
+
+    It also provides a ``meta`` dict that can be used to store additional useful
+    information.  Any keys which are all upper-case will be exposed as object
+    attributes, e.g. ``img.BGDAVG`` <=> ``img.meta['BGDAVG']``.  The ``row0``
+    attribute  is a proxy for ``img.meta['IMGROW0']``, and likewise for ``col0``.
+
+    When initializing an ``ACAImage``, additional ``*args`` and ``**kwargs`` are
+    used to try initializing via ``np.array(*args, **kwargs)``.  If this fails
+    then ``np.zeros(*args, **kwargs)`` is tried.  In this way one can either
+    initialize from array data or create a new array of zeros.
+
+    Examples
+    ========
+    ::
+
+      >>> import numpy as np
+      >>> from chandra_aca.aca_image import ACAImage
+      >>> dat = np.random.uniform(size=(1024, 1024))
+      >>> a = ACAImage(dat, row0=-512, col0=-512)
+      >>> a = ACAImage([[1,2], [3,4]], meta={'BGDAVG': 5.2})
+      >>> a = ACAImage(shape=(1024, 1024), row0=-512, col0=-512)
+
+    :param row0: row coordinate of lower left image pixel (int, default=0)
+    :param col0: col coordinate of lower left image pixel (int, default=0)
+    :param meta: dict of object attributes
+    :param *args: additional args passed to np.array() or np.zeros()
+    :param **kwargs: additional kwargs passed to np.array() or np.zeros()
     """
 
     @property
@@ -139,10 +167,13 @@ class ACAImage(np.ndarray):
         return out
 
     def __getattr__(self, attr):
-        try:
-            return self.meta[attr]
-        except KeyError:
-            return super(ACAImage, self).__getattribute__(attr)
+        if attr.isupper():
+            try:
+                return self.meta[attr]
+            except KeyError:
+                pass
+
+        return super(ACAImage, self).__getattribute__(attr)
 
     def __setattr__(self, attr, value):
         if attr.isupper():
