@@ -2,6 +2,7 @@ from itertools import izip, count
 from copy import deepcopy
 
 import numpy as np
+from astropy.utils.compat.misc import override__dir__
 
 
 class ACAImage(np.ndarray):
@@ -128,3 +129,19 @@ class ACAImage(np.ndarray):
                                                 self.row0, self.col0,
                                                 np.asarray(self).__repr__())
         return out
+
+    def __getattr__(self, attr):
+        try:
+            return self.meta[attr]
+        except KeyError:
+            return super(ACAImage, self).__getattribute__(attr)
+
+    def __setattr__(self, attr, value):
+        if attr.isupper():
+            self.meta[attr] = value
+        else:
+            super(ACAImage, self).__setattr__(attr, value)
+
+    @override__dir__
+    def __dir__(self):
+        return list(self.meta)
