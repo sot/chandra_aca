@@ -86,8 +86,8 @@ You can access array elements as usual, and in fact do any normal numpy array op
 
 The special nature of ``ACAImage`` comes by doing array access via the ``aca`` attribute.
 In this case all index values are in absolute coordinates, which might be negative.  In
-this case we can the pixel at ACA coordinates row=13, col=23, which is equal to ``a[3,
-3]`` for the given ``row0`` and ``col0`` offset::
+this case we can access the pixel at ACA coordinates row=13, col=23, which is equal to
+``a[3, 3]`` for the given ``row0`` and ``col0`` offset::
 
   >>> a.aca[13, 23]
   15
