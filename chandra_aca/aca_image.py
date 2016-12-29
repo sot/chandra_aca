@@ -1,5 +1,6 @@
-from itertools import izip, count
+from itertools import count
 from copy import deepcopy
+from six.moves import zip
 
 import numpy as np
 from astropy.utils.compat.misc import override__dir__
@@ -24,9 +25,7 @@ class ACAImage(np.ndarray):
     then ``np.zeros(*args, **kwargs)`` is tried.  In this way one can either
     initialize from array data or create a new array of zeros.
 
-    Examples
-    ========
-    ::
+    Examples::
 
       >>> import numpy as np
       >>> from chandra_aca.aca_image import ACAImage
@@ -38,8 +37,8 @@ class ACAImage(np.ndarray):
     :param row0: row coordinate of lower left image pixel (int, default=0)
     :param col0: col coordinate of lower left image pixel (int, default=0)
     :param meta: dict of object attributes
-    :param *args: additional args passed to np.array() or np.zeros()
-    :param **kwargs: additional kwargs passed to np.array() or np.zeros()
+    :param ``*args``: additional args passed to np.array() or np.zeros()
+    :param ``**kwargs``: additional kwargs passed to np.array() or np.zeros()
     """
 
     @property
@@ -114,7 +113,7 @@ class ACAImage(np.ndarray):
                 # Interpret input `item` indices as being expressed in absolute
                 # terms and subtract row0/col0 as needed.
                 item = list(item)
-                for i, it, rc0 in izip(count(), item, (self.row0, self.col0)):
+                for i, it, rc0 in zip(count(), item, (self.row0, self.col0)):
                     if isinstance(it, slice):
                         start = None if it.start is None else it.start - rc0
                         stop = None if it.stop is None else it.stop - rc0
@@ -124,7 +123,7 @@ class ACAImage(np.ndarray):
                 item = tuple(item)
 
             # Compute new row0, col0 (stored in out_rc) based on input item
-            for i, it, rc0 in izip(count(), item, (self.row0, self.col0)):
+            for i, it, rc0 in zip(count(), item, (self.row0, self.col0)):
                 if isinstance(it, slice):
                     if it.start is not None:
                         out_rc[i] = rc0 + it.start

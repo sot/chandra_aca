@@ -5,7 +5,7 @@ Functions related to probabilities for star acquisition and guide tracking.
 from __future__ import print_function, division
 
 from numba import jit
-from itertools import izip
+from six.moves import zip
 
 from scipy.optimize import brentq
 import numpy as np
@@ -217,7 +217,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False)
     spoilers = spoilers.astype(bool)
 
     warm_fracs = []
-    for date, t_ccd in izip(dates.ravel(), t_ccds.ravel()):
+    for date, t_ccd in zip(dates.ravel(), t_ccds.ravel()):
         warm_frac = get_warm_fracs(WARM_THRESHOLD, date=date, T_ccd=t_ccd)
         warm_fracs.append(warm_frac)
     warm_frac = np.array(warm_fracs).reshape(dates.shape)
