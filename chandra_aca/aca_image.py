@@ -158,9 +158,11 @@ class ACAImage(np.ndarray):
             self._aca_coords = aca_coords
 
     def __repr__(self):
+        # Make an integerized version for viewing more nicely
+        outarr = np.asarray(np.round(self)).astype(int)
         out = '<{} row0={} col0={}\n{}>'.format(self.__class__.__name__,
                                                 self.row0, self.col0,
-                                                np.asarray(self).__repr__())
+                                                outarr.__repr__())
         return out
 
     def __getattr__(self, attr):
