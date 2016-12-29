@@ -3,7 +3,7 @@ from chandra_aca import __version__
 from setuptools import setup
 
 try:
-    from ska_test.setup_helper import cmdclass
+    from testr.setup_helper import cmdclass
 except ImportError:
     cmdclass = {}
 

@@ -205,7 +205,7 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
     :param detector: target detector
     :param too: boolean. If target is TOO use current cycle not proposal cycle.
     :param zero_offset_able: table (astropy or numpy) of zero offset aimpoint table
-    defaults to official SOT MP version if not supplied.
+                             defaults to official SOT MP version if not supplied.
 
     :returns: tuple of chipx, chipy, chip_id
     """
