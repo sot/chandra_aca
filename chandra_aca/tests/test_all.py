@@ -24,7 +24,7 @@ SI_ALIGN_CLASSIC = np.array([[1.0, 3.3742E-4, 2.7344E-4],
 
 
 def test_pix_to_angle():
-    pix_to_angle = ascii.read(open(os.path.join(dirname, 'data', 'pix_to_angle.txt')))
+    pix_to_angle = ascii.read(os.path.join(dirname, 'data', 'pix_to_angle.txt'))
 
     print("testing {} row/col pairs match to {} arcsec".format(
         len(pix_to_angle), TOLERANCE))
@@ -36,7 +36,7 @@ def test_pix_to_angle():
 
 
 def test_angle_to_pix():
-    angle_to_pix = ascii.read(open(os.path.join(dirname, 'data', 'angle_to_pix.txt')))
+    angle_to_pix = ascii.read(os.path.join(dirname, 'data', 'angle_to_pix.txt'))
     print("testing {} yang/zang pairs match to {} pixels".format(
         len(angle_to_pix), TOLERANCE))
     pyrow, pycol = chandra_aca.yagzag_to_pixels(
