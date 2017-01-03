@@ -60,10 +60,11 @@ def _plot_catalog_items(ax, catalog):
                     xy=(row['yang'] - 120, row['zang'] + 60),
                     color='red',
                     fontsize=12)
-    ax.scatter(gui_stars['yang'], gui_stars['zang'],
-               facecolors='none',
-               edgecolors='green',
-               s=100)
+    g = ax.scatter(gui_stars['yang'], gui_stars['zang'],
+                   facecolors='none',
+                   edgecolors='green',
+                   s=100)
+    g.set_zorder(5)
     for acq_star in acq_stars:
         box = plt.Rectangle(
             (acq_star['yang'] - acq_star['halfw'],
@@ -72,6 +73,7 @@ def _plot_catalog_items(ax, catalog):
             height=acq_star['halfw'] * 2,
             color='blue',
             fill=False)
+        box.set_zorder(5)
         ax.add_patch(box)
     for mon_box in mon_wins:
         # starcheck convention was to plot monitor boxes at 2X halfw
@@ -82,18 +84,21 @@ def _plot_catalog_items(ax, catalog):
             height=mon_box['halfw'] * 4,
             color='orange',
             fill=False)
+        box.set_zorder(5)
         ax.add_patch(box)
-    ax.scatter(fids['yang'], fids['zang'],
-               facecolors='none',
-               edgecolors='red',
-               linewidth=1,
-               marker='o',
-               s=175)
-    ax.scatter(fids['yang'], fids['zang'],
-               facecolors='red',
-               marker='+',
-               linewidth=1,
-               s=175)
+    fo = ax.scatter(fids['yang'], fids['zang'],
+                    facecolors='none',
+                    edgecolors='red',
+                    linewidth=1,
+                    marker='o',
+                    s=175)
+    fo.set_zorder(5)
+    fp = ax.scatter(fids['yang'], fids['zang'],
+                    facecolors='red',
+                    marker='+',
+                    linewidth=1,
+                    s=175)
+    fp.set_zorder(5)
 
 
 def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
@@ -154,10 +159,55 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
                          (BAD_STAR_COLOR, BAD_STAR_ALPHA),
                          ('black', 1.0)]:
         colormatch = colors == color
-        ax.scatter(stars[colormatch]['yang'],
+        s = ax.scatter(stars[colormatch]['yang'],
                    stars[colormatch]['zang'],
                    c=color, s=size[colormatch], edgecolor='none',
                    alpha=alpha)
+        s.set_zorder(4)
+
+
+def plot_ccd_edges(ax, row_pad=15, col_pad=8):
+
+    row_min = -512.5
+    row_max = 511.5
+    col_min = -512.5
+    col_max = 511.5
+
+    row_range = np.arange(row_min, row_max + 1)
+    col_range = np.arange(col_min, col_max + 1)
+
+    # Add a polygon that represents the edge of the CCD in Y/Z
+    # These are plotted as line segments instead of a polygon to make
+    # it easier to plot the margins and the readout register
+
+    # Left "line" with double line for readout register
+    y1, z1 = pixels_to_yagzag(
+        np.repeat(row_min, len(col_range)),
+        col_range)
+    ax.plot(y1, z1, color='black')
+    ax.plot(y1 + 40, z1, color='black')
+
+    # Top "line"
+    y2, z2 = pixels_to_yagzag(
+        row_range,
+        np.repeat(col_max, len(row_range)))
+    ax.plot(y2, z2, color='black')
+
+    # Right "line" (flip the ranges on the next two to
+    # make the coordinates work when using the points to describe
+    # the vertices of the polygon)
+    y3, z3 = pixels_to_yagzag(
+        np.repeat(row_max, len(col_range)),
+        col_range[::-1])
+    ax.plot(y3, z3, color='black')
+    ax.plot(y3 - 40, z3, color='black')
+
+    # Bottom "line"
+    y4, z4 = pixels_to_yagzag(
+        row_range[::-1],
+        np.repeat(col_min, len(row_range)))
+    ax.plot(y4, z4, color='black')
+    # end of lines for CCD boundary polygon
 
 
 def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
@@ -202,15 +252,11 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     # plot the box and set the labels
     plt.xlim(2900, -2900)
     plt.ylim(-2900, 2900)
-    b1hw = 2560
-    box1 = plt.Rectangle((b1hw, -b1hw), -2 * b1hw, 2 * b1hw,
-                         fill=False)
-    ax.add_patch(box1)
-    b2w = 2600
-    box2 = plt.Rectangle((b2w, -b1hw), -4 + -2 * b2w, 2 * b1hw,
-                         fill=False)
-    ax.add_patch(box2)
 
+    # plot the CCD edges and the fixed boundaries
+    plot_ccd_edges(ax)
+
+    # plot a little mag size mini-legend
     ax.scatter([-2700, -2700, -2700, -2700, -2700],
                [2400, 2100, 1800, 1500, 1200],
                c='orange', edgecolors='none',

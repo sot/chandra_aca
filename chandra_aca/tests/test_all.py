@@ -2,6 +2,7 @@ from __future__ import print_function, division
 
 import os
 
+import tempfile
 import numpy as np
 from astropy.io import ascii
 from astropy.table import Table
@@ -10,6 +11,7 @@ from Quaternion import Quat
 from Chandra.Time import DateTime
 
 import chandra_aca
+from chandra_aca.plot import plot_stars, plot_compass
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq
 from chandra_aca import drift
 
@@ -150,3 +152,12 @@ def test_get_aca_offsets():
 
     offsets = drift.get_aca_offsets('HRC-S', 2, 2041, 9062, '2016:180', -15.0)
     assert np.allclose(offsets, (17.269560057119545, 3.4474216529603225), atol=0.1)
+
+
+def test_plot():
+    fig = plot_stars(attitude=(10, 20, 30), catalog=None)
+    savefile = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    fig.savefig(savefile.name)
+    import imghdr
+    assert imghdr.what(savefile.name) == 'png'
+    os.unlink(savefile.name)
