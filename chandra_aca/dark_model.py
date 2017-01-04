@@ -5,6 +5,7 @@ Routines related to the dark current model and guide / acq success prediction.
 from itertools import izip
 import numpy as np
 from numpy import exp, log, arange
+import warnings
 
 import Ska.Numpy
 from Chandra.Time import DateTime
@@ -101,7 +102,7 @@ def get_dark_hist(date, t_ccd):
     x = darkbins.bin_centers
     y = smooth_broken_pow(pars, x)
 
-    scale = temp_scalefac(t_ccd)
+    scale = dark_temp_scale(-19, t_ccd)
     xbins = darkbins.bins * scale
     x = x * scale
     return x, xbins, y
@@ -210,8 +211,13 @@ def temp_scalefac(T_ccd):
     the nominal -19C temperature to the temperature T.  Based on best global fit for
     dark current model in plot_predicted_warmpix.py.  Previous value was 0.62 instead
     of 0.70.
+
+    If attempting to reproduce previous analysis, be aware that this is now calling
+    chandra_aca.dark_model.dark_temp_scale and the value will be determined using the
+    module DARK_SCALE_4C value which may differ from previous values of 1.0/0.70 or 1.0/0.62.
     """
-    return exp(log(0.70) / 4.0 * (-19.0 - T_ccd))
+    warnings.warn("temp_scalefac is deprecated.  See chandra_aca.dark_model.dark_temp_scale.")
+    return dark_temp_scale(-19, T_ccd)
 
 
 def as_array(vals):
