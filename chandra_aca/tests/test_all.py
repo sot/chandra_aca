@@ -24,26 +24,26 @@ SI_ALIGN_CLASSIC = np.array([[1.0, 3.3742E-4, 2.7344E-4],
 
 
 def test_pix_to_angle():
-    pix_to_angle = ascii.read(open(os.path.join(dirname, 'data', 'pix_to_angle.txt')))
+    pix_to_angle = ascii.read(os.path.join(dirname, 'data', 'pix_to_angle.txt'))
 
     print("testing {} row/col pairs match to {} arcsec".format(
         len(pix_to_angle), TOLERANCE))
     pyyang, pyzang = chandra_aca.pixels_to_yagzag(
         pix_to_angle['row'],
         pix_to_angle['col'])
-    np.testing.assert_allclose(pix_to_angle['yang'], pyyang, atol=TOLERANCE)
-    np.testing.assert_allclose(pix_to_angle['zang'], pyzang, atol=TOLERANCE)
+    np.testing.assert_allclose(pix_to_angle['yang'], pyyang, atol=TOLERANCE, rtol=0)
+    np.testing.assert_allclose(pix_to_angle['zang'], pyzang, atol=TOLERANCE, rtol=0)
 
 
 def test_angle_to_pix():
-    angle_to_pix = ascii.read(open(os.path.join(dirname, 'data', 'angle_to_pix.txt')))
+    angle_to_pix = ascii.read(os.path.join(dirname, 'data', 'angle_to_pix.txt'))
     print("testing {} yang/zang pairs match to {} pixels".format(
         len(angle_to_pix), TOLERANCE))
     pyrow, pycol = chandra_aca.yagzag_to_pixels(
         angle_to_pix['yang'],
         angle_to_pix['zang'])
-    np.testing.assert_allclose(angle_to_pix['row'], pyrow, atol=TOLERANCE)
-    np.testing.assert_allclose(angle_to_pix['col'], pycol, atol=TOLERANCE)
+    np.testing.assert_allclose(angle_to_pix['row'], pyrow, atol=TOLERANCE, rtol=0)
+    np.testing.assert_allclose(angle_to_pix['col'], pycol, atol=TOLERANCE, rtol=0)
 
 
 def test_aca_targ_transforms():
@@ -81,12 +81,12 @@ def test_aca_targ_transforms():
 
 def test_t_ccd_warm_limit():
     out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=(2, 8e-3))
-    assert np.allclose(out[0], -15.2449, atol=0.01)
-    assert np.allclose(out[1], 0.008, atol=0.0001)
+    assert np.allclose(out[0], -15.2449, atol=0.01, rtol=0)
+    assert np.allclose(out[1], 0.008, atol=0.0001, rtol=0)
 
     out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=5.0)
-    assert np.allclose(out[0], -15.143, atol=0.01)
-    assert np.allclose(out[1], 5.0, atol=0.01)
+    assert np.allclose(out[0], -15.143, atol=0.01, rtol=0)
+    assert np.allclose(out[1], 5.0, atol=0.01, rtol=0)
 
 
 def test_mag_for_p_acq():
@@ -114,7 +114,6 @@ def test_get_aimpoint():
     assert chip_id == -1
 
 
-
 def simple_test_aca_drift():
     """
     Qualitatively test the implementation of drift model by plotting (outside
@@ -140,13 +139,13 @@ def test_get_aca_offsets():
     given inputs.
     """
     offsets = drift.get_aca_offsets('ACIS-I', 3, 930.2, 1009.6, '2016:180', -15.0)
-    assert np.allclose(offsets, (11.83637884563926, 2.6860740140775334), atol=0.1)
+    assert np.allclose(offsets, (11.83637884563926, 2.6860740140775334), atol=0.1, rtol=0)
 
     offsets = drift.get_aca_offsets('ACIS-S', 7, 200.7, 476.9, '2016:180', -15.0)
-    assert np.allclose(offsets, (13.360706170615167, 3.8670874955935481), atol=0.1)
+    assert np.allclose(offsets, (13.360706170615167, 3.8670874955935481), atol=0.1, rtol=0)
 
     offsets = drift.get_aca_offsets('HRC-I', 0, 7591, 7936, '2016:180', -15.0)
-    assert np.allclose(offsets, (14.728718419826098, 0.7925650626134555), atol=0.1)
+    assert np.allclose(offsets, (14.728718419826098, 0.7925650626134555), atol=0.1, rtol=0)
 
     offsets = drift.get_aca_offsets('HRC-S', 2, 2041, 9062, '2016:180', -15.0)
-    assert np.allclose(offsets, (17.269560057119545, 3.4474216529603225), atol=0.1)
+    assert np.allclose(offsets, (17.269560057119545, 3.4474216529603225), atol=0.1, rtol=0)
