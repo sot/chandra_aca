@@ -12,7 +12,7 @@ import numpy as np
 from Chandra.Time import DateTime
 
 # Local import in acq_success_prob():
-# from mica.archive.aca_dark.dark_model import get_warm_fracs
+# from .dark_model import get_warm_fracs
 
 
 # Scale and offset fit of polynomial to acq failures in log space.
@@ -208,7 +208,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False)
 
     :returns: Acquisition success probability(s)
     """
-    from mica.archive.aca_dark.dark_model import get_warm_fracs
+    from .dark_model import get_warm_fracs
 
     date = DateTime(date).secs
 
