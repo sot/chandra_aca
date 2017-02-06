@@ -1,6 +1,6 @@
 from .transform import *
 
-__version__ = '3.9'
+__version__ = '3.10'
 
 
 def test(*args, **kwargs):
