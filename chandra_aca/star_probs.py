@@ -10,6 +10,7 @@ from six.moves import zip
 from scipy.optimize import brentq
 import numpy as np
 from Chandra.Time import DateTime
+from Ska.Numpy import interpolate
 
 # Local import in acq_success_prob():
 # from .dark_model import get_warm_fracs
@@ -188,7 +189,7 @@ def prob_n_acq(star_probs):
     return n_acq_probs, np.cumsum(n_acq_probs)
 
 
-def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False):
+def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120):
     """
     Return probability of acquisition success for given date, temperature and mag.
 
@@ -205,6 +206,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False)
     :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoil: Star spoiled (boolean or np.ndarray, default=False)
+    :param halfwidth: Search box halfwidth (arcsec, default=120)
 
     :returns: Acquisition success probability(s)
     """
@@ -212,8 +214,9 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False)
 
     date = DateTime(date).secs
 
-    is_scalar, dates, t_ccds, mags, colors, spoilers = broadcast_arrays(date, t_ccd, mag,
-                                                                        color, spoiler)
+    is_scalar, dates, t_ccds, mags, colors, spoilers, halfwidths = broadcast_arrays(
+        date, t_ccd, mag, color, spoiler, halfwidth)
+
     spoilers = spoilers.astype(bool)
 
     warm_fracs = []
@@ -233,6 +236,35 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False)
     probs[mags < 8.5] = max_star_prob
     probs[colors == 0.7] *= p_0p7color
     probs[spoilers] *= p_spoiler
+
+    # Ad-hoc correction for search box size > 120 arcsec.  This does a
+    # multiplicative correction on the acquisition probability using a
+    # piecewise linear curve.  It starts at 1.0 for mag < 8.5, then
+    # down linearly to 10.0 mag to a a value depending on search box
+    # size, and then down to 0.01.
+    for ii in range(len(probs)):
+        if halfwidths[ii] <= 120:
+            continue
+        elif halfwidths[ii] <= 160:
+            mult_10 = 0.8
+            mag_0p = 11.0
+        elif halfwidths[ii] <= 180:
+            mult_10 = 0.6
+            mag_0p = 10.5
+        elif halfwidths[ii] <= 240:
+            mult_10 = 0.4
+            mag_0p = 10.25
+        else:
+            mult_10 = 0.01
+            mag_0p = 10.01
+
+        # Define stepwise linear probability multiplier
+        mag = np.array([5.0, 8.5,  10.0,   mag_0p,  17.0])
+        mult = np.array([1.0, 1.0, mult_10,  0.01,   0.01])
+        p_mult = interpolate(mult, mag, [mags[ii]], method='linear')[0]
+
+        probs[ii] *= p_mult
+
     probs = probs.clip(1e-6, max_star_prob)
 
     # Return probabilities.  The [()] getitem at the end will flatten a
