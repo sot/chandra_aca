@@ -10,7 +10,7 @@ from Quaternion import Quat
 from Chandra.Time import DateTime
 
 import chandra_aca
-from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq
+from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
 from chandra_aca import drift
 
 dirname = os.path.dirname(__file__)
@@ -92,6 +92,22 @@ def test_t_ccd_warm_limit():
 def test_mag_for_p_acq():
     mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0)
     assert np.allclose(mag, 10.821, rtol=0, atol=0.01)
+
+
+def test_halfwidth_adjustment():
+    for mag, mults in ((6.0, [1.0, 1.0, 1.0, 1.0, 1.0]),
+                       (8.5, [1.0, 1.0, 1.0, 1.0, 1.0]),
+                       (9.25, [0.9, 0.9, 0.8, 0.7, 0.505]),
+                       (10.0, [0.8, 0.8, 0.6, 0.4, 0.01]),
+                       (11.0, [0.01, 0.01, 0.01, 0.01, 0.01])):
+        pacq = acq_success_prob(mag=mag, halfwidth=120)
+        p135 = acq_success_prob(mag=mag, halfwidth=135)
+        p160 = acq_success_prob(mag=mag, halfwidth=160)
+        p180 = acq_success_prob(mag=mag, halfwidth=180)
+        p240 = acq_success_prob(mag=mag, halfwidth=240)
+        p280 = acq_success_prob(mag=mag, halfwidth=280)
+        exp_mults = np.array([p135, p160, p180, p240, p280]) / pacq
+        assert np.allclose(mults, exp_mults)
 
 
 def test_get_aimpoint():
