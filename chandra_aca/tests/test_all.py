@@ -35,6 +35,18 @@ def test_pix_to_angle():
     np.testing.assert_allclose(pix_to_angle['zang'], pyzang, atol=TOLERANCE, rtol=0)
 
 
+def test_pix_to_angle_flight():
+    """
+    This is a minimal regression test.  For actual validation that the
+    values are correct see aca_track/predict_track.ipynb notebook.
+    """
+    yag, zag = chandra_aca.pixels_to_yagzag(100., 100., flight=True, t_aca=24.0)
+    assert np.allclose([yag, zag], [-467.7295724, 475.3100623])
+
+    yag, zag = chandra_aca.pixels_to_yagzag(100., 100., flight=True, t_aca=14.0)
+    assert np.allclose([yag, zag], [-467.8793858, 475.4463912])
+
+
 def test_angle_to_pix():
     angle_to_pix = ascii.read(os.path.join(dirname, 'data', 'angle_to_pix.txt'))
     print("testing {} yang/zang pairs match to {} pixels".format(
