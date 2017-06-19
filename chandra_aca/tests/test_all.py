@@ -58,6 +58,27 @@ def test_angle_to_pix():
     np.testing.assert_allclose(angle_to_pix['col'], pycol, atol=TOLERANCE, rtol=0)
 
 
+def test_pix_zero_loc():
+    r, c = 100, 200
+    ye, ze = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc='edge')
+    yc, zc = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc='center')
+
+    # Different by about 2.5 arcsec for sanity check
+    assert np.isclose(abs(ye - yc), 2.5, rtol=0, atol=0.02)
+    assert np.isclose(abs(ze - zc), 2.5, rtol=0, atol=0.02)
+
+    # Round trips r,c => y,z => r,c
+    re, ce = chandra_aca.yagzag_to_pixels(ye, ze, pix_zero_loc='edge')
+    rc, cc = chandra_aca.yagzag_to_pixels(yc, zc, pix_zero_loc='center')
+
+    # Interestingly these transforms do not round trip more accurately
+    # than about 0.01 pixels.
+    assert np.isclose(re - r, 0, rtol=0, atol=0.01)
+    assert np.isclose(rc - r, 0, rtol=0, atol=0.01)
+    assert np.isclose(ce - c, 0, rtol=0, atol=0.01)
+    assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
+
+
 def test_aca_targ_transforms():
     """
     Observation request:
