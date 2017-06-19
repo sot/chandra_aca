@@ -79,10 +79,17 @@ ODB_SI_ALIGN = np.array([[0.999999905689160, -0.000337419984089, -0.000273439987
                          [0.000273439987106, -0.000000046132060, 0.999999962615285]])
 
 
-def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20):
+def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20,
+                     pix_zero_loc='edge'):
     """
     Convert ACA row/column positions to ACA y-angle, z-angle.
     It is expected that the row and column input arguments have the same length.
+
+    The ``pix_zero_loc`` parameter controls whether the input pixel values
+    are assumed to have integral values at the pixel center or at the pixel
+    lower/left edge.  The PEA flight coefficients assume lower/left edge, and
+    that is the default.  However, it is generally more convenient when doing
+    centroids and other manipulations to use the center.
 
     :param row: ACA pixel row (single value, list, or 1-d numpy array)
     :param col: ACA pixel column (single value, list, or 1-d numpy array)
@@ -90,10 +97,20 @@ def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20):
                          if the row/col values are nominally off the ACA CCD.
     :param flight: Use flight EEPROM coefficients instead of default ground values.
     :param t_aca: ACA temperature (degC) for use with flight (default=20C)
+    :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
     :rtype: (yang, zang) each vector of the same length as row/col
     """
     row = np.array(row)
     col = np.array(col)
+
+    if pix_zero_loc == 'center':
+        # Transform row/col values to the convention where the lower/left
+        # corner is at 0.0.  This is needed for the _poly_convert below.
+        row = row + 0.5
+        col = col + 0.5
+    elif pix_zero_loc != 'edge':
+        raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
+
     if (not allow_bad and
         (np.any(row > 511.5) or np.any(row < -512.5) or
          np.any(col > 511.5) or np.any(col < -512.5))):
@@ -104,15 +121,22 @@ def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20):
     return 3600 * np.degrees(yrad), 3600 * np.degrees(zrad)
 
 
-def yagzag_to_pixels(yang, zang, allow_bad=False):
+def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc='edge'):
     """
     Convert ACA y-angle/z-angle positions to ACA pixel row, column.
     It is expected that the y-angle/z-angle input arguments have the same length.
+
+    The ``pix_zero_loc`` parameter controls whether the input pixel values
+    are assumed to have integral values at the pixel center or at the pixel
+    lower/left edge.  The PEA flight coefficients assume lower/left edge, and
+    that is the default.  However, it is generally more convenient when doing
+    centroids and other manipulations to use ``pix_zero_loc='center'``.
 
     :param yang: ACA y-angle (single value, list, or 1-d numpy array)
     :param zang: ACA z-angle (single value, list, or 1-d numpy array)
     :param allow_bad: boolean switch.  If true, method will not throw errors
                          if the resulting row/col values are nominally off the ACA CCD.
+    :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
     :rtype: (row, col) each vector of the same length as row/col
     """
     yang = np.array(yang)
@@ -122,6 +146,15 @@ def yagzag_to_pixels(yang, zang, allow_bad=False):
         (np.any(row > 511.5) or np.any(row < -512.5)
          or np.any(col > 511.5) or np.any(col < -512.5))):
         raise ValueError("Coordinate off CCD")
+
+    if pix_zero_loc == 'center':
+        # Transform row/col values to the convention where integral values
+        # are at the center of the pixel.
+        row = row - 0.5
+        col = col - 0.5
+    elif pix_zero_loc != 'edge':
+        raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
+
     return row, col
 
 
