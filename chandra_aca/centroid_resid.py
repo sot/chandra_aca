@@ -62,19 +62,25 @@ class CentroidResiduals(object):
     ra = None
     dec = None
 
-    def set_centroids(self, start, stop, source, slot, alg=8):
+
+    def __init__(self, start, stop):
+        self.start = start
+        self.stop = stop
+
+
+    def set_centroids(self, source, slot, alg=8):
         """
-        Get centroids from ``source`` between ``start`` and ``stop``.
+        Get centroids from ``source``.
 
         One could also just set yags, yag_times, zags, zag_times
         attributes directly.
 
-        :param start: start time
-        :param stop: stop time
         :param source: 'ground' | 'obc'
         :param slot: ACA slot
         """
         self.centroid_source = source
+        start = self.start
+        stop = self.stop
         # Get centroids from Ska eng archive or mica L1 archive
         # Might want to add filtering for track status here too
         # Also need to include something for time offsets
@@ -102,13 +108,14 @@ class CentroidResiduals(object):
         self.zags = zags
         self.zag_times = zag_times
 
-    def set_atts(self, start, stop, source):
-        """Get attitude solution quaternions from ``source`` between
-        ``start`` and ``stop``
+    def set_atts(self, source):
+        """Get attitude solution quaternions from ``source``.
 
         One could also just set atts and att_times attributes directly.
         """
         self.att_source = source
+        start = self.start
+        stop = self.stop
         # Get attitudes and times
         if source == 'obc':
             # Need to figure out missing data
@@ -227,18 +234,19 @@ class CentroidResiduals(object):
         d_aca = np.dot(quat_vtransform(self.atts).transpose(0, 2, 1), eci)
         p_yags = np.arctan2(d_aca[:, 1], d_aca[:, 0]) * R2A
         p_zags = np.arctan2(d_aca[:, 2], d_aca[:, 0]) * R2A
-        dyags = self.yags - interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
-        dzags = self.zags - interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
-        return dyags, dzags
+        self.dyags = self.yags - interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
+        self.dzags = self.zags - interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
+        return self.dyags, self.yag_times, self.dzags, self.zag_times
 
 
 def get_obs_slot_residuals(obsid, slot, att_source='ground', centroid_source='ground'):
     ds = events.dwells.filter(obsid=obsid)
     start = ds[0].start
     stop = ds[len(ds) - 1].stop
-    cr = CentroidResiduals()
-    cr.set_atts(start, stop, att_source)
-    cr.set_centroids(start, stop, centroid_source,  slot)
+    cr = CentroidResiduals(start, stop)
+    cr.set_atts(att_source)
+    cr.set_centroids(centroid_source,  slot)
     cr.set_star(obsid=obsid, slot=slot, date=start)
-    dyags, dzags = cr.get_residuals()
-    return dyags, dzags
+    dyags, yt, dzags, zt = cr.get_residuals()
+    return dyags, yt, dzags, zt
+
