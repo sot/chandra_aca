@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -6,7 +8,7 @@ import agasc
 import Quaternion
 from Ska.quatutil import radec2yagzag
 
-from .transform import pixels_to_yagzag
+from .transform import pixels_to_yagzag, yagzag_to_pixels
 
 # rc definitions
 frontcolor = 'black'
@@ -55,41 +57,42 @@ def _plot_catalog_items(ax, catalog):
     acq_stars = cat[(cat['type'] == 'ACQ') | (cat['type'] == 'BOT')]
     fids = cat[cat['type'] == 'FID']
     mon_wins = cat[cat['type'] == 'MON']
+    cat['row'], cat['col'] = yagzag_to_pixels(cat['yang'], cat['zang'], allow_bad=True)
     for row in cat:
         ax.annotate("%s" % row['idx'],
-                    xy=(row['yang'] - 120, row['zang'] + 60),
+                    xy=(row['row'] - 120 / 5, row['col'] + 60 / 5),
                     color='red',
                     fontsize=12)
-    ax.scatter(gui_stars['yang'], gui_stars['zang'],
+    ax.scatter(gui_stars['row'], gui_stars['col'],
                facecolors='none',
                edgecolors='green',
                s=100)
     for acq_star in acq_stars:
         box = plt.Rectangle(
-            (acq_star['yang'] - acq_star['halfw'],
-             acq_star['zang'] - acq_star['halfw']),
-            width=acq_star['halfw'] * 2,
-            height=acq_star['halfw'] * 2,
+            (acq_star['row'] - acq_star['halfw'] / 5,
+             acq_star['col'] - acq_star['halfw'] / 5),
+            width=acq_star['halfw'] * 2 / 5,
+            height=acq_star['halfw'] * 2 / 5,
             color='blue',
             fill=False)
         ax.add_patch(box)
     for mon_box in mon_wins:
         # starcheck convention was to plot monitor boxes at 2X halfw
         box = plt.Rectangle(
-            (mon_box['yang'] - (mon_box['halfw'] * 2),
-             mon_box['zang'] - (mon_box['halfw'] * 2)),
-            width=mon_box['halfw'] * 4,
-            height=mon_box['halfw'] * 4,
+            (mon_box['row'] - (mon_box['halfw'] * 2 / 5),
+             mon_box['col'] - (mon_box['halfw'] * 2 / 5)),
+            width=mon_box['halfw'] * 4 / 5,
+            height=mon_box['halfw'] * 4 / 5,
             color='orange',
             fill=False)
         ax.add_patch(box)
-    ax.scatter(fids['yang'], fids['zang'],
+    ax.scatter(fids['row'], fids['col'],
                facecolors='none',
                edgecolors='red',
                linewidth=1,
                marker='o',
                s=175)
-    ax.scatter(fids['yang'], fids['zang'],
+    ax.scatter(fids['row'], fids['col'],
                facecolors='red',
                marker='+',
                linewidth=1,
@@ -119,9 +122,12 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         yags, zags = radec2yagzag(stars['RA_PMCORR'], stars['DEC_PMCORR'], quat)
         stars['yang'] = yags * 3600
         stars['zang'] = zags * 3600
+        rows, cols = yagzag_to_pixels(stars['yang'], stars['zang'], allow_bad=True)
+        stars['row'] = rows
+        stars['col'] = cols
 
     # Initialize array of colors for the stars, default is black
-    colors = np.zeros(len(stars), dtype='S20')
+    colors = np.zeros(len(stars), dtype='U20')
     colors[:] = 'black'
 
     colors[bad_stars] = BAD_STAR_COLOR
@@ -154,8 +160,8 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
                          (BAD_STAR_COLOR, BAD_STAR_ALPHA),
                          ('black', 1.0)]:
         colormatch = colors == color
-        ax.scatter(stars[colormatch]['yang'],
-                   stars[colormatch]['zang'],
+        ax.scatter(stars[colormatch]['row'],
+                   stars[colormatch]['col'],
                    c=color, s=size[colormatch], edgecolor='none',
                    alpha=alpha)
 
@@ -191,37 +197,48 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         stars = agasc.get_agasc_cone(quat.ra, quat.dec,
                                      radius=1.5,
                                      date=starcat_time)
+
     if bad_stars is None:
         bad_stars = bad_acq_stars(stars)
 
     fig = plt.figure(figsize=(5.325, 5.325))
+    # Fake axis
+    # ax2 = fig.add_subplot(1, 1, 1)
+    # ax2.set_xlim(2900, -2900)
+    # ax2.set_ylim(-2900, 2900)
+
+    # ax = plt.axes([0.15, 0.1, 0.85, 0.8])
     ax = fig.add_subplot(1, 1, 1)
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
     plt.subplots_adjust(top=0.95)
     ax.set_aspect('equal')
 
     # plot the box and set the labels
-    plt.xlim(2900, -2900)
-    plt.ylim(-2900, 2900)
-    b1hw = 2560
+    plt.xlim(-579.7, 591.4)
+    plt.ylim(-580.6, 590.4)
+    b1hw = 512
     box1 = plt.Rectangle((b1hw, -b1hw), -2 * b1hw, 2 * b1hw,
                          fill=False)
     ax.add_patch(box1)
-    b2w = 2600
+    b2w = 520
     box2 = plt.Rectangle((b2w, -b1hw), -4 + -2 * b2w, 2 * b1hw,
                          fill=False)
     ax.add_patch(box2)
 
-    ax.scatter([-2700, -2700, -2700, -2700, -2700],
-               [2400, 2100, 1800, 1500, 1200],
+    ax.scatter(np.array([-2700, -2700, -2700, -2700, -2700]) / -5,
+               np.array([2400, 2100, 1800, 1500, 1200]) / 5,
                c='orange', edgecolors='none',
                s=symsize(np.array([10.0, 9.0, 8.0, 7.0, 6.0])))
 
     [l.set_rotation(90) for l in ax.get_yticklabels()]
     ax.grid(grid)
-    ax.set_ylabel("Zag (arcsec)")
-    ax.set_xlabel("Yag (arcsec)")
+    # ax.set_ylabel("Zag (arcsec)")
+    # ax.set_xlabel("Yag (arcsec)")
+    ax.set_ylabel("Col (pixels)")
+    ax.set_xlabel("Row (pixels)")
 
-    if quad_bound:
+    if False and quad_bound:
         pix_range = np.linspace(-510, 510, 50)
         minus_half_pix = -0.5 * np.ones_like(pix_range)
         # plot the row = -0.5 line
@@ -239,6 +256,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         _plot_catalog_items(ax, catalog)
     if title is not None:
         fig.suptitle(title, fontsize='small')
+
     return fig
 
 
