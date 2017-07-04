@@ -58,7 +58,7 @@ def _plot_catalog_items(ax, catalog):
     acq_stars = cat[(cat['type'] == 'ACQ') | (cat['type'] == 'BOT')]
     fids = cat[cat['type'] == 'FID']
     mon_wins = cat[cat['type'] == 'MON']
-    print(cat)
+
     for row in cat:
         ax.annotate("%s" % row['idx'],
                     xy=(row['row'] + 120 / 5, row['col'] + 60 / 5),
@@ -68,6 +68,7 @@ def _plot_catalog_items(ax, catalog):
                facecolors='none',
                edgecolors='green',
                s=100)
+
     for acq_star in acq_stars:
         box = plt.Rectangle(
             (acq_star['row'] - acq_star['halfw'] / 5,
@@ -77,6 +78,7 @@ def _plot_catalog_items(ax, catalog):
             color='blue',
             fill=False)
         ax.add_patch(box)
+
     for mon_box in mon_wins:
         # starcheck convention was to plot monitor boxes at 2X halfw
         box = plt.Rectangle(
@@ -87,6 +89,7 @@ def _plot_catalog_items(ax, catalog):
             color='orange',
             fill=False)
         ax.add_patch(box)
+
     ax.scatter(fids['row'], fids['col'],
                facecolors='none',
                edgecolors='red',
@@ -206,6 +209,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
 
     # Start with an empty plot that just has the tick labels for yag/zag
     ax_yz = fig.add_subplot(1, 1, 1)
+    plt.subplots_adjust(top=0.95, right=0.95)
     ax_yz.set_xlim(2900, -2900)
     ax_yz.set_ylim(-2900, 2900)
     ax_yz.grid()
