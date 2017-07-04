@@ -53,14 +53,15 @@ def _plot_catalog_items(ax, catalog):
                     astropy.table.Table(catalog).  A list of dicts is the convention.
     """
     cat = Table(catalog)
+    cat['row'], cat['col'] = yagzag_to_pixels(cat['yang'], cat['zang'], allow_bad=True)
     gui_stars = cat[(cat['type'] == 'GUI') | (cat['type'] == 'BOT')]
     acq_stars = cat[(cat['type'] == 'ACQ') | (cat['type'] == 'BOT')]
     fids = cat[cat['type'] == 'FID']
     mon_wins = cat[cat['type'] == 'MON']
-    cat['row'], cat['col'] = yagzag_to_pixels(cat['yang'], cat['zang'], allow_bad=True)
+    print(cat)
     for row in cat:
         ax.annotate("%s" % row['idx'],
-                    xy=(row['row'] - 120 / 5, row['col'] + 60 / 5),
+                    xy=(row['row'] + 120 / 5, row['col'] + 60 / 5),
                     color='red',
                     fontsize=12)
     ax.scatter(gui_stars['row'], gui_stars['col'],
@@ -202,21 +203,28 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         bad_stars = bad_acq_stars(stars)
 
     fig = plt.figure(figsize=(5.325, 5.325))
-    # Fake axis
-    # ax2 = fig.add_subplot(1, 1, 1)
-    # ax2.set_xlim(2900, -2900)
-    # ax2.set_ylim(-2900, 2900)
 
-    # ax = plt.axes([0.15, 0.1, 0.85, 0.8])
-    ax = fig.add_subplot(1, 1, 1)
+    # Start with an empty plot that just has the tick labels for yag/zag
+    ax_yz = fig.add_subplot(1, 1, 1)
+    ax_yz.set_xlim(2900, -2900)
+    ax_yz.set_ylim(-2900, 2900)
+    ax_yz.grid()
+    ax_yz.set_xlabel("Yag (arcsec)")
+    ax_yz.set_ylabel("Zag (arcsec)")
+    [l.set_rotation(90) for l in ax_yz.get_yticklabels()]
+
+    # Make the "real" plot box in pixels which exactly overlays the yag/zag
+    # version.  The yag/zag tick labels will be approximate in pixel space
+    # (though good enough at this resolution).  The star and CCD-related
+    # plotting (all in row/col) will be *exact*.
+    ax = fig.add_axes(ax_yz.get_position(), frameon=False)
+    ax.set_aspect('equal')
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
-    plt.subplots_adjust(top=0.95)
-    ax.set_aspect('equal')
+    plt.xlim(-579.7, 591.4)  # Matches 2900, -2900
+    plt.ylim(-580.6, 590.4)  # Matches -2900, 2900
 
     # plot the box and set the labels
-    plt.xlim(-579.7, 591.4)
-    plt.ylim(-580.6, 590.4)
     b1hw = 512
     box1 = plt.Rectangle((b1hw, -b1hw), -2 * b1hw, 2 * b1hw,
                          fill=False)
@@ -231,22 +239,9 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
                c='orange', edgecolors='none',
                s=symsize(np.array([10.0, 9.0, 8.0, 7.0, 6.0])))
 
-    [l.set_rotation(90) for l in ax.get_yticklabels()]
-    ax.grid(grid)
-    # ax.set_ylabel("Zag (arcsec)")
-    # ax.set_xlabel("Yag (arcsec)")
-    ax.set_ylabel("Col (pixels)")
-    ax.set_xlabel("Row (pixels)")
-
-    if False and quad_bound:
-        pix_range = np.linspace(-510, 510, 50)
-        minus_half_pix = -0.5 * np.ones_like(pix_range)
-        # plot the row = -0.5 line
-        yag, zag = pixels_to_yagzag(minus_half_pix, pix_range)
-        ax.plot(yag, zag, color='magenta', alpha=.4)
-        # plot the col = -0.5 line
-        yag, zag = pixels_to_yagzag(pix_range, minus_half_pix)
-        ax.plot(yag, zag, color='magenta', alpha=.4)
+    if quad_bound:
+        ax.plot([-510, 510], [-0.5, -0.5], color='magenta', alpha=0.4)
+        ax.plot([-0.5, -0.5], [-510, 510], color='magenta', alpha=0.4)
 
     # plot stars
     _plot_field_stars(ax, stars, attitude=attitude,
