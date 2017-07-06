@@ -284,10 +284,8 @@ class CentroidResiduals(object):
 
     def calc_residuals(self):
         """
-        Calculate residuals corresponding to the centroid residuals
-        for yags and zags, based on attitude and ra/dec of star.  Note that the sampling and times
-        of yags may be different from zags so these should be done
-        independently.
+        Calculate residuals based on attitude and ra/dec of star.  Note that the sampling and times
+        of yags may be different from zags so these should be done independently.
 
         Residuals are available in self.dyags and self.dzags.
         Predicted values from attitude and star position in self.pred_yags and self.pred_zags
