@@ -130,10 +130,12 @@ class CentroidResiduals(object):
             atts = np.vstack([telem['aoattqt{}'.format(idx)].vals
                               for idx in [1, 2, 3, 4]]).transpose()
             att_times = telem['aoattqt1'].times
-            obsids = fetch.Msid('COBSRQID', tstart, tstop)
-            if np.unique(obsids.vals) > 1:
+            # Fetch COBSQID at beginning and end of interval, check they match, and defined obsid
+            obsid_start = fetch.Msid('COBSRQID', tstart, tstart + 60)
+            obsid_stop = fetch.Msid('COBSRQID', tstop - 60, tstop)
+            if obsid_start.vals[-1] != obsid_stop.vals[0]:
                 raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
-            self.obsid = obsids.vals[0]
+            self.obsid = obsid_start.vals[-1]
         elif source == 'ground':
             atts, att_times, asol_recs = asp_l1.get_atts(start=tstart, stop=tstop)
             obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
