@@ -218,35 +218,45 @@ class CentroidResiduals(object):
     def zag_times(self, vals):
         self._zag_times = np.array(vals)
 
-    def get_residuals(self):
+
+    def calc_residuals(self):
         """
-        Return dyags and dzags, corresponding to the centroid residuals
-        for yags and zags respectively.  Note that the sampling and times
+        Calculate residuals corresponding to the centroid residuals
+        for yags and zags, based on attitude and ra/dec of star.  Note that the sampling and times
         of yags may be different from zags so these should be done
         independently.
 
-        Probably the way to go is to generate predicted p_yags, p_zags
-        for each available atts (using ra, dec) and then interpolate
-        those to the respective yag/zag_times and compute delta.
+        Residuals are available in self.dyags and self.dzags.
+        Predicted values from attitude and star position in self.pred_yags and self.pred_zags
+
         """
         eci = Ska.quatutil.radec2eci(self.ra, self.dec)
         # Transform the 3x3 to get the axes to align to have the dot product make sense
         d_aca = np.dot(quat_vtransform(self.atts).transpose(0, 2, 1), eci)
         p_yags = np.arctan2(d_aca[:, 1], d_aca[:, 0]) * R2A
         p_zags = np.arctan2(d_aca[:, 2], d_aca[:, 0]) * R2A
+        self.pred_yags = interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
+        self.pred_zags = interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
         self.dyags = self.yags - interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
         self.dzags = self.zags - interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
-        return self.dyags, self.yag_times, self.dzags, self.zag_times
 
 
-def get_obs_slot_residuals(obsid, slot, att_source='ground', centroid_source='ground'):
-    ds = events.dwells.filter(obsid=obsid)
-    start = ds[0].start
-    stop = ds[len(ds) - 1].stop
-    cr = CentroidResiduals(start, stop)
-    cr.set_atts(att_source)
-    cr.set_centroids(centroid_source,  slot)
-    cr.set_star(obsid=obsid, slot=slot, date=start)
-    dyags, yt, dzags, zt = cr.get_residuals()
-    return dyags, yt, dzags, zt
-
+    @classmethod
+    def for_slot(cls, obsid=None, start=None, stop=None,
+                 slot=None, att_source='ground', centroid_source='ground'):
+        if obsid is not None:
+            if start is not None or stop is not None:
+                raise ValueError('cannot specify both obsid and start / stop')
+            ds = events.dwells.filter(obsid=obsid)
+            start = ds[0].start
+            stop = ds[len(ds) - 1].stop
+        if start is None or stop is None:
+            raise ValueError('must specify obsid or start / stop')
+        cr = cls(start, stop)
+        if obsid is not None:
+            cr.obsid = obsid
+        cr.set_atts(att_source)
+        cr.set_centroids(centroid_source, slot)
+        cr.set_star(obsid=obsid, slot=slot, date=start)
+        cr.calc_residuals()  # instead of get_residuals
+        return cr
