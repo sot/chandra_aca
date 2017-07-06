@@ -114,43 +114,37 @@ class CentroidResiduals(object):
         One could also just set atts and att_times attributes directly.
         """
         self.att_source = source
-        start = self.start
-        stop = self.stop
+        tstart = DateTime(self.start).secs
+        tstop = DateTime(self.stop).secs
         # Get attitudes and times
         if source == 'obc':
-            # Need to figure out missing data
-            telem = fetch.Msidset(['aoattqt*'], start, stop)
+            telem = fetch.Msidset(['aoattqt*'], tstart, tstop)
             atts = np.vstack([telem['aoattqt{}'.format(idx)].vals
                               for idx in [1, 2, 3, 4]]).transpose()
             att_times = telem['aoattqt1'].times
-        if source == 'ground':
-            asol_files = sorted(asp_l1.get_files(start=start, stop=stop, revision='last',
-                                                 content=['ASPSOL']))
-            acal_files = sorted(asp_l1.get_files(start=start, stop=stop, revision='last',
-                                                 content=['ACACAL']))
-            att_chunks = []
-            time_chunks = []
-            for f in asol_files:
-                asol = Table.read(f)
-                prefix = re.search("(.*)_asol1.*", f).group(1)
-                # get the acal for each asol
-                acal = None
-                # There's probably a header to check for time ranges too, but use filenames to start
-                for acf in acal_files:
-                    if re.search("{}_acal1.*".format(prefix), acf):
-                        acal = Table.read(acf)
-                        break
-                # Make a Nx4 list of the inv misalign quats
-                q_mis_inv = np.repeat(Quat(acal['aca_misalign'][0]).inv().q,
-                                      len(asol)).reshape((4, len(asol))).transpose()
-                # Quaternion multiply the asol quats with that inv misalign and save
-                # I could also do this with the transform matrix and then only need
-                # one accessory quat function.
-                att_chunks.append(quat_vmult(asol['q_att'], q_mis_inv))
-                time_chunks.append(np.array(asol['time']))
-            atts = np.vstack(att_chunks)
-            att_times = np.hstack(time_chunks)
-        self.atts = atts  # (N, 4) numpy array
+            obsids = fetch.Msid('COBSRQID', tstart, tstop)
+            if np.unique(obsids.vals) > 1:
+                raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
+            self.obsid = obsids.vals[0]
+        elif source == 'ground':
+            atts, att_times, asol_recs = asp_l1.get_atts(start=tstart, stop=tstop)
+            obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
+            if len(obsids) > 1:
+                raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
+            self.obsid = obsids[0]
+        else:
+            raise ValueError("att_source must be 'obc' or 'ground'")
+        ok = (att_times >= tstart) & (att_times < tstop)
+        self.atts = atts[ok, :]  # (N, 4) numpy array
+        self.att_times = att_times[ok]
+
+
+    def set_atts_from_solfiles(self, asol_files, acal_files, aqual_files):
+        atts, att_times, asol_recs = asp_l1.get_atts_from_files(asol_files, acal_files, aqual_files)
+        obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
+        if len(obsids) > 1:
+            raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
+        self.atts = atts
         self.att_times = att_times
 
     def set_star(self, agasc_id=None, obsid=None, slot=None, date=None):
