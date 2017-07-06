@@ -100,8 +100,8 @@ class CentroidResiduals(object):
         elif source == 'obc':
             telem = fetch.Msidset(['AOACYAN{}'.format(slot), 'AOACZAN{}'.format(slot)], start, stop)
             # Filter centroids for reasonble-ness
-            yok = telem['AOACYAN{}'.format(slot)].vals != -3276.8
-            zok = telem['AOACZAN{}'.format(slot)].vals != -3276.8
+            yok = telem['AOACYAN{}'.format(slot)].vals > -3276
+            zok = telem['AOACZAN{}'.format(slot)].vals > -3276
             yags = telem['AOACYAN{}'.format(slot)].vals[yok]
             yag_times = telem['AOACYAN{}'.format(slot)].times[yok]
             zags = telem['AOACZAN{}'.format(slot)].vals[zok]
