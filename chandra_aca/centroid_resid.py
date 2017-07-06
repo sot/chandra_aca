@@ -300,8 +300,8 @@ class CentroidResiduals(object):
         p_zags = np.arctan2(d_aca[:, 2], d_aca[:, 0]) * R2A
         self.pred_yags = interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
         self.pred_zags = interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
-        self.dyags = self.yags - interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
-        self.dzags = self.zags - interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
+        self.dyags = self.yags - self.pred_yags
+        self.dzags = self.zags - self.pred_zags
 
 
     @classmethod
