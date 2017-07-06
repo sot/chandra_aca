@@ -10,7 +10,7 @@ def test_multi_ai():
 def test_obc_centroids():
     cr = CentroidResiduals.for_slot(obsid=15175, slot=5, centroid_source='obc')
     assert np.all(np.abs(cr.dyags) < 6)
-    assert np.all(np.abs(cr.dzags) < 3)
+    assert np.all(np.abs(cr.dzags) < 4)
 
 def test_obc():
     cr = CentroidResiduals.for_slot(obsid=15175, slot=6, att_source='obc', centroid_source='obc')
