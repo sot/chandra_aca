@@ -106,6 +106,8 @@ class CentroidResiduals(object):
             yag_times = telem['AOACYAN{}'.format(slot)].times[yok]
             zags = telem['AOACZAN{}'.format(slot)].vals[zok]
             zag_times = telem['AOACZAN{}'.format(slot)].times[zok]
+        else:
+            raise ValueError("centroid_source must be 'obc' or 'ground'")
         self.yags = yags
         self.yag_times = yag_times
         self.zags = zags
