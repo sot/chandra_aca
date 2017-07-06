@@ -1,5 +1,7 @@
 import re
 import numpy as np
+import warnings
+
 from astropy.table import Table, vstack
 from kadi import events
 from Ska.Numpy import interpolate
@@ -61,14 +63,15 @@ class CentroidResiduals(object):
     att_source = None
     ra = None
     dec = None
-
+    centroid_dt = None
+    _dt_applied = None
 
     def __init__(self, start, stop):
         self.start = start
         self.stop = stop
 
 
-    def set_centroids(self, source, slot, alg=8):
+    def set_centroids(self, source, slot, alg=8, apply_dt=True):
         """
         Get centroids from ``source``.
 
@@ -107,6 +110,9 @@ class CentroidResiduals(object):
         self.yag_times = yag_times
         self.zags = zags
         self.zag_times = zag_times
+        if apply_dt:
+            self.set_offsets()
+
 
     def set_atts(self, source):
         """Get attitude solution quaternions from ``source``.
@@ -212,6 +218,67 @@ class CentroidResiduals(object):
     def zag_times(self, vals):
         self._zag_times = np.array(vals)
 
+    def set_offsets(self):
+        """
+        Apply time offsets to centroids based on type and source of centroid, obsid
+        (suggesting 8x8 or 6x6 data), and aspect solution source.  These time offsets were
+        fit.  The offsets determined against OBC aspect solutions are quite variable and
+        this code will warn when applying offsets in the case when residuals are to be
+        calculated using an OBC solution.
+        """
+
+        if self._dt_applied is True:
+            raise ValueError("Attempted to apply centroid dt more than once")
+        is_or = self.obsid < 38000
+        # Offsets calculated using fit scripts in SKA/analysis/centroid_and_sol_time_offsets
+        # Also see plots in PR https://github.com/sot/chandra_aca/pull/25
+        if self.att_source == 'obc':
+            warnings.warn("Applying centroid time offset for {} centroids and obc att source.".format(
+                self.centroid_source))
+        # For ground centroids we don't need the fetch source
+        if self.centroid_source == "ground":
+            if is_or:
+                if self.att_source == 'ground':
+                    self.centroid_dt = 0.125
+                if self.att_source == 'obc':
+                    self.centroid_dt = 0.665
+            else:
+                if self.att_source == 'ground':
+                    self.centroid_dt = 0.054
+                if self.att_source == 'obc':
+                    self.centroid_dt = 0.087
+        else:
+            if len(fetch.data_source.sources()) > 1:
+                raise ValueError("Can't set offsets based on fetch data source if multiple data sources set")
+            fetch_source = fetch.data_source.sources()[0]
+            if fetch_source != 'cxc' and fetch_source != 'maude':
+                raise ValueError("Only maude and cxc fetch data sources are supported for offsets")
+            if is_or:
+                if fetch_source == 'cxc':
+                    if self.att_source == 'ground':
+                        self.centroid_dt = -2.4
+                    if self.att_source == 'obc':
+                        self.centroid_dt = -1.8
+                if fetch_source == 'maude':
+                    if self.att_source == 'ground':
+                        self.centroid_dt = -2.8
+                    if self.att_source == 'obc':
+                        self.centroid_dt = -2.34
+            else:
+                if fetch_source == 'cxc':
+                    if self.att_source == 'ground':
+                        self.centroid_dt = -2.44
+                    if self.att_source == 'obc':
+                        self.centroid_dt = -2.43
+                elif fetch_source == 'maude':
+                    if self.att_source == 'ground':
+                        self.centroid_dt = -2.45
+                    if self.att_source == 'obc':
+                        self.centroid_dt = -2.45
+
+        self.yag_times = self.yag_times + self.centroid_dt
+        self.zag_times = self.zag_times + self.centroid_dt
+        self._dt_applied = True
 
     def calc_residuals(self):
         """
