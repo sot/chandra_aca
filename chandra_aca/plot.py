@@ -130,8 +130,9 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         stars['row'] = rows
         stars['col'] = cols
 
-    # Initialize array of colors for the stars, default is black
-    colors = np.zeros(len(stars), dtype='U20')
+    # Initialize array of colors for the stars, default is black.  Use 'object'
+    # type to not worry in advance about string length and also for Py2/3 compat.
+    colors = np.zeros(len(stars), dtype='object')
     colors[:] = 'black'
 
     colors[bad_stars] = BAD_STAR_COLOR
