@@ -248,8 +248,8 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     [label.set_rotation(90) for label in ax.get_yticklabels()]
 
     if quad_bound:
-        ax.plot([-510, 510], [-0.5, -0.5], color='magenta', alpha=0.4)
-        ax.plot([-0.5, -0.5], [-510, 510], color='magenta', alpha=0.4)
+        ax.plot([-511, 511], [0, 0], color='magenta', alpha=0.4)
+        ax.plot([0, 0], [-511, 511], color='magenta', alpha=0.4)
 
     if plot_keepout:
         # Plot grey area showing effective keep-out zones for stars.  Back off on
