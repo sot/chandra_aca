@@ -126,9 +126,11 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         yags, zags = radec2yagzag(stars['RA_PMCORR'], stars['DEC_PMCORR'], quat)
         stars['yang'] = yags * 3600
         stars['zang'] = zags * 3600
-        rows, cols = yagzag_to_pixels(stars['yang'], stars['zang'], allow_bad=True)
-        stars['row'] = rows
-        stars['col'] = cols
+
+    # Update table to include row/col values corresponding to yag/zag
+    rows, cols = yagzag_to_pixels(stars['yang'], stars['zang'], allow_bad=True)
+    stars['row'] = rows
+    stars['col'] = cols
 
     # Initialize array of colors for the stars, default is black.  Use 'object'
     # type to not worry in advance about string length and also for Py2/3 compat.
