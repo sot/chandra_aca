@@ -104,8 +104,8 @@ def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20,
     col = np.array(col)
 
     if pix_zero_loc == 'center':
-        # Transform row/col values to the convention where the lower/left
-        # corner is at 0.0.  This is needed for the _poly_convert below.
+        # Transform row/col values from 'center' convention to 'edge'
+        # convention, which is required for use in _poly_convert below.
         row = row + 0.5
         col = col + 0.5
     elif pix_zero_loc != 'edge':
@@ -143,13 +143,13 @@ def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc='edge'):
     zang = np.array(zang)
     row, col = _poly_convert(yang, zang, ACA2PIX_coeff)
     if (not allow_bad and
-        (np.any(row > 511.5) or np.any(row < -512.5)
-         or np.any(col > 511.5) or np.any(col < -512.5))):
+        (np.any(row > 511.5) or np.any(row < -512.5) or
+         np.any(col > 511.5) or np.any(col < -512.5))):
         raise ValueError("Coordinate off CCD")
 
     if pix_zero_loc == 'center':
-        # Transform row/col values to the convention where integral values
-        # are at the center of the pixel.
+        # Transform row/col values from 'edge' convention (as returned
+        # by _poly_convert) to the 'center' convention requested by user.
         row = row - 0.5
         col = col - 0.5
     elif pix_zero_loc != 'edge':
