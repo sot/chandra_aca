@@ -209,27 +209,13 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         bad_stars = bad_acq_stars(stars)
 
     fig = plt.figure(figsize=(5.325, 5.325))
+    fig.subplots_adjust(top=0.9)
 
-    # Start with an empty plot that just has the tick labels for yag/zag
-    ax_yz = fig.add_subplot(1, 1, 1)
-    plt.subplots_adjust(top=0.95, right=0.95)
-    ax_yz.set_xlim(2900, -2900)
-    ax_yz.set_ylim(-2900, 2900)
-    ax_yz.grid()
-    ax_yz.set_xlabel("Yag (arcsec)")
-    ax_yz.set_ylabel("Zag (arcsec)")
-    [l.set_rotation(90) for l in ax_yz.get_yticklabels()]
-
-    # Make the "real" plot box in pixels which exactly overlays the yag/zag
-    # version.  The yag/zag tick labels will be approximate in pixel space
-    # (though good enough at this resolution).  The star and CCD-related
-    # plotting (all in row/col) will be *exact*.
-    ax = fig.add_axes(ax_yz.get_position(), frameon=False)
+    # Make an empty plot in row, col space
+    ax = fig.add_subplot(1, 1, 1)
     ax.set_aspect('equal')
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    plt.xlim(-579.7, 591.4)  # Matches 2900, -2900
-    plt.ylim(-580.6, 590.4)  # Matches -2900, 2900
+    plt.xlim(-580, 590)  # Matches -2900, 2900 arcsec roughly
+    plt.ylim(-580, 590)
 
     # plot the box and set the labels
     b1hw = 512
@@ -245,6 +231,21 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
                np.array([2400, 2100, 1800, 1500, 1200]) / 5,
                c='orange', edgecolors='none',
                s=symsize(np.array([10.0, 9.0, 8.0, 7.0, 6.0])))
+
+    # Manually set ticks and grid to specified yag/zag values
+    yz_ticks = [-2000, -1000, 0, 1000, 2000]
+    zeros = [0, 0, 0, 0, 0]
+    r, c = yagzag_to_pixels(yz_ticks, zeros)
+    ax.set_xticks(r)
+    ax.set_xticklabels(yz_ticks)
+    r, c = yagzag_to_pixels(zeros, yz_ticks)
+    ax.set_yticks(c)
+    ax.set_yticklabels(yz_ticks)
+    ax.grid()
+
+    ax.set_xlabel("Yag (arcsec)")
+    ax.set_ylabel("Zag (arcsec)")
+    [label.set_rotation(90) for label in ax.get_yticklabels()]
 
     if quad_bound:
         ax.plot([-510, 510], [-0.5, -0.5], color='magenta', alpha=0.4)
