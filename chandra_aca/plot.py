@@ -209,7 +209,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         bad_stars = bad_acq_stars(stars)
 
     fig = plt.figure(figsize=(5.325, 5.325))
-    fig.subplots_adjust(top=0.9)
+    fig.subplots_adjust(top=0.95)
 
     # Make an empty plot in row, col space
     ax = fig.add_subplot(1, 1, 1)
