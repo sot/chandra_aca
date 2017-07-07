@@ -53,9 +53,9 @@ def calc_roll(yag, zag, yag_obs, zag_obs, sigma=None):
 def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
     """Calc S/C delta roll, pitch, and yaw for observed star positions relative to reference.
 
-    This function computes a S/C delta roll that transforms the reference star
-    positions yag/zag into the observed positions yag_obs/zag_obs.  The units
-    for these values must be in arcsec.
+    This function computes a S/C delta roll/pitch/yaw that transforms the
+    reference star positions yag/zag into the observed positions
+    yag_obs/zag_obs.  The units for these values must be in arcsec.
 
     The inputs are assumed to be a list or array that corresponds to a single
     readout of at least two stars.
@@ -69,12 +69,14 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
     star inputs then one can supply an array of sigma values corresponding
     to each star.
 
-    :param yag: reference yag (list or array)
-    :param zag: reference zag (list or array)
-    :param yag_obs: observed yag (list or array)
-    :param zag_obs: observed zag (list or array)
+    :param yag: reference yag (list or array, arcsec)
+    :param zag: reference zag (list or array, arcsec)
+    :param yag_obs: observed yag (list or array, arcsec)
+    :param zag_obs: observed zag (list or array, arcsec)
+    :param sigma: centroid uncertainties (None or list or array, arcsec)
+    :param iter: number of iterations (default=1, leave this alone usually)
 
-    :returns: roll (deg)
+    :returns: roll, pitch, yaw (degrees)
 
     """
     yag = np.array(yag)
@@ -104,7 +106,6 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
     dyag = yag_obs_avg - yag_avg
     dzag = zag_obs_avg - zag_avg
 
-    # wrong here.
     pitch = dzag / 3600
     yaw = -dyag / 3600
 
