@@ -171,7 +171,8 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
 
 
 def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
-               red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None):
+               red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None,
+               plot_keepout=False):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
     If supplying a star field, an attitude must also be supplied.
@@ -194,6 +195,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     :param bad_stars: boolean mask on 'stars' of those that don't meet minimum requirements
                       to be selected as acq stars.  If None, bad_stars will be set by a call
                       to bad_acq_stars().
+    :param plot_keepout: plot CCD area to be avoided in star selection (default=False)
     :returns: matplotlib figure
     """
     if stars is None:
@@ -247,7 +249,20 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         ax.plot([-510, 510], [-0.5, -0.5], color='magenta', alpha=0.4)
         ax.plot([-0.5, -0.5], [-510, 510], color='magenta', alpha=0.4)
 
-    # plot stars
+    if plot_keepout:
+        # Plot grey area showing effective keep-out zones for stars.  Back off on
+        # outer limits by one pixel to improve rendered PNG slightly.
+        row_pad = 15
+        col_pad = 8
+        box = plt.Rectangle((-511, -511), 1022, 1022, edgecolor='none',
+                            facecolor='black', alpha=0.2, zorder=-1000)
+        ax.add_patch(box)
+        box = plt.Rectangle((-512 + row_pad, -512 + col_pad),
+                            1024 - row_pad * 2, 1024 - col_pad * 2,
+                            edgecolor='none', facecolor='white', zorder=-999)
+        ax.add_patch(box)
+
+    # Plot stars
     _plot_field_stars(ax, stars, attitude=attitude,
                       bad_stars=bad_stars, red_mag_lim=red_mag_lim)
     # plot starcheck catalog
