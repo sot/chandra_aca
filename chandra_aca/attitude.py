@@ -88,36 +88,37 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
     yag_obs_avg = np.average(yag_obs, weights=weights)
     zag_obs_avg = np.average(zag_obs, weights=weights)
 
+    # Remove the mean linear offset and find roll
+    roll = calc_roll(yag - yag_avg, zag - zag_avg,
+                     yag_obs - yag_obs_avg, zag_obs - zag_obs_avg,
+                     sigma)
+
+    # Roll the whole constellation to match the reference
+    yag_obs, zag_obs = rot(roll) @ np.array([yag_obs,
+                                             zag_obs])
+
+    # Now remove the mean linear offset
+    yag_obs_avg = np.average(yag_obs, weights=weights)
+    zag_obs_avg = np.average(zag_obs, weights=weights)
+
     dyag = yag_obs_avg - yag_avg
     dzag = zag_obs_avg - zag_avg
 
+    # wrong here.
     pitch = dzag / 3600
     yaw = -dyag / 3600
-
-    # Remove the mean linear offset
-    yag_obs -= yag_obs_avg
-    zag_obs -= zag_obs_avg
-    yag -= yag_avg
-    zag -= zag_avg
-    roll = calc_roll(yag, zag, yag_obs, zag_obs, sigma)
 
     if iter > 0:
         # Allow for recursive iterations to refine estimate.  In practice a single
         # additional pass is enough.
-        yag_obs, zag_obs = rot(roll) @ np.array([yag_obs,
-                                                 zag_obs])
+        yag_obs -= dyag
+        zag_obs -= dzag
+
         dr, dp, dy = calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma, iter - 1)
         roll += dr
         pitch += dp
         yaw += dy
 
-    if 1:
-        print('YAG:', ['{:3f}'.format(x) for x in yag])
-        print('ZAG:', ['{:3f}'.format(x) for x in zag])
-        print('dYAG:', ['{:3f}'.format(x) for x in yag - yag_obs])
-        print('dZAG:', ['{:3f}'.format(x) for x in zag - zag_obs])
-
-    print(roll*3600, pitch*3600, yaw*3600)
     return roll, pitch, yaw
 
 

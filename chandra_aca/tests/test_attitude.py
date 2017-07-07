@@ -46,7 +46,7 @@ stars = [[(-1, 1), (1, 1), (0, 0), (1, -1)],
 
 
 @pytest.mark.parametrize('stars', stars)
-@pytest.mark.parametrize('roll', [-10000, 10, 100])
+@pytest.mark.parametrize('roll', [-1000, 10, 100])
 @pytest.mark.parametrize('pitch', [-50, 8, 20])
 @pytest.mark.parametrize('yaw', [-20, -8, 50])
 def test_calc_roll_pitch_yaw(stars, pitch, yaw, roll):
@@ -77,10 +77,7 @@ def test_calc_roll_pitch_yaw(stars, pitch, yaw, roll):
         zags_obs.append(zag * 3600)
 
     out_roll, out_pitch, out_yaw = calc_roll_pitch_yaw(yags, zags, yags_obs, zags_obs)
-    # Computed pitch, yaw, roll within 1% of actual
-    assert np.isclose(roll, out_roll, atol=0.2 / 3600, rtol=0.0)
-    assert np.isclose(pitch, out_pitch, atol=0.2 / 3600, rtol=0.0)
-    assert np.isclose(yaw, out_yaw, atol=0.2 / 3600, rtol=0.0)
-    # print(roll, out_roll)
-    # print(pitch, out_pitch)
-    # print(yaw, out_yaw)
+    # Computed pitch, yaw, roll within 0.5 arcsec in roll, 0.02 arcsec pitch/yaw
+    assert np.isclose(roll, out_roll, atol=0.5 / 3600, rtol=0.0)
+    assert np.isclose(pitch, out_pitch, atol=0.02 / 3600, rtol=0.0)
+    assert np.isclose(yaw, out_yaw, atol=0.02 / 3600, rtol=0.0)
