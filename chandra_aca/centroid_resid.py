@@ -151,8 +151,8 @@ class CentroidResiduals(object):
         self.att_times = att_times[ok]
 
 
-    def set_atts_from_solfiles(self, asol_files, acal_files, aqual_files):
-        atts, att_times, asol_recs = asp_l1.get_atts_from_files(asol_files, acal_files, aqual_files)
+    def set_atts_from_solfiles(self, asol_files, acal_files, aqual_files, filter=True):
+        atts, att_times, asol_recs = asp_l1.get_atts_from_files(asol_files, acal_files, aqual_files, filter=filter)
         obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
         if len(obsids) > 1:
             raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
