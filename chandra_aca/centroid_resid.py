@@ -159,28 +159,31 @@ class CentroidResiduals(object):
         self.atts = atts
         self.att_times = att_times
 
-    def set_star(self, agasc_id=None, obsid=None, slot=None, date=None):
+    def set_star(self, agasc_id=None, slot=None):
         """
-        Set self.ra and dec from either agasc_id *or* obsid + slot.
+        Set self.ra and dec from either agasc_id *or* slot.
 
         This assumes use of star in default agasc miniagasc (no 1.4 or 1.5 or very faint stars)
+        Lookup by "slot" relies on database of starcheck catalogs.
 
         Along the way set self.agasc_id.  One can also just set
         self.ra and dec directly.
         """
-        if obsid is not None and slot is not None:
-            if date is None:
-                raise ValueError("Need date to look up star catalog if obsid/slot provided")
-            sc = mica.starcheck.get_starcheck_catalog_at_date(date)
-            star = sc['cat'][(sc['cat']['slot'] == slot)
+        if agasc_id is not None:
+            star = agasc.get_star(agasc_id, date=self.start)
+        elif slot is not None:
+            sc = mica.starcheck.get_starcheck_catalog_at_date(self.start)
+            stars = sc['cat'][(sc['cat']['slot'] == slot)
                              & ((sc['cat']['type'] == 'GUI') | (sc['cat']['type'] == 'BOT'))]
-            if not len(star):
+            if not len(stars):
                 raise ValueError(
-                    "No GUI or BOT in slot {} for obsid {} in dwell".format(slot, obsid))
-            agasc_id = star['id'][0]
+                    "No GUI or BOT in slot {} at time {} in dwell".format(slot, DateTime(self.start).date))
+            star = agasc.get_star(stars[0]['id'], date=self.start)
+        else:
+            raise ValueError("Need to supply agasc_id or slot to look up star")
+
         # Could also add logic to infer star from loose position and magnitude
-        star = agasc.get_star(agasc_id, date=date)
-        self.agasc_id = agasc_id
+        self.agasc_id = star['AGASC_ID']
         self.ra = star['RA_PMCORR']
         self.dec = star['DEC_PMCORR']
 
@@ -324,6 +327,6 @@ class CentroidResiduals(object):
             cr.obsid = obsid
         cr.set_atts(att_source)
         cr.set_centroids(centroid_source, slot)
-        cr.set_star(obsid=obsid, slot=slot, date=start)
+        cr.set_star(slot=slot)
         cr.calc_residuals()  # instead of get_residuals
         return cr
