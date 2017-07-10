@@ -293,6 +293,8 @@ class CentroidResiduals(object):
         Predicted values from attitude and star position in self.pred_yags and self.pred_zags
 
         """
+        if len(self.att_times) < 2:
+            raise ValueError("Cannot attempt to calculate residuals with fewer than 2 attitude samples")
         eci = Ska.quatutil.radec2eci(self.ra, self.dec)
         # Transform the 3x3 to get the axes to align to have the dot product make sense
         d_aca = np.dot(quat_vtransform(self.atts).transpose(0, 2, 1), eci)
