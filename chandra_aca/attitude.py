@@ -3,6 +3,9 @@ Calculate attitude based on star centroid values using a fast linear
 least-squares method.
 
 Note this requires Python 3.5+.
+
+Validation:
+http://nbviewer.jupyter.org/url/asc.harvard.edu/mta/ASPECT/ipynb/chandra_aca/calc_att_validate.ipynb
 """
 import numpy as np
 
