@@ -7,6 +7,8 @@ Note this requires Python 3.5+.
 Validation:
 http://nbviewer.jupyter.org/url/asc.harvard.edu/mta/ASPECT/ipynb/chandra_aca/calc_att_validate.ipynb
 """
+from __future__ import division
+
 import numpy as np
 
 
@@ -49,7 +51,9 @@ def calc_roll(yag, zag, yag_obs, zag_obs, sigma=None):
         yag_obs = yag_obs / sigma
         zag_obs = zag_obs / sigma
 
-    theta = -(yag @ zag_obs - zag @ yag_obs) / (yag @ yag + zag @ zag)
+    # When Py2 is no longer supported...
+    # theta = -(yag @ zag_obs - zag @ yag_obs) / (yag @ yag + zag @ zag)
+    theta = -(yag.dot(zag_obs) - zag.dot(yag_obs)) / (yag.dot(yag) + zag.dot(zag))
     return np.degrees(theta)
 
 
@@ -136,8 +140,11 @@ def _calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
                      sigma)
 
     # Roll the whole constellation to match the reference
-    yag_obs, zag_obs = _rot(roll) @ np.array([yag_obs,
-                                              zag_obs])
+    # When Py2 is no longer supported...
+    # yag_obs, zag_obs = _rot(roll) @ np.array([yag_obs,
+    #                                           zag_obs])
+    yag_obs, zag_obs = _rot(roll).dot(np.array([yag_obs,
+                                                zag_obs]))
 
     # Now remove the mean linear offset
     yag_obs_avg = np.average(yag_obs, weights=weights)
