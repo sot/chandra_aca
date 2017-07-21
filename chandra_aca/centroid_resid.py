@@ -135,6 +135,10 @@ class CentroidResiduals(object):
             if self.obsid is None:
                 obsid_start = fetch.Msid('COBSRQID', tstart, tstart + 60)
                 obsid_stop = fetch.Msid('COBSRQID', tstop - 60, tstop)
+                if len(obsid_start.vals) == 0 or len(obsid_stop.vals) == 0:
+                    raise ValueError(
+                        "Error getting COBSRQID telem for tstart:{} tstop:{} from fetch_source:{}".format(
+                            tstart, tstop, fetch.data_source.sources()[0]))
                 if obsid_start.vals[-1] != obsid_stop.vals[0]:
                     raise ValueError("Time range covers more than one obsid; Not supported.")
                 self.obsid = obsid_start.vals[-1]
