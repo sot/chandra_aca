@@ -1,11 +1,9 @@
-import re
 import numpy as np
 import warnings
 
 from astropy.table import Table, vstack
 from kadi import events
 from Ska.Numpy import interpolate
-from Quaternion import Quat
 import Ska.quatutil
 from mica.archive import asp_l1
 import mica.starcheck
