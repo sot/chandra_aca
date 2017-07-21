@@ -15,6 +15,8 @@ def test_multi_ai():
     cr = CentroidResiduals.for_slot(obsid=15175, slot=4)
     assert np.all(np.abs(cr.dyags) < 3)
     assert np.all(np.abs(cr.dzags) < 6)
+    # check that the right offset was applied from the table in set_offsets
+    assert abs(cr.centroid_dt - 0.0553306628318) < 1e-8
 
 @pytest.mark.skipif('not HAS_L1_ARCHIVE', reason='No ground solutions without an aspl1 mica archive')
 @pytest.mark.skipif('not HAS_STARCHECK_ARCHIVE', reason='No for_slot without a starcheck mica archive')
@@ -22,9 +24,30 @@ def test_obc_centroids():
     cr = CentroidResiduals.for_slot(obsid=15175, slot=5, centroid_source='obc')
     assert np.all(np.abs(cr.dyags) < 6)
     assert np.all(np.abs(cr.dzags) < 4)
+    # check that the right offset was applied from the table in set_offsets
+    assert abs(cr.centroid_dt - -2.46900481785) < 1e-8
 
 @pytest.mark.skipif('not HAS_STARCHECK_ARCHIVE', reason='No for_slot without a starcheck mica archive')
 def test_obc():
     cr = CentroidResiduals.for_slot(obsid=15175, slot=6, att_source='obc', centroid_source='obc')
     assert np.all(np.abs(cr.dyags) < 4.5)
     assert np.all(np.abs(cr.dzags) < 5.5)
+    # check that the right offset was applied from the table in set_offsets
+    assert abs(cr.centroid_dt - -2.45523126997) < 1e-8
+
+@pytest.mark.skipif('not HAS_STARCHECK_ARCHIVE', reason='No for_slot without a starcheck mica archive')
+def test_er():
+    cr = CentroidResiduals.for_slot(obsid=57635, slot=6, att_source='obc', centroid_source='obc')
+    assert np.all(np.abs(cr.dyags) < 4)
+    assert np.all(np.abs(cr.dzags) < 3)
+    # check that the right offset was applied from the table in set_offsets
+    assert abs(cr.centroid_dt - -2.53954270068) < 1e-8
+
+@pytest.mark.skipif('not HAS_STARCHECK_ARCHIVE', reason='No for_slot without a starcheck mica archive')
+def test_er():
+    cr = CentroidResiduals.for_slot(obsid=57635, slot=6, att_source='obc', centroid_source='obc')
+    assert np.all(np.abs(cr.dyags) < 4)
+    assert np.all(np.abs(cr.dzags) < 3)
+    # check that the right offset was applied from the table in set_offsets
+    assert abs(cr.centroid_dt - -2.53954270068) < 1e-8
+
