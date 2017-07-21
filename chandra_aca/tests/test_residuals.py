@@ -51,3 +51,11 @@ def test_er():
     # check that the right offset was applied from the table in set_offsets
     assert abs(cr.centroid_dt - -2.53954270068) < 1e-8
 
+def test_or_manual():
+    # This test should run with either maude or cxc as the fetch source and without
+    # access to mica archive of L1 products or mica starcheck archive
+    cr = CentroidResiduals(start='2017:169:18:54:50.138', stop='2017:170:05:13:58.190')
+    cr.set_atts('obc')
+    cr.set_centroids('obc', slot=5)
+    cr.set_star(agasc_id=649201816)
+    cr.calc_residuals()
