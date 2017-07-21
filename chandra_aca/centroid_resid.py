@@ -47,6 +47,60 @@ def quat_vtransform(qs):
 
 
 class CentroidResiduals(object):
+    """
+    Class to calculate star centroid residuals.
+
+    This class is designed to set up and perform the residual calculations on
+    any desired combination of source centroids and source attitudes.  For the common use cases,
+    centroids, attitudes, and commanded star positions are retrieved automatically from archived
+    sources.
+
+    Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:
+
+    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+
+    and
+
+    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
+
+    Users should see the class method ``for_slot`` for a convenient way to get centroid
+    residuals on an ``obsid`` for an ACA ``slot`` (aka image number).
+
+    Example usage::
+
+     >>> import numpy as np
+     >>> from chandra_aca.centroid_resid import CentroidResiduals
+     >>> cr = CentroidResiduals.for_slot(obsid=20001, slot=5)
+     >>> np.max(np.abs(cr.dyags))
+     0.87602233734844503
+     >>> np.max(np.abs(cr.dzags))
+     1.2035827855862777
+     >>> cr.atts[0]
+     array([-0.07933254,  0.87065874, -0.47833673,  0.08278696])
+     >>> cr.agasc_id
+     649201816
+
+    This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
+    and ground centroids.  Here is another example that does the same thing without using the ``for_slot``
+    convenience.
+
+    Example usage::
+
+     >>> import numpy as np
+     >>> from chandra_aca.centroid_resid import CentroidResiduals
+     >>> cr = CentroidResiduals(start='2017:169:18:54:50.138', stop='2017:170:05:13:58.190')
+     >>> cr.set_atts('ground')
+     >>> cr.set_centroids('ground', slot=5)
+     >>> cr.set_star(agasc_id=649201816)
+     >>> cr.calc_residuals()
+     >>> np.max(np.abs(cr.dyags))
+     0.87602233734844503
+
+
+    :param start: start time of interval for residuals (DateTime compatible)
+    :param stop: stop time of interval for residuals (DateTime compatible)
+
+    """
     centroid_source = None
     att_source = None
     ra = None
@@ -65,6 +119,8 @@ class CentroidResiduals(object):
 
         For the supported sources (ground, obc) the centroids are fetched from the mica L1
         archive or telemetry.
+
+        yag, zag, yag_times an zag_times can also be set directly without use of this method.
 
         :param source: 'ground' | 'obc'
         :param slot: ACA slot
@@ -158,8 +214,7 @@ class CentroidResiduals(object):
         This assumes use of star in default agasc miniagasc (no 1.4 or 1.5 or very faint stars)
         Lookup by "slot" relies on database of starcheck catalogs.
 
-        Along the way set self.agasc_id.  One can also just set
-        self.ra and dec directly.
+        This also sets self.agasc_id.
         """
         if agasc_id is not None:
             star = agasc.get_star(agasc_id, date=self.start)

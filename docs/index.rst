@@ -30,6 +30,12 @@ Transformations
 .. automodule:: chandra_aca.transform
    :members:
 
+Centroid residuals
+------------------
+
+.. automodule:: chandra_aca.centroid_resid
+   :members:
+
 ACA alignment drift
 -------------------
 
