@@ -136,13 +136,13 @@ class CentroidResiduals(object):
                 obsid_start = fetch.Msid('COBSRQID', tstart, tstart + 60)
                 obsid_stop = fetch.Msid('COBSRQID', tstop - 60, tstop)
                 if obsid_start.vals[-1] != obsid_stop.vals[0]:
-                    raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
+                    raise ValueError("Time range covers more than one obsid; Not supported.")
                 self.obsid = obsid_start.vals[-1]
         elif source == 'ground':
             atts, att_times, asol_recs = asp_l1.get_atts(start=tstart, stop=tstop)
             obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
             if len(obsids) > 1:
-                raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
+                raise ValueError("Time range covers more than one obsid; Not supported.")
             self.obsid = obsids[0]
         else:
             raise ValueError("att_source must be 'obc' or 'ground'")
@@ -155,7 +155,7 @@ class CentroidResiduals(object):
         atts, att_times, asol_recs = asp_l1.get_atts_from_files(asol_files, acal_files, aqual_files, filter=filter)
         obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
         if len(obsids) > 1:
-            raise NotImplementedError("Time range covers more than one obsid; Not supported at this time")
+            raise ValueError("Time range covers more than one obsid; Not supported.")
         self.atts = atts
         self.att_times = att_times
 
