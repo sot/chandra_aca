@@ -46,16 +46,6 @@ def quat_vtransform(qs):
     return t
 
 
-def quat_vmult(q1, q2):
-    # just assume q1 and q2 have same length
-    mult = np.zeros((len(q1), 4))
-    mult[:,0] =  q1[:,3] * q2[:,0] - q1[:,2] * q2[:,1] + q1[:,1] * q2[:,2] + q1[:,0] * q2[:,3]
-    mult[:,1] =  q1[:,2] * q2[:,0] + q1[:,3] * q2[:,1] - q1[:,0] * q2[:,2] + q1[:,1] * q2[:,3]
-    mult[:,2] = -q1[:,1] * q2[:,0] + q1[:,0] * q2[:,1] + q1[:,3] * q2[:,2] + q1[:,2] * q2[:,3]
-    mult[:,3] = -q1[:,0] * q2[:,0] - q1[:,1] * q2[:,1] - q1[:,2] * q2[:,2] + q1[:,3] * q2[:,3]
-    return mult
-
-
 class CentroidResiduals(object):
     centroid_source = None
     att_source = None
