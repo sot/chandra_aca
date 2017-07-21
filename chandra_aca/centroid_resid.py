@@ -76,9 +76,6 @@ class CentroidResiduals(object):
         start = self.start
         stop = self.stop
         # Get centroids from Ska eng archive or mica L1 archive
-        # Might want to add filtering for track status here too
-        # Also need to include something for time offsets
-        # And warn to console if we hit multiple obsids
         if source == 'ground':
             acen_files = sorted(asp_l1.get_files(start=start, stop=stop, content=['ACACENT']))
             acen = vstack([Table.read(f) for f in sorted(acen_files)], metadata_conflicts='silent')
