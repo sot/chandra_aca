@@ -52,25 +52,27 @@ class CentroidResiduals(object):
     ra = None
     dec = None
     centroid_dt = None
-    _dt_applied = None
     obsid = None
 
     def __init__(self, start, stop):
         self.start = start
         self.stop = stop
 
-
     def set_centroids(self, source, slot, alg=8, apply_dt=True):
         """
-        Get centroids from ``source``.
+        Assign centroids from ``source`` and ``slot`` to the objects centroid attributes
+        (yag, zag, yag_times, zag_times)
 
-        One could also just set yags, yag_times, zags, zag_times
-        attributes directly.
+        For the supported sources (ground, obc) the centroids are fetched from the mica L1
+        archive or telemetry.
 
         :param source: 'ground' | 'obc'
         :param slot: ACA slot
+        :param alg: for ground processing, use centroids from this algorithm.
+        :param apply_dt: apply centroid time offsets via 'set_offsets'
         """
         self.centroid_source = source
+        self.centroid_dt = None
         start = self.start
         stop = self.stop
         # Get centroids from Ska eng archive or mica L1 archive
@@ -101,9 +103,10 @@ class CentroidResiduals(object):
         self.yag_times = yag_times
         self.zags = zags
         self.zag_times = zag_times
-        if apply_dt:
+        if apply_dt is True:
             self.set_offsets()
-
+        else:
+            self.centroid_dt = 0
 
     def set_atts(self, source):
         """Get attitude solution quaternions from ``source``.
@@ -222,64 +225,59 @@ class CentroidResiduals(object):
     def set_offsets(self):
         """
         Apply time offsets to centroids based on type and source of centroid, obsid
-        (suggesting 8x8 or 6x6 data), and aspect solution source.  These time offsets were
-        fit.  The offsets determined against OBC aspect solutions are quite variable and
-        this code will warn when applying offsets in the case when residuals are to be
-        calculated using an OBC solution.
-        """
+        (suggesting 8x8 or 6x6 data), telemetry source ('maude' or 'cxc') and aspect solution source.
+        These time offsets were fit.  See fit notebooks at:
 
-        if self._dt_applied is True:
-            raise ValueError("Attempted to apply centroid dt more than once")
-        is_or = self.obsid < 38000
-        # Offsets calculated using fit scripts in SKA/analysis/centroid_and_sol_time_offsets
-        # Also see plots in PR https://github.com/sot/chandra_aca/pull/25
-        if self.att_source == 'obc':
-            warnings.warn("Applying centroid time offset for {} centroids and obc att source.".format(
-                self.centroid_source))
-        # For ground centroids we don't need the fetch source
-        if self.centroid_source == "ground":
-            if is_or:
-                if self.att_source == 'ground':
-                    self.centroid_dt = 0.125
-                if self.att_source == 'obc':
-                    self.centroid_dt = 0.665
-            else:
-                if self.att_source == 'ground':
-                    self.centroid_dt = 0.054
-                if self.att_source == 'obc':
-                    self.centroid_dt = 0.087
-        else:
-            if len(fetch.data_source.sources()) > 1:
-                raise ValueError("Can't set offsets based on fetch data source if multiple data sources set")
-            fetch_source = fetch.data_source.sources()[0]
-            if fetch_source != 'cxc' and fetch_source != 'maude':
-                raise ValueError("Only maude and cxc fetch data sources are supported for offsets")
-            if is_or:
-                if fetch_source == 'cxc':
-                    if self.att_source == 'ground':
-                        self.centroid_dt = -2.4
-                    if self.att_source == 'obc':
-                        self.centroid_dt = -1.8
-                if fetch_source == 'maude':
-                    if self.att_source == 'ground':
-                        self.centroid_dt = -2.8
-                    if self.att_source == 'obc':
-                        self.centroid_dt = -2.34
-            else:
-                if fetch_source == 'cxc':
-                    if self.att_source == 'ground':
-                        self.centroid_dt = -2.44
-                    if self.att_source == 'obc':
-                        self.centroid_dt = -2.43
-                elif fetch_source == 'maude':
-                    if self.att_source == 'ground':
-                        self.centroid_dt = -2.45
-                    if self.att_source == 'obc':
-                        self.centroid_dt = -2.45
+        http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+
+        and
+
+        http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
+
+        """
+        # If already applied, do nothing
+        if self.centroid_dt is not None:
+            return
+        if self.att_source is None or self.centroid_source is None:
+            return
+        # Get and check reasonable-ness of fetch data source
+        if len(fetch.data_source.sources()) > 1:
+            warnings.warn("Can't set offsets based on fetch data source if multiple data sources set")
+            return
+        fetch_source = fetch.data_source.sources()[0]
+        if fetch_source != 'cxc' and fetch_source != 'maude':
+            warnings.warn("Only maude and cxc fetch data sources are supported for offsets. Not applying offsets.")
+            return
+        obstype = 'or' if self.obsid < 38000 else 'er'
+        if fetch_source == 'maude' and obstype == 'er':
+            warnings.warn("Centroid time offsets not well fit for 'maude' telem source on ERs. Use caution.")
+
+        # Offsets calculated using OR and ER notebooks in SKA/analysis/centroid_and_sol_time_offsets
+        offsets = {
+            # (centroid_source, att_source, fetch_source, obstype):  median offset in time
+            ('obc', 'obc', 'cxc', 'or'): -2.45523126997,
+            ('obc', 'ground', 'cxc', 'or'): -2.46900481785,
+            ('ground', 'obc', 'cxc', 'or'): 0.0366092437236,
+            ('ground', 'ground', 'cxc', 'or'): 0.0553306628318,
+            ('obc', 'obc', 'maude', 'or'): -2.96746879688,
+            ('obc', 'ground', 'maude', 'or'): -2.94076404877,
+            ('ground', 'obc', 'maude', 'or'): 0.010515586472,
+            ('obc', 'obc', 'cxc', 'er'): -2.53954270068,
+            ('obc', 'ground', 'cxc', 'er'): -2.49080106675,
+            ('ground', 'obc', 'cxc', 'er'): -0.0322463030744,
+            ('ground', 'ground', 'cxc', 'er'): 0.0355677462107,
+            ('obc', 'obc', 'maude', 'er'): -2.90454699136,
+            ('obc', 'ground', 'maude', 'er'): -3.00151559564,
+            ('ground', 'obc', 'maude', 'er'): 0.116096583881,
+            }
+
+        self.centroid_dt = offsets[(self.centroid_source,
+                                    self.att_source,
+                                    fetch_source,
+                                    obstype)]
 
         self.yag_times = self.yag_times + self.centroid_dt
         self.zag_times = self.zag_times + self.centroid_dt
-        self._dt_applied = True
 
     def calc_residuals(self):
         """
@@ -290,6 +288,12 @@ class CentroidResiduals(object):
         Predicted values from attitude and star position in self.pred_yags and self.pred_zags
 
         """
+        # If time offsets weren't applied because centroids were initialized before atts, try again
+        if self.centroid_dt is None:
+            self.set_offsets()
+        # If still not set, warn
+        if self.centroid_dt is None:
+            warnings.warn("Residuals calculated on centroids without time offsets applied")
         if len(self.att_times) < 2:
             raise ValueError("Cannot attempt to calculate residuals with fewer than 2 attitude samples")
         eci = Ska.quatutil.radec2eci(self.ra, self.dec)
