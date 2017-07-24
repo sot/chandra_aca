@@ -22,19 +22,12 @@ def test_mag_for_p_acq():
 
 
 def test_halfwidth_adjustment():
-    for mag, mults in ((6.0, [1.0, 1.0, 1.0, 1.0, 1.0]),
-                       (8.5, [1.0, 1.0, 1.0, 1.0, 1.0]),
-                       (9.25, [0.9, 0.9, 0.8, 0.7, 0.505]),
-                       (10.0, [0.8, 0.8, 0.6, 0.4, 0.01]),
-                       (11.0, [0.01, 0.01, 0.01, 0.01, 0.01])):
-        pacq = acq_success_prob(mag=mag, halfwidth=120)
-        p135 = acq_success_prob(mag=mag, halfwidth=135)
-        p160 = acq_success_prob(mag=mag, halfwidth=160)
-        p180 = acq_success_prob(mag=mag, halfwidth=180)
-        p240 = acq_success_prob(mag=mag, halfwidth=240)
-        p280 = acq_success_prob(mag=mag, halfwidth=280)
-        exp_mults = np.array([p135, p160, p180, p240, p280]) / pacq
-        assert np.allclose(mults, exp_mults)
+    mag = 10.3
+    halfwidth = [40, 80, 120, 180, 240]
+    p120 = acq_success_prob(mag=mag, halfwidth=120)
+    pacq = acq_success_prob(mag=mag, halfwidth=halfwidth)
+    mults = pacq / p120
+    assert np.allclose(mults, [1.07721523, 1.04776216, 1., 0.90920264, 0.83013465])
 
 
 def test_acq_success_prob_date():
