@@ -10,12 +10,14 @@ from six.moves import zip
 from scipy.optimize import brentq
 import numpy as np
 from Chandra.Time import DateTime
-from Ska.Numpy import interpolate
 
 # Local import in acq_success_prob():
 # from .dark_model import get_warm_fracs
 
-
+#
+# NOTE: the "WITH_MS" are historical and no longer used in flight
+#       and do not reflect ACA behavior beyond 2016-Feb-08.
+#
 # Scale and offset fit of polynomial to acq failures in log space.
 # Derived in the fit_sota_model_probit.ipynb IPython notebook for data
 # covering 2007-Jan-01 - 2015-July-01.  This is in the aca_stats repo.
@@ -23,7 +25,6 @@ from Ska.Numpy import interpolate
 #
 # scale = scl2 * m10**2 + scl1 * m10 + scl0, where m10 = mag - 10,
 # and likewise for offset.
-
 
 WARM_THRESHOLD = 100  # Value (N100) used for fitting
 
@@ -41,14 +42,27 @@ SOTA_FIT_ONLY_1P5_WITH_MS = [8.541709287866361,
                              1.5278061271148755,
                              0.30973569068842272]
 
+#
+# FLIGHT model coefficients.
+#
 # Multiple stars flag disabled (starting operationally with FEB0816).  Fit
-# with fit_sota_model_probit_no_ms.ipynb in the aca_stats repo.
+# with fit_flight_acq_prob_model.ipynb in the aca_stats repo.
 
-SOTA_FIT_NO_1P5_NO_MS = [4.092016310373646, 6.5415918325159641, 1.8191919043258409,
-                         -2.2301709573082413, 0.30337711472920426, 0.10116735012955963]
+SOTA_FIT_NO_1P5_NO_MS = [3.8981465963928441, 5.5208216663935739, 2.0187091292966395,  # offsets
+                         -2.2103221221745111, 0.37783433000968347, 0.10035462978065751]  # scales
 
-SOTA_FIT_ONLY_1P5_NO_MS = [4.786710417762472, 4.839392687262392, 1.8646719319052267,
-                           -1.4926740399312248, 0.76412972998935347, -0.20229644263097146]
+SOTA_FIT_ONLY_1P5_NO_MS = [4.4598955940740002, 7.3654868182850661, 4.380944461070051,
+                           -1.4766615762918867, 0.53879889036008366, -0.36463411364645115]
+
+# Coefficents for dependence of probability on search box size (halfwidth).  From:
+# https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
+
+HALFWIDTH_B1 = 0.96
+HALFWIDTH_B2 = -0.30
+
+# Min and max star acquisition probabilities, regardless of model predictions
+MIN_ACQ_PROB = 1e-6
+MAX_ACQ_PROB = 0.985
 
 
 # Default global values using NO_MS settings.  Kinda ugly.
@@ -189,40 +203,6 @@ def prob_n_acq(star_probs):
     return n_acq_probs, np.cumsum(n_acq_probs)
 
 
-def get_halfwidth_mag_mult(halfwidth):
-    """
-    Return the piecewise-linear probability multiplier function for
-    a given search box halfwidth.
-
-    :param halfwidth: half width in arcsec
-    :returns: mag, mult (ndarrays)
-    """
-    # Special case of unit-valued multiplier for search box <= 120 arsec
-    if halfwidth <= 120:
-        mag = np.array([5.0, 17.0])
-        mult = np.array([1.0, 1.0])
-        return mag, mult
-
-    if halfwidth <= 160:
-        mult_10 = 0.8
-        mag_0p = 11.0
-    elif halfwidth <= 180:
-        mult_10 = 0.6
-        mag_0p = 10.5
-    elif halfwidth <= 240:
-        mult_10 = 0.4
-        mag_0p = 10.25
-    else:
-        mult_10 = 0.01
-        mag_0p = 10.01
-
-    # Define stepwise linear probability multiplier
-    mag = np.array([5.0, 8.5,  10.0,   mag_0p,  17.0])
-    mult = np.array([1.0, 1.0, mult_10,  0.01,   0.01])
-
-    return mag, mult
-
-
 def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120):
     """
     Return probability of acquisition success for given date, temperature and mag.
@@ -259,36 +239,25 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
         warm_fracs.append(warm_frac)
     warm_frac = np.array(warm_fracs).reshape(dates.shape)
 
-    probs = model_acq_success_prob(mags, warm_fracs, colors)
+    probs = model_acq_success_prob(mags, warm_fracs, colors, halfwidths)
 
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
 
     # If the star is brighter than 8.5 or has a calculated probability
     # higher than the max_star_prob, clip it at that value
-    max_star_prob = .985
-    probs[mags < 8.5] = max_star_prob
+    probs[mags < 8.5] = MAX_ACQ_PROB
     probs[colors == 0.7] *= p_0p7color
     probs[spoilers] *= p_spoiler
 
-    probs = probs.clip(1e-6, max_star_prob)
-
-    # Ad-hoc correction for search box size > 120 arcsec.  This does a
-    # multiplicative correction on the acquisition probability using a
-    # piecewise linear curve.  It starts at 1.0 for mag < 8.5, then
-    # down linearly to 10.0 mag to a a value depending on search box
-    # size, and then down to 0.01.
-    for ii in range(len(probs)):
-        mag, mult = get_halfwidth_mag_mult(halfwidths[ii])
-        p_mult = interpolate(mult, mag, [mags[ii]], method='linear')[0]
-        probs[ii] *= p_mult
+    probs = probs.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
 
     # Return probabilities.  The [()] getitem at the end will flatten a
     # scalar array down to a pure scalar.
     return probs[0] if is_scalar else probs
 
 
-def model_acq_success_prob(mag, warm_frac, color=0):
+def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
     """
     Calculate raw model probability of acquisition success for a star with ``mag``
     magnitude and a CCD warm fraction ``warm_frac``.  This is not typically used directly
@@ -296,23 +265,29 @@ def model_acq_success_prob(mag, warm_frac, color=0):
 
     Uses the empirical relation::
 
-       P_acq_fail = Normal_CDF(offset(mag) + scale(mag) * warm_frac)
+       P_fail_probit = offset(mag) + scale(mag) * warm_frac + box_delta(halfwidth)
+       P_acq_fail = Normal_CDF()
        P_acq_success = 1 - P_acq_fail
 
-    This is based on the dark model and acquisition success model presented
-    in the State of the ACA 2013, and subsequently updated to use a Probit
-    transform and separately fit B-V=1.5 stars.  This is available in the
-    state_of_aca repo as fit_sota_model_probit.ipynb.
+    This is based on the dark model and acquisition success model presented in the State
+    of the ACA 2013, and subsequently updated to use a Probit transform and separately fit
+    B-V=1.5 stars.  It was updated in 2017 to include a fitted dependence on the search
+    box halfwidth.  See:
+
+    https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
+    https://github.com/sot/aca_stats/blob/master/fit_flight_acq_prob_model.ipynb
 
     :param mag: ACA magnitude (float or np.ndarray)
     :param warm_frac: N100 warm fraction (float or np.ndarray)
     :param color: B-V color to check for B-V=1.5 => red star (float or np.ndarray)
+    :param halfwidth: search box halfwidth (arcsec, default=120)
     """
     from scipy.stats import norm
 
     is_scalar, mag, warm_frac, color = broadcast_arrays(mag, warm_frac, color)
 
     m10 = mag - 10.0
+    box120 = (halfwidth - 120) / 120  # Normalized halfwidth, 0.0 for halfwidth=120
 
     p_fail = np.zeros_like(mag)
     for mask, fit_pars in ((color == 1.5, SOTA_FIT_ONLY_1P5),
@@ -320,12 +295,16 @@ def model_acq_success_prob(mag, warm_frac, color=0):
         if np.any(mask):
             scale = np.polyval(fit_pars[0:3][::-1], m10)
             offset = np.polyval(fit_pars[3:6][::-1], m10)
+            box_delta = HALFWIDTH_B1 * box120 + HALFWIDTH_B2 * box120 ** 2
 
-            p_fail[mask] = (offset + scale * warm_frac)[mask]
+            p_fail[mask] = (offset + scale * warm_frac + box_delta)[mask]
 
     p_fail = norm.cdf(p_fail)  # probit transform
     p_fail[mag < 8.5] = 0.015  # actual best fit is ~0.006, but put in some conservatism
     p_success = (1 - p_fail)
+
+    # Clip values to reasonable range regardless of model prediction
+    p_success = p_success.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
 
     return p_success[0] if is_scalar else p_success  # Return scalar if ndim=0
 
@@ -337,7 +316,7 @@ def broadcast_arrays(*args):
     return outs
 
 
-def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0):
+def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0, halfwidth=120):
     """
     For a given ``date`` and ``t_ccd``, find the star magnitude that has an
     acquisition probability of ``p_acq``.  Star magnitude is defined/limited
@@ -346,12 +325,13 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0):
     :param p_acq: acquisition probability (0 to 1.0)
     :param date: observation date (any Chandra.Time valid format)
     :param t_ccd: ACA CCD temperature (deg C)
+    :param halfwidth: search box halfwidth (arcsec, default=120)
     :returns mag: star magnitude
     """
 
     def prob_minus_p_acq(mag):
         """Function that gets zeroed in brentq call later"""
-        prob = acq_success_prob(date=date, t_ccd=t_ccd, mag=mag)
+        prob = acq_success_prob(date=date, t_ccd=t_ccd, mag=mag, halfwidth=halfwidth)
         return prob - p_acq
 
     # prob_minus_p_acq is monotonically decreasing from the (minimum)
