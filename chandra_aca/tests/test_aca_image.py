@@ -27,8 +27,8 @@ def test_init():
     # Init as zeroes with shape
     a = ACAImage(shape=(1024, 1024), row0=-512.0, col0=-512.0)
     assert np.all(a == np.zeros((1024, 1024)))
-    assert type(a.row0) is int
-    assert type(a.col0) is int
+    assert type(a.row0) is np.int64
+    assert type(a.col0) is np.int64
 
     a = ACAImage(im6, meta={'IMGROW0': 1, 'IMGCOL0': 2})
     assert a.row0 == 1
@@ -41,8 +41,8 @@ def test_row_col_set():
     a.col0 = -20.0
     assert a.row0 == -10
     assert a.col0 == -20
-    assert type(a.row0) is int
-    assert type(a.col0) is int
+    assert type(a.row0) is np.int64
+    assert type(a.col0) is np.int64
 
 
 def test_meta_set():
@@ -109,6 +109,17 @@ def test_slice():
     im80 = im8.copy()
     im80[0:6, 1:7] = 0
     assert np.all(a2 == im80)
+
+
+def test_slice_list():
+    a = ACAImage(im6, row0=1, col0=2)
+    r = [1, 2, 3]
+    c = [3, 4, 5]
+    a2 = a[r, c]
+    assert np.all(a2 == im6[r, c])
+
+    a2 = a.aca[r, c]
+    assert np.all(a2 == im6[r - a.row0, c - a.col0])
 
 
 def test_meta_ref():
