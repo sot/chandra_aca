@@ -25,8 +25,10 @@ def test_init():
     assert a.meta == {'IMGROW0': 1, 'IMGCOL0': 2}
 
     # Init as zeroes with shape
-    a = ACAImage(shape=(1024, 1024), row0=-512, col0=-512)
+    a = ACAImage(shape=(1024, 1024), row0=-512.0, col0=-512.0)
     assert np.all(a == np.zeros((1024, 1024)))
+    assert type(a.row0) is int
+    assert type(a.col0) is int
 
     a = ACAImage(im6, meta={'IMGROW0': 1, 'IMGCOL0': 2})
     assert a.row0 == 1
@@ -35,10 +37,12 @@ def test_init():
 
 def test_row_col_set():
     a = ACAImage(im6)
-    a.row0 = -10
-    a.col0 = -20
+    a.row0 = -10.0
+    a.col0 = -20.0
     assert a.row0 == -10
     assert a.col0 == -20
+    assert type(a.row0) is int
+    assert type(a.col0) is int
 
 
 def test_meta_set():
