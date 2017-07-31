@@ -101,7 +101,7 @@ def test_slice():
     assert np.all(a == im60)
 
     # Slice using an ACAImage
-    a2 = ACAImage(im8, row0=1, col0=1)
+    a2 = ACAImage(im8, row0=1.0, col0=1.0)
     assert np.all(a2[a] == im8[0:6, 1:7])
 
     # Set slice using an ACAImage
