@@ -62,7 +62,7 @@ class ACAImage(np.ndarray):
             imgax = 'IMG' + ax.upper()
             meta.setdefault(imgax, 0)
             if ax in kwargs:
-                meta[imgax] = int(kwargs.pop(ax))
+                meta[imgax] = np.int64(kwargs.pop(ax))
 
         try:
             arr = np.array(*args, **kwargs)
@@ -189,7 +189,7 @@ class ACAImage(np.ndarray):
 
     @row0.setter
     def row0(self, value):
-        self.meta['IMGROW0'] = int(value)
+        self.meta['IMGROW0'] = np.int64(value)
 
     @property
     def col0(self):
@@ -197,4 +197,4 @@ class ACAImage(np.ndarray):
 
     @col0.setter
     def col0(self, value):
-        self.meta['IMGCOL0'] = int(value)
+        self.meta['IMGCOL0'] = np.int64(value)
