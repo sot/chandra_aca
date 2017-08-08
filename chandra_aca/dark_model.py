@@ -29,15 +29,12 @@ xall = darkbins.bin_centers
 imin = 0
 imax = len(xall)
 
-# scale and offset fit of polynomial to acq failures in log space
-acq_fit = {
-    'scale': (-0.491, 0.990, 0.185),
-    'offset': (0.280, 0.999, -1.489),
-    }
-
+# Warm threshold used in fitting acq prob model.  This constant is
+# not used in any configured code, but leave here just in case.
 warm_threshold = 100.
 
-DARK_SCALE_4C = 1.0 / 0.70  # Increase in dark current per 4 degC increase in T_ccd
+# Increase in dark current per 4 degC increase in T_ccd
+DARK_SCALE_4C = 1.0 / 0.70
 
 
 def dark_temp_scale(t_ccd, t_ccd_ref=-19.0, scale_4c=None):
