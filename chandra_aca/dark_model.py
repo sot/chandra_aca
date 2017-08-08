@@ -2,9 +2,7 @@
 Routines related to the dark current model and guide / acq success prediction.
 """
 
-from six.moves import zip
 import numpy as np
-from numpy import exp, log, arange
 import warnings
 
 import Ska.Numpy
@@ -19,8 +17,8 @@ from . import darkbins
 # Fixed gaussian for smoothing the broken power law
 dx = 0.1
 sigma = 0.30                            # Gaussian sigma in log space
-xg = arange(-2.5 * sigma, 2.5 * sigma, dx, dtype=float)
-yg = exp(-0.5 * (xg / sigma) ** 2)
+xg = np.arange(-2.5 * sigma, 2.5 * sigma, dx, dtype=float)
+yg = np.exp(-0.5 * (xg / sigma) ** 2)
 yg /= np.sum(yg)
 
 NPIX = 1024 ** 2
@@ -40,6 +38,7 @@ acq_fit = {
 warm_threshold = 100.
 
 DARK_SCALE_4C = 1.0 / 0.70  # Increase in dark current per 4 degC increase in T_ccd
+
 
 def dark_temp_scale(t_ccd, t_ccd_ref=-19.0, scale_4c=None):
     """Return the multiplicative scale factor to convert a CCD dark map
