@@ -73,18 +73,6 @@ def dark_temp_scale(t_ccd, t_ccd_ref=-19.0, scale_4c=None):
     return scale_4c ** ((t_ccd_ref - t_ccd) / 4.0)
 
 
-def get_dark_model(date, t_ccd):
-    """
-    Return the dark current model corresponding to ``date`` and ``t_ccd``.
-
-    :param date: date in any DateTime format
-    :param t_ccd: CCD temperature (deg C)
-
-    :returns: TBD
-    """
-    raise NotImplementedError()
-
-
 def get_dark_hist(date, t_ccd):
     """
     Return the dark current histogram corresponding to ``date`` and ``t_ccd``.
