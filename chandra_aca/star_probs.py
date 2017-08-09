@@ -48,12 +48,6 @@ SOTA_FIT_ONLY_1P5_WITH_MS = [8.541709287866361,
 # Multiple stars flag disabled (starting operationally with FEB0816).  Fit
 # with fit_flight_acq_prob_model.ipynb in the aca_stats repo.
 
-SOTA_FIT_NO_1P5_NO_MS = [3.8981465963928441, 5.5208216663935739, 2.0187091292966395,  # offsets
-                         -2.2103221221745111, 0.37783433000968347, 0.10035462978065751]  # scales
-
-SOTA_FIT_ONLY_1P5_NO_MS = [4.4598955940740002, 7.3654868182850661, 4.380944461070051,
-                           -1.4766615762918867, 0.53879889036008366, -0.36463411364645115]
-
 # Coefficents for dependence of probability on search box size (halfwidth).  From:
 # https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
 
@@ -64,6 +58,21 @@ HALFWIDTH_B2 = -0.30
 MIN_ACQ_PROB = 1e-6
 MAX_ACQ_PROB = 0.985
 
+SOTA_FIT_NO_1P5_NO_MS = [4.38145,  # scl0
+                         6.22480,  # scl1
+                         2.20862,  # scl2
+                         -2.24494,  # off0
+                         0.32180,  # off1
+                         0.08306,  # off2
+                         ]
+
+SOTA_FIT_ONLY_1P5_NO_MS = [4.73283,  # scl0
+                           7.63540,  # scl1
+                           4.56612,  # scl2
+                           -1.49046,  # off0
+                           0.53391,  # off1
+                           -0.37074,  # off2
+                           ]
 
 # Default global values using NO_MS settings.  Kinda ugly.
 def set_acq_model_ms_filter(ms_enabled=False):
