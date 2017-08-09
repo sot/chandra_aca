@@ -6,17 +6,17 @@ from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_
 
 def test_t_ccd_warm_limit():
     out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=(2, 8e-3))
-    assert np.allclose(out[0], -15.2449, atol=0.01, rtol=0)
+    assert np.allclose(out[0], -14.7541, atol=0.01, rtol=0)
     assert np.allclose(out[1], 0.008, atol=0.0001, rtol=0)
 
     out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=5.0)
-    assert np.allclose(out[0], -15.143, atol=0.01, rtol=0)
+    assert np.allclose(out[0], -14.609, atol=0.01, rtol=0)
     assert np.allclose(out[1], 5.0, atol=0.01, rtol=0)
 
 
 def test_mag_for_p_acq():
     mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0)
-    assert np.allclose(mag, 10.821, rtol=0, atol=0.01)
+    assert np.allclose(mag, 10.867, rtol=0, atol=0.01)
 
 
 def test_halfwidth_adjustment():
@@ -50,15 +50,15 @@ def test_acq_success_prob():
 
     # Vary date
     probs = acq_success_prob(date=date, t_ccd=-10, mag=10.3, spoiler=False, color=0.6)
-    assert np.allclose(probs, [0.76563703, 0.72643584, 0.68541268, 0.64104787])
+    assert np.allclose(probs, [0.78033749, 0.75681248, 0.73114306, 0.70326393])
 
     # Vary t_ccd
     probs = acq_success_prob(date='2017:001', t_ccd=t_ccd, mag=10.3, spoiler=False, color=0.6)
-    assert np.allclose(probs, [0.85391686, 0.7958066, 0.72391895, 0.64104787])
+    assert np.allclose(probs, [0.87533264,  0.82770406,  0.77013684,  0.70326393])
 
     # Vary mag
     probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=mag, spoiler=False, color=0.6)
-    assert np.allclose(probs, [0.985, 0.85682991, 0.64104787, 0.32454816])
+    assert np.allclose(probs, [0.985,  0.88094708,  0.70326393,  0.41512498])
 
     # Vary spoiler
     probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=10.3, spoiler=spoiler, color=0.6)
@@ -66,5 +66,5 @@ def test_acq_success_prob():
 
     # Vary color
     probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=10.3, spoiler=False, color=color)
-    assert np.allclose(probs, [0.64104787,  0.27526596,  0.29436984])
+    assert np.allclose(probs, [0.70326393,  0.30198153,  0.35834248])
     assert np.allclose(p_0p7color, probs[1] / probs[0])
