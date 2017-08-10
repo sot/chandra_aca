@@ -74,6 +74,15 @@ SOTA_FIT_ONLY_1P5_NO_MS = [4.73283,  # scl0
                            -0.37074,  # off2
                            ]
 
+SOTA_FIT_2022 = [7.78471,  # scl0
+                 -3.70337,  # scl1
+                 -2.84246,  # scl2
+                 -3.19593,  # off0
+                 2.86478,  # off1
+                 1.28957,  # off2
+                 ]
+
+
 # Default global values using NO_MS settings.  Kinda ugly.
 def set_acq_model_ms_filter(ms_enabled=False):
     """
@@ -297,10 +306,14 @@ def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
 
     m10 = mag - 10.0
     box120 = (halfwidth - 120) / 120  # Normalized halfwidth, 0.0 for halfwidth=120
+    color1p5 = color == 1.5
+    # TEMPORARY hack to select 2022.  warm_frac < 0.27 for flight data circa Aug 2017.
+    warmfrac27 = warm_frac > 0.27
 
     p_fail = np.zeros_like(mag)
-    for mask, fit_pars in ((color == 1.5, SOTA_FIT_ONLY_1P5),
-                           (color != 1.5, SOTA_FIT_NO_1P5)):
+    for mask, fit_pars in ((color1p5 & ~warmfrac27, SOTA_FIT_ONLY_1P5),
+                           (~color1p5 & ~warmfrac27, SOTA_FIT_NO_1P5),
+                           (warmfrac27, SOTA_FIT_2022)):
         if np.any(mask):
             scale = np.polyval(fit_pars[0:3][::-1], m10)
             offset = np.polyval(fit_pars[3:6][::-1], m10)
