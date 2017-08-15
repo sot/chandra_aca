@@ -223,6 +223,16 @@ def get_sbp_pars(dates):
 
 
 def get_warm_fracs(warm_threshold, date='2013:001', T_ccd=-19.0):
+    """
+    Calculate fraction of pixels in modeled dark current distribution
+    above warm threshold(s).
+
+    :param warm_threshold: scalar or list of threshold(s) in e-/sec
+    :param date: date to use for modeled dark current distribution/histogram
+    :param T_ccd: temperature (C) of modeled dark current distribution
+    :returns: list or scalar of warm fractions (depends on warm_threshold type)
+    """
+
     x, xbins, y = get_dark_hist(date, T_ccd)
     warm_thresholds, is_scalar = as_array(warm_threshold)
 
