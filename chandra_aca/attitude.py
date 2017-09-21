@@ -1,3 +1,4 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
 Calculate attitude based on star centroid values using a fast linear
 least-squares method.

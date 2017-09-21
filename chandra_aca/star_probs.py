@@ -1,3 +1,4 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
 Functions related to probabilities for star acquisition and guide tracking.
 """
