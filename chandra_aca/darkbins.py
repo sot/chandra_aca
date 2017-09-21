@@ -1,3 +1,4 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Define bins for dark current distribution calculations"""
 import numpy as np
 

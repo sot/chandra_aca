@@ -1,3 +1,4 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 from itertools import count
 from copy import deepcopy
 from six.moves import zip
