@@ -28,7 +28,7 @@ def test_halfwidth_adjustment():
     p120 = acq_success_prob(mag=mag, halfwidth=120)
     pacq = acq_success_prob(mag=mag, halfwidth=halfwidth)
     mults = pacq / p120
-    assert np.allclose(mults, [1.06987729,  1.0438542 ,  1.,  0.91504106,  0.83987265])
+    assert np.allclose(mults, [1.07144731, 1.04454684, 1., 0.9139956, 0.83812176])
 
 
 def test_acq_success_prob_date():
