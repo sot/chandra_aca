@@ -1,7 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import numpy as np
+import pytest
 
-from ..aca_image import ACAImage
+from ..aca_image import ACAImage, centroid_fm
 
 im6 = np.arange(6**2).reshape((6, 6))
 im8 = np.arange(8**2).reshape((8, 8))
@@ -129,3 +130,53 @@ def test_meta_ref():
 
     a2 = a[1:, 2:]
     assert a2.meta is not a.meta
+
+
+def test_fm_centroid():
+    # 6x6 image
+    img = np.zeros((6, 6), dtype=float)
+    img[0, 0] = 1000  # Should be ignored by mouse-bite
+    img[2, 2] = 100
+    row, col, norm = centroid_fm(img)
+    assert np.isclose(row, 2.0)
+    assert np.isclose(col, 2.0)
+    assert np.isclose(norm, 100)
+
+    # 8x8 image with background of 10
+    img = np.zeros((8, 8), dtype=float) + 10
+    img[0, 0] = 1000  # Should be ignored by mouse-bite
+    img[1, 1] = 1000  # Should be ignored by mouse-bite
+    img[3, 3] = 100
+    row, col, norm = centroid_fm(img, bgd=10)
+    assert np.isclose(row, 3.0)
+    assert np.isclose(col, 3.0)
+    assert np.isclose(norm, 90)
+
+    # Check 'edge' coordinates
+    row, col, norm = centroid_fm(img, bgd=10, pix_zero_loc='edge')
+    assert np.isclose(row, 3.5)
+    assert np.isclose(col, 3.5)
+    assert np.isclose(norm, 90)
+
+    # Non-zero background
+    img = np.zeros((8, 8), dtype=float) + 10
+    img[3, 3] += 100
+    img[4, 4] += 100
+    row, col, norm = centroid_fm(img)
+    assert np.isclose(row, 3.5)
+    assert np.isclose(col, 3.5)
+    assert np.isclose(norm, 32 * 10 + 200)
+
+    # Exceptions
+    with pytest.raises(ValueError) as err:
+        row, col, norm = centroid_fm(img, bgd=100)
+    assert 'non-positive' in str(err)
+
+    with pytest.raises(ValueError) as err:
+        row, col, norm = centroid_fm(img, pix_zero_loc='FAIL')
+    assert 'pix_zero_loc' in str(err)
+
+    # Norm clip (with expected bogus centroid value)
+    row, col, norm = centroid_fm(img, bgd=100, pix_zero_loc='edge', norm_clip=1.0)
+    assert np.isclose(row, -9379.5)
+    assert np.isclose(col, -9379.5)

@@ -6,7 +6,7 @@ from six.moves import zip
 import numpy as np
 from astropy.utils.compat.misc import override__dir__
 
-__all__ = ['ACAImage']
+__all__ = ['ACAImage', 'centroid_fm']
 
 
 class ACAImage(np.ndarray):
@@ -199,3 +199,70 @@ class ACAImage(np.ndarray):
     @col0.setter
     def col0(self, value):
         self.meta['IMGCOL0'] = np.int64(value)
+
+
+def _prep_6x6(img, bgd=None):
+    """
+    Subtract background and in case of 8x8 image
+    cut and return the 6x6 inner section.
+    """
+    # Cast to an ndarray (without copying)
+    img = img.view(np.ndarray)
+
+    if isinstance(bgd, np.ndarray):
+        bgd = bgd.view(np.ndarray)
+
+    if bgd is not None:
+        img = img - bgd
+
+    if img.shape == (8, 8):
+        img = img[1:7, 1:7]
+
+    return img
+
+
+def centroid_fm(img, bgd=None, pix_zero_loc='center', norm_clip=None):
+    """
+    First moment centroid of ``img``.
+
+    Return FM centroid in coords where lower left pixel of image has value
+    (0.0, 0.0) at the center (for pix_zero_loc='center') or the lower-left edge
+    (for pix_zero_loc='edge').
+
+    :param img: NxN ndarray
+    :param bgd: background to subtract, float of NXN ndarray
+    :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
+    :param norm_clip: clip image norm at this min value (default is None and
+                      implies Exception for non-positive norm)
+
+    :returns: row, col, norm float
+    """
+    sz_r, sz_c = img.shape
+    if sz_r != sz_c:
+        raise ValueError('input img must be square')
+
+    rw, cw = np.mgrid[1:7, 1:7] if sz_r == 8 else np.mgrid[0:sz_r, 0:sz_r]
+
+    if sz_r in (6, 8):
+        img = _prep_6x6(img, bgd)
+        img[[0, 0, 5, 5], [0, 5, 0, 5]] = 0
+
+    norm = np.sum(img)
+    if norm_clip is not None:
+        norm = norm.clip(norm_clip, None)
+    else:
+        if norm <= 0:
+            raise ValueError('non-positive image norm {}'.format(norm))
+
+    row = np.sum(rw * img) / norm
+    col = np.sum(cw * img) / norm
+
+    if pix_zero_loc == 'edge':
+        # Transform row/col values from 'center' convention (as returned
+        # by centroiding) to the 'edge' convention requested by user.
+        row = row + 0.5
+        col = col + 0.5
+    elif pix_zero_loc != 'center':
+        raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
+
+    return row, col, norm
