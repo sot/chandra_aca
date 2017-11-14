@@ -8,7 +8,7 @@ from six.moves import zip
 import numpy as np
 from astropy.utils.compat.misc import override__dir__
 
-__all__ = ['ACAImage', 'centroid_fm', 'EIGHT_LABELS']
+__all__ = ['ACAImage', 'centroid_fm', 'AcaPsfLibrary', 'EIGHT_LABELS']
 
 EIGHT_LABELS = np.array([['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'],
                          ['I1', 'J1', 'K1', 'L1', 'M1', 'N1', 'O1', 'P1'],
