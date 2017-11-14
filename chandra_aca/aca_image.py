@@ -1,12 +1,26 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from itertools import count
+import os
+from math import floor
+from itertools import count, chain
 from copy import deepcopy
 from six.moves import zip
 
 import numpy as np
 from astropy.utils.compat.misc import override__dir__
 
-__all__ = ['ACAImage', 'centroid_fm']
+__all__ = ['ACAImage', 'centroid_fm', 'EIGHT_LABELS']
+
+EIGHT_LABELS = np.array([['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'],
+                         ['I1', 'J1', 'K1', 'L1', 'M1', 'N1', 'O1', 'P1'],
+                         ['A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'],
+                         ['I2', 'J2', 'K2', 'L2', 'M2', 'N2', 'O2', 'P2'],
+                         ['A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'],
+                         ['I3', 'J3', 'K3', 'L3', 'M3', 'N3', 'O3', 'P3'],
+                         ['A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'],
+                         ['I4', 'J4', 'K4', 'L4', 'M4', 'N4', 'O4', 'P4']])
+"""Constant for labeling ACA image pixels using the EQ-278 spec format.
+Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
+row and highest col; pixel I4 has the highest row and lowest column."""
 
 
 class ACAImage(np.ndarray):
@@ -266,3 +280,94 @@ def centroid_fm(img, bgd=None, pix_zero_loc='center', norm_clip=None):
         raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
 
     return row, col, norm
+
+
+class AcaPsfLibrary(object):
+    """
+    Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
+    (pixelated) ACA PSF over a grid of subpixel locations.
+
+    :param filename: file name of ACA PSF library (default=built-in file)
+    :returns: AcaPsfLibrary object
+    """
+
+    def __init__(self, filename=None):
+        from astropy.table import Table  # Table is a somewhat-heavy import
+        psfs = {}
+
+        if filename is None:
+            filename = os.path.join(os.path.dirname(__file__), 'aca_psf_lib.dat')
+        dat = Table.read(filename, format='ascii.basic', guess=False)
+        self.dat = dat
+
+        # Sub-pixel grid spacing in pixels.  This assumes the sub-pixels are
+        # all the same size and square, which is indeed the case.
+        self.drc = dat['row_bin_right_edge'][0] - dat['row_bin_left_edge'][0]
+
+        for row in dat:
+            ii = row['row_bin_idx']
+            jj = row['col_bin_idx']
+            psf = np.array([row[label] for label in chain(*EIGHT_LABELS)]).reshape(8, 8)
+            psfs[ii, jj] = psf
+
+        self.psfs = psfs
+
+    def get_psf_image(self, row, col, pix_zero_loc='center'):
+        """
+        Get interpolated ACA PSF image that corresponds to pixel location
+        ``row``, ``col``.
+
+        :param row: float row value of PSF centroid
+        :param col: float col value of PSF centroid
+        :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
+
+        :returns: 8x8 PSF image normalized to 1.0 (AcaImage object)
+        """
+        drc = self.drc
+
+        if pix_zero_loc == 'center':
+            # Transform to 'edge' coordinates (pixel lower-left corner at 0.0, 0.0)
+            row = row + 0.5
+            col = col + 0.5
+        elif pix_zero_loc != 'edge':
+            raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
+
+        # 8x8 image row0, col0
+        round_row = round(row)
+        round_col = round(col)
+        row0 = round_row - 4
+        col0 = round_col - 4
+
+        # Subpixel position in range (-0.5, 0.5)
+        r = row - round_row
+        c = col - round_col
+
+        # Floating point index into PSF library in range (0.0, 10.0)
+        # (assuming 10x10 grid of PSFs covering central pixel
+        ix = (r + 0.5) / drc - 0.5
+        iy = (c + 0.5) / drc - 0.5
+
+        # Int index into PSF library
+        ii = int(floor(ix))
+        jj = int(floor(iy))
+
+        # Following wikipedia notation (Unit Square section of
+        # https://en.wikipedia.org/wiki/Bilinear_interpolation)
+
+        # Float index within subpixel bin in range (0, 1)
+        x = ix - ii
+        y = iy - jj
+
+        # Finally the bilinear interpolation of the PSF images.
+        f = self.psfs
+        b0 = (1 - x) * (1 - y)
+        b1 = x * (1 - y)
+        b2 = (1 - x) * y
+        b3 = x * y
+        P0 = f[ii, jj]
+        P1 = f[ii + 1, jj]
+        P2 = f[ii, jj + 1]
+        P3 = f[ii + 1, jj + 1]
+        psf = P0 * b0 + P1 * b1 + P2 * b2 + P3 * b3
+
+        return ACAImage(psf, row0=row0, col0=col0)
