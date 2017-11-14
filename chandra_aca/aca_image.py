@@ -194,6 +194,29 @@ class ACAImage(np.ndarray):
         else:
             super(ACAImage, self).__setattr__(attr, value)
 
+    def centroid_fm(self, bgd=None, pix_zero_loc='center', norm_clip=None):
+        """
+        First moment centroid of ``self`` using 6x6 mousebitten image for input
+        6x6 or 8x8 images.
+
+        Note that the returned ``norm`` is the sum of the background-subtracted 6x6
+        mousebitten image, not the entire image.
+
+        :param bgd: background to subtract, scalar or NxN ndarray (float)
+        :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
+        :param norm_clip: clip image norm at this min value (default is None and
+                          implies Exception for non-positive norm)
+
+        :returns: row, col, norm float
+        """
+        row, col, norm = centroid_fm(self, bgd=bgd, pix_zero_loc=pix_zero_loc,
+                                     norm_clip=norm_clip)
+        if self._aca_coords:
+            row += self.row0
+            col += self.col0
+
+        return row, col, norm
+
     @override__dir__
     def __dir__(self):
         return list(self.meta)
@@ -215,14 +238,12 @@ class ACAImage(np.ndarray):
         self.meta['IMGCOL0'] = np.int64(value)
 
 
+
 def _prep_6x6(img, bgd=None):
     """
     Subtract background and in case of 8x8 image
     cut and return the 6x6 inner section.
     """
-    # Cast to an ndarray (without copying)
-    img = img.view(np.ndarray)
-
     if isinstance(bgd, np.ndarray):
         bgd = bgd.view(np.ndarray)
 
@@ -251,6 +272,9 @@ def centroid_fm(img, bgd=None, pix_zero_loc='center', norm_clip=None):
 
     :returns: row, col, norm float
     """
+    # Cast to an ndarray (without copying)
+    img = img.view(np.ndarray)
+
     sz_r, sz_c = img.shape
     if sz_r != sz_c:
         raise ValueError('input img must be square')
