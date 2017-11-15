@@ -42,8 +42,20 @@ ACA alignment drift
 .. automodule:: chandra_aca.drift
    :members:
 
+ACA images
+----------
+
+The `aca_image` module contains classes and utilities related to ACA readout
+images.  This includes the `ACAImage class`_ for manipulating images in
+ACA coordinates, a first moment centroiding routine, and a library for
+generating synthetic ACA images that have a high-fidelity point spread function
+(PSF).
+
+.. automodule:: chandra_aca.aca_image
+   :members:
+
 ACAImage class
---------------
+^^^^^^^^^^^^^^
 
 ACAImage is an ndarray subclass that supports functionality for the Chandra
 ACA. Most importantly it allows image indexing and slicing in absolute
@@ -174,6 +186,3 @@ as object attributes instead of going through the ``meta`` dict::
   >>> a.fail
   Traceback (most recent call last):
   AttributeError: 'ACAImage' object has no attribute 'fail'
-
-.. automodule:: chandra_aca.aca_image
-   :members:

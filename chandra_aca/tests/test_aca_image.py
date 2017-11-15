@@ -180,3 +180,60 @@ def test_fm_centroid():
     row, col, norm = centroid_fm(img, bgd=100, pix_zero_loc='edge', norm_clip=1.0)
     assert np.isclose(row, -9379.5)
     assert np.isclose(col, -9379.5)
+
+
+@pytest.mark.parametrize('aca', [True, False])
+def test_aca_image_fm_centroid(aca):
+    # 6x6 image
+    row0 = -150
+    col0 = 200
+    img = np.zeros((6, 6), dtype=float)
+    img = ACAImage(img, row0=row0, col0=col0)
+    img[0, 0] = 1000  # Should be ignored by mouse-bite
+    img[2, 2] = 100
+    row, col, norm = (img.aca if aca else img).centroid_fm()
+    assert np.isclose(row, 2.0 + (row0 if aca else 0))
+    assert np.isclose(col, 2.0 + (col0 if aca else 0))
+    assert np.isclose(norm, 100)
+
+    # 8x8 image with background of 10
+    img = np.zeros((8, 8), dtype=float) + 10
+    img = ACAImage(img, row0=row0, col0=col0)
+    img[0, 0] = 1000  # Should be ignored by mouse-bite
+    img[1, 1] = 1000  # Should be ignored by mouse-bite
+    img[3, 3] = 100
+    row, col, norm = (img.aca if aca else img).centroid_fm(bgd=10)
+    assert np.isclose(row, 3.0 + (row0 if aca else 0))
+    assert np.isclose(col, 3.0 + (col0 if aca else 0))
+    assert np.isclose(norm, 90)
+
+    # Check 'edge' coordinates
+    row, col, norm = (img.aca if aca else img).centroid_fm(bgd=10, pix_zero_loc='edge')
+    assert np.isclose(row, 3.5 + (row0 if aca else 0))
+    assert np.isclose(col, 3.5 + (col0 if aca else 0))
+    assert np.isclose(norm, 90)
+
+    # Non-zero background
+    img = np.zeros((8, 8), dtype=float) + 10
+    img = ACAImage(img, row0=row0, col0=col0)
+    img[3, 3] += 100
+    img[4, 4] += 100
+    row, col, norm = (img.aca if aca else img).centroid_fm()
+    assert np.isclose(row, 3.5 + (row0 if aca else 0))
+    assert np.isclose(col, 3.5 + (col0 if aca else 0))
+    assert np.isclose(norm, 32 * 10 + 200)
+
+    # Exceptions
+    with pytest.raises(ValueError) as err:
+        row, col, norm = (img.aca if aca else img).centroid_fm(bgd=100)
+    assert 'non-positive' in str(err)
+
+    with pytest.raises(ValueError) as err:
+        row, col, norm = (img.aca if aca else img).centroid_fm(pix_zero_loc='FAIL')
+    assert 'pix_zero_loc' in str(err)
+
+    # Norm clip (with expected bogus centroid value)
+    row, col, norm = (img.aca if aca else img).centroid_fm(bgd=100, pix_zero_loc='edge',
+                                                           norm_clip=1.0)
+    assert np.isclose(row, -9379.5 + (row0 if aca else 0))
+    assert np.isclose(col, -9379.5 + (col0 if aca else 0))
