@@ -311,6 +311,22 @@ class AcaPsfLibrary(object):
     Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
     (pixelated) ACA PSF over a grid of subpixel locations.
 
+    Example::
+
+      >>> from chandra_aca.aca_image import AcaPsfLibrary
+      >>> apl = AcaPsfLibrary()  # Reads in PSF library data file
+      >>> img = apl.get_psf_image(row=-10.456, col=250.123, norm=100000)
+      >>> img
+      <ACAImage row0=-14 col0=247
+      array([[   39,    54,    56,    52,    37,    33,    30,    21],
+             [   79,   144,   260,   252,   156,    86,    67,    36],
+             [  162,   544,  2474,  5269,  2012,   443,   163,    57],
+             [  255,  1420, 10083, 12688, 11273,  1627,   302,    78],
+             [  186,  1423,  8926,  8480, 12292,  2142,   231,    64],
+             [   80,   344,  1384,  6509,  4187,   665,   111,    43],
+             [   40,    78,   241,   828,   616,   188,    65,    29],
+             [   24,    39,    86,   157,   139,    69,    48,    32]])>
+
     :param filename: file name of ACA PSF library (default=built-in file)
     :returns: AcaPsfLibrary object
     """
@@ -336,13 +352,14 @@ class AcaPsfLibrary(object):
 
         self.psfs = psfs
 
-    def get_psf_image(self, row, col, pix_zero_loc='center'):
+    def get_psf_image(self, row, col, norm=1.0, pix_zero_loc='center'):
         """
         Get interpolated ACA PSF image that corresponds to pixel location
         ``row``, ``col``.
 
-        :param row: float row value of PSF centroid
-        :param col: float col value of PSF centroid
+        :param row: (float) row value of PSF centroid
+        :param col: (float) col value of PSF centroid
+        :param norm: (float) summed intensity of PSF image
         :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
 
         :returns: 8x8 PSF image normalized to 1.0 (AcaImage object)
@@ -393,5 +410,8 @@ class AcaPsfLibrary(object):
         P2 = f[ii, jj + 1]
         P3 = f[ii + 1, jj + 1]
         psf = P0 * b0 + P1 * b1 + P2 * b2 + P3 * b3
+
+        if norm != 1.0:
+            psf *= norm
 
         return ACAImage(psf, row0=row0, col0=col0)
