@@ -47,3 +47,24 @@ def test_centroids():
                     assert np.isclose(c, cc, rtol=0, atol=atol)
 
     return outr, outc
+
+
+def test_psf_at_index_location():
+    """Test that requesting a PSF image at exactly an existing location in the
+    library gives the expected result"""
+    # Generate row/col position at exactly a bin center for ap.psfs[2, 3]
+    dat = ap.dat
+    ii = 2
+    jj = 3
+    ok = (dat['row_bin_idx'] == ii) & (dat['col_bin_idx'] == jj)
+    i22 = np.flatnonzero(ok)
+    row = dat[i22]
+
+    # Row/col of center of bin
+    rc = (row['row_bin_left_edge'] + row['row_bin_right_edge']) / 2.0
+    cc = (row['col_bin_left_edge'] + row['col_bin_right_edge']) / 2.0
+
+    psf_direct = ap.psfs[ii, jj]
+    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc='edge')
+
+    assert np.allclose(psf_direct, psf_interp, rtol=0, atol=1e-5)
