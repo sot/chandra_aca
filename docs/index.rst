@@ -67,6 +67,9 @@ information.  Any keys which are all upper-case will be exposed as object
 attributes, e.g. ``img.BGDAVG`` <=> ``img.meta['BGDAVG']``.  The ``row0``
 attribute  is a proxy for ``img.meta['IMGROW0']``, and likewise for ``col0``.
 
+Creation
+""""""""
+
 When initializing an ``ACAImage``, additional ``*args`` and ``**kwargs`` are
 used to try initializing via ``np.array(*args, **kwargs)``.  If this fails
 then ``np.zeros(*args, **kwargs)`` is tried.  In this way one can either
@@ -96,6 +99,16 @@ One could also initialize by providing a ``meta`` dict::
          [ 4,  5,  6,  7],
          [ 8,  9, 10, 11],
          [12, 13, 14, 15]])>
+
+.. Note::
+
+   The printed representation of an ``ACAImage`` is always shown as the
+   rounded integer version of the values, but the full float value
+   is stored internally.  If you ``print()`` the image then the floating
+   point values are shown.
+
+Image access and setting
+""""""""""""""""""""""""
 
 You can access array elements as usual, and in fact do any normal numpy array operations::
 
@@ -161,11 +174,99 @@ within the area of ``a``::
          [  0,   0,   0,   0,   0,   0,   0,   0],
          [  0,   0,   0,   0,   0,   0,   0,   0]])>
 
-.. Note::
+Image arithmetic operations
+"""""""""""""""""""""""""""
 
-   The printed representation of an ``ACAImage`` is always shown as the
-   rounded integer version of the values, but the full float value
-   is stored internally.
+In addition to doing image arithmetic operations using explicit slices
+as shown previously, one can also use normal arithmetic operators like
+``+`` (for addition) or ``+=`` for in-place addition.
+
+**When the right-side operand is included via its ``.aca`` attribute, then the operation is
+done in ACA coordinates.**
+
+This means that the operation is only done on overlapping pixels.  This is
+shown in the examples below.  The supported operations for this are:
+
+- Addition (``+`` and ``+=``)
+- Subtraction (``-`` and ``-=``)
+- Multiplication (``*`` and ``*=``)
+- Division (``/`` and ``/=``)
+- True division (``/`` and ``/=`` in Py3+ and with __future__ division)
+- Floor division (``//`` and ``//=``)
+- Modulus (``%`` and ``%=``)
+- Power (``**`` and ``**=``)
+
+**Initialize images (different shape and offset)**
+
+  >>> a = ACAImage(shape=(6, 6), row0=10, col0=20) + 1
+  >>> a
+  <ACAImage row0=10 col0=20
+  array([[1, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1]])>
+  >>> b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=8, col0=18) * 10
+  >>> b
+  <ACAImage row0=8 col0=18
+  array([[ 10,  20,  30,  40],
+         [ 50,  60,  70,  80],
+         [ 90, 100, 110, 120],
+         [130, 140, 150, 160]])>
+
+**Add images (output has shape and row0/col0 of left side input)**
+
+  >>> a + b.aca
+  <ACAImage row0=10 col0=20
+  array([[111, 121,   1,   1,   1,   1],
+         [151, 161,   1,   1,   1,   1],
+         [  1,   1,   1,   1,   1,   1],
+         [  1,   1,   1,   1,   1,   1],
+         [  1,   1,   1,   1,   1,   1],
+         [  1,   1,   1,   1,   1,   1]])>
+  >>> b + a.aca
+  <ACAImage row0=8 col0=18
+  array([[ 10,  20,  30,  40],
+         [ 50,  60,  70,  80],
+         [ 90, 100, 111, 121],
+         [130, 140, 151, 161]])>
+
+  >>> b += a.aca
+  >>> b
+  <ACAImage row0=8 col0=18
+  array([[ 10,  20,  30,  40],
+         [ 50,  60,  70,  80],
+         [ 90, 100, 111, 121],
+         [130, 140, 151, 161]])>
+
+**Make ``b`` image be fully contained in ``a``**
+
+  >>> b.row0 = 11
+  >>> b.col0 = 21
+  >>> a += b.aca
+  >>> a
+  <ACAImage row0=10 col0=20
+  array([[  1,   1,   1,   1,   1,   1],
+         [  1,  11,  21,  31,  41,   1],
+         [  1,  51,  61,  71,  81,   1],
+         [  1,  91, 101, 112, 122,   1],
+         [  1, 131, 141, 152, 162,   1],
+         [  1,   1,   1,   1,   1,   1]])>
+
+**Normal image addition fails if shape is mismatched**
+
+  >>> a + b
+  Traceback (most recent call last):
+    File "<ipython-input-19-f96fb8f649b6>", line 1, in <module>
+      a + b
+    File "chandra_aca/aca_image.py", line 68, in _operator
+      out = op(self, other)  # returns self for inplace ops
+  ValueError: operands could not be broadcast together with shapes (6,6) (4,4)
+
+
+Meta-data
+"""""""""
 
 Finally, the ``ACAImage`` object can store arbitrary metadata in the
 ``meta`` dict attribute.  However, in order to make this convenient and
