@@ -26,17 +26,21 @@ row and highest col; pixel I4 has the highest row and lowest column."""
 def _operator_factory(operator, inplace=False):
     """
     Generate data model methods like __add__(self, other) and
-    __iadd__(self, other).  These always operate in ACA coordinates
-    and any non-overlapping pixels are ignored.
+    __iadd__(self, other).  These always operate in the coordinate
+    system of the left and right operands.  If both are in ACA
+    coordinates then any non-overlapping pixels are ignored.
     """
+    # Define the operator and the in-place version (which might be the
+    # same if op is already in-place)
     op = getattr(np.ndarray, '__{}__'.format(operator))
-    iop = op if inplace else getattr(np.ndarray, '__i{}__'.format(operator))
+    inplace_op = op if inplace else getattr(np.ndarray, '__i{}__'.format(operator))
 
     def _operator(self, other):
-        if not isinstance(other, ACAImage):
-            out = op(self, other)  # returns self for inplace ops
 
-        else:
+        if isinstance(other, ACAImage) and (other._aca_coords or self._aca_coords):
+            out = self if inplace else self.copy()
+
+            # True for expressions like img1.aca + img2.aca
             sz_r0, sz_c0 = self.shape
             sz_r1, sz_c1 = other.shape
 
@@ -58,8 +62,10 @@ def _operator_factory(operator, inplace=False):
                 sz_c = c_max - c_min
                 section = ACAImage(shape=(sz_r, sz_c), row0=row0, col0=col0)
 
-                out = self if inplace else self.copy()
-                iop(out[section], other[r_min:r_max, c_min:c_max])
+                inplace_op(out[section], other.view(np.ndarray)[r_min:r_max, c_min:c_max])
+
+        else:
+            out = op(self, other)  # returns self for inplace ops
 
         return out
     return _operator

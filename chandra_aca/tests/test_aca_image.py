@@ -237,3 +237,30 @@ def test_aca_image_fm_centroid(aca):
                                                            norm_clip=1.0)
     assert np.isclose(row, -9379.5 + (row0 if aca else 0))
     assert np.isclose(col, -9379.5 + (col0 if aca else 0))
+
+
+def test_aca_image_operators():
+    row0 = 10
+    col0 = 20
+    a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
+    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0-2, col0=col0-1) * 10
+    ab = [[12, 22, 32, 42],
+          [52, 62, 72, 82],
+          [92, 102, 112, 122],
+          [132, 142, 152, 162]]
+    assert np.all(a + b == ab)
+
+    ab_aca = [[102, 112, 122, 2],
+              [142, 152, 162, 2],
+              [2, 2, 2, 2],
+              [2, 2, 2, 2]]
+    assert np.all(a + b.aca == ab_aca)
+    assert np.all(a.aca + b == ab_aca)
+    assert np.all(a.aca + b.aca == ab_aca)
+
+    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0+2, col0=col0-2) * 10
+
+    assert np.all(a + b.aca == [[2, 2, 2, 2],
+                                [2, 2, 2, 2],
+                                [32, 42, 2, 2],
+                                [72, 82, 2, 2]])
