@@ -38,13 +38,13 @@ def _operator_factory(operator, inplace=False):
     def _operator(self, other):
 
         if isinstance(other, ACAImage) and (other._aca_coords or self._aca_coords):
+            # If inplace then work on the original self, else use a copy
             out = self if inplace else self.copy()
 
-            # True for expressions like img1.aca + img2.aca
             sz_r0, sz_c0 = self.shape
             sz_r1, sz_c1 = other.shape
 
-            # If images overlap
+            # If images overlap do this process, else return unmodified ``out``.
             if all(diff > 0 for diff in [self.row0 + sz_r0 - other.row0,
                                          self.col0 + sz_c0 - other.col0,
                                          other.row0 + sz_r1 - self.row0,
@@ -62,6 +62,8 @@ def _operator_factory(operator, inplace=False):
                 sz_c = c_max - c_min
                 section = ACAImage(shape=(sz_r, sz_c), row0=row0, col0=col0)
 
+                # Always use the inplace operator, but remember that ``out`` is a copy of
+                # self for inplace=False (thus mimicking the non-inplace version).
                 inplace_op(out[section], other.view(np.ndarray)[r_min:r_max, c_min:c_max])
 
         else:
