@@ -3,6 +3,8 @@ import os
 from math import floor
 from itertools import count, chain
 from copy import deepcopy
+
+import six
 from six.moves import zip
 
 import numpy as np
@@ -159,7 +161,8 @@ class ACAImage(np.ndarray):
     __add__ = _operator_factory('add')
     __sub__ = _operator_factory('sub')
     __mul__ = _operator_factory('mul')
-    __div__ = _operator_factory('div')
+    if not six.PY3:
+        __div__ = _operator_factory('div')
     __truediv__ = _operator_factory('truediv')
     __floordiv__ = _operator_factory('floordiv')
     __mod__ = _operator_factory('mod')
@@ -168,7 +171,8 @@ class ACAImage(np.ndarray):
     __iadd__ = _operator_factory('iadd', inplace=True)
     __isub__ = _operator_factory('isub', inplace=True)
     __imul__ = _operator_factory('imul', inplace=True)
-    __idiv__ = _operator_factory('idiv', inplace=True)
+    if not six.PY3:
+        __idiv__ = _operator_factory('idiv', inplace=True)
     __itruediv__ = _operator_factory('itruediv', inplace=True)
     __ifloordiv__ = _operator_factory('ifloordiv', inplace=True)
     __imod__ = _operator_factory('imod', inplace=True)
