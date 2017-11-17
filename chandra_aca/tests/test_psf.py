@@ -57,7 +57,7 @@ def test_psf_at_index_location():
     ii = 2
     jj = 3
     ok = (dat['row_bin_idx'] == ii) & (dat['col_bin_idx'] == jj)
-    i22 = np.flatnonzero(ok)
+    i22 = np.flatnonzero(ok)[0]
     row = dat[i22]
 
     # Row/col of center of bin
