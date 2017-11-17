@@ -23,6 +23,56 @@ Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
 row and highest col; pixel I4 has the highest row and lowest column."""
 
 
+def _operator_factory(operator, inplace=False):
+    """
+    Generate data model methods like __add__(self, other) and
+    __iadd__(self, other).  These always operate in the coordinate
+    system of the left and right operands.  If both are in ACA
+    coordinates then any non-overlapping pixels are ignored.
+    """
+    # Define the operator and the in-place version (which might be the
+    # same if op is already in-place)
+    op = getattr(np.ndarray, '__{}__'.format(operator))
+    inplace_op = op if inplace else getattr(np.ndarray, '__i{}__'.format(operator))
+
+    def _operator(self, other):
+
+        if isinstance(other, ACAImage) and (other._aca_coords or self._aca_coords):
+            # If inplace then work on the original self, else use a copy
+            out = self if inplace else self.copy()
+
+            sz_r0, sz_c0 = self.shape
+            sz_r1, sz_c1 = other.shape
+
+            # If images overlap do this process, else return unmodified ``out``.
+            if all(diff > 0 for diff in [self.row0 + sz_r0 - other.row0,
+                                         self.col0 + sz_c0 - other.col0,
+                                         other.row0 + sz_r1 - self.row0,
+                                         other.col0 + sz_c1 - self.col0]):
+
+                dr = other.row0 - self.row0
+                dc = other.col0 - self.col0
+
+                r_min, r_max = -min(0, dr), min(sz_r1, sz_r0 - dr)
+                c_min, c_max = -min(0, dc), min(sz_c1, sz_c0 - dc)
+
+                row0 = max(self.row0, other.row0)
+                col0 = max(self.col0, other.col0)
+                sz_r = r_max - r_min
+                sz_c = c_max - c_min
+                section = ACAImage(shape=(sz_r, sz_c), row0=row0, col0=col0)
+
+                # Always use the inplace operator, but remember that ``out`` is a copy of
+                # self for inplace=False (thus mimicking the non-inplace version).
+                inplace_op(out[section], other.view(np.ndarray)[r_min:r_max, c_min:c_max])
+
+        else:
+            out = op(self, other)  # returns self for inplace ops
+
+        return out
+    return _operator
+
+
 class ACAImage(np.ndarray):
     """
     ACAImage is an ndarray subclass that supports functionality for the Chandra
@@ -105,6 +155,24 @@ class ACAImage(np.ndarray):
 
         self.meta = deepcopy(getattr(obj, 'meta', {}))
         self._aca_coords = getattr(obj, '_aca_coords', False)
+
+    __add__ = _operator_factory('add')
+    __sub__ = _operator_factory('sub')
+    __mul__ = _operator_factory('mul')
+    __div__ = _operator_factory('div')
+    __truediv__ = _operator_factory('truediv')
+    __floordiv__ = _operator_factory('floordiv')
+    __mod__ = _operator_factory('mod')
+    __pow__ = _operator_factory('pow')
+
+    __iadd__ = _operator_factory('iadd', inplace=True)
+    __isub__ = _operator_factory('isub', inplace=True)
+    __imul__ = _operator_factory('imul', inplace=True)
+    __idiv__ = _operator_factory('idiv', inplace=True)
+    __itruediv__ = _operator_factory('itruediv', inplace=True)
+    __ifloordiv__ = _operator_factory('ifloordiv', inplace=True)
+    __imod__ = _operator_factory('imod', inplace=True)
+    __ipow__ = _operator_factory('ipow', inplace=True)
 
     def _adjust_item(self, item):
         """

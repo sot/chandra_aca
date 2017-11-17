@@ -237,3 +237,91 @@ def test_aca_image_fm_centroid(aca):
                                                            norm_clip=1.0)
     assert np.isclose(row, -9379.5 + (row0 if aca else 0))
     assert np.isclose(col, -9379.5 + (col0 if aca else 0))
+
+
+def test_aca_image_operators():
+    row0 = 10
+    col0 = 20
+
+    # Test case of adding in native (non-ACA) coordinates.  Just like normal
+    # numpy array add.
+    a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
+    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0-2, col0=col0-1) * 10
+    # In [8]: a
+    # <ACAImage row0=10 col0=10
+    # array([[2, 2, 2, 2],
+    #        [2, 2, 2, 2],
+    #        [2, 2, 2, 2],
+    #        [2, 2, 2, 2]])>
+
+    # In [9]: b
+    # <ACAImage row0=8 col0=9
+    # array([[ 10,  20,  30,  40],
+    #        [ 50,  60,  70,  80],
+    #        [ 90, 100, 110, 120],
+    #        [130, 140, 150, 160]])>
+
+    ab = [[12, 22, 32, 42],
+          [52, 62, 72, 82],
+          [92, 102, 112, 122],
+          [132, 142, 152, 162]]
+    assert np.all(a + b == ab)
+
+    # Now test adding in ACA coordinates with partially overlapping images.
+    ab_aca = [[102, 112, 122, 2],
+              [142, 152, 162, 2],
+              [2, 2, 2, 2],
+              [2, 2, 2, 2]]
+    assert np.all(a + b.aca == ab_aca)
+    assert np.all(a.aca + b == ab_aca)
+    assert np.all(a.aca + b.aca == ab_aca)
+
+    # Inplace operations.  Note that a.aca += <anything> does not work because
+    # that is trying to update the attribute instead of the returned object.
+    a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
+    a += b
+    assert np.all(a == ab)
+
+    a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
+    a += b.aca
+    assert np.all(a == ab_aca)
+
+    # Test for one image fully enclosed in the other
+    a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
+    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0+2, col0=col0-2) * 10
+
+    assert np.all(a + b.aca == [[2, 2, 2, 2],
+                                [2, 2, 2, 2],
+                                [32, 42, 2, 2],
+                                [72, 82, 2, 2]])
+
+    a = ACAImage(np.arange(16).reshape(4, 4), row0=row0, col0=col0) + 2
+    b = ACAImage([[100, 200], [300, 400]], row0=row0+1, col0=col0+1)
+
+    # Shape mismatch
+    with pytest.raises(ValueError):
+        a + b
+
+    # right side is enclosed within left side
+    out = a + b.aca
+    assert np.all(out == [[2, 3, 4, 5],
+                          [6, 107, 208, 9],
+                          [10, 311, 412, 13],
+                          [14, 15, 16, 17]])
+
+    assert out.row0 == 10
+    assert out.col0 == 20
+
+    # right side is a superset of left side
+    out = b + a.aca
+    assert np.all(out == [[107, 208],
+                          [311, 412]])
+    assert out.row0 == 11
+    assert out.col0 == 21
+
+    # Subtraction
+    out = a - b.aca
+    assert np.all(out == [[2, 3, 4, 5],
+                          [6, -93, -192, 9],
+                          [10, -289, -388, 13],
+                          [14, 15, 16, 17]])
