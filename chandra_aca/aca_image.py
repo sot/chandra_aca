@@ -437,7 +437,7 @@ class AcaPsfLibrary(object):
         :param interpolation: 'nearest' | 'bilinear' (default)
         :param aca_image: return ACAImage if True, else return ndarray
 
-        :returns: 8x8 PSF image normalized to 1.0 (AcaImage object)
+        :returns: ACAImage if (aca_image is True) else (ndarray image, row0, col0)
         """
         drc = self.drc
 
@@ -451,8 +451,8 @@ class AcaPsfLibrary(object):
         # 8x8 image row0, col0
         round_row = round(row)
         round_col = round(col)
-        row0 = round_row - 4
-        col0 = round_col - 4
+        row0 = int(round_row) - 4
+        col0 = int(round_col) - 4
 
         # Subpixel position in range (-0.5, 0.5)
         r = row - round_row
@@ -499,7 +499,5 @@ class AcaPsfLibrary(object):
         if norm != 1.0:
             psf *= norm
 
-        if aca_image:
-            psf = ACAImage(psf, row0=row0, col0=col0)
-
-        return psf
+        out = ACAImage(psf, row0=row0, col0=col0) if aca_image else (psf, row0, col0)
+        return out

@@ -10,9 +10,12 @@ def test_basic():
     psf = ap.get_psf_image(0, 0)
     assert isinstance(psf, ACAImage)
 
-    psf = ap.get_psf_image(0, 0, aca_image=False)
+    psf, row0, col0 = ap.get_psf_image(104.1, 203.9, aca_image=False,
+                                       pix_zero_loc='edge')
     assert not isinstance(psf, ACAImage)
     assert isinstance(psf, np.ndarray)
+    assert row0 == 100
+    assert col0 == 200
 
 
 def test_centroids():
