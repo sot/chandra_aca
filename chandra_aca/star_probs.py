@@ -213,7 +213,7 @@ def prob_n_acq(star_probs):
     return n_acq_probs, np.cumsum(n_acq_probs)
 
 
-def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120, zodi=0):
+def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120, bgd=0):
     """
     Return probability of acquisition success for given date, temperature and mag.
 
@@ -231,7 +231,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoil: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
-    :param zodi: expected background contribution of zodiacal light in e-/sec (default=0)
+    :param bgd: Expected background level (e.g. zodiacal light) in e-/sec (default=0)
 
     :returns: Acquisition success probability(s)
     """
@@ -246,7 +246,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
 
     warm_fracs = []
     for date, t_ccd in zip(dates.ravel(), t_ccds.ravel()):
-        warm_frac = get_warm_fracs(WARM_THRESHOLD - zodi, date=date, T_ccd=t_ccd)
+        warm_frac = get_warm_fracs(WARM_THRESHOLD - bgd, date=date, T_ccd=t_ccd)
         warm_fracs.append(warm_frac)
     warm_frac = np.array(warm_fracs).reshape(dates.shape)
 
