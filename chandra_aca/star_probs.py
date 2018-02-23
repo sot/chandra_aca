@@ -257,7 +257,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     # If the star is brighter than 8.5 or has a calculated probability
     # higher than the max_star_prob, clip it at that value
     probs[mags < 8.5] = MAX_ACQ_PROB
-    probs[colors == 0.7] *= p_0p7color
+    probs[np.isclose(colors, 0.7, atol=1e-6, rtol=0)] *= p_0p7color
     probs[spoilers] *= p_spoiler
 
     probs = probs.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
