@@ -58,7 +58,8 @@ def test_acq_success_prob_spoiler():
 
 def test_acq_success_prob_color():
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
-    color = [0.6, 0.7, 1.5]
+    color = [0.6, 0.699997, 0.69999999, 0.7, 0.700001, 1.5]
     probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=10.3, spoiler=False, color=color)
-    assert np.allclose(probs, [ 0.68643974,  0.29475723,  0.29295036])
-    assert np.allclose(p_0p7color, probs[1] / probs[0])
+    assert np.allclose(probs, [ 0.68643974, 0.68643974, 0.29475723, 0.29475723, 0.68643974, 0.29295036])
+    assert np.allclose(p_0p7color, probs[2] / probs[0])
+    assert np.allclose(p_0p7color, probs[3] / probs[0])
