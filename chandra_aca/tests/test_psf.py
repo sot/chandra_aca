@@ -1,5 +1,5 @@
 import numpy as np
-from ..aca_image import AcaPsfLibrary
+from ..aca_image import AcaPsfLibrary, ACAImage
 
 ap = AcaPsfLibrary()
 
@@ -8,7 +8,14 @@ def test_basic():
     assert len(ap.psfs) == 12 ** 2
     assert np.isclose(ap.drc, 0.1, rtol=0, atol=1e-8)  # Current PSF library has 0.1 pixel gridding
     psf = ap.get_psf_image(0, 0)
-    assert psf.__class__.__name__ == 'ACAImage'
+    assert isinstance(psf, ACAImage)
+
+    psf, row0, col0 = ap.get_psf_image(104.1, 203.9, aca_image=False,
+                                       pix_zero_loc='edge')
+    assert not isinstance(psf, ACAImage)
+    assert isinstance(psf, np.ndarray)
+    assert row0 == 100
+    assert col0 == 200
 
 
 def test_centroids():
@@ -65,6 +72,16 @@ def test_psf_at_index_location():
     cc = (row['col_bin_left_edge'] + row['col_bin_right_edge']) / 2.0
 
     psf_direct = ap.psfs[ii, jj]
-    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc='edge')
 
+    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc='edge')
+    assert np.allclose(psf_direct, psf_interp, rtol=0, atol=1e-5)
+
+    # Test with interpolation=nearest
+    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc='edge', interpolation='nearest')
+    assert np.allclose(psf_direct, psf_interp, rtol=0, atol=1e-5)
+
+    # Test with interpolation=nearest, slightly offset but still within grid subpixel
+    psf_interp = ap.get_psf_image(rc + ap.drc * 0.45, cc - ap.drc * 0.45,
+                                  pix_zero_loc='edge',
+                                  interpolation='nearest')
     assert np.allclose(psf_direct, psf_interp, rtol=0, atol=1e-5)

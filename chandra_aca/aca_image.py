@@ -424,7 +424,8 @@ class AcaPsfLibrary(object):
 
         self.psfs = psfs
 
-    def get_psf_image(self, row, col, norm=1.0, pix_zero_loc='center'):
+    def get_psf_image(self, row, col, norm=1.0, pix_zero_loc='center',
+                      interpolation='bilinear', aca_image=True):
         """
         Get interpolated ACA PSF image that corresponds to pixel location
         ``row``, ``col``.
@@ -433,8 +434,10 @@ class AcaPsfLibrary(object):
         :param col: (float) col value of PSF centroid
         :param norm: (float) summed intensity of PSF image
         :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
+        :param interpolation: 'nearest' | 'bilinear' (default)
+        :param aca_image: return ACAImage if True, else return ndarray
 
-        :returns: 8x8 PSF image normalized to 1.0 (AcaImage object)
+        :returns: ACAImage if (aca_image is True) else (ndarray image, row0, col0)
         """
         drc = self.drc
 
@@ -448,8 +451,8 @@ class AcaPsfLibrary(object):
         # 8x8 image row0, col0
         round_row = round(row)
         round_col = round(col)
-        row0 = round_row - 4
-        col0 = round_col - 4
+        row0 = int(round_row) - 4
+        col0 = int(round_col) - 4
 
         # Subpixel position in range (-0.5, 0.5)
         r = row - round_row
@@ -460,30 +463,41 @@ class AcaPsfLibrary(object):
         ix = (r + 0.5) / drc - 0.5
         iy = (c + 0.5) / drc - 0.5
 
-        # Int index into PSF library
-        ii = int(floor(ix))
-        jj = int(floor(iy))
+        if interpolation == 'nearest':
+            # Int index into PSF library
+            ii = int(round(ix))
+            jj = int(round(iy))
+            psf = self.psfs[ii, jj].copy()
 
-        # Following wikipedia notation (Unit Square section of
-        # https://en.wikipedia.org/wiki/Bilinear_interpolation)
+        elif interpolation == 'bilinear':
+            # Int index into PSF library
+            ii = int(floor(ix))
+            jj = int(floor(iy))
 
-        # Float index within subpixel bin in range (0, 1)
-        x = ix - ii
-        y = iy - jj
+            # Following wikipedia notation (Unit Square section of
+            # https://en.wikipedia.org/wiki/Bilinear_interpolation)
 
-        # Finally the bilinear interpolation of the PSF images.
-        f = self.psfs
-        b0 = (1 - x) * (1 - y)
-        b1 = x * (1 - y)
-        b2 = (1 - x) * y
-        b3 = x * y
-        P0 = f[ii, jj]
-        P1 = f[ii + 1, jj]
-        P2 = f[ii, jj + 1]
-        P3 = f[ii + 1, jj + 1]
-        psf = P0 * b0 + P1 * b1 + P2 * b2 + P3 * b3
+            # Float index within subpixel bin in range (0, 1)
+            x = ix - ii
+            y = iy - jj
+
+            # Finally the bilinear interpolation of the PSF images.
+            f = self.psfs
+            b0 = (1 - x) * (1 - y)
+            b1 = x * (1 - y)
+            b2 = (1 - x) * y
+            b3 = x * y
+            P0 = f[ii, jj]
+            P1 = f[ii + 1, jj]
+            P2 = f[ii, jj + 1]
+            P3 = f[ii + 1, jj + 1]
+            psf = P0 * b0 + P1 * b1 + P2 * b2 + P3 * b3
+
+        else:
+            raise ValueError("interpolation must be 'nearest' or 'bilinear'")
 
         if norm != 1.0:
             psf *= norm
 
-        return ACAImage(psf, row0=row0, col0=col0)
+        out = ACAImage(psf, row0=row0, col0=col0) if aca_image else (psf, row0, col0)
+        return out
