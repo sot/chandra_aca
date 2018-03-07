@@ -300,8 +300,9 @@ def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
     box120 = (halfwidth - 120) / 120  # Normalized halfwidth, 0.0 for halfwidth=120
 
     p_fail = np.zeros_like(mag)
-    for mask, fit_pars in ((color == 1.5, SOTA_FIT_ONLY_1P5),
-                           (color != 1.5, SOTA_FIT_NO_1P5)):
+    color1p5 = np.isclose(color, 1.5, atol=1e-6, rtol=0)
+    for mask, fit_pars in ((color1p5, SOTA_FIT_ONLY_1P5),
+                           (~color1p5, SOTA_FIT_NO_1P5)):
         if np.any(mask):
             scale = np.polyval(fit_pars[0:3][::-1], m10)
             offset = np.polyval(fit_pars[3:6][::-1], m10)
