@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import print_function, division
 
+import pytest
 import numpy as np
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
 
@@ -64,3 +65,22 @@ def test_acq_success_prob_color():
                                 0.29295036, 0.29295036])
     assert np.allclose(p_0p7color, probs[2] / probs[0])
     assert np.allclose(p_0p7color, probs[3] / probs[0])
+
+HAS_AGASC = False
+try:
+    import agasc
+    star = agasc.get_star(870058712)
+    HAS_AGASC = True
+except:
+    HAS_AGASC = False
+@pytest.mark.skipif('not HAS_AGASC', reason="Test requires AGASC")
+def acq_success_prob_from_stars():
+    # These are acq stars for obsid 20765
+    star_ids = [118882960, 192286696, 192290008, 118758568, 118758336, 192291664, 192284944, 192288240]
+    hws = [160, 160, 120, 160, 120, 120, 120, 120]
+    stars = [agasc.get_star(agasc_id) for agasc_id in star_ids]
+    mags = [star['MAG_ACA'] for star in stars]
+    colors = [star['COLOR1'] for star in stars]
+    probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors, halfwidth=hws)
+    assert np.allclose(probs, [0.978, 0.967, 0.801, 0.755, 0.575, 0.089, 0.682, 0.659],
+                       atol=1e-2, rtol=0)
