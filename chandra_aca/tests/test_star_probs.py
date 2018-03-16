@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import print_function, division
 
+import pytest
 import numpy as np
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
 
@@ -58,7 +59,28 @@ def test_acq_success_prob_spoiler():
 
 def test_acq_success_prob_color():
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
-    color = [0.6, 0.7, 1.5]
+    color = [0.6, 0.699997, 0.69999999, 0.7, 0.700001, 1.5, 1.49999999]
     probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=10.3, spoiler=False, color=color)
-    assert np.allclose(probs, [ 0.68643974,  0.29475723,  0.29295036])
-    assert np.allclose(p_0p7color, probs[1] / probs[0])
+    assert np.allclose(probs, [ 0.68643974, 0.68643974, 0.29475723, 0.29475723, 0.68643974,
+                                0.29295036, 0.29295036])
+    assert np.allclose(p_0p7color, probs[2] / probs[0])
+    assert np.allclose(p_0p7color, probs[3] / probs[0])
+
+HAS_AGASC = False
+try:
+    import agasc
+    star = agasc.get_star(870058712)
+    HAS_AGASC = True
+except:
+    HAS_AGASC = False
+@pytest.mark.skipif('not HAS_AGASC', reason="Test requires AGASC")
+def acq_success_prob_from_stars():
+    # These are acq stars for obsid 20765
+    star_ids = [118882960, 192286696, 192290008, 118758568, 118758336, 192291664, 192284944, 192288240]
+    hws = [160, 160, 120, 160, 120, 120, 120, 120]
+    stars = [agasc.get_star(agasc_id) for agasc_id in star_ids]
+    mags = [star['MAG_ACA'] for star in stars]
+    colors = [star['COLOR1'] for star in stars]
+    probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors, halfwidth=hws)
+    assert np.allclose(probs, [0.978, 0.967, 0.801, 0.755, 0.575, 0.089, 0.682, 0.659],
+                       atol=1e-2, rtol=0)

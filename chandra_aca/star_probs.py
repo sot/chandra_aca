@@ -257,7 +257,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     # If the star is brighter than 8.5 or has a calculated probability
     # higher than the max_star_prob, clip it at that value
     probs[mags < 8.5] = MAX_ACQ_PROB
-    probs[colors == 0.7] *= p_0p7color
+    probs[np.isclose(colors, 0.7, atol=1e-6, rtol=0)] *= p_0p7color
     probs[spoilers] *= p_spoiler
 
     probs = probs.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
@@ -300,8 +300,9 @@ def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
     box120 = (halfwidth - 120) / 120  # Normalized halfwidth, 0.0 for halfwidth=120
 
     p_fail = np.zeros_like(mag)
-    for mask, fit_pars in ((color == 1.5, SOTA_FIT_ONLY_1P5),
-                           (color != 1.5, SOTA_FIT_NO_1P5)):
+    color1p5 = np.isclose(color, 1.5, atol=1e-6, rtol=0)
+    for mask, fit_pars in ((color1p5, SOTA_FIT_ONLY_1P5),
+                           (~color1p5, SOTA_FIT_NO_1P5)):
         if np.any(mask):
             scale = np.polyval(fit_pars[0:3][::-1], m10)
             offset = np.polyval(fit_pars[3:6][::-1], m10)
