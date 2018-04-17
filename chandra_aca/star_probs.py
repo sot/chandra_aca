@@ -9,71 +9,43 @@ from numba import jit
 from six.moves import zip
 
 from scipy.optimize import brentq
+import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
 
 # Local import in acq_success_prob():
 # from .dark_model import get_warm_fracs
 
-#
-# NOTE: the "WITH_MS" are historical and no longer used in flight
-#       and do not reflect ACA behavior beyond 2016-Feb-08.
-#
-# Scale and offset fit of polynomial to acq failures in log space.
-# Derived in the fit_sota_model_probit.ipynb IPython notebook for data
-# covering 2007-Jan-01 - 2015-July-01.  This is in the aca_stats repo.
-# (Previously in state_of_aca but moved 2016-Feb-2).
-#
-# scale = scl2 * m10**2 + scl1 * m10 + scl0, where m10 = mag - 10,
-# and likewise for offset.
+# Date of the transition from using the SOTA model to the
+# "spline" model (poly-spline-tccd) for computing star acquisition
+# probabilities.  By default the SOTA model is used for computing
+# acq probs for dates before then transition (e.g. so starcheck
+# diffs don't blow up).
+SPLINE_MODEL_TRANSITION_DATE = DateTime('2018-04-28T00:00:00')
+
+# Cache of cubic spline functions.  Eval'd only on the first time.
+SPLINE_FUNCS = {}
 
 WARM_THRESHOLD = 100  # Value (N100) used for fitting
 
-SOTA_FIT_NO_1P5_WITH_MS = [9.6887121605441173,  # scl0
-                           9.1613040261776177,  # scl1
-                           -0.41919343599067715,  # scl2
-                           -2.3829996965532048,  # off0
-                           0.54998934814773903,  # off1
-                           0.47839260691599156]  # off2
-
-SOTA_FIT_ONLY_1P5_WITH_MS = [8.541709287866361,
-                             0.44482688155644085,
-                             -3.5137852251178465,
-                             -1.3505424393223699,
-                             1.5278061271148755,
-                             0.30973569068842272]
-
-#
-# FLIGHT model coefficients.
-#
-# Multiple stars flag disabled (starting operationally with FEB0816).  Fit
-# with fit_flight_acq_prob_model.ipynb in the aca_stats repo.
-
-# Coefficents for dependence of probability on search box size (halfwidth).  From:
-# https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
-
-HALFWIDTH_B1 = 0.96
-HALFWIDTH_B2 = -0.30
 
 # Min and max star acquisition probabilities, regardless of model predictions
 MIN_ACQ_PROB = 1e-6
 MAX_ACQ_PROB = 0.985
 
-SOTA_FIT_NO_1P5_NO_MS = [4.38145,  # scl0
-                         6.22480,  # scl1
-                         2.20862,  # scl2
-                         -2.24494,  # off0
-                         0.32180,  # off1
-                         0.08306,  # off2
-                         ]
+MULT_STARS_ENABLED = False
 
-SOTA_FIT_ONLY_1P5_NO_MS = [4.73283,  # scl0
-                           7.63540,  # scl1
-                           4.56612,  # scl2
-                           -1.49046,  # off0
-                           0.53391,  # off1
-                           -0.37074,  # off2
-                           ]
+def get_box_delta(halfwidth):
+    # Coefficents for dependence of probability on search box size (halfwidth).  From:
+    # https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
+    B1 = 0.96
+    B2 = -0.30
+
+    box120 = (halfwidth - 120) / 120  # normalized version of box, equal to 0.0 at nominal default
+    box_delta = B1 * box120 + B2 * box120 ** 2
+
+    return box_delta
+
 
 # Default global values using NO_MS settings.  Kinda ugly.
 def set_acq_model_ms_filter(ms_enabled=False):
@@ -88,17 +60,8 @@ def set_acq_model_ms_filter(ms_enabled=False):
     The selected fit parameters are global/module-wide.
 
     """
-    global SOTA_FIT_NO_1P5
-    global SOTA_FIT_ONLY_1P5
-    if ms_enabled:
-        SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_WITH_MS
-        SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_WITH_MS
-    else:
-        SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_NO_MS
-        SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_NO_MS
-
-# Use the *_NO_MS parameters by default.
-set_acq_model_ms_filter(ms_enabled=False)
+    global MULT_STARS_ENABLED
+    MULT_STARS_ENABLED = ms_enabled
 
 
 def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
@@ -213,7 +176,8 @@ def prob_n_acq(star_probs):
     return n_acq_probs, np.cumsum(n_acq_probs)
 
 
-def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120):
+def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120,
+                     model='default'):
     """
     Return probability of acquisition success for given date, temperature and mag.
 
@@ -237,19 +201,33 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     from .dark_model import get_warm_fracs
 
     date = DateTime(date).secs
-
     is_scalar, dates, t_ccds, mags, colors, spoilers, halfwidths = broadcast_arrays(
         date, t_ccd, mag, color, spoiler, halfwidth)
 
     spoilers = spoilers.astype(bool)
 
-    warm_fracs = []
-    for date, t_ccd in zip(dates.ravel(), t_ccds.ravel()):
-        warm_frac = get_warm_fracs(WARM_THRESHOLD, date=date, T_ccd=t_ccd)
-        warm_fracs.append(warm_frac)
-    warm_frac = np.array(warm_fracs).reshape(dates.shape)
+    # Define model based on date if 'default' is chosen
+    if model == 'default':
+        if np.min(date) < SPLINE_MODEL_TRANSITION_DATE.secs:
+            model = 'sota'
+        else:
+            model = 'spline'
 
-    probs = model_acq_success_prob(mags, warm_fracs, colors, halfwidths)
+    # Actually evaluate the model
+    if model == 'sota':
+        warm_fracs = []
+        for date, t_ccd in zip(dates.ravel(), t_ccds.ravel()):
+            warm_frac = get_warm_fracs(WARM_THRESHOLD, date=date, T_ccd=t_ccd)
+            warm_fracs.append(warm_frac)
+        warm_frac = np.array(warm_fracs).reshape(dates.shape)
+
+        probs = model_acq_success_prob(mags, warm_fracs, colors, halfwidths)
+
+    elif model == 'spline':
+        probs = spline_acq_success_prob(mags, t_ccds, colors, halfwidths)
+
+    else:
+        raise ValueError("`model` parameter must be 'default' | 'sota' | 'spline'")
 
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
@@ -267,9 +245,63 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     return probs[0] if is_scalar else probs
 
 
+def spline_acq_success_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120):
+    """
+    """
+    try:
+        from scipy.interpolate import CubicSpline
+    except ImportError:
+        from .cubic_spline import CubicSpline
+
+    is_scalar, t_ccds, mags, colors, halfwidths = broadcast_arrays(
+        t_ccd, mag, color, halfwidth)
+
+    # Cubic spline functions are computed on the first call and cached
+    if len(SPLINE_FUNCS) == 0:
+        # Fit values based on
+        # https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb
+        fit_no_1p5 = np.array([-2.69826, -1.96063, -1.20245, -0.01713, 1.23724,  # P0 values
+                               0.07135, 0.12711, 0.14508, 0.59646, 0.64262,  # P1 values
+                               0.02341, 0.0, 0.00704, 0.06926, 0.05629])  # P2 values
+        fit_1p5 = np.array([-2.56169, -1.65157, -0.26794, 1.00488, 3.52181,  # P0 values
+                            0.0, 0.09193, 0.23026, 0.61243, 0.94157,  # P1 values
+                            0.00471, 0.00637, 0.01118, 0.07461, 0.09556])  # P2 values
+        spline_mags = np.array([8.5, 9.25, 10.0, 10.4, 10.7])
+
+        for vals, label in ((fit_no_1p5, 'no_1p5'), (fit_1p5, '1p5')):
+            SPLINE_FUNCS[0, label] = CubicSpline(spline_mags, vals[0:5],
+                                                 bc_type=((1, 0.0), (2, 0.0)))
+            SPLINE_FUNCS[1, label] = CubicSpline(spline_mags, vals[5:10],
+                                                 bc_type=((1, 0.0), (2, 0.0)))
+            SPLINE_FUNCS[2, label] = CubicSpline(spline_mags, vals[10:15],
+                                                 bc_type=((1, 0.0), (2, 0.0)))
+
+    tc = t_ccds - (-12)
+    box_deltas = get_box_delta(halfwidths)
+
+    probit_p_fail = np.zeros(shape=t_ccds.shape, dtype=np.float64)
+    is_1p5 = np.isclose(colors, 1.5)
+
+    for label in ('no_1p5', '1p5'):
+        mask = is_1p5 if label == '1p5' else ~is_1p5
+        magm = mags[mask]
+        tcm = tc[mask]
+        boxm = box_deltas[mask]
+
+        p0 = SPLINE_FUNCS[0, label](magm)
+        p1 = SPLINE_FUNCS[1, label](magm)
+        p2 = SPLINE_FUNCS[2, label](magm)
+
+        probit_p_fail[mask] = p0 + p1 * tcm + p2 * tcm ** 2 + boxm
+
+    p_fail = scipy.stats.norm.cdf(probit_p_fail)  # transform from probit to linear probability
+
+    return p_fail
+
+
 def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
     """
-    Calculate raw model probability of acquisition success for a star with ``mag``
+    Calculate raw SOTA model probability of acquisition success for a star with ``mag``
     magnitude and a CCD warm fraction ``warm_frac``.  This is not typically used directly
     since it does not account for star properties like spoiled or color=0.7.
 
@@ -285,19 +317,71 @@ def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
     box halfwidth.  See:
 
     https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
-    https://github.com/sot/aca_stats/blob/master/fit_flight_acq_prob_model.ipynb
+    https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb
 
     :param mag: ACA magnitude (float or np.ndarray)
     :param warm_frac: N100 warm fraction (float or np.ndarray)
     :param color: B-V color to check for B-V=1.5 => red star (float or np.ndarray)
     :param halfwidth: search box halfwidth (arcsec, default=120)
     """
-    from scipy.stats import norm
+    #
+    # NOTE: the "WITH_MS" are historical and no longer used in flight
+    #       and do not reflect ACA behavior beyond 2016-Feb-08.
+    #
+    # Scale and offset fit of polynomial to acq failures in log space.
+    # Derived in the fit_sota_model_probit.ipynb IPython notebook for data
+    # covering 2007-Jan-01 - 2015-July-01.  This is in the aca_stats repo.
+    # (Previously in state_of_aca but moved 2016-Feb-2).
+    #
+    # scale = scl2 * m10**2 + scl1 * m10 + scl0, where m10 = mag - 10,
+    # and likewise for offset.
+
+    SOTA_FIT_NO_1P5_WITH_MS = [9.6887121605441173,  # scl0
+                               9.1613040261776177,  # scl1
+                               -0.41919343599067715,  # scl2
+                               -2.3829996965532048,  # off0
+                               0.54998934814773903,  # off1
+                               0.47839260691599156]  # off2
+
+    SOTA_FIT_ONLY_1P5_WITH_MS = [8.541709287866361,
+                                 0.44482688155644085,
+                                 -3.5137852251178465,
+                                 -1.3505424393223699,
+                                 1.5278061271148755,
+                                 0.30973569068842272]
+
+    #
+    # FLIGHT model coefficients.
+    #
+    # Multiple stars flag disabled (starting operationally with FEB0816).  Fit
+    # with fit_flight_acq_prob_model.ipynb in the aca_stats repo.
+
+    SOTA_FIT_NO_1P5_NO_MS = [4.38145,  # scl0
+                             6.22480,  # scl1
+                             2.20862,  # scl2
+                             -2.24494,  # off0
+                             0.32180,  # off1
+                             0.08306,  # off2
+                             ]
+
+    SOTA_FIT_ONLY_1P5_NO_MS = [4.73283,  # scl0
+                               7.63540,  # scl1
+                               4.56612,  # scl2
+                               -1.49046,  # off0
+                               0.53391,  # off1
+                               -0.37074,  # off2
+                               ]
+
+    if MULT_STARS_ENABLED:
+        SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_WITH_MS
+        SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_WITH_MS
+    else:
+        SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_NO_MS
+        SOTA_FIT_ONLY_1P5 = SOTA_FIT_ONLY_1P5_NO_MS
 
     is_scalar, mag, warm_frac, color = broadcast_arrays(mag, warm_frac, color)
 
     m10 = mag - 10.0
-    box120 = (halfwidth - 120) / 120  # Normalized halfwidth, 0.0 for halfwidth=120
 
     p_fail = np.zeros_like(mag)
     color1p5 = np.isclose(color, 1.5, atol=1e-6, rtol=0)
@@ -306,11 +390,11 @@ def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
         if np.any(mask):
             scale = np.polyval(fit_pars[0:3][::-1], m10)
             offset = np.polyval(fit_pars[3:6][::-1], m10)
-            box_delta = HALFWIDTH_B1 * box120 + HALFWIDTH_B2 * box120 ** 2
+            box_delta = get_box_delta(halfwidth)
 
             p_fail[mask] = (offset + scale * warm_frac + box_delta)[mask]
 
-    p_fail = norm.cdf(p_fail)  # probit transform
+    p_fail = scipy.stats.norm.cdf(p_fail)  # probit transform
     p_fail[mag < 8.5] = 0.015  # actual best fit is ~0.006, but put in some conservatism
     p_success = (1 - p_fail)
 
