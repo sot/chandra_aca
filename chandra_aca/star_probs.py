@@ -13,6 +13,8 @@ import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
 
+print('USING LOCAL STAR PROBS!!!')
+
 # Local import in acq_success_prob():
 # from .dark_model import get_warm_fracs
 
@@ -21,7 +23,7 @@ from Chandra.Time import DateTime
 # probabilities.  By default the SOTA model is used for computing
 # acq probs for dates before then transition (e.g. so starcheck
 # diffs don't blow up).
-SPLINE_MODEL_TRANSITION_DATE = DateTime('2018-04-28T00:00:00')
+SPLINE_MODEL_TRANSITION_DATE = DateTime('2018-04-01T00:00:00')
 
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
@@ -35,7 +37,15 @@ MAX_ACQ_PROB = 0.985
 
 MULT_STARS_ENABLED = False
 
+
 def get_box_delta(halfwidth):
+    """
+    Transform from halfwidth (arcsec) to the box_delta value which gets added
+    to failure probability (in probit space).
+
+    :param halfwidth: scalar or ndarray of box sizes (halfwidth, arcsec)
+    :returns: box deltas
+    """
     # Coefficents for dependence of probability on search box size (halfwidth).  From:
     # https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
     B1 = 0.96
@@ -177,24 +187,25 @@ def prob_n_acq(star_probs):
 
 
 def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120,
-                     model='default'):
+                     model='default-for-date'):
     """
-    Return probability of acquisition success for given date, temperature and mag.
+    Return probability of acquisition success for given date, temperature, star properties
+    and search box size.
 
     Any of the inputs can be scalars or arrays, with the output being the result of
     the broadcasted dimension of the inputs.
 
-    This is based on the dark model and acquisition success model presented
-    in the State of the ACA 2013, and subsequently updated to use a Probit
-    transform and separately fit B-V=1.5 stars.  This is available in the
-    state_of_aca repo as fit_sota_model_probit.ipynb.
+    The probability ``model`` can be specified as 'sota' or 'spline'.  If not specified
+    then the model is chosen based on the ``date``.  If before 2018-04-28T00:00:00
+    then it uses 'sota', otherwise 'spline'.
 
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
     :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-19C)
     :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
-    :param spoil: Star spoiled (boolean or np.ndarray, default=False)
+    :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
+    :param model: probability model ('default-for-date' | 'sota' | 'spline')
 
     :returns: Acquisition success probability(s)
     """
@@ -206,8 +217,8 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
 
     spoilers = spoilers.astype(bool)
 
-    # Define model based on date if 'default' is chosen
-    if model == 'default':
+    # Define model based on date if not specified
+    if model == 'default-for-date':
         if np.min(date) < SPLINE_MODEL_TRANSITION_DATE.secs:
             model = 'sota'
         else:
@@ -222,19 +233,20 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
         warm_frac = np.array(warm_fracs).reshape(dates.shape)
 
         probs = model_acq_success_prob(mags, warm_fracs, colors, halfwidths)
+        probs[mags < 8.5] = MAX_ACQ_PROB
 
     elif model == 'spline':
-        probs = spline_acq_success_prob(mags, t_ccds, colors, halfwidths)
+        probs = spline_model_acq_prob(mags, t_ccds, colors, halfwidths,
+                                      return_p_success=True)
 
     else:
-        raise ValueError("`model` parameter must be 'default' | 'sota' | 'spline'")
+        raise ValueError("`model` parameter must be 'default-for-date' | 'sota' | 'spline'")
 
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
 
     # If the star is brighter than 8.5 or has a calculated probability
     # higher than the max_star_prob, clip it at that value
-    probs[mags < 8.5] = MAX_ACQ_PROB
     probs[np.isclose(colors, 0.7, atol=1e-6, rtol=0)] *= p_0p7color
     probs[spoilers] *= p_spoiler
 
@@ -245,7 +257,8 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     return probs[0] if is_scalar else probs
 
 
-def spline_acq_success_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120):
+def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120,
+                          probit=False, return_p_success=False):
     """
     """
     try:
@@ -276,27 +289,47 @@ def spline_acq_success_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120):
             SPLINE_FUNCS[2, label] = CubicSpline(spline_mags, vals[10:15],
                                                  bc_type=((1, 0.0), (2, 0.0)))
 
-    tc = t_ccds - (-12)
+    # Model is calibrated using t_ccd - (-12) for numerical stability.
+    tc12 = t_ccds - (-12)
     box_deltas = get_box_delta(halfwidths)
 
     probit_p_fail = np.zeros(shape=t_ccds.shape, dtype=np.float64)
     is_1p5 = np.isclose(colors, 1.5)
 
+    # Process the color != 1.5 stars, then the color == 1.5 stars
     for label in ('no_1p5', '1p5'):
         mask = is_1p5 if label == '1p5' else ~is_1p5
+
+        # If no stars in this category then continue
+        if not np.any(mask):
+            continue
+
         magm = mags[mask]
-        tcm = tc[mask]
+        tcm = tc12[mask]
         boxm = box_deltas[mask]
 
-        p0 = SPLINE_FUNCS[0, label](magm)
-        p1 = SPLINE_FUNCS[1, label](magm)
-        p2 = SPLINE_FUNCS[2, label](magm)
+        # The model is only calibrated betweeen 8.5 and 10.7.  First, clip mags going into
+        # the spline to be larger than 8.5.  (Extrapolating slightly above 10.7 is OK).
+        # Second, subtract a linearly varying term from probit_p_fail from stars brighter
+        # than 8.5 mag ==> from 0.0 for mag=8.5 to 0.25 for mag=6.0.  This is to allow
+        # star selection to favor a 6.0 mag star over 8.5 mag.
+        magmc = magm.clip(8.5, None)
+        bright = (8.5 - magm.clip(None, 8.5)) / 10.0
 
-        probit_p_fail[mask] = p0 + p1 * tcm + p2 * tcm ** 2 + boxm
+        p0 = SPLINE_FUNCS[0, label](magmc)
+        p1 = SPLINE_FUNCS[1, label](magmc)
+        p2 = SPLINE_FUNCS[2, label](magmc)
 
-    p_fail = scipy.stats.norm.cdf(probit_p_fail)  # transform from probit to linear probability
+        probit_p_fail[mask] = p0 + p1 * tcm + p2 * tcm ** 2 + boxm - bright
 
-    return p_fail
+    # Default is to return probability of failure, but can return p_success if desired.
+    p_out = -probit_p_fail if return_p_success else probit_p_fail
+
+    # Return raw probit value?
+    if not probit:
+        p_out = scipy.stats.norm.cdf(p_out)  # transform from probit to linear probability
+
+    return p_out
 
 
 def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
