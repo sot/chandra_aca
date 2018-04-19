@@ -18,7 +18,7 @@ from Chandra.Time import DateTime
 # probabilities.  By default the SOTA model is used for computing
 # acq probs for dates before then transition (e.g. so starcheck
 # diffs don't blow up).
-SPLINE_MODEL_TRANSITION_DATE = DateTime('2018-04-01T00:00:00')
+SPLINE_MODEL_TRANSITION_DATE = DateTime('2018-04-23T00:00:00')
 
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
@@ -70,7 +70,7 @@ def set_acq_model_ms_filter(ms_enabled=False):
 
 
 def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
-                     cold_t_ccd=-21, warm_t_ccd=-5):
+                     cold_t_ccd=-21, warm_t_ccd=-5, model=None):
     """
     Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars
     criterion.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
@@ -84,12 +84,17 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
      - Tuple (n, prob): computed probability of acquiring ``n`` or fewer stars
          must not exceed ``prob``.
 
+    The probability ``model`` can be specified as 'sota' or 'spline'.  If not specified
+    then the model is chosen based on the ``date``.  If before 2018-04-23T00:00:00
+    then it uses 'sota', otherwise 'spline'.
+
     :param mags: list of star ACA mags
     :param date: observation date (any Chandra.Time valid format)
     :param colors: list of star B-V colors (optional, default=0.0)
     :param min_n_acq: float or tuple (see above)
     :param cold_t_ccd: coldest CCD temperature to consider (default=-21 C)
     :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
+    :param model: probability model (None | 'sota' | 'spline')
 
     :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit and:
               - number of expected ACQ stars at that temperature (scalar min_n_acq)
@@ -103,7 +108,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
         This will be positive if the expected number of stars is above the
         minimum number of stars.  Positive => more expected stars.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors)
+        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, model=model)
         return np.sum(probs) - min_n_acq
 
     def prob_n_or_fewer_below_max(t_ccd):
@@ -111,7 +116,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
         This will be positive if the computed probability of acquiring n_or_fewer
         stars is less than the threshold.  Positive => lower prob. of safing action.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors)
+        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, model=model)
         n_acq_probs, n_or_fewer_probs = prob_n_acq(probs)
         return prob_n_or_fewer - n_or_fewer_probs[n_or_fewer]
 
@@ -182,7 +187,7 @@ def prob_n_acq(star_probs):
 
 
 def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120,
-                     model='default-for-date'):
+                     model=None):
     """
     Return probability of acquisition success for given date, temperature, star properties
     and search box size.
@@ -191,7 +196,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     the broadcasted dimension of the inputs.
 
     The probability ``model`` can be specified as 'sota' or 'spline'.  If not specified
-    then the model is chosen based on the ``date``.  If before 2018-04-28T00:00:00
+    then the model is chosen based on the ``date``.  If before 2018-04-23T00:00:00
     then it uses 'sota', otherwise 'spline'.
 
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
@@ -200,7 +205,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
-    :param model: probability model ('default-for-date' | 'sota' | 'spline')
+    :param model: probability model (None | 'sota' | 'spline')
 
     :returns: Acquisition success probability(s)
     """
@@ -213,7 +218,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     spoilers = spoilers.astype(bool)
 
     # Define model based on date if not specified
-    if model == 'default-for-date':
+    if model is None:
         if np.min(date) < SPLINE_MODEL_TRANSITION_DATE.secs:
             model = 'sota'
         else:

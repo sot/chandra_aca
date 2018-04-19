@@ -62,9 +62,21 @@ def test_t_ccd_warm_limit_1():
     assert np.allclose(out[1], 0.008, atol=0.0001, rtol=0)
 
 
+def test_t_ccd_warm_limit_1_spline():
+    out = t_ccd_warm_limit([10.0] * 6, date='2018:180', min_n_acq=(2, 8e-3), model='spline')
+    assert np.allclose(out[0], -10.582, atol=0.01, rtol=0)
+    assert np.allclose(out[1], 0.008, atol=0.0001, rtol=0)
+
+
 def test_t_ccd_warm_limit_2():
     out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=5.0)
     assert np.allclose(out[0], -14.851, atol=0.01, rtol=0)
+    assert np.allclose(out[1], 5.0, atol=0.01, rtol=0)
+
+
+def test_t_ccd_warm_limit_2_spline():
+    out = t_ccd_warm_limit([10.0] * 6, date='2018:180', min_n_acq=5.0, model='spline')
+    assert np.allclose(out[0], -10.491, atol=0.01, rtol=0)
     assert np.allclose(out[1], 5.0, atol=0.01, rtol=0)
 
 
@@ -111,8 +123,8 @@ def test_acq_success_prob_color():
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     color = [0.6, 0.699997, 0.69999999, 0.7, 0.700001, 1.5, 1.49999999]
     probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=10.3, spoiler=False, color=color)
-    assert np.allclose(probs, [ 0.68643974, 0.68643974, 0.29475723, 0.29475723, 0.68643974,
-                                0.29295036, 0.29295036])
+    assert np.allclose(probs, [0.68643974, 0.68643974, 0.29475723, 0.29475723, 0.68643974,
+                               0.29295036, 0.29295036])
     assert np.allclose(p_0p7color, probs[2] / probs[0])
     assert np.allclose(p_0p7color, probs[3] / probs[0])
 
@@ -123,14 +135,18 @@ try:
     HAS_AGASC = True
 except:
     HAS_AGASC = False
+
+
 @pytest.mark.skipif('not HAS_AGASC', reason="Test requires AGASC")
-def acq_success_prob_from_stars():
+def test_acq_success_prob_from_stars():
     # These are acq stars for obsid 20765
-    star_ids = [118882960, 192286696, 192290008, 118758568, 118758336, 192291664, 192284944, 192288240]
+    star_ids = [118882960, 192286696, 192290008, 118758568,
+                118758336, 192291664, 192284944, 192288240]
     hws = [160, 160, 120, 160, 120, 120, 120, 120]
     stars = [agasc.get_star(agasc_id) for agasc_id in star_ids]
     mags = [star['MAG_ACA'] for star in stars]
     colors = [star['COLOR1'] for star in stars]
-    probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors, halfwidth=hws)
-    assert np.allclose(probs, [0.978, 0.967, 0.801, 0.755, 0.575, 0.089, 0.682, 0.659],
+    probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors,
+                             halfwidth=hws, model='spline')
+    assert np.allclose(probs, [0.954, 0.936, 0.714, 0.698, 0.247, 0.001, 0.438, 0.391],
                        atol=1e-2, rtol=0)
