@@ -1,9 +1,59 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import print_function, division
 
+import itertools
+import os
 import pytest
 import numpy as np
+from astropy.table import Table
+
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
+
+# Acquisition probabilities regression test data
+ACQ_PROBS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'acq_probs.dat')
+
+
+def make_prob_regress_table():
+    """
+    Make a table that can be copy/pasted here for regression testing of the
+    acq probability model(s).  This is primarily to ensure uniformity over
+    platforms and potentially changes like a numpy upgrade.  One can also
+    do a by-eye sanity check diff when the model params are updated.
+
+    Usage::
+
+      >>> from chandra_aca.tests import test_star_probs
+      >>> test_star_probs.make_prob_regress_table()
+
+    This creates ``chandra_aca/tests/data/acq_probs.dat``.
+    """
+    mags = [7.0, 10.0]
+    t_ccds = [-15, -10]
+    models = ['sota', 'spline']
+    colors = [0.7, 1.0, 1.5]
+    spoilers = [True, False]
+    halfwidths = [120, 160]
+    rows = []
+    for model, mag, t_ccd, color, spoiler, halfwidth in itertools.product(
+            models, mags, t_ccds, colors, spoilers, halfwidths):
+        prob = acq_success_prob(date='2018:001', t_ccd=t_ccd, mag=mag, color=color,
+                                spoiler=spoiler, halfwidth=halfwidth,
+                                model=model)
+        rows.append([model, mag, t_ccd, color, spoiler, halfwidth, prob])
+    out = Table(rows=rows,
+                names=['model', 'mag', 't_ccd', 'color', 'spoiler', 'halfwidth', 'prob'])
+    out['prob'].format = '.5f'
+    out.write(ACQ_PROBS_FILE, format='ascii.ecsv', overwrite=True)
+
+
+def test_acq_probs_values():
+    dat = Table.read(ACQ_PROBS_FILE, format='ascii.ecsv', guess=False)
+    for model, mag, t_ccd, color, spoiler, halfwidth, prob in dat:
+        prob_now = acq_success_prob(date='2018:001', t_ccd=t_ccd, mag=mag, color=color,
+                                    spoiler=spoiler, halfwidth=halfwidth,
+                                    model=model)
+        # Values written to file rounded to 1e-5, so test to 2e-5
+        assert np.isclose(prob, prob_now, atol=2e-5, rtol=0)
 
 
 def test_t_ccd_warm_limit_1():
@@ -32,22 +82,22 @@ def test_halfwidth_adjustment():
     assert np.allclose(mults, [1.07260318, 1.04512285,  1., 0.91312975, 0.83667405])
 
 
-
-
 def test_acq_success_prob_date():
     date = ['2014:001', '2015:001', '2016:001', '2017:001']
     probs = acq_success_prob(date=date, t_ccd=-10, mag=10.3, spoiler=False, color=0.6)
     assert np.allclose(probs, [0.76856955,  0.74345895,  0.71609812,  0.68643974])
+
 
 def test_acq_success_prob_t_ccd():
     t_ccd = [-16, -14, -12, -10]
     probs = acq_success_prob(date='2017:001', t_ccd=t_ccd, mag=10.3, spoiler=False, color=0.6)
     assert np.allclose(probs, [0.87007558,  0.81918958,  0.75767782,  0.68643974])
 
+
 def test_acq_success_prob_mag():
     mag = [9, 10, 10.3, 10.6]
     probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=mag, spoiler=False, color=0.6)
-    assert np.allclose(probs, [ 0.985,  0.86868674,  0.68643974,  0.3952578])
+    assert np.allclose(probs, [0.985, 0.86868674, 0.68643974, 0.3952578])
 
 
 def test_acq_success_prob_spoiler():

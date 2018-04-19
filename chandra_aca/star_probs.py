@@ -13,11 +13,6 @@ import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
 
-print('USING LOCAL STAR PROBS!!!')
-
-# Local import in acq_success_prob():
-# from .dark_model import get_warm_fracs
-
 # Date of the transition from using the SOTA model to the
 # "spline" model (poly-spline-tccd) for computing star acquisition
 # probabilities.  By default the SOTA model is used for computing

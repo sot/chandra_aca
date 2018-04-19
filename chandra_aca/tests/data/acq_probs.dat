@@ -1,0 +1,108 @@
+# %ECSV 0.9
+# ---
+# datatype:
+# - {name: model, datatype: string}
+# - {name: mag, datatype: float64}
+# - {name: t_ccd, datatype: int64}
+# - {name: color, datatype: float64}
+# - {name: spoiler, datatype: bool}
+# - {name: halfwidth, datatype: int64}
+# - {name: prob, datatype: float64, format: .5f}
+# schema: astropy-2.0
+model mag t_ccd color spoiler halfwidth prob
+sota 7.0 -15 0.7 True 120 0.39086
+sota 7.0 -15 0.7 True 160 0.39086
+sota 7.0 -15 0.7 False 120 0.42296
+sota 7.0 -15 0.7 False 160 0.42296
+sota 7.0 -15 1.0 True 120 0.91024
+sota 7.0 -15 1.0 True 160 0.91024
+sota 7.0 -15 1.0 False 120 0.98500
+sota 7.0 -15 1.0 False 160 0.98500
+sota 7.0 -15 1.5 True 120 0.91024
+sota 7.0 -15 1.5 True 160 0.91024
+sota 7.0 -15 1.5 False 120 0.98500
+sota 7.0 -15 1.5 False 160 0.98500
+sota 7.0 -10 0.7 True 120 0.39086
+sota 7.0 -10 0.7 True 160 0.39086
+sota 7.0 -10 0.7 False 120 0.42296
+sota 7.0 -10 0.7 False 160 0.42296
+sota 7.0 -10 1.0 True 120 0.91024
+sota 7.0 -10 1.0 True 160 0.91024
+sota 7.0 -10 1.0 False 120 0.98500
+sota 7.0 -10 1.0 False 160 0.98500
+sota 7.0 -10 1.5 True 120 0.91024
+sota 7.0 -10 1.5 True 160 0.91024
+sota 7.0 -10 1.5 False 120 0.98500
+sota 7.0 -10 1.5 False 160 0.98500
+sota 10.0 -15 0.7 True 120 0.36702
+sota 10.0 -15 0.7 True 160 0.34737
+sota 10.0 -15 0.7 False 120 0.39716
+sota 10.0 -15 0.7 False 160 0.37590
+sota 10.0 -15 1.0 True 120 0.85473
+sota 10.0 -15 1.0 True 160 0.80897
+sota 10.0 -15 1.0 False 120 0.92493
+sota 10.0 -15 1.0 False 160 0.87541
+sota 10.0 -15 1.5 True 120 0.67676
+sota 10.0 -15 1.5 True 160 0.58267
+sota 10.0 -15 1.5 False 120 0.73235
+sota 10.0 -15 1.5 False 160 0.63053
+sota 10.0 -10 0.7 True 120 0.33946
+sota 10.0 -10 0.7 True 160 0.30966
+sota 10.0 -10 0.7 False 120 0.36734
+sota 10.0 -10 0.7 False 160 0.33510
+sota 10.0 -10 1.0 True 120 0.79054
+sota 10.0 -10 1.0 True 160 0.72116
+sota 10.0 -10 1.0 False 120 0.85547
+sota 10.0 -10 1.0 False 160 0.78039
+sota 10.0 -10 1.5 True 120 0.53915
+sota 10.0 -10 1.5 True 160 0.43406
+sota 10.0 -10 1.5 False 120 0.58343
+sota 10.0 -10 1.5 False 160 0.46971
+spline 7.0 -15 0.7 True 120 0.39595
+spline 7.0 -15 0.7 True 160 0.39476
+spline 7.0 -15 0.7 False 120 0.42847
+spline 7.0 -15 0.7 False 160 0.42718
+spline 7.0 -15 1.0 True 120 0.92209
+spline 7.0 -15 1.0 True 160 0.91933
+spline 7.0 -15 1.0 False 120 0.98500
+spline 7.0 -15 1.0 False 160 0.98500
+spline 7.0 -15 1.5 True 120 0.92059
+spline 7.0 -15 1.5 True 160 0.91616
+spline 7.0 -15 1.5 False 120 0.98500
+spline 7.0 -15 1.5 False 160 0.98500
+spline 7.0 -10 0.7 True 120 0.39502
+spline 7.0 -10 0.7 True 160 0.39283
+spline 7.0 -10 0.7 False 120 0.42747
+spline 7.0 -10 0.7 False 160 0.42509
+spline 7.0 -10 1.0 True 120 0.91994
+spline 7.0 -10 1.0 True 160 0.91483
+spline 7.0 -10 1.0 False 120 0.98500
+spline 7.0 -10 1.0 False 160 0.98500
+spline 7.0 -10 1.5 True 120 0.92083
+spline 7.0 -10 1.5 True 160 0.91665
+spline 7.0 -10 1.5 False 120 0.98500
+spline 7.0 -10 1.5 False 160 0.98500
+spline 10.0 -15 0.7 True 120 0.37391
+spline 10.0 -15 0.7 True 160 0.35755
+spline 10.0 -15 0.7 False 120 0.40462
+spline 10.0 -15 0.7 False 160 0.38692
+spline 10.0 -15 1.0 True 120 0.87077
+spline 10.0 -15 1.0 True 160 0.83268
+spline 10.0 -15 1.0 False 120 0.94229
+spline 10.0 -15 1.0 False 160 0.90107
+spline 10.0 -15 1.5 True 120 0.74351
+spline 10.0 -15 1.5 True 160 0.66179
+spline 10.0 -15 1.5 False 120 0.80458
+spline 10.0 -15 1.5 False 160 0.71615
+spline 10.0 -10 0.7 True 120 0.32208
+spline 10.0 -10 0.7 True 160 0.28765
+spline 10.0 -10 0.7 False 120 0.34854
+spline 10.0 -10 0.7 False 160 0.31127
+spline 10.0 -10 1.0 True 120 0.75008
+spline 10.0 -10 1.0 True 160 0.66988
+spline 10.0 -10 1.0 False 120 0.81169
+spline 10.0 -10 1.0 False 160 0.72490
+spline 10.0 -10 1.5 True 120 0.37538
+spline 10.0 -10 1.5 True 160 0.27737
+spline 10.0 -10 1.5 False 120 0.40621
+spline 10.0 -10 1.5 False 160 0.30015
