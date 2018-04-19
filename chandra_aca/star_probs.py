@@ -196,8 +196,8 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     the broadcasted dimension of the inputs.
 
     The probability ``model`` can be specified as 'sota' or 'spline'.  If not specified
-    then the model is chosen based on the ``date``.  If before 2018-04-23T00:00:00
-    then it uses 'sota', otherwise 'spline'.
+    then the model is chosen based on the minimum value of the provided dates.  If
+    before 2018-04-23T00:00:00 then it uses 'sota', otherwise 'spline'.
 
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
     :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-19C)
@@ -209,8 +209,6 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
 
     :returns: Acquisition success probability(s)
     """
-    from .dark_model import get_warm_fracs
-
     date = DateTime(date).secs
     is_scalar, dates, t_ccds, mags, colors, spoilers, halfwidths = broadcast_arrays(
         date, t_ccd, mag, color, spoiler, halfwidth)
@@ -226,6 +224,8 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
 
     # Actually evaluate the model
     if model == 'sota':
+        from .dark_model import get_warm_fracs
+
         warm_fracs = []
         for date, t_ccd in zip(dates.ravel(), t_ccds.ravel()):
             warm_frac = get_warm_fracs(WARM_THRESHOLD, date=date, T_ccd=t_ccd)
