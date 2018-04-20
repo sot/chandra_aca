@@ -216,7 +216,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
             warm_fracs.append(warm_frac)
         warm_frac = np.array(warm_fracs).reshape(dates.shape)
 
-        probs = model_acq_success_prob(mags, warm_fracs, colors, halfwidths)
+        probs = sota_model_acq_prob(mags, warm_fracs, colors, halfwidths)
         probs[mags < 8.5] = MAX_ACQ_PROB
 
     elif model == 'spline':
@@ -332,6 +332,14 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
 
 
 def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
+    """
+    Call sota_model_acq_prob() with same params.  This is retained purely
+    for back-compatibility but use is deprecated.
+    """
+    return sota_model_acq_prob(mag, warm_frac, color, halfwidth)
+
+
+def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
     """
     Calculate raw SOTA model probability of acquisition success for a star with ``mag``
     magnitude and a CCD warm fraction ``warm_frac``.  This is not typically used directly
