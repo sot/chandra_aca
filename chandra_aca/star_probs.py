@@ -13,12 +13,8 @@ import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
 
-# Date of the transition from using the SOTA model to the
-# "spline" model (poly-spline-tccd) for computing star acquisition
-# probabilities.  By default the SOTA model is used for computing
-# acq probs for dates before then transition (e.g. so starcheck
-# diffs don't blow up).
-SPLINE_MODEL_TRANSITION_DATE = DateTime('2018-04-23T00:00:00')
+# Default acquisition probability model
+DEFAULT_MODEL = 'spline'
 
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
@@ -84,17 +80,13 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
      - Tuple (n, prob): computed probability of acquiring ``n`` or fewer stars
          must not exceed ``prob``.
 
-    The probability ``model`` can be specified as 'sota' or 'spline'.  If not specified
-    then the model is chosen based on the ``date``.  If before 2018-04-23T00:00:00
-    then it uses 'sota', otherwise 'spline'.
-
     :param mags: list of star ACA mags
     :param date: observation date (any Chandra.Time valid format)
     :param colors: list of star B-V colors (optional, default=0.0)
     :param min_n_acq: float or tuple (see above)
     :param cold_t_ccd: coldest CCD temperature to consider (default=-21 C)
     :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
-    :param model: probability model (None | 'sota' | 'spline')
+    :param model: probability model: 'sota' or 'spline' (default)
 
     :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit and:
               - number of expected ACQ stars at that temperature (scalar min_n_acq)
@@ -195,32 +187,24 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     Any of the inputs can be scalars or arrays, with the output being the result of
     the broadcasted dimension of the inputs.
 
-    The probability ``model`` can be specified as 'sota' or 'spline'.  If not specified
-    then the model is chosen based on the minimum value of the provided dates.  If
-    before 2018-04-23T00:00:00 then it uses 'sota', otherwise 'spline'.
-
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
     :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-19C)
     :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
-    :param model: probability model (None | 'sota' | 'spline')
+    :param model: probability model: 'sota' or 'spline' (default)
 
     :returns: Acquisition success probability(s)
     """
+    if model is None:
+        model = DEFAULT_MODEL
+
     date = DateTime(date).secs
     is_scalar, dates, t_ccds, mags, colors, spoilers, halfwidths = broadcast_arrays(
         date, t_ccd, mag, color, spoiler, halfwidth)
 
     spoilers = spoilers.astype(bool)
-
-    # Define model based on date if not specified
-    if model is None:
-        if np.min(date) < SPLINE_MODEL_TRANSITION_DATE.secs:
-            model = 'sota'
-        else:
-            model = 'spline'
 
     # Actually evaluate the model
     if model == 'sota':
@@ -239,7 +223,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
         probs = spline_model_acq_prob(mags, t_ccds, colors, halfwidths)
 
     else:
-        raise ValueError("`model` parameter must be 'default-for-date' | 'sota' | 'spline'")
+        raise ValueError("`model` parameter must be 'sota' or 'spline'")
 
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
@@ -461,7 +445,7 @@ def broadcast_arrays(*args):
     return outs
 
 
-def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0, halfwidth=120):
+def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0, halfwidth=120, model=None):
     """
     For a given ``date`` and ``t_ccd``, find the star magnitude that has an
     acquisition probability of ``p_acq``.  Star magnitude is defined/limited
@@ -471,12 +455,13 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0, halfwidth=120):
     :param date: observation date (any Chandra.Time valid format)
     :param t_ccd: ACA CCD temperature (deg C)
     :param halfwidth: search box halfwidth (arcsec, default=120)
+    :param model: probability model: 'sota' or 'spline' (default)
     :returns mag: star magnitude
     """
 
     def prob_minus_p_acq(mag):
         """Function that gets zeroed in brentq call later"""
-        prob = acq_success_prob(date=date, t_ccd=t_ccd, mag=mag, halfwidth=halfwidth)
+        prob = acq_success_prob(date=date, t_ccd=t_ccd, mag=mag, halfwidth=halfwidth, model=model)
         return prob - p_acq
 
     # prob_minus_p_acq is monotonically decreasing from the (minimum)
