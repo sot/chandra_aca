@@ -5,6 +5,7 @@ Functions related to probabilities for star acquisition and guide tracking.
 
 from __future__ import print_function, division
 
+import warnings
 from numba import jit
 from six.moves import zip
 
@@ -66,7 +67,7 @@ def set_acq_model_ms_filter(ms_enabled=False):
 
 
 def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
-                     cold_t_ccd=-21, warm_t_ccd=-5, model=None):
+                     cold_t_ccd=-16, warm_t_ccd=-5, model=None):
     """
     Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars
     criterion.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
@@ -84,7 +85,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
     :param date: observation date (any Chandra.Time valid format)
     :param colors: list of star B-V colors (optional, default=0.0)
     :param min_n_acq: float or tuple (see above)
-    :param cold_t_ccd: coldest CCD temperature to consider (default=-21 C)
+    :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)
     :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
     :param model: probability model: 'sota' or 'spline' (default)
 
@@ -178,7 +179,7 @@ def prob_n_acq(star_probs):
     return n_acq_probs, np.cumsum(n_acq_probs)
 
 
-def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120,
+def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120,
                      model=None):
     """
     Return probability of acquisition success for given date, temperature, star properties
@@ -188,7 +189,7 @@ def acq_success_prob(date=None, t_ccd=-19.0, mag=10.0, color=0.6, spoiler=False,
     the broadcasted dimension of the inputs.
 
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
-    :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-19C)
+    :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-10C)
     :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
@@ -269,6 +270,10 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
 
     is_scalar, t_ccds, mags, colors, halfwidths = broadcast_arrays(
         t_ccd, mag, color, halfwidth)
+
+    if np.any(t_ccds < -16.0):
+        warnings.warn('\nSpline model is not calibrated below -16 C, so take results with skepticism!\n'
+                      'For cold temperatures use the SOTA model.')
 
     # Cubic spline functions are computed on the first call and cached
     if len(SPLINE_FUNCS) == 0:
@@ -453,7 +458,7 @@ def broadcast_arrays(*args):
     return outs
 
 
-def mag_for_p_acq(p_acq, date=None, t_ccd=-19.0, halfwidth=120, model=None):
+def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
     """
     For a given ``date`` and ``t_ccd``, find the star magnitude that has an
     acquisition probability of ``p_acq``.  Star magnitude is defined/limited

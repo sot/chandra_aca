@@ -88,8 +88,8 @@ def test_mag_for_p_acq():
 def test_halfwidth_adjustment():
     mag = 10.3
     halfwidth = [40, 80, 120, 180, 240]
-    p120 = acq_success_prob(mag=mag, date='2018:001', halfwidth=120, model='sota')
-    pacq = acq_success_prob(mag=mag, date='2018:001', halfwidth=halfwidth, model='sota')
+    p120 = acq_success_prob(mag=mag, date='2018:001', t_ccd=-19, halfwidth=120, model='sota')
+    pacq = acq_success_prob(mag=mag, date='2018:001', t_ccd=-19, halfwidth=halfwidth, model='sota')
     mults = pacq / p120
     assert np.allclose(mults, [1.07260318, 1.04512285,  1., 0.91312975, 0.83667405])
 
