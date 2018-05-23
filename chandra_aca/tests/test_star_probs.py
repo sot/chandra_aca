@@ -80,6 +80,20 @@ def test_t_ccd_warm_limit_2_spline():
     assert np.allclose(out[1], 5.0, atol=0.01, rtol=0)
 
 
+def test_t_ccd_warm_limit_3():
+    halfwidth = [40, 80, 120, 160, 180, 240]
+    box = t_ccd_warm_limit([10.4] * 6, date='2015:001', halfwidths=halfwidth, min_n_acq=(2, 8e-3), model='sota')
+    assert np.allclose(box[0], -15.6325, atol=0.01, rtol=0)
+    assert np.allclose(box[1], 0.008, atol=0.0001, rtol=0)
+
+
+def test_t_ccd_warm_limit_3_spline():
+    halfwidth = [40, 80, 120, 160, 180, 240]
+    box = t_ccd_warm_limit([10.0] * 6, date='2018:180', halfwidths=halfwidth, min_n_acq=(2, 8e-3), model='spline')
+    assert np.allclose(box[0], -11.0192, atol=0.01, rtol=0)
+    assert np.allclose(box[1], 0.008, atol=0.0001, rtol=0)
+
+
 def test_mag_for_p_acq():
     mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0, model='sota')
     assert np.allclose(mag, 10.848, rtol=0, atol=0.01)

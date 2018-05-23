@@ -66,7 +66,7 @@ def set_acq_model_ms_filter(ms_enabled=False):
     MULT_STARS_ENABLED = ms_enabled
 
 
-def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
+def t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0,
                      cold_t_ccd=-16, warm_t_ccd=-5, model=None):
     """
     Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars
@@ -84,6 +84,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
     :param mags: list of star ACA mags
     :param date: observation date (any Chandra.Time valid format)
     :param colors: list of star B-V colors (optional, default=0.0)
+    :param halfwidths: list of acq box halfwidths(optional, default=120)
     :param min_n_acq: float or tuple (see above)
     :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)
     :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
@@ -93,6 +94,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
               - number of expected ACQ stars at that temperature (scalar min_n_acq)
               - probability of acquiring ``n`` or fewer stars (tuple min_n_acq)
     """
+
     if isinstance(min_n_acq, tuple):
         n_or_fewer, prob_n_or_fewer = min_n_acq
 
@@ -101,7 +103,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
         This will be positive if the expected number of stars is above the
         minimum number of stars.  Positive => more expected stars.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, model=model)
+        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, halfwidth=halfwidths, model=model)
         return np.sum(probs) - min_n_acq
 
     def prob_n_or_fewer_below_max(t_ccd):
@@ -109,7 +111,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, min_n_acq=5.0,
         This will be positive if the computed probability of acquiring n_or_fewer
         stars is less than the threshold.  Positive => lower prob. of safing action.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, model=model)
+        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, halfwidth=halfwidths, model=model)
         n_acq_probs, n_or_fewer_probs = prob_n_acq(probs)
         return prob_n_or_fewer - n_or_fewer_probs[n_or_fewer]
 
