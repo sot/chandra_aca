@@ -7,7 +7,8 @@ import pytest
 import numpy as np
 from astropy.table import Table
 
-from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
+from chandra_aca.star_probs import (t_ccd_warm_limit, mag_for_p_acq, acq_success_prob,
+                                    guide_count, t_ccd_warm_limit_for_guide)
 
 # Acquisition probabilities regression test data
 ACQ_PROBS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'acq_probs.dat')
@@ -92,6 +93,21 @@ def test_t_ccd_warm_limit_3_spline():
     box = t_ccd_warm_limit([10.0] * 6, date='2018:180', halfwidths=halfwidth, min_n_acq=(2, 8e-3), model='spline')
     assert np.allclose(box[0], -11.0192, atol=0.01, rtol=0)
     assert np.allclose(box[1], 0.008, atol=0.0001, rtol=0)
+
+
+def test_t_ccd_warm_limit_guide():
+    mags = np.array([5.9, 5.9, 5.9, 5.9, 5.9])
+    t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
+    assert np.isclose(t_ccd, -16, atol=0.001, rtol=0)
+    mags = np.array([6.0, 6.0, 6.0, 6.0, 6.0])
+    t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
+    assert np.isclose(t_ccd, 5.0, atol=0.001, rtol=0)
+    mags = np.array([6.0, 6.0, 6.0, 10.3, 10.3])
+    t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
+    assert np.isclose(t_ccd, -11.40625, atol=0.001, rtol=0)
+    mags = np.array([10.3, 10.3, 10.3, 10.3, 10.3])
+    t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
+    assert np.isclose(t_ccd, -13.9992, atol=0.001, rtol=0)
 
 
 def test_mag_for_p_acq():
