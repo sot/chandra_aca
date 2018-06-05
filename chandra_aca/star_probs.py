@@ -9,10 +9,12 @@ import warnings
 from numba import jit
 from six.moves import zip
 
-from scipy.optimize import brentq
+from scipy.optimize import brentq, bisect
 import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
+
+from chandra_aca.transform import snr_mag_for_t_ccd
 
 # Default acquisition probability model
 DEFAULT_MODEL = 'spline'
@@ -497,3 +499,53 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
         mag = float(mag)
 
     return mag
+
+
+def guide_count(mags, t_ccd):
+    """
+    Given mags from guide stars and a temperature, calculate a guide star
+    fractional count/metric using signal-to-noise scaled mag thresholds.
+
+    :param mags: mags of guide star catalog stars
+    :param t_ccd: ACA CCD temperature at expected time of observation
+    :returns: fractional count
+    """
+    # The bright limit does not scale.
+    thresh0 = 5.9
+    thresh1 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.0, ref_t_ccd=-10.9)
+    thresh2 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.2, ref_t_ccd=-10.9)
+    thresh3 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.3, ref_t_ccd=-10.9)
+    counts = np.zeros_like(mags)
+    counts[(mags <= thresh1) & (mags > thresh0)] = 1.0
+    counts[(mags <= thresh2) & (mags > thresh1)] = 0.75
+    counts[(mags <= thresh3) & (mags > thresh2)] = 0.5
+    return np.sum(counts)
+
+
+def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5, cold_t_ccd=-16):
+    """
+    In the style of t_ccd_warm_limit, use an optimization
+    strategy to solve for the warmest temperature that still gets the min_guide_count.
+    This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
+    cold end the result may be below ``min_n_acq``, in which case the star catalog
+    may be rejected.
+
+    :param mags: list of star ACA mags
+    :param min_guide_count: float minimum fractional guide count
+    :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
+    :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)
+
+    :returns: t_ccd
+    """
+
+    def n_gui_above_min(t_ccd):
+        count = guide_count(mags, t_ccd)
+        return count - min_guide_count
+    merit_func = n_gui_above_min
+    if merit_func(warm_t_ccd) >= 0:
+        t_ccd = warm_t_ccd
+    elif merit_func(cold_t_ccd) <= 0:
+        t_ccd = cold_t_ccd
+    else:
+        t_ccd = bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=1e-4, rtol=1e-4)
+    return t_ccd
