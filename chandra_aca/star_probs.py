@@ -9,7 +9,7 @@ import warnings
 from numba import jit
 from six.moves import zip
 
-from scipy.optimize import brentq
+from scipy.optimize import brentq, bisect
 import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
@@ -541,7 +541,7 @@ def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_
         return warm_t_ccd
     if guide_count(mags, cold_t_ccd) < min_guide_count:
         return cold_t_ccd
-    t_ccds = np.arange(cold_t_ccd, warm_t_ccd, .1)
-    counts = np.array([guide_count(mags, t_ccd) for t_ccd in t_ccds])
-    max_idx = np.flatnonzero(counts >= min_guide_count)[-1]
-    return t_ccds[max_idx]
+    def merit_func(t_ccd):
+        count = guide_count(mags, t_ccd)
+        return 0.01 + count - min_guide_count
+    return bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=0.001, rtol=1e-15, full_output=False)
