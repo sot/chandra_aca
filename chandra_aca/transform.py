@@ -216,7 +216,7 @@ def count_rate_to_mag(count_rate):
     return mag
 
 
-def snr_mag_for_t_ccd(t_ccd, ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=None):
+def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
     """
     Given a tccd, solve for the magnitude that has the same expected signal
     to noise as ref_mag / ref_tccd.

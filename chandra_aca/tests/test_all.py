@@ -175,9 +175,9 @@ def test_snr_mag():
     same = snr_mag_for_t_ccd(-11.5, ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=5)
     assert np.isclose(same, 10.3, atol=0.0001, rtol=0)
     # Show a few different combinations of results based on different values for ref_mag and ref_t_ccd
-    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), scale_4c=1.59)
+    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=1.59)
     assert np.allclose(arr, [10.3, 10.1112, 9.4818], atol=0.0001, rtol=0)
-    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, scale_4c=1.59)
+    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-11.5, scale_4c=1.59)
     assert np.allclose(arr, [9.0, 8.8112, 8.1818], atol=0.0001, rtol=0)
     arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-9.5, scale_4c=1.59)
     assert np.allclose(arr, [9.2517, 9.0630, 8.4336], atol=0.0001, rtol=0)
