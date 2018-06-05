@@ -9,7 +9,7 @@ import warnings
 from numba import jit
 from six.moves import zip
 
-from scipy.optimize import brentq, bisect
+from scipy.optimize import brentq
 import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
@@ -522,10 +522,10 @@ def guide_count(mags, t_ccd):
     return np.sum(counts)
 
 
-def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5, cold_t_ccd=-16):
+def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_t_ccd=-16.0):
     """
-    In the style of t_ccd_warm_limit, use an optimization
-    strategy to solve for the warmest temperature that still gets the min_guide_count.
+    Solve for the warmest temperature that still gets the min_guide_count.
+    This uses a brute/grid search for a reasonable maximum/warmest value.
     This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
     cold end the result may be below ``min_n_acq``, in which case the star catalog
     may be rejected.
@@ -537,15 +537,11 @@ def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5, cold_t_
 
     :returns: t_ccd
     """
-
-    def n_gui_above_min(t_ccd):
-        count = guide_count(mags, t_ccd)
-        return count - min_guide_count
-    merit_func = n_gui_above_min
-    if merit_func(warm_t_ccd) >= 0:
-        t_ccd = warm_t_ccd
-    elif merit_func(cold_t_ccd) <= 0:
-        t_ccd = cold_t_ccd
-    else:
-        t_ccd = bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=1e-4, rtol=1e-4)
-    return t_ccd
+    if guide_count(mags, warm_t_ccd) >= min_guide_count:
+        return warm_t_ccd
+    if guide_count(mags, cold_t_ccd) < min_guide_count:
+        return cold_t_ccd
+    t_ccds = np.arange(cold_t_ccd, warm_t_ccd, .1)
+    counts = np.array([guide_count(mags, t_ccd) for t_ccd in t_ccds])
+    max_idx = np.flatnonzero(counts >= min_guide_count)[-1]
+    return t_ccds[max_idx]
