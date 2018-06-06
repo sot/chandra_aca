@@ -543,8 +543,14 @@ def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_
     if guide_count(mags, warm_t_ccd) >= min_guide_count:
         return warm_t_ccd
     if guide_count(mags, cold_t_ccd) < min_guide_count:
+        # Note that this uses a '<' not a '<=' because if the guide_count is equal to
+        # min_guide_count at cold_t_ccd, we still want to solve for a warmer temperature
+        # when it is != to min_guide_count
         return cold_t_ccd
     def merit_func(t_ccd):
         count = guide_count(mags, t_ccd)
+        # A small number (0.01) is added to (count - min_guide_count) so that the function
+        # is still nonzero for all of the values of t_ccd where count is equal to min_guide_count.
+        # There will then be a real zero crossing at the "warm end" of that range.
         return 0.01 + count - min_guide_count
     return bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=0.001, rtol=1e-15, full_output=False)
