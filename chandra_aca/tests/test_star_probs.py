@@ -110,6 +110,31 @@ def test_t_ccd_warm_limit_guide():
     assert np.isclose(t_ccd, -14.0, atol=0.1, rtol=0)
 
 
+def test_t_ccd_warm_limit_guide_vs_brute():
+    for n in range(0, 100):
+        mags = np.random.normal(loc=9.0, scale=1.5, size=5)
+        warm_limit = t_ccd_warm_limit_for_guide(mags)
+        check_warm_limit = stepwise_guide_warm_limit(mags, step=.01)
+        assert np.isclose(warm_limit, check_warm_limit, atol=0.02, rtol=0)
+
+
+def stepwise_guide_warm_limit(mags, step=0.01, min_guide_count=4.0,
+                             warm_t_ccd=-5.0, cold_t_ccd=-16.0):
+    """
+    Solve for the warmest temperature that still gets ``min_guide_count``, but
+    using a stepwise/brute method as needed.  This is slow, but good for a comparison
+    for testing.
+    """
+    if guide_count(mags, warm_t_ccd) >= min_guide_count:
+        return warm_t_ccd
+    if guide_count(mags, cold_t_ccd) < min_guide_count:
+        return cold_t_ccd
+    t_ccds = np.arange(cold_t_ccd, warm_t_ccd, step)
+    counts = np.array([guide_count(mags, t_ccd) for t_ccd in t_ccds])
+    max_idx = np.flatnonzero(counts >= min_guide_count)[-1]
+    return t_ccds[max_idx]
+
+
 def test_mag_for_p_acq():
     mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0, model='sota')
     assert np.allclose(mag, 10.848, rtol=0, atol=0.01)
