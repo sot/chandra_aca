@@ -515,7 +515,7 @@ def guide_count(mags, t_ccd):
     thresh1 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.0, ref_t_ccd=-10.9)
     thresh2 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.2, ref_t_ccd=-10.9)
     thresh3 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.3, ref_t_ccd=-10.9)
-    counts = np.zeros_like(mags)
+    counts = np.zeros(len(mags))
     counts[(mags <= thresh1) & (mags > thresh0)] = 1.0
     counts[(mags <= thresh2) & (mags > thresh1)] = 0.75
     counts[(mags <= thresh3) & (mags > thresh2)] = 0.5
