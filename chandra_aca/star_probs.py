@@ -506,6 +506,10 @@ def guide_count(mags, t_ccd):
     Given mags from guide stars and a temperature, calculate a guide star
     fractional count/metric using signal-to-noise scaled mag thresholds.
 
+    This uses guide star fractional counts that were suggested at the 7-Mar-2018
+    SSAWG and agreed upon at the 21-Mar-2018 SSAWG.  The implementation here
+    uses the ACA planning limit at that time (-10.9C) as the reference temperature.
+
     :param mags: mags of guide star catalog stars
     :param t_ccd: ACA CCD temperature at expected time of observation
     :returns: fractional count
