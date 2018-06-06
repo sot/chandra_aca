@@ -218,8 +218,8 @@ def count_rate_to_mag(count_rate):
 
 def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
     """
-    Given a tccd, solve for the magnitude that has the same expected signal
-    to noise as ref_mag / ref_tccd.
+    Given a t_ccd, solve for the magnitude that has the same expected signal
+    to noise as ref_mag / ref_t_ccd.
 
     If scale_4c is None, the value from dark_model.DARK_SCALE_4C is used.
     """
