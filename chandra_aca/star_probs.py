@@ -525,7 +525,6 @@ def guide_count(mags, t_ccd):
 def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_t_ccd=-16.0):
     """
     Solve for the warmest temperature that still gets the min_guide_count.
-    This uses a brute/grid search for a reasonable maximum/warmest value.
     This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
     cold end the result may be below ``min_n_acq``, in which case the star catalog
     may be rejected.
