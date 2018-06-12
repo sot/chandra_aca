@@ -1,6 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import division
 
+from functools import wraps
+from contextlib import contextmanager
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -14,25 +17,51 @@ from .transform import pixels_to_yagzag, yagzag_to_pixels
 # rc definitions
 frontcolor = 'black'
 backcolor = 'white'
-plt.rcParams['lines.color'] = frontcolor
-plt.rcParams['patch.edgecolor'] = frontcolor
-plt.rcParams['text.color'] = frontcolor
-plt.rcParams['axes.facecolor'] = backcolor
-plt.rcParams['axes.edgecolor'] = frontcolor
-plt.rcParams['axes.labelcolor'] = frontcolor
-plt.rcParams['xtick.color'] = frontcolor
-plt.rcParams['ytick.color'] = frontcolor
-plt.rcParams['grid.color'] = frontcolor
-plt.rcParams['figure.facecolor'] = backcolor
-plt.rcParams['figure.edgecolor'] = backcolor
-plt.rcParams['savefig.facecolor'] = backcolor
-plt.rcParams['savefig.edgecolor'] = backcolor
+rcParams = {}
+rcParams['lines.color'] = frontcolor
+rcParams['patch.edgecolor'] = frontcolor
+rcParams['text.color'] = frontcolor
+rcParams['axes.facecolor'] = backcolor
+rcParams['axes.edgecolor'] = frontcolor
+rcParams['axes.labelcolor'] = frontcolor
+rcParams['xtick.color'] = frontcolor
+rcParams['ytick.color'] = frontcolor
+rcParams['grid.color'] = frontcolor
+rcParams['figure.facecolor'] = backcolor
+rcParams['figure.edgecolor'] = backcolor
+rcParams['savefig.facecolor'] = backcolor
+rcParams['savefig.edgecolor'] = backcolor
 
+# Classic grid params https://matplotlib.org/users/dflt_style_changes.html#grid-lines
+rcParams['grid.color'] = 'k'
+rcParams['grid.linestyle'] = ':'
+rcParams['grid.linewidth'] = 0.5
 
 BAD_STAR_COLOR = 'tomato'
 BAD_STAR_ALPHA = .75
 FAINT_STAR_COLOR = 'lightseagreen'
 FAINT_STAR_ALPHA = .75
+
+
+@contextmanager
+def custom_plt():
+    orig = {key: plt.rcParams[key] for key in rcParams}
+    plt.rcParams.update(rcParams)
+    yield
+    plt.rcParams.update(orig)
+
+
+def custom_plt_rcparams(func):
+    """
+    Decorator to make a function use the custom rcParams plt params
+    temporarily.  This uses a context manage to ensure original
+    params always get restored.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with custom_plt():
+            return func(*args, **kwargs)
+    return wrapper
 
 
 def symsize(mag):
@@ -174,6 +203,7 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
                    alpha=alpha)
 
 
+@custom_plt_rcparams
 def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
                red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None,
                plot_keepout=False):
@@ -296,6 +326,7 @@ def bad_acq_stars(stars):
             (stars['VAR'] > -9999))
 
 
+@custom_plt_rcparams
 def plot_compass(roll):
     """
     Make a compass plot.
