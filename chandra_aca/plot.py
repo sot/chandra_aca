@@ -60,7 +60,7 @@ def custom_plt_rcparams(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         with custom_plt():
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
     return wrapper
 
 
