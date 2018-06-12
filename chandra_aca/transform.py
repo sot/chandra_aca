@@ -11,6 +11,7 @@ from __future__ import division
 
 import numpy as np
 
+from chandra_aca import dark_model
 from Quaternion import Quat
 
 # coefficients for converting from ACA angle to pixels (ground)
@@ -213,6 +214,40 @@ def count_rate_to_mag(count_rate):
     """
     mag = ACA_MAG0 - 2.5 * np.log10(count_rate / ACA_CNT_RATE_MAG0)
     return mag
+
+
+def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
+    """
+    Given a t_ccd, solve for the magnitude that has the same expected signal
+    to noise as ref_mag / ref_t_ccd.
+
+    If scale_4c is None, the value from dark_model.DARK_SCALE_4C is used.
+
+    To solve for the magnitude that has the expected signal to noise as
+    ref_mag / ref_t_ccd, we define this equality:
+
+    counts(mag) / noise(t_ccd) = counts(ref_mag) / noise(ref_t_ccd)
+
+    We then assume (with some handwaving) that:
+
+    noise(t_ccd) = noise(ref_t_ccd) * scale
+
+    where
+
+    scale = scale_4c ** ((t_ccd - ref_t_ccd) / 4.0)
+
+    And we use the definition of counts as:
+
+    counts(mag) = ACA_CNT_RATE_MAG0 * 10.0 ** ((ACA_MAG0 - mag) / 2.5)
+
+    Substituting in, reducing, and solving the original equality for mag gives
+
+    ref_mag - (t_ccd - ref_t_ccd) * np.log10(scale_4c) / 1.6
+
+    """
+    if scale_4c is None:
+        scale_4c = dark_model.DARK_SCALE_4C
+    return ref_mag - (t_ccd - ref_t_ccd) * np.log10(scale_4c) / 1.6
 
 
 def calc_aca_from_targ(targ, y_off, z_off, si_align=None):

@@ -12,6 +12,7 @@ from Chandra.Time import DateTime
 
 import chandra_aca
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
+from chandra_aca.transform import snr_mag_for_t_ccd
 from chandra_aca import drift
 
 dirname = os.path.dirname(__file__)
@@ -168,3 +169,15 @@ def test_get_aca_offsets():
 
     offsets = drift.get_aca_offsets('HRC-S', 2, 2041, 9062, '2016:180', -15.0)
     assert np.allclose(offsets, (17.269560057119545, 3.4474216529603225), atol=0.1, rtol=0)
+
+
+def test_snr_mag():
+    same = snr_mag_for_t_ccd(-11.5, ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=5)
+    assert np.isclose(same, 10.3, atol=0.0001, rtol=0)
+    # Show a few different combinations of results based on different values for ref_mag and ref_t_ccd
+    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=1.59)
+    assert np.allclose(arr, [10.3, 10.1112, 9.4818], atol=0.0001, rtol=0)
+    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-11.5, scale_4c=1.59)
+    assert np.allclose(arr, [9.0, 8.8112, 8.1818], atol=0.0001, rtol=0)
+    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-9.5, scale_4c=1.59)
+    assert np.allclose(arr, [9.2517, 9.0630, 8.4336], atol=0.0001, rtol=0)
