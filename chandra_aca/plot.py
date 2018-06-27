@@ -206,7 +206,7 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
 @custom_plt_rcparams
 def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
                red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None,
-               plot_keepout=False):
+               plot_keepout=False, ax=None):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
     If supplying a star field, an attitude must also be supplied.
@@ -241,11 +241,15 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     if bad_stars is None:
         bad_stars = bad_acq_stars(stars)
 
-    fig = plt.figure(figsize=(5.325, 5.325))
-    fig.subplots_adjust(top=0.95)
+    if ax is None:
+        fig = plt.figure(figsize=(5.325, 5.325))
+        fig.subplots_adjust(top=0.95)
 
-    # Make an empty plot in row, col space
-    ax = fig.add_subplot(1, 1, 1)
+        # Make an empty plot in row, col space
+        ax = fig.add_subplot(1, 1, 1)
+    else:
+        fig = ax.get_figure()
+
     ax.set_aspect('equal')
     plt.xlim(-580, 590)  # Matches -2900, 2900 arcsec roughly
     plt.ylim(-580, 590)
@@ -304,7 +308,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     if catalog is not None:
         _plot_catalog_items(ax, catalog)
     if title is not None:
-        fig.suptitle(title, fontsize='small')
+        ax.set_title(title, fontsize='small')
 
     return fig
 
