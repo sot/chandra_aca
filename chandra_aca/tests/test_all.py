@@ -60,6 +60,13 @@ def test_angle_to_pix():
     np.testing.assert_allclose(angle_to_pix['col'], pycol, atol=TOLERANCE, rtol=0)
 
 
+def test_angle_to_pix_types():
+    for ftype in [int, float, np.int32, np.int64, np.float32]:
+        pyrow, pycol = chandra_aca.yagzag_to_pixels(ftype(2540), ftype(1660))
+        assert np.isclose(pyrow, -506.71, rtol=0, atol=0.01)
+        assert np.isclose(pycol, 341.19, rtol=0, atol=0.01)
+
+
 def test_pix_zero_loc():
     r, c = 100, 200
     ye, ze = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc='edge')
