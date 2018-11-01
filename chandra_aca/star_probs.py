@@ -251,13 +251,13 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
     success for a star with specified mag, t_ccd, color, and search box halfwidth.
 
     The model definition and fit values based on:
-    - https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb
+    - https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-11-poly-spline-tccd.ipynb
 
     See also:
     - Description of the motivation and initial model development.
        https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11
     - Final review and approval.
-       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18
+       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting-TBD
 
     :param mag: ACA magnitude (float or np.ndarray)
     :param t_ccd: CCD temperature (degC, float or ndarray)
@@ -281,9 +281,9 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
 
     # Cubic spline functions are computed on the first call and cached
     if len(SPLINE_FUNCS) == 0:
-        fit_no_1p5 = np.array([-2.69826, -1.96063, -1.20245, -0.01713, 1.23724,  # P0 values
-                               0.07135, 0.12711, 0.14508, 0.59646, 0.64262,  # P1 values
-                               0.02341, 0.0, 0.00704, 0.06926, 0.05629])  # P2 values
+        fit_no_1p5 = np.array([-2.7358, -2.07761, -1.14524, -0.15207, 0.7531,  # P0 values
+                               0.01922, 0.07079, 0.19239, 0.33352, 0.23654,  # P1 values
+                               0.00876, 0.00624, 0.01072, 0.0, 0.0])  # P2 values
         fit_1p5 = np.array([-2.56169, -1.65157, -0.26794, 1.00488, 3.52181,  # P0 values
                             0.0, 0.09193, 0.23026, 0.61243, 0.94157,  # P1 values
                             0.00471, 0.00637, 0.01118, 0.07461, 0.09556])  # P2 values
