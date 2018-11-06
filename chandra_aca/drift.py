@@ -6,7 +6,7 @@ In particular compute the dynamical pointing offset required to achieve
 a desired zero-offset target aimpoint.
 
 A key element of this module is the fitting analysis here:
-https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift.ipynb
+https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb
 """
 
 from Chandra.Time import DateTime
@@ -14,23 +14,27 @@ from astropy.table import Table
 import numpy as np
 
 # Capture best fit model parameters for ACA drift model.
-# https://github.com/sot/aimpoint_mon/blob/8259a23/fit_aimpoint_drift.ipynb
+# https://github.com/sot/aimpoint_mon/blob/7809b89/fit_aimpoint_drift.ipynb
 # These are used below to instantiate corresponding AcaDriftModel objects.
 
-DRIFT_Y_PARS = dict(scale=2.183,  # drift per degF (NOT degC as elsewhere in this module)
-                    offset=-5.606,
-                    trend=-1.363,
-                    jumps=(('2015:006', -4.234),
-                           ('2015:265', -4.571),
-                           ('2016:064', -2.027)),
+DRIFT_Y_PARS = dict(scale=2.1467,  # drift per degF (NOT degC as elsewhere in this module)
+                    offset=-6.012,
+                    trend=-1.108,
+                    jumps=(('2015:006', -4.600),
+                           ('2015:265', -4.669),
+                           ('2016:064', -1.793),
+                           ('2017:066', -1.725),
+                           ('2018:285', -12.505)),
                     year0=2016.0)
 
-DRIFT_Z_PARS = dict(scale=1.067,
-                    offset=-14.374,
-                    trend=-0.407,
-                    jumps=(('2015:006', -1.8154),
-                           ('2015:265', -0.3033),
-                           ('2016:064', -1.1105)),
+DRIFT_Z_PARS = dict(scale=1.004,
+                    offset=-15.963,
+                    trend=-0.159,
+                    jumps=(('2015:006', -2.109),
+                           ('2015:265', -0.368),
+                           ('2016:064', -0.902),
+                           ('2017:066', -0.856),
+                           ('2018:285', -6.056)),
                     year0=2016.0)
 
 # Define transform from aspect solution DY, DZ (mm) to CHIPX, CHIPY for
