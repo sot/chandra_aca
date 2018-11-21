@@ -105,7 +105,8 @@ def t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0,
         This will be positive if the expected number of stars is above the
         minimum number of stars.  Positive => more expected stars.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, halfwidth=halfwidths, model=model)
+        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors,
+                                 halfwidth=halfwidths, model=model)
         return np.sum(probs) - min_n_acq
 
     def prob_n_or_fewer_below_max(t_ccd):
@@ -113,7 +114,8 @@ def t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0,
         This will be positive if the computed probability of acquiring n_or_fewer
         stars is less than the threshold.  Positive => lower prob. of safing action.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors, halfwidth=halfwidths, model=model)
+        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors,
+                                 halfwidth=halfwidths, model=model)
         n_acq_probs, n_or_fewer_probs = prob_n_acq(probs)
         return prob_n_or_fewer - n_or_fewer_probs[n_or_fewer]
 
@@ -276,7 +278,8 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
         t_ccd, mag, color, halfwidth)
 
     if np.any(t_ccds < -16.0):
-        warnings.warn('\nSpline model is not calibrated below -16 C, so take results with skepticism!\n'
+        warnings.warn('\nSpline model is not calibrated below -16 C, '
+                      'so take results with skepticism!\n'
                       'For cold temperatures use the SOTA model.')
 
     # Cubic spline functions are computed on the first call and cached
