@@ -5,6 +5,7 @@ Functions related to probabilities for star acquisition and guide tracking.
 
 from __future__ import print_function, division
 
+import os
 import warnings
 from numba import jit
 from six.moves import zip
@@ -16,11 +17,16 @@ from Chandra.Time import DateTime
 
 from chandra_aca.transform import snr_mag_for_t_ccd
 
+STAR_PROBS_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'star_probs')
+
 # Default acquisition probability model
-DEFAULT_MODEL = 'spline'
+DEFAULT_MODEL = 'grid-floor-2018-11'
 
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
+
+# Cache of grid model interpolation functions
+GRID_FUNCS = {}
 
 WARM_THRESHOLD = 100  # Value (N100) used for fitting
 
@@ -200,7 +206,7 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
-    :param model: probability model: 'sota' or 'spline' (default)
+    :param model: probability model name: 'sota' | 'spline' | 'grid-*' (default)
 
     :returns: Acquisition success probability(s)
     """
@@ -229,8 +235,11 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
     elif model == 'spline':
         probs = spline_model_acq_prob(mags, t_ccds, colors, halfwidths)
 
+    elif model.startswith('grid-'):
+        probs = grid_model_acq_prob(mags, t_ccds, colors, halfwidths, model=model)
+
     else:
-        raise ValueError("`model` parameter must be 'sota' or 'spline'")
+        raise ValueError("`model` parameter must be 'sota' | 'spline' | 'grid-*'")
 
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
@@ -245,6 +254,106 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
     # Return probabilities.  The [()] getitem at the end will flatten a
     # scalar array down to a pure scalar.
     return probs[0] if is_scalar else probs
+
+
+def clip_and_warn(name, val, val_lo, val_hi, model):
+    val = np.asarray(val)
+    if np.any((val > val_hi) | (val < val_lo)):
+        warnings.warn('\nModel {} computed between {} <= {} <= {}, '
+                      'clipping input {}(s) outside that range.'
+                      .format(model, name, val_lo, val_hi, name))
+        val = np.clip(val, val_lo, val_hi)
+
+    return val
+
+
+def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False,
+                        model='grid-floor-2018-11'):
+
+    if model not in GRID_FUNCS:
+        from astropy.io import fits
+        from scipy.interpolate import RegularGridInterpolator
+
+        filename = os.path.join(STAR_PROBS_DATA_DIR, model) + '.fits.gz'
+        if not os.path.exists(filename):
+            raise IOError('model file {} does not exist'.format(filename))
+
+        hdus = fits.open(filename)
+        hdu0 = hdus[0]
+        probit_p_fail_no_1p5 = hdus[1].data
+        probit_p_fail_1p5 = hdus[2].data
+
+        hdr = hdu0.header
+        grid_mags = np.linspace(hdr['mag_lo'], hdr['mag_hi'], hdr['mag_n'])
+        grid_t_ccds = np.linspace(hdr['t_ccd_lo'], hdr['t_ccd_hi'], hdr['t_ccd_n'])
+        grid_halfws = np.linspace(hdr['halfw_lo'], hdr['halfw_hi'], hdr['halfw_n'])
+
+        assert probit_p_fail_no_1p5.shape == (len(grid_mags), len(grid_t_ccds), len(grid_halfws))
+        assert probit_p_fail_1p5.shape == probit_p_fail_no_1p5.shape
+
+        func_no_1p5 = RegularGridInterpolator(points=(grid_mags, grid_t_ccds, grid_halfws),
+                                              values=probit_p_fail_no_1p5)
+        func_1p5 = RegularGridInterpolator(points=(grid_mags, grid_t_ccds, grid_halfws),
+                                           values=probit_p_fail_1p5)
+        mag_lo = hdr['mag_lo']
+        mag_hi = hdr['mag_hi']
+        t_ccd_lo = hdr['t_ccd_lo']
+        t_ccd_hi = hdr['t_ccd_hi']
+        halfw_lo = hdr['halfw_lo']
+        halfw_hi = hdr['halfw_hi']
+
+        GRID_FUNCS[model] = {'func_no_1p5': func_no_1p5,
+                             'func_1p5': func_1p5,
+                             'mag_lo': mag_lo,
+                             'mag_hi': mag_hi,
+                             't_ccd_lo': t_ccd_lo,
+                             't_ccd_hi': t_ccd_hi,
+                             'halfw_lo': halfw_lo,
+                             'halfw_hi': halfw_hi}
+    else:
+        gfm = GRID_FUNCS[model]
+        func_no_1p5 = gfm['func_no_1p5']
+        func_1p5 = gfm['func_1p5']
+        mag_lo = gfm['mag_lo']
+        mag_hi = gfm['mag_hi']
+        t_ccd_lo = gfm['t_ccd_lo']
+        t_ccd_hi = gfm['t_ccd_hi']
+        halfw_lo = gfm['halfw_lo']
+        halfw_hi = gfm['halfw_hi']
+
+    mag = clip_and_warn('mag', mag, mag_lo, mag_hi, model)
+    t_ccd = clip_and_warn('t_ccd', t_ccd, t_ccd_lo, t_ccd_hi, model)
+    halfwidth = clip_and_warn('halfw', halfwidth, halfw_lo, halfw_hi, model)
+
+    # Broadcast all inputs to a common shape.  If they are all scalars
+    # then shape=().  The returns values are flattened, so the final output
+    # needs to be reshape at the end.
+    shape, t_ccds, mags, colors, halfwidths = broadcast_arrays_flatten(
+        t_ccd, mag, color, halfwidth)
+
+    if shape:
+        # One or more inputs are arrays, output is array with shape
+        is_1p5 = np.isclose(colors, 1.5)
+        not_1p5 = ~is_1p5
+        p_fail = np.zeros(len(mags), dtype=np.float64)
+        points = np.vstack([mags, t_ccds, halfwidths]).transpose()
+        if np.any(is_1p5):
+            p_fail[is_1p5] = func_1p5(points[is_1p5])
+        if np.any(not_1p5):
+            p_fail[not_1p5] = func_no_1p5(points[not_1p5])
+        p_fail.shape = shape
+
+    else:
+        # Scalar case
+        func = func_1p5 if np.isclose(color, 1.5) else func_no_1p5
+        p_fail = func([[mag, t_ccd, halfwidth]])
+
+    # Convert p_fail to p_success (remembering at this point p_fail is probit)
+    p_success = -p_fail
+    if not probit:
+        p_success = scipy.stats.norm.cdf(p_success)
+
+    return p_success
 
 
 def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False):
@@ -465,6 +574,18 @@ def broadcast_arrays(*args):
     return outs
 
 
+def broadcast_arrays_flatten(*args):
+    is_scalar = all(np.array(arg).ndim == 0 for arg in args)
+    if is_scalar:
+        return [()] + list(args)
+
+    args = np.atleast_1d(*args)
+    outs = np.broadcast_arrays(*args)
+    shape = outs[0].shape
+    outs = [out.ravel() for out in outs]
+    return [shape] + outs
+
+
 def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
     """
     For a given ``date`` and ``t_ccd``, find the star magnitude that has an
@@ -550,10 +671,12 @@ def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_
         # min_guide_count at cold_t_ccd, we still want to solve for a warmer temperature
         # when it is != to min_guide_count
         return cold_t_ccd
+
     def merit_func(t_ccd):
         count = guide_count(mags, t_ccd)
         # A small number (0.01) is added to (count - min_guide_count) so that the function
         # is still nonzero for all of the values of t_ccd where count is equal to min_guide_count.
         # There will then be a real zero crossing at the "warm end" of that range.
         return 0.01 + count - min_guide_count
+
     return bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=0.001, rtol=1e-15, full_output=False)
