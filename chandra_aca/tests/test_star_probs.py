@@ -8,7 +8,8 @@ import numpy as np
 from astropy.table import Table
 
 from chandra_aca.star_probs import (t_ccd_warm_limit, mag_for_p_acq, acq_success_prob,
-                                    guide_count, t_ccd_warm_limit_for_guide)
+                                    guide_count, t_ccd_warm_limit_for_guide,
+                                    grid_model_acq_prob)
 
 # Acquisition probabilities regression test data
 ACQ_PROBS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'acq_probs.dat')
@@ -218,3 +219,35 @@ def test_acq_success_prob_from_stars():
                              halfwidth=hws, model='spline')
     assert np.allclose(probs, [0.954, 0.936, 0.696, 0.739, 0.297, 0.000001, 0.491, 0.380],
                        atol=1e-2, rtol=0)
+
+
+def test_grid_floor_2018_11():
+    """
+    Test grid-floor-2018-11 model against values computed directly in the
+    source notebook fit_acq_model-2018-11-binned-poly-binom-floor.ipynb
+    with the analytical (not-gridded) model.
+    """
+
+    mags = [9, 9.5, 10.5]
+    t_ccds = [-10, -5]
+    halfws = [60, 120, 160]
+    mag, t_ccd, halfw = np.meshgrid(mags, t_ccds, halfws, indexing='ij')
+
+    # color not 1.5
+    probs = grid_model_acq_prob(mag, t_ccd, halfwidth=halfw, probit=True, color=1.0,
+                                model='grid-floor-2018-11')
+
+    exp = -np.array([-2.275, -2.275, -2.275, -2.275, -1.753, -1.467, -1.749, -1.749,
+                     -1.749, -1.503, -0.948, -0.662, 0.402, 0.957, 1.244, 1.546,
+                     2.101, 2.387])
+
+    assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.08)
+
+    # color 1.5
+    probs = grid_model_acq_prob(mag, t_ccd, halfwidth=halfw, probit=True, color=1.5,
+                                model='grid-floor-2018-11')
+
+    exp = -np.array([-1.657, -1.53, -1.455, -1.311, -1.033, -0.863, -1.167, -0.974,
+                     -0.875, -0.695, -0.382, -0.204, 0.386, 0.758, 0.938, 1.133,
+                     1.476, 1.639])
+    assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.001)
