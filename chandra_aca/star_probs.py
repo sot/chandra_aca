@@ -302,7 +302,8 @@ def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=
         halfw_lo = hdr['halfw_lo']
         halfw_hi = hdr['halfw_hi']
 
-        GRID_FUNCS[model] = {'func_no_1p5': func_no_1p5,
+        GRID_FUNCS[model] = {'filename': filename,
+                             'func_no_1p5': func_no_1p5,
                              'func_1p5': func_1p5,
                              'mag_lo': mag_lo,
                              'mag_hi': mag_hi,
