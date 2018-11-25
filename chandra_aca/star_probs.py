@@ -241,15 +241,18 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
     else:
         raise ValueError("`model` parameter must be 'sota' | 'spline' | 'grid-*'")
 
+    # Deal with color=0.7 stars and/or spoiled stars.  The spoiling correction
+    # is a relic that should never be used once proseco is promoted.
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
 
-    # If the star is brighter than 8.5 or has a calculated probability
-    # higher than the max_star_prob, clip it at that value
     probs[np.isclose(colors, 0.7, atol=1e-6, rtol=0)] *= p_0p7color
     probs[spoilers] *= p_spoiler
 
-    probs = probs.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
+    if model in ('sota', 'spline'):
+        # Clip probabilities for older models.  Newer models (grid-* included)
+        # should do all this internally.
+        probs = probs.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
 
     # Return probabilities.  The [()] getitem at the end will flatten a
     # scalar array down to a pure scalar.
