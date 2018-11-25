@@ -31,7 +31,7 @@ def make_prob_regress_table():
     """
     mags = [7.0, 10.0]
     t_ccds = [-15, -10]
-    models = ['sota', 'spline']
+    models = ['sota', 'spline', 'grid-floor-2018-11']
     colors = [0.7, 1.0, 1.5]
     spoilers = [True, False]
     halfwidths = [120, 160]
