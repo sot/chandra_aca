@@ -99,14 +99,14 @@ def broadcast_arrays(*args):
 
 
 def broadcast_arrays_flatten(*args):
-    """
-    Broadcast *args inputs to same shape and then return that
-    shape and the flattened view of all the inputs.  This lets
-    intermediate code work on arrays that are the same-length
-    1-d array and then reshape the output at the end.
+    """Broadcast *args inputs to same shape and then return that shape and the
+    flattened view of all the inputs.  This lets intermediate code work on all
+    scalars or all arrays that are the same-length 1-d array and then reshape
+    the output at the end (if necessary).
 
     :param args: tuple of scalar / array inputs
     :returns: [shape, *flat_args]
+
     """
     is_scalar, *outs = broadcast_arrays(*args)
     if is_scalar:
@@ -205,6 +205,8 @@ def _poly_convert(y, z, coeffs, t_aca=None):
     if y.size != z.size:
         raise ValueError("Mismatched number of Y/Z coords")
 
+    shape, y, z = broadcast_arrays_flatten(y, z)
+
     if len(coeffs) == 10:
         # No temperature dependence
         yy = y * y
@@ -224,6 +226,9 @@ def _poly_convert(y, z, coeffs, t_aca=None):
 
     newy = np.sum(coeffs[:, 0] * poly.transpose(), axis=-1)
     newz = np.sum(coeffs[:, 1] * poly.transpose(), axis=-1)
+    if shape:
+        newy.shape = shape
+        newz.shape = shape
 
     return newy, newz
 

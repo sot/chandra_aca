@@ -3,6 +3,7 @@ from __future__ import print_function, division
 
 import os
 
+import pytest
 import numpy as np
 from astropy.io import ascii
 from astropy.table import Table
@@ -87,6 +88,33 @@ def test_pix_zero_loc():
     assert np.isclose(rc - r, 0, rtol=0, atol=0.01)
     assert np.isclose(ce - c, 0, rtol=0, atol=0.01)
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
+
+
+@pytest.mark.parametrize('func', [chandra_aca.pixels_to_yagzag,
+                                  chandra_aca.yagzag_to_pixels])
+def test_transform_broadcast(func):
+    rows = [-100, 100]
+    cols = [-200, 200]
+
+    # Transform 2-d array
+    r, c = np.meshgrid(rows, cols)
+    y, z = func(r, c)
+
+    # Transform flattened version of 2-d array
+    yf, zf = func(r.flatten(), c.flatten())
+
+    # Flattened output must be same as transform of flattened input
+    assert np.all(y.flatten() == yf)
+    assert np.all(z.flatten() == zf)
+
+    # Make sure scalars result in scalars
+    y, z = func(100, 200)
+    assert y.shape == ()
+    assert z.shape == ()
+    assert isinstance(y, np.float64)
+    assert isinstance(z, np.float64)
+    assert not isinstance(y, np.ndarray)
+    assert not isinstance(z, np.ndarray)
 
 
 def test_radec_to_yagzag():
