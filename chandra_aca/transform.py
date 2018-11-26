@@ -81,6 +81,42 @@ ODB_SI_ALIGN = np.array([[0.999999905689160, -0.000337419984089, -0.000273439987
                          [0.000273439987106, -0.000000046132060, 0.999999962615285]])
 
 
+def broadcast_arrays(*args):
+    """
+    Broadcast *args inputs to same shape and return an ``is_scalar`` flag and
+    the broadcasted version of inputs.  This lets intermediate code work on
+    arrays that are guaranteed to be the same shape and at least a 1-d array,
+    but reshape the output at the end.
+
+    :param args: tuple of scalar / array inputs
+    :returns: [is_scalar, *flat_args]
+
+    """
+    is_scalar = all(np.array(arg).ndim == 0 for arg in args)
+    args = np.atleast_1d(*args)
+    outs = [is_scalar] + np.broadcast_arrays(*args)
+    return outs
+
+
+def broadcast_arrays_flatten(*args):
+    """
+    Broadcast *args inputs to same shape and then return that
+    shape and the flattened view of all the inputs.  This lets
+    intermediate code work on arrays that are the same-length
+    1-d array and then reshape the output at the end.
+
+    :param args: tuple of scalar / array inputs
+    :returns: [shape, *flat_args]
+    """
+    is_scalar, *outs = broadcast_arrays(*args)
+    if is_scalar:
+        return [()] + list(args)
+
+    shape = outs[0].shape
+    outs = [out.ravel() for out in outs]
+    return [shape] + outs
+
+
 def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20,
                      pix_zero_loc='edge'):
     """
