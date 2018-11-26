@@ -145,12 +145,12 @@ def simple_test_aca_drift():
     """
     Qualitatively test the implementation of drift model by plotting (outside
     of this function) the returned drift values and comparing with plots in
-    https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift.ipynb
+    https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb
 
     Match: YES.
     """
-    times = DateTime(np.arange(2013.0, 2016.5, 0.01), format='frac_year').secs
-    t_ccd = -13.8888889 * np.ones_like(times)  # degC, equivalent to +7.0 degC
+    times = DateTime(np.arange(2013.0, 2019.0, 0.01), format='frac_year').secs
+    t_ccd = -10.0 * np.ones_like(times)  # degC
     dy = drift.DRIFT_Y.calc(times, t_ccd)
     dz = drift.DRIFT_Z.calc(times, t_ccd)
 
@@ -166,16 +166,16 @@ def test_get_aca_offsets():
     given inputs.
     """
     offsets = drift.get_aca_offsets('ACIS-I', 3, 930.2, 1009.6, '2016:180', -15.0)
-    assert np.allclose(offsets, (11.83637884563926, 2.6860740140775334), atol=0.1, rtol=0)
+    assert np.allclose(offsets, (11.45, 2.34), atol=0.1, rtol=0)
 
     offsets = drift.get_aca_offsets('ACIS-S', 7, 200.7, 476.9, '2016:180', -15.0)
-    assert np.allclose(offsets, (13.360706170615167, 3.8670874955935481), atol=0.1, rtol=0)
+    assert np.allclose(offsets, (12.98, 3.52), atol=0.1, rtol=0)
 
     offsets = drift.get_aca_offsets('HRC-I', 0, 7591, 7936, '2016:180', -15.0)
-    assert np.allclose(offsets, (14.728718419826098, 0.7925650626134555), atol=0.1, rtol=0)
+    assert np.allclose(offsets, (14.35, 0.45), atol=0.1, rtol=0)
 
     offsets = drift.get_aca_offsets('HRC-S', 2, 2041, 9062, '2016:180', -15.0)
-    assert np.allclose(offsets, (17.269560057119545, 3.4474216529603225), atol=0.1, rtol=0)
+    assert np.allclose(offsets, (16.89, 3.10), atol=0.1, rtol=0)
 
 
 def test_snr_mag():

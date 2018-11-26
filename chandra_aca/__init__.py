@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from .transform import *
 
-__version__ = '4.23.1'
+__version__ = '4.24'
 
 
 def test(*args, **kwargs):
