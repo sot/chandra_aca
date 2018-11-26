@@ -1,6 +1,18 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
 Functions related to probabilities for star acquisition and guide tracking.
+
+Current default model: grid-floor-2018-11
+
+The grid-floor-2018-11 model definition and fit values based on:
+  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2018-11-binned-poly-binom-floor.ipynb
+
+See also development models:
+  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2018-11-dev
+
+SSAWG initial reviews: 2018-11-07, 2018-11-14
+Final review and approval: 2018-11-28
+
 """
 
 from __future__ import print_function, division
@@ -260,6 +272,20 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
 
 
 def clip_and_warn(name, val, val_lo, val_hi, model):
+    """
+    Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a
+    warning if clipping occurs.  The ``name`` and ``model`` are just used in
+    the warning.
+
+    :param name: Value name
+    :param val: Value
+    :param val_lo: Minimum
+    :param val_hi: Maximum
+    :param model: Model name
+
+    :returns: Clipped value
+
+    """
     val = np.asarray(val)
     if np.any((val > val_hi) | (val < val_lo)):
         warnings.warn('\nModel {} computed between {} <= {} <= {}, '
@@ -271,12 +297,29 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
 
 
 def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False,
-                        model='grid-floor-2018-11'):
+                        model=None):
+    """Calculate a grid model probability of acquisition success for a star with
+    specified mag, t_ccd, color, and search box halfwidth.
 
+    This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a
+    pre-computed gridded model that is stored in a FITS file.
+
+    :param mag: ACA magnitude (float or np.ndarray)
+    :param t_ccd: CCD temperature (degC, float or ndarray)
+    :param color: B-V color to check for B-V=1.5 => red star (float or np.ndarray)
+    :param halfwidth: search box halfwidth (arcsec, default=120, float or ndarray)
+    :param probit: if True then return Probit(p_success). Default=False
+    :param model: Model name, e.g. 'grid-floor-2018-11'
+
+    :returns: Acquisition success probability(s)
+
+    """
+    # Info about model is cached in GRID_FUNCS
     if model not in GRID_FUNCS:
         from astropy.io import fits
         from scipy.interpolate import RegularGridInterpolator
 
+        # Read the model file and put into local vars
         filename = os.path.join(STAR_PROBS_DATA_DIR, model) + '.fits.gz'
         if not os.path.exists(filename):
             raise IOError('model file {} does not exist'.format(filename))
@@ -291,9 +334,13 @@ def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=
         grid_t_ccds = np.linspace(hdr['t_ccd_lo'], hdr['t_ccd_hi'], hdr['t_ccd_n'])
         grid_halfws = np.linspace(hdr['halfw_lo'], hdr['halfw_hi'], hdr['halfw_n'])
 
-        assert probit_p_fail_no_1p5.shape == (len(grid_mags), len(grid_t_ccds), len(grid_halfws))
+        # Sanity checks on model data
+        assert probit_p_fail_no_1p5.shape == (len(grid_mags),
+                                              len(grid_t_ccds),
+                                              len(grid_halfws))
         assert probit_p_fail_1p5.shape == probit_p_fail_no_1p5.shape
 
+        # Generate the 3-d linear interpolation functions
         func_no_1p5 = RegularGridInterpolator(points=(grid_mags, grid_t_ccds, grid_halfws),
                                               values=probit_p_fail_no_1p5)
         func_1p5 = RegularGridInterpolator(points=(grid_mags, grid_t_ccds, grid_halfws),
@@ -325,6 +372,7 @@ def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=
         halfw_lo = gfm['halfw_lo']
         halfw_hi = gfm['halfw_hi']
 
+    # Make sure inputs are within range of gridded model
     mag = clip_and_warn('mag', mag, mag_lo, mag_hi, model)
     t_ccd = clip_and_warn('t_ccd', t_ccd, t_ccd_lo, t_ccd_hi, model)
     halfwidth = clip_and_warn('halfw', halfwidth, halfw_lo, halfw_hi, model)
