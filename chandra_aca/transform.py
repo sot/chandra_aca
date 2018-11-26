@@ -228,6 +228,50 @@ def _poly_convert(y, z, coeffs, t_aca=None):
     return newy, newz
 
 
+def radec_to_yagzag(ra, dec, q_att):
+    """
+    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
+    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
+    ``yag`` and ``zag`` will be corresponding arrays of the same length.
+
+    This is a wrapper around Ska.quatutil.radec2yagzag but uses arcsec instead
+    of deg for yag, zag.
+
+    :param ra: Right Ascension (degrees)
+    :param dec: Declination (degrees)
+    :param q_att: ACA pointing quaternion
+
+    :returns:  yag, zag (arcsec)
+    """
+    from Ska.quatutil import radec2yagzag
+    yag, zag = radec2yagzag(ra, dec, q_att)
+    yag *= 3600
+    zag *= 3600
+
+    return yag, zag
+
+
+def yagzag_to_radec(yag, zag, q_att):
+    """
+    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
+    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output
+    ``ra`` and ``dec`` will be corresponding arrays of the same length.
+
+    This is a wrapper around Ska.quatutil.yagzag2radec but uses arcsec instead
+    of deg for yag, zag.
+
+    :param yag: ACA Y angle (arcsec)
+    :param zag: ACA Z angle (arcsec)
+    :param q_att: ACA pointing quaternion
+
+    :returns: ra, dec (arcsec)
+    """
+    from Ska.quatutil import yagzag2radec
+    ra, dec = yagzag2radec(yag / 3600, zag / 3600, q_att)
+
+    return ra, dec
+
+
 def mag_to_count_rate(mag):
     """
     Convert ACA mag to count rate in e- / sec

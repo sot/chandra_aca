@@ -12,7 +12,8 @@ from Chandra.Time import DateTime
 
 import chandra_aca
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
-from chandra_aca.transform import snr_mag_for_t_ccd
+from chandra_aca.transform import (snr_mag_for_t_ccd, radec_to_yagzag,
+                                   yagzag_to_radec)
 from chandra_aca import drift
 
 dirname = os.path.dirname(__file__)
@@ -86,6 +87,22 @@ def test_pix_zero_loc():
     assert np.isclose(rc - r, 0, rtol=0, atol=0.01)
     assert np.isclose(ce - c, 0, rtol=0, atol=0.01)
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
+
+
+def test_radec_to_yagzag():
+    ra = 0.5
+    dec = 0.75
+    q_att = Quat([0, 0, 0])
+    yag, zag = radec_to_yagzag(ra, dec, q_att)
+    assert np.allclose([yag, zag], [1800.00, 2700.10], rtol=0, atol=0.01)
+
+
+def test_yagzag_to_radec():
+    yag = 1800.00
+    zag = 2700.10
+    q_att = Quat([0, 0, 0])
+    ra, dec = yagzag_to_radec(yag, zag, q_att)
+    assert np.allclose([ra, dec], [0.50, 0.75], rtol=0, atol=0.00001)
 
 
 def test_aca_targ_transforms():
