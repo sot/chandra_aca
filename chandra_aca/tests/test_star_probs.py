@@ -189,24 +189,39 @@ def test_acq_success_prob_color():
     assert np.allclose(p_0p7color, probs[2] / probs[0])
     assert np.allclose(p_0p7color, probs[3] / probs[0])
 
-HAS_AGASC = False
-try:
-    import agasc
-    star = agasc.get_star(870058712)
-    HAS_AGASC = True
-except:
-    HAS_AGASC = False
 
-
-@pytest.mark.skipif('not HAS_AGASC', reason="Test requires AGASC")
 def test_acq_success_prob_from_stars():
-    # These are acq stars for obsid 20765 (which had only 2 stars ID'd)
-    star_ids = [118882960, 192286696, 192290008, 118758568,
-                118758336, 192291664, 192284944, 192288240]
+    """
+    Test for acq stars for obsid 20765 (which had only 2 stars ID'd)
+    """
+
+    # Results from this code block are below.  Just hardwire the values since this is a
+    # test on star probabilities, not the AGASC.
+    #
+    # star_ids = [118882960, 192286696, 192290008, 118758568,
+    #             118758336, 192291664, 192284944, 192288240]
+    # stars = [agasc.get_star(agasc_id, fix_color1=False) for agasc_id in star_ids]
+    # mags = [star['MAG_ACA'] for star in stars]
+    # colors = [star['COLOR1'] for star in stars]
+
+    mags = [9.142868,
+            9.3232698,
+            10.16424,
+            10.050572,
+            10.406073,
+            11.094579,
+            10.290914,
+            10.355055]
+    colors = [0.66640031,
+              0.27880007,
+              0.50830042,
+              0.40374953,
+              0.93329966,
+              1.5,
+              0.89249933,
+              0.57800025]
     hws = [160, 160, 120, 160, 120, 120, 120, 120]
-    stars = [agasc.get_star(agasc_id) for agasc_id in star_ids]
-    mags = [star['MAG_ACA'] for star in stars]
-    colors = [star['COLOR1'] for star in stars]
+
 
     # SOTA
     probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors,
