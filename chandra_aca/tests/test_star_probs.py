@@ -211,7 +211,7 @@ def test_acq_success_prob_from_stars():
     # SOTA
     probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors,
                              halfwidth=hws, model='sota')
-    assert np.allclose(probs, [0.977, 0.967, 0.793, 0.775, 0.606, 0.0004, 0.704, 0.651],
+    assert np.allclose(probs, [0.977, 0.967, 0.792, 0.775, 0.605, 0.045, 0.704, 0.651],
                        atol=1e-2, rtol=0)
 
     # Spline
