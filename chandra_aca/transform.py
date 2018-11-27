@@ -81,6 +81,42 @@ ODB_SI_ALIGN = np.array([[0.999999905689160, -0.000337419984089, -0.000273439987
                          [0.000273439987106, -0.000000046132060, 0.999999962615285]])
 
 
+def broadcast_arrays(*args):
+    """
+    Broadcast *args inputs to same shape and return an ``is_scalar`` flag and
+    the broadcasted version of inputs.  This lets intermediate code work on
+    arrays that are guaranteed to be the same shape and at least a 1-d array,
+    but reshape the output at the end.
+
+    :param args: tuple of scalar / array inputs
+    :returns: [is_scalar, *flat_args]
+
+    """
+    is_scalar = all(np.array(arg).ndim == 0 for arg in args)
+    args = np.atleast_1d(*args)
+    outs = [is_scalar] + np.broadcast_arrays(*args)
+    return outs
+
+
+def broadcast_arrays_flatten(*args):
+    """Broadcast *args inputs to same shape and then return that shape and the
+    flattened view of all the inputs.  This lets intermediate code work on all
+    scalars or all arrays that are the same-length 1-d array and then reshape
+    the output at the end (if necessary).
+
+    :param args: tuple of scalar / array inputs
+    :returns: [shape, *flat_args]
+
+    """
+    is_scalar, *outs = broadcast_arrays(*args)
+    if is_scalar:
+        return [()] + list(args)
+
+    shape = outs[0].shape
+    outs = [out.ravel() for out in outs]
+    return [shape] + outs
+
+
 def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20,
                      pix_zero_loc='edge'):
     """
@@ -169,6 +205,8 @@ def _poly_convert(y, z, coeffs, t_aca=None):
     if y.size != z.size:
         raise ValueError("Mismatched number of Y/Z coords")
 
+    shape, y, z = broadcast_arrays_flatten(y, z)
+
     if len(coeffs) == 10:
         # No temperature dependence
         yy = y * y
@@ -188,8 +226,55 @@ def _poly_convert(y, z, coeffs, t_aca=None):
 
     newy = np.sum(coeffs[:, 0] * poly.transpose(), axis=-1)
     newz = np.sum(coeffs[:, 1] * poly.transpose(), axis=-1)
+    if shape:
+        newy.shape = shape
+        newz.shape = shape
 
     return newy, newz
+
+
+def radec_to_yagzag(ra, dec, q_att):
+    """
+    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
+    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
+    ``yag`` and ``zag`` will be corresponding arrays of the same length.
+
+    This is a wrapper around Ska.quatutil.radec2yagzag but uses arcsec instead
+    of deg for yag, zag.
+
+    :param ra: Right Ascension (degrees)
+    :param dec: Declination (degrees)
+    :param q_att: ACA pointing quaternion
+
+    :returns:  yag, zag (arcsec)
+    """
+    from Ska.quatutil import radec2yagzag
+    yag, zag = radec2yagzag(ra, dec, q_att)
+    yag *= 3600
+    zag *= 3600
+
+    return yag, zag
+
+
+def yagzag_to_radec(yag, zag, q_att):
+    """
+    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
+    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output
+    ``ra`` and ``dec`` will be corresponding arrays of the same length.
+
+    This is a wrapper around Ska.quatutil.yagzag2radec but uses arcsec instead
+    of deg for yag, zag.
+
+    :param yag: ACA Y angle (arcsec)
+    :param zag: ACA Z angle (arcsec)
+    :param q_att: ACA pointing quaternion
+
+    :returns: ra, dec (arcsec)
+    """
+    from Ska.quatutil import yagzag2radec
+    ra, dec = yagzag2radec(yag / 3600, zag / 3600, q_att)
+
+    return ra, dec
 
 
 def mag_to_count_rate(mag):
