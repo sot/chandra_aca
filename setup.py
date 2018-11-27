@@ -16,7 +16,7 @@ setup(name='chandra_aca',
       zip_safe=False,
       packages=['chandra_aca', 'chandra_aca.tests'],
       package_data={'chandra_aca.tests': ['data/*.txt', 'data/*.dat'],
-                    'chandra_aca': ['aca_psf_lib.dat']},
+                    'chandra_aca': ['data/*.dat', 'data/star_probs/*.fits.gz']},
       tests_require=['pytest'],
       cmdclass=cmdclass,
       )

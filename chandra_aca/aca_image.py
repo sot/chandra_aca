@@ -408,7 +408,7 @@ class AcaPsfLibrary(object):
         psfs = {}
 
         if filename is None:
-            filename = os.path.join(os.path.dirname(__file__), 'aca_psf_lib.dat')
+            filename = os.path.join(os.path.dirname(__file__), 'data', 'aca_psf_lib.dat')
         dat = Table.read(filename, format='ascii.basic', guess=False)
         self.dat = dat
 

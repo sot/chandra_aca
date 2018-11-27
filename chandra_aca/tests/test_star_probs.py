@@ -8,7 +8,8 @@ import numpy as np
 from astropy.table import Table
 
 from chandra_aca.star_probs import (t_ccd_warm_limit, mag_for_p_acq, acq_success_prob,
-                                    guide_count, t_ccd_warm_limit_for_guide)
+                                    guide_count, t_ccd_warm_limit_for_guide,
+                                    grid_model_acq_prob)
 
 # Acquisition probabilities regression test data
 ACQ_PROBS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'acq_probs.dat')
@@ -30,7 +31,7 @@ def make_prob_regress_table():
     """
     mags = [7.0, 10.0]
     t_ccds = [-15, -10]
-    models = ['sota', 'spline']
+    models = ['sota', 'spline', 'grid-floor-2018-11']
     colors = [0.7, 1.0, 1.5]
     spoilers = [True, False]
     halfwidths = [120, 160]
@@ -188,24 +189,39 @@ def test_acq_success_prob_color():
     assert np.allclose(p_0p7color, probs[2] / probs[0])
     assert np.allclose(p_0p7color, probs[3] / probs[0])
 
-HAS_AGASC = False
-try:
-    import agasc
-    star = agasc.get_star(870058712)
-    HAS_AGASC = True
-except:
-    HAS_AGASC = False
 
-
-@pytest.mark.skipif('not HAS_AGASC', reason="Test requires AGASC")
 def test_acq_success_prob_from_stars():
-    # These are acq stars for obsid 20765 (which had only 2 stars ID'd)
-    star_ids = [118882960, 192286696, 192290008, 118758568,
-                118758336, 192291664, 192284944, 192288240]
+    """
+    Test for acq stars for obsid 20765 (which had only 2 stars ID'd)
+    """
+
+    # Results from this code block are below.  Just hardwire the values since this is a
+    # test on star probabilities, not the AGASC.
+    #
+    # star_ids = [118882960, 192286696, 192290008, 118758568,
+    #             118758336, 192291664, 192284944, 192288240]
+    # stars = [agasc.get_star(agasc_id, fix_color1=False) for agasc_id in star_ids]
+    # mags = [star['MAG_ACA'] for star in stars]
+    # colors = [star['COLOR1'] for star in stars]
+
+    mags = [9.142868,
+            9.3232698,
+            10.16424,
+            10.050572,
+            10.406073,
+            11.094579,
+            10.290914,
+            10.355055]
+    colors = [0.66640031,
+              0.27880007,
+              0.50830042,
+              0.40374953,
+              0.93329966,
+              1.5,
+              0.89249933,
+              0.57800025]
     hws = [160, 160, 120, 160, 120, 120, 120, 120]
-    stars = [agasc.get_star(agasc_id) for agasc_id in star_ids]
-    mags = [star['MAG_ACA'] for star in stars]
-    colors = [star['COLOR1'] for star in stars]
+
 
     # SOTA
     probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors,
@@ -218,3 +234,35 @@ def test_acq_success_prob_from_stars():
                              halfwidth=hws, model='spline')
     assert np.allclose(probs, [0.954, 0.936, 0.696, 0.739, 0.297, 0.000001, 0.491, 0.380],
                        atol=1e-2, rtol=0)
+
+
+def test_grid_floor_2018_11():
+    """
+    Test grid-floor-2018-11 model against values computed directly in the
+    source notebook fit_acq_model-2018-11-binned-poly-binom-floor.ipynb
+    with the analytical (not-gridded) model.
+    """
+
+    mags = [9, 9.5, 10.5]
+    t_ccds = [-10, -5]
+    halfws = [60, 120, 160]
+    mag, t_ccd, halfw = np.meshgrid(mags, t_ccds, halfws, indexing='ij')
+
+    # color not 1.5
+    probs = grid_model_acq_prob(mag, t_ccd, halfwidth=halfw, probit=True, color=1.0,
+                                model='grid-floor-2018-11')
+
+    exp = -np.array([-2.275, -2.275, -2.275, -2.275, -1.753, -1.467, -1.749, -1.749,
+                     -1.749, -1.503, -0.948, -0.662, 0.402, 0.957, 1.244, 1.546,
+                     2.101, 2.387])
+
+    assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.08)
+
+    # color 1.5
+    probs = grid_model_acq_prob(mag, t_ccd, halfwidth=halfw, probit=True, color=1.5,
+                                model='grid-floor-2018-11')
+
+    exp = -np.array([-1.657, -1.53, -1.455, -1.311, -1.033, -0.863, -1.167, -0.974,
+                     -0.875, -0.695, -0.382, -0.204, 0.386, 0.758, 0.938, 1.133,
+                     1.476, 1.639])
+    assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.001)
