@@ -108,7 +108,7 @@ def t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0,
     :param min_n_acq: float or tuple (see above)
     :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)
     :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
-    :param model: probability model: 'sota' or 'spline' (default)
+    :param model: probability model (see acq_success_prob() for allowed values, default)
 
     :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit and:
               - number of expected ACQ stars at that temperature (scalar min_n_acq)
@@ -212,13 +212,17 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
     Any of the inputs can be scalars or arrays, with the output being the result of
     the broadcasted dimension of the inputs.
 
+    The default probability model is defined by ``DEFAULT_MODEL`` in this module.
+    Allowed values for the ``model`` name are 'sota', 'spline', or a grid model
+    specified by 'grid-<name>-<date>' (e.g. 'grid-floor-2018-11').
+
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
     :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-10C)
     :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
-    :param model: probability model name: 'sota' | 'spline' | 'grid-*' (default)
+    :param model: probability model name: 'sota' | 'spline' | 'grid-*'
 
     :returns: Acquisition success probability(s)
     """
@@ -648,7 +652,7 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
     :param date: observation date (any Chandra.Time valid format)
     :param t_ccd: ACA CCD temperature (deg C)
     :param halfwidth: search box halfwidth (arcsec, default=120)
-    :param model: probability model: 'sota' or 'spline' (default)
+    :param model: probability model (see acq_success_prob() for allowed values, default)
     :returns mag: star magnitude
     """
 
