@@ -27,7 +27,8 @@ import scipy.stats
 import numpy as np
 from Chandra.Time import DateTime
 
-from chandra_aca.transform import snr_mag_for_t_ccd
+from chandra_aca.transform import (snr_mag_for_t_ccd, broadcast_arrays,
+                                   broadcast_arrays_flatten)
 
 STAR_PROBS_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'star_probs')
 
@@ -621,25 +622,6 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
     p_success = p_success.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
 
     return p_success[0] if is_scalar else p_success  # Return scalar if ndim=0
-
-
-def broadcast_arrays(*args):
-    is_scalar = all(np.array(arg).ndim == 0 for arg in args)
-    args = np.atleast_1d(*args)
-    outs = [is_scalar] + np.broadcast_arrays(*args)
-    return outs
-
-
-def broadcast_arrays_flatten(*args):
-    is_scalar = all(np.array(arg).ndim == 0 for arg in args)
-    if is_scalar:
-        return [()] + list(args)
-
-    args = np.atleast_1d(*args)
-    outs = np.broadcast_arrays(*args)
-    shape = outs[0].shape
-    outs = [out.ravel() for out in outs]
-    return [shape] + outs
 
 
 def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
