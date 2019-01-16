@@ -149,13 +149,16 @@ def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20,
     elif pix_zero_loc != 'edge':
         raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
 
-    if (not allow_bad and
-        (np.any(row > 511.5) or np.any(row < -512.5) or
-         np.any(col > 511.5) or np.any(col < -512.5))):
+    # Row/col are in edge coordinates at this point, check if they are on
+    # the CCD unless allow_bad is True.
+    if (not allow_bad and (np.any(np.abs(row) > 512.0) or
+                           np.any(np.abs(col) > 512.0))):
         raise ValueError("Coordinate off CCD")
+
     coeff = PIX2ACA_eeprom if flight else PIX2ACA_coeff
     yrad, zrad = _poly_convert(row, col, coeff, t_aca)
-    # convert to arcsecs from radians
+
+    # Convert to arcsecs from radians
     return 3600 * np.degrees(yrad), 3600 * np.degrees(zrad)
 
 
@@ -180,9 +183,11 @@ def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc='edge'):
     yang = np.array(yang)
     zang = np.array(zang)
     row, col = _poly_convert(yang, zang, ACA2PIX_coeff)
-    if (not allow_bad and
-        (np.any(row > 511.5) or np.any(row < -512.5) or
-         np.any(col > 511.5) or np.any(col < -512.5))):
+
+    # Row/col are in edge coordinates at this point, check if they are on
+    # the CCD unless allow_bad is True.
+    if (not allow_bad and (np.any(np.abs(row) > 512.0) or
+                           np.any(np.abs(col) > 512.0))):
         raise ValueError("Coordinate off CCD")
 
     if pix_zero_loc == 'center':
