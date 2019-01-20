@@ -9,7 +9,7 @@ from astropy.table import Table
 
 from chandra_aca.star_probs import (t_ccd_warm_limit, mag_for_p_acq, acq_success_prob,
                                     guide_count, t_ccd_warm_limit_for_guide,
-                                    grid_model_acq_prob)
+                                    grid_model_acq_prob, snr_mag_for_t_ccd)
 
 # Acquisition probabilities regression test data
 ACQ_PROBS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'acq_probs.dat')
@@ -108,7 +108,26 @@ def test_t_ccd_warm_limit_guide():
     assert np.isclose(t_ccd, -10.9, atol=0.1, rtol=0)
     mags = np.array([10.3, 10.3, 10.3, 10.3, 10.3])
     t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
-    assert np.isclose(t_ccd, -14.0, atol=0.1, rtol=0)
+    assert np.isclose(t_ccd, -12.3, atol=0.1, rtol=0)
+
+
+def test_guide_count():
+    """Test fractional guide count"""
+
+    # Evaluate at interpolation curve reference temperature t_ccd = -10.9 C.
+    mags = [5.0, 5.9, 5.95, 6.0, 9.99, 10.0, 10.1, 10.2, 10.25, 10.3, 10.35, 10.4, 10.41, 11.0]
+    exps = [0.0, 0.0, 0.50, 1.0, 1.00, 1.0, 0.875, 0.75, 0.625, 0.50, 0.25, 0.000, 0.00, 0.00]
+    for mag, exp in zip(mags, exps):
+        cnt = guide_count([mag], t_ccd=-10.9)
+        assert np.isclose(cnt, exp, atol=0.001, rtol=0)
+
+    # Evaluate at different t_ccd, but change mags accordingly to the
+    # SNR-equivalent mag.
+    for t_ccd in (-8, -10, -12, -14):
+        for mag, exp in zip(mags, exps):
+            new_mag = snr_mag_for_t_ccd(t_ccd, mag, -10.9) if (mag > 6.1) else mag
+            cnt = guide_count([new_mag], t_ccd=t_ccd)
+            assert np.isclose(cnt, exp, atol=0.001, rtol=0)
 
 
 def test_t_ccd_warm_limit_guide_vs_brute():
@@ -120,7 +139,7 @@ def test_t_ccd_warm_limit_guide_vs_brute():
 
 
 def stepwise_guide_warm_limit(mags, step=0.01, min_guide_count=4.0,
-                             warm_t_ccd=-5.0, cold_t_ccd=-16.0):
+                              warm_t_ccd=-5.0, cold_t_ccd=-16.0):
     """
     Solve for the warmest temperature that still gets ``min_guide_count``, but
     using a stepwise/brute method as needed.  This is slow, but good for a comparison

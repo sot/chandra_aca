@@ -664,28 +664,36 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
 
 
 def guide_count(mags, t_ccd):
-    """
-    Given mags from guide stars and a temperature, calculate a guide star
-    fractional count/metric using signal-to-noise scaled mag thresholds.
+    """Calculate a guide star fractional count/metric using signal-to-noise scaled
+    mag thresholds.
 
-    This uses guide star fractional counts that were suggested at the 7-Mar-2018
-    SSAWG and agreed upon at the 21-Mar-2018 SSAWG.  The implementation here
-    uses the ACA planning limit at that time (-10.9C) as the reference temperature.
+    This uses a modification of the guide star fractional counts that were
+    suggested at the 7-Mar-2018 SSAWG and agreed upon at the 21-Mar-2018
+    SSAWG.  The implementation here does a piecewise linear interpolation
+    between the reference mag - fractional count points instead of the
+    original "threshold interpolation" (nearest neighbor mag <= reference
+    mag).  Approved at 16-Jan-2019 SSAWG.
 
-    :param mags: mags of guide star catalog stars
-    :param t_ccd: ACA CCD temperature at expected time of observation
+    One feature is the slight incline in the guide_count curve from 1.0005 at
+    mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs
+    of guide_counts to two decimal places (8 * 0.0005 = 0.004), but helps with
+    minimization.
+
     :returns: fractional count
+
     """
-    # The bright limit does not scale.
-    thresh0 = 5.9
-    thresh1 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.0, ref_t_ccd=-10.9)
-    thresh2 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.2, ref_t_ccd=-10.9)
-    thresh3 = snr_mag_for_t_ccd(t_ccd, ref_mag=10.3, ref_t_ccd=-10.9)
-    counts = np.zeros(len(mags))
-    counts[(mags <= thresh1) & (mags > thresh0)] = 1.0
-    counts[(mags <= thresh2) & (mags > thresh1)] = 0.75
-    counts[(mags <= thresh3) & (mags > thresh2)] = 0.5
-    return np.sum(counts)
+    # Generate interpolation curve for the specified input ``t_ccd``
+    ref_t_ccd = -10.9
+    ref_mags0 = [10.0, 10.2, 10.3, 10.4]
+    ref_mags_t_ccd = [snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd) for ref_mag in ref_mags0]
+    ref_mags = ([5.9, 6.0] + ref_mags_t_ccd)
+    ref_counts = [0.0, 1.0005, 1.0, 0.75, 0.5, 0.0]
+
+    # Do the interpolation, noting that np.interp will use the end ``counts``
+    # values for any ``mag`` < ref_mags[0] or > ref_mags[-1].
+    count = np.sum(np.interp(mags, ref_mags, ref_counts))
+
+    return count
 
 
 def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_t_ccd=-16.0):
@@ -704,17 +712,16 @@ def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_
     """
     if guide_count(mags, warm_t_ccd) >= min_guide_count:
         return warm_t_ccd
-    if guide_count(mags, cold_t_ccd) < min_guide_count:
-        # Note that this uses a '<' not a '<=' because if the guide_count is equal to
-        # min_guide_count at cold_t_ccd, we still want to solve for a warmer temperature
-        # when it is != to min_guide_count
+    if guide_count(mags, cold_t_ccd) <= min_guide_count:
+        # Note that this relies on a slight incline in the guide_count curve
+        # from 1.0005 at mag=6.0 to 1.0 at mag=10.0.
         return cold_t_ccd
 
     def merit_func(t_ccd):
         count = guide_count(mags, t_ccd)
-        # A small number (0.01) is added to (count - min_guide_count) so that the function
+        # A small number d_count is added to (count - min_guide_count) so that the function
         # is still nonzero for all of the values of t_ccd where count is equal to min_guide_count.
         # There will then be a real zero crossing at the "warm end" of that range.
-        return 0.01 + count - min_guide_count
+        return count - min_guide_count
 
     return bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=0.001, rtol=1e-15, full_output=False)
