@@ -97,7 +97,7 @@ def test_t_ccd_warm_limit_3_spline():
 
 
 def test_t_ccd_warm_limit_guide():
-    mags = np.array([5.9, 5.9, 5.9, 5.9, 5.9])
+    mags = np.array([5.85] * 5)
     t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
     assert np.isclose(t_ccd, -16, atol=0.1, rtol=0)
     mags = np.array([6.0, 6.0, 6.0, 6.0, 6.0])
