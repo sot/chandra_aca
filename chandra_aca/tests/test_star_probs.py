@@ -111,14 +111,21 @@ def test_t_ccd_warm_limit_guide():
     assert np.isclose(t_ccd, -12.3, atol=0.1, rtol=0)
 
 
-def test_guide_count():
+@pytest.mark.parametrize('count_9th', [False, True])
+def test_guide_count(count_9th):
     """Test fractional guide count"""
 
     # Evaluate at interpolation curve reference temperature t_ccd = -10.9 C.
-    mags = [5.0, 5.9, 5.95, 6.0, 9.99, 10.0, 10.1, 10.2, 10.25, 10.3, 10.35, 10.4, 10.41, 11.0]
+    mags = [5.0, 5.85, 5.9, 5.95, 9.99, 10.0, 10.1, 10.2, 10.25, 10.3, 10.35, 10.4, 10.41, 11.0]
     exps = [0.0, 0.0, 0.50, 1.0, 1.00, 1.0, 0.875, 0.75, 0.625, 0.50, 0.25, 0.000, 0.00, 0.00]
+    mags = np.array(mags)
+
+    if count_9th:
+        # This corresponds to the effective mag adjustment for 9th mag counting
+        mags[mags > 6.1] -= 1.0
+
     for mag, exp in zip(mags, exps):
-        cnt = guide_count([mag], t_ccd=-10.9)
+        cnt = guide_count([mag], t_ccd=-10.9, count_9th=count_9th)
         assert np.isclose(cnt, exp, atol=0.001, rtol=0)
 
     # Evaluate at different t_ccd, but change mags accordingly to the
@@ -126,7 +133,7 @@ def test_guide_count():
     for t_ccd in (-8, -10, -12, -14):
         for mag, exp in zip(mags, exps):
             new_mag = snr_mag_for_t_ccd(t_ccd, mag, -10.9) if (mag > 6.1) else mag
-            cnt = guide_count([new_mag], t_ccd=t_ccd)
+            cnt = guide_count([new_mag], t_ccd=t_ccd, count_9th=count_9th)
             assert np.isclose(cnt, exp, atol=0.001, rtol=0)
 
 
