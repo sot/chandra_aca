@@ -14,7 +14,7 @@ from Chandra.Time import DateTime
 import chandra_aca
 from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
 from chandra_aca.transform import (snr_mag_for_t_ccd, radec_to_yagzag,
-                                   yagzag_to_radec)
+                                   yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels)
 from chandra_aca import drift
 
 dirname = os.path.dirname(__file__)
@@ -25,6 +25,24 @@ TOLERANCE = 0.05
 SI_ALIGN_CLASSIC = np.array([[1.0, 3.3742E-4, 2.7344E-4],
                              [-3.3742E-4, 1.0, 0.0],
                              [-2.7344E-4, 0.0, 1.0]]).transpose()
+
+
+def test_edge_checking():
+    """Test row/col edge checking"""
+
+    # Within limits, doesn't fail
+    yag, zag = pixels_to_yagzag(511.7, -511.7)
+    yagzag_to_pixels(yag, zag)
+
+    with pytest.raises(ValueError):
+        pixels_to_yagzag(512.2, 0)
+
+    with pytest.raises(ValueError):
+        pixels_to_yagzag(0, -512.2)
+
+    yag, zag = pixels_to_yagzag(512.2, -512.2, allow_bad=True)
+    with pytest.raises(ValueError):
+        yagzag_to_pixels(yag, zag)
 
 
 def test_pix_to_angle():
