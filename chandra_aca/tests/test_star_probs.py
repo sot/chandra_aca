@@ -123,6 +123,8 @@ def test_guide_count(count_9th):
     if count_9th:
         # This corresponds to the effective mag adjustment for 9th mag counting
         mags[mags > 6.1] -= 1.0
+    else:
+        mags[mags > 6.1] -= 0.05
 
     for mag, exp in zip(mags, exps):
         cnt = guide_count([mag], t_ccd=-10.9, count_9th=count_9th)

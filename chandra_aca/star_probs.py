@@ -683,7 +683,7 @@ def guide_count(mags, t_ccd, count_9th=False):
     """
     # Generate interpolation curve for the specified input ``t_ccd``
     ref_t_ccd = -10.9
-    ref_mags0 = (9.0 if count_9th else 10.0) + np.array([0.0, 0.2, 0.3, 0.4])
+    ref_mags0 = (9.0 if count_9th else 9.95) + np.array([0.0, 0.2, 0.3, 0.4])
     ref_mags_t_ccd = [snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd) for ref_mag in ref_mags0]
 
     # The 5.85 and 5.95 limits are not temperature dependent, these reflect the
