@@ -105,10 +105,10 @@ def test_t_ccd_warm_limit_guide():
     assert np.isclose(t_ccd, 5.0, atol=0.1, rtol=0)
     mags = np.array([6.0, 6.0, 6.0, 10.3, 10.3])
     t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
-    assert np.isclose(t_ccd, -10.9, atol=0.1, rtol=0)
+    assert np.isclose(t_ccd, -11.41, atol=0.1, rtol=0)
     mags = np.array([10.3, 10.3, 10.3, 10.3, 10.3])
     t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
-    assert np.isclose(t_ccd, -12.3, atol=0.1, rtol=0)
+    assert np.isclose(t_ccd, -12.86, atol=0.1, rtol=0)
 
 
 @pytest.mark.parametrize('count_9th', [False, True])
