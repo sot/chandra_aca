@@ -10,7 +10,7 @@ HAS_L1_ARCHIVE = os.path.exists(os.path.join(mica.common.MICA_ARCHIVE, 'asp1'))
 HAS_STARCHECK_ARCHIVE = os.path.exists(os.path.join(mica.common.MICA_ARCHIVE, 'starcheck'))
 try:
     from Ska.engarchive import fetch
-    fetch.Msid('aoattqt*', '2018:001:00:00:00', '2018:001:00:01:00')
+    fetch.Msidset(['aoattqt*'], '2018:001:00:00:00', '2018:001:00:01:00')
     HAS_QUAT_TELEM = True
 except:
     HAS_QUAT_TELEM = False
