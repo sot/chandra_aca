@@ -3,6 +3,7 @@ import os
 from math import floor
 from itertools import count, chain
 from copy import deepcopy
+from pathlib import Path
 
 import six
 from six.moves import zip
@@ -309,6 +310,108 @@ class ACAImage(np.ndarray):
     def col0(self, value):
         self.meta['IMGCOL0'] = np.int64(value)
 
+    @classmethod
+    def _read_flicker_cdfs(cls):
+        """Read flickering pixel model cumulative distribution functions
+        and associated metadata.  Set up class variables accordingly.
+
+        """
+        from astropy.io import fits
+
+        filename = Path(__file__).parent / 'data' / 'flicker_cdf.fits.gz'
+        with fits.open(filename) as hdus:
+            hdu = hdus[0]
+            hdr = hdu.header
+
+            # Get the main data, which is an n_cdf * n_cdf_x array.  Each row corresponds
+            # to the CDF for a particular bin range in e-/sec, e.g. 200 to 300 e-/sec.
+            # CDF will go from 0.0 to 1.0
+            cls.flicker_cdfs = hdu.data
+
+            # CDF_x is the x-value of the distribution, namely the log-amplitude change
+            # in pixel value due to a flicker event.
+            cls.flicker_cdf_x = np.linspace(hdr['cdf_x0'], hdr['cdf_x1'], hdr['n_cdf_x'])
+
+            # CDF bin range (e-/sec) for each for in flicker_cdfs.
+            cdf_bins = []
+            for ii in range(hdr['n_bin']):
+                cdf_bins.append(hdr[f'cdf_bin{ii}'])
+            cls.flicker_cdf_bins = np.array(cdf_bins)
+
+    def flicker_init(self, mean_flicker_time=10000, flicker_scale=1.0):
+        """Initialize instance variables to allow for flickering pixel updates.
+
+        :param mean_flicker_time: mean flickering time (sec, default=10000)
+        :param flicker_scale: multiplicative factor beyond model default for
+               flickering amplitude (default=1.0)
+        """
+        if not hasattr(self, 'flicker_cdf_bins'):
+            self._read_flicker_cdfs()
+
+        self.mean_flicker_time = mean_flicker_time
+        self.flicker_scale = flicker_scale
+
+        # Make a flattened view of the image for easier update processing.
+        # Also store the initial pixel values, since flicker updates are
+        # relative to the initial value, not the current value (which would
+        # end up random-walking).
+        self.flicker_vals = self.view(np.ndarray).ravel()
+        self.flicker_vals0 = self.flicker_vals.copy()
+        self.flicker_n_vals = len(self.flicker_vals)
+
+        # Get the index to the CDFs which is appropriate for each pixel
+        # based on its initial value.
+        self.flicker_cdf_idxs = np.searchsorted(self.flicker_cdf_bins,
+                                                self.flicker_vals0) - 1
+
+        # Create an array of time (secs) until next flicker for each pixel
+        # This is drawing from an exponential distribution.  For the initial
+        # time assume the flickering is randomly phased within that interval.
+        phase = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
+        rand_unifs = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
+        t_flicker = -np.log(1.0 - rand_unifs) * mean_flicker_time
+        self.flicker_times = t_flicker * phase
+
+        # Pixels where self.flicker_cdf_idxs == 0 have val < 50 (no CDF) and are
+        # modeled as not flickering.  Make a mask to indicate which ones flicker.
+        self.flicker_mask = self.flicker_cdf_idxs >= 0
+
+    def flicker_update(self, dt):
+        """
+        Propagate the image forward by ``dt`` seconds and update any pixels
+        that have flickered during that interval.
+
+        TO DO: use numba for this once numba with np.interp is available in Ska3.
+        (E.g. 0.43 has it).
+
+        :param dt: time (secs) to propagate image
+        """
+        if not hasattr(self, 'flicker_times'):
+            self.flicker_init()
+
+        self.flicker_times[self.flicker_mask] -= dt
+
+        # When flicker_times < 0 that means a flicker occurs
+        idxs = np.where(self.flicker_times < 0)[0]
+
+        # Random uniform used for (1) distribution of flickering amplitude
+        # via the CDFs and (2) distribution of time to next flicker.
+        rand_ampls = np.random.uniform(0.0, 1.0, size=len(idxs))
+        rand_times = np.random.uniform(0.0, 1.0, size=len(idxs))
+
+        for idx, rand_time, rand_ampl in zip(idxs, rand_times, rand_ampls):
+            # Determine the new value after flickering and set in array view.
+            # First get the right CDF from the list of CDFs based on the pixel value.
+            cdf_idx = self.flicker_cdf_idxs[idx]
+            y = np.interp(fp=self.flicker_cdf_x,
+                          xp=self.flicker_cdfs[cdf_idx],
+                          x=rand_ampl)
+            val = 10 ** (np.log10(self.flicker_vals0[idx]) + y)
+            self.flicker_vals[idx] = val
+
+            # Get the new time before next flicker
+            t_flicker = -np.log(1.0 - rand_time) * self.mean_flicker_time
+            self.flicker_times[idx] = t_flicker
 
 
 def _prep_6x6(img, bgd=None):
@@ -410,7 +513,7 @@ class AcaPsfLibrary(object):
         if filename is None:
             filename = os.path.join(os.path.dirname(__file__), 'data', 'aca_psf_lib.dat')
         dat = Table.read(filename, format='ascii.basic', guess=False)
-        self.dat = dat
+        self.dat = dat.as_array()
 
         # Sub-pixel grid spacing in pixels.  This assumes the sub-pixels are
         # all the same size and square, which is indeed the case.
