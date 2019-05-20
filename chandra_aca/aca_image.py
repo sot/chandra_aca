@@ -341,6 +341,12 @@ class ACAImage(np.ndarray):
     def flicker_init(self, mean_flicker_time=10000, flicker_scale=1.0):
         """Initialize instance variables to allow for flickering pixel updates.
 
+        The ``flicker_scale`` can be interpreted as follows: if the pixel
+        was going to flicker by a multiplicative factor of (1 + x), now
+        make it flicker by (1 + x * flicker_scale).  This applies for flickers
+        that increase the amplitude.  For flickers that make the value smaller,
+        then it would be 1 / (1 + x) => 1 / (1 + x * flicker_scale).
+
         :param mean_flicker_time: mean flickering time (sec, default=10000)
         :param flicker_scale: multiplicative factor beyond model default for
                flickering amplitude (default=1.0)
@@ -382,7 +388,7 @@ class ACAImage(np.ndarray):
         that have flickered during that interval.
 
         TO DO: use numba for this once numba with np.interp is available in Ska3.
-        (E.g. 0.43 has it).
+        (E.g. 0.43 has it).  This will probably be substantially faster.
 
         :param dt: time (secs) to propagate image
         """
@@ -406,6 +412,16 @@ class ACAImage(np.ndarray):
             y = np.interp(fp=self.flicker_cdf_x,
                           xp=self.flicker_cdfs[cdf_idx],
                           x=rand_ampl)
+
+            if self.flicker_scale != 1.0:
+                # Express the multiplicative change as (1 + x) and change
+                # it to be (1 + x * scale).  This makes sense for positive y,
+                # so use abs(y) and then flip the sign back at the end.  For
+                # negative y this is the same as doing this trick expressing the
+                # change as 1 / (1 + x).
+                dy = (10 ** np.abs(y) - 1.0) * self.flicker_scale + 1.0
+                y = np.log10(dy) * np.sign(y)
+
             val = 10 ** (np.log10(self.flicker_vals0[idx]) + y)
             self.flicker_vals[idx] = val
 
