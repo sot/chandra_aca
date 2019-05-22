@@ -316,6 +316,7 @@ class ACAImage(np.ndarray):
         """Read flickering pixel model cumulative distribution functions
         and associated metadata.  Set up class variables accordingly.
 
+
         """
         from astropy.io import fits
 
@@ -347,6 +348,14 @@ class ACAImage(np.ndarray):
         make it flicker by (1 + x * flicker_scale).  This applies for flickers
         that increase the amplitude.  For flickers that make the value smaller,
         then it would be 1 / (1 + x) => 1 / (1 + x * flicker_scale).
+
+        The flicker_cdf file here was created using:
+        /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
+
+        Examples and performance details at:
+        /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-implementation.ipynb
+
+        The model was reviewed and approved at SS&AWG on 2019-05-22.
 
         :param flicker_mean_time: mean flickering time (sec, default=10000)
         :param flicker_scale: multiplicative factor beyond model default for
