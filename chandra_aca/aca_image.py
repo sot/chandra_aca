@@ -316,6 +316,8 @@ class ACAImage(np.ndarray):
         """Read flickering pixel model cumulative distribution functions
         and associated metadata.  Set up class variables accordingly.
 
+        The flicker_cdf file here was created using:
+        /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
 
         """
         from astropy.io import fits
