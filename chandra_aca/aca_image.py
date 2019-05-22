@@ -8,6 +8,7 @@ from pathlib import Path
 import six
 from six.moves import zip
 
+import numba
 import numpy as np
 from astropy.utils.compat.misc import override__dir__
 
@@ -326,7 +327,7 @@ class ACAImage(np.ndarray):
             # Get the main data, which is an n_cdf * n_cdf_x array.  Each row corresponds
             # to the CDF for a particular bin range in e-/sec, e.g. 200 to 300 e-/sec.
             # CDF will go from 0.0 to 1.0
-            cls.flicker_cdfs = hdu.data
+            cls.flicker_cdfs = hdu.data.astype(np.float64)
 
             # CDF_x is the x-value of the distribution, namely the log-amplitude change
             # in pixel value due to a flicker event.
@@ -428,6 +429,90 @@ class ACAImage(np.ndarray):
             # Get the new time before next flicker
             t_flicker = -np.log(1.0 - rand_time) * self.flicker_mean_time
             self.flicker_times[idx] = t_flicker
+
+    def flicker_update_numba(self, dt):
+        _flicker_update_numba(dt, len(self.flicker_vals),
+                              self.flicker_vals0,
+                              self.flicker_vals,
+                              self.flicker_mask,
+                              self.flicker_times,
+                              self.flicker_cdf_idxs,
+                              self.flicker_cdf_x,
+                              self.flicker_cdfs,
+                              self.flicker_scale,
+                              self.flicker_mean_time)
+
+
+@numba.jit(nopython=True)
+def _flicker_update_numba(dt, nvals,
+                          flicker_vals0,
+                          flicker_vals,
+                          flicker_mask,
+                          flicker_times,
+                          flicker_cdf_idxs,
+                          flicker_cdf_x,
+                          flicker_cdfs,
+                          flicker_scale,
+                          flicker_mean_time):
+    """
+    Propagate the image forward by ``dt`` seconds and update any pixels
+    that have flickered during that interval.
+    """
+    for ii in range(nvals):  # nvals
+        if not flicker_mask[ii]:
+            continue
+
+        flicker_times[ii] -= dt
+
+        if flicker_times[ii] > 0:
+            continue
+
+        # Random uniform used for (1) distribution of flickering amplitude
+        # via the CDFs and (2) distribution of time to next flicker.
+        rand_ampl = np.random.uniform(0.0, 1.0)
+        rand_time = np.random.uniform(0.0, 1.0)
+
+        # Determine the new value after flickering and set in array view.
+        # First get the right CDF from the list of CDFs based on the pixel value.
+        cdf_idx = flicker_cdf_idxs[ii]
+        y = np_interp(yin=flicker_cdf_x,
+                      xin=flicker_cdfs[cdf_idx],
+                      xout=rand_ampl)
+
+        if flicker_scale != 1.0:
+            # Express the multiplicative change as (1 + x) and change
+            # it to be (1 + x * scale).  This makes sense for positive y,
+            # so use abs(y) and then flip the sign back at the end.  For
+            # negative y this is the same as doing this trick expressing the
+            # change as 1 / (1 + x).
+            dy = (10 ** np.abs(y) - 1.0) * flicker_scale + 1.0
+            y = np.log10(dy) * np.sign(y)
+
+        val = 10 ** (np.log10(flicker_vals0[ii]) + y)
+        flicker_vals[ii] = val
+
+        # Get the new time before next flicker
+        t_flicker = -np.log(1.0 - rand_time) * flicker_mean_time
+        flicker_times[ii] = t_flicker
+
+
+@numba.jit(nopython=True)
+def np_interp(yin, xin, xout):
+    idx = np.searchsorted(xin, xout)
+
+    if idx == 0:
+        return yin[0]
+
+    if idx == len(xin):
+        return yin[-1]
+
+    x0 = xin[idx - 1]
+    x1 = xin[idx]
+    y0 = yin[idx - 1]
+    y1 = yin[idx]
+    yout = (xout - x0) / (x1 - x0) * (y1 - y0) + y0
+
+    return yout
 
 
 def _prep_6x6(img, bgd=None):
