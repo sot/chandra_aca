@@ -641,7 +641,7 @@ class AcaPsfLibrary(object):
         if filename is None:
             filename = os.path.join(os.path.dirname(__file__), 'data', 'aca_psf_lib.dat')
         dat = Table.read(filename, format='ascii.basic', guess=False)
-        self.dat = dat.as_array()
+        self.dat = dat
 
         # Sub-pixel grid spacing in pixels.  This assumes the sub-pixels are
         # all the same size and square, which is indeed the case.
