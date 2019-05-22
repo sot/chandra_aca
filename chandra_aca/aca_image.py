@@ -340,7 +340,7 @@ class ACAImage(np.ndarray):
                 cdf_bins.append(hdr[f'cdf_bin{ii}'])
             cls.flicker_cdf_bins = np.array(cdf_bins)
 
-    def flicker_init(self, flicker_mean_time=10000, flicker_scale=1.0):
+    def flicker_init(self, flicker_mean_time=10000, flicker_scale=1.0, seed=None):
         """Initialize instance variables to allow for flickering pixel updates.
 
         The ``flicker_scale`` can be interpreted as follows: if the pixel
@@ -360,12 +360,17 @@ class ACAImage(np.ndarray):
         :param flicker_mean_time: mean flickering time (sec, default=10000)
         :param flicker_scale: multiplicative factor beyond model default for
                flickering amplitude (default=1.0)
+        :param seed: random seed for reproducibility (default=None => no seed)
         """
         if not hasattr(self, 'flicker_cdf_bins'):
             self._read_flicker_cdfs()
 
         self.flicker_mean_time = flicker_mean_time
         self.flicker_scale = flicker_scale
+
+        if seed is not None:
+            np.random.seed(seed)
+            _numba_random_seed(seed)
 
         # Make a flattened view of the image for easier update processing.
         # Also store the initial pixel values, since flicker updates are
@@ -456,6 +461,11 @@ class ACAImage(np.ndarray):
             # Get the new time before next flicker
             t_flicker = -np.log(1.0 - rand_time) * self.flicker_mean_time
             self.flicker_times[idx] = t_flicker
+
+
+@numba.jit(nopython=True)
+def _numba_random_seed(seed):
+    np.random.seed(seed)
 
 
 @numba.jit(nopython=True)
