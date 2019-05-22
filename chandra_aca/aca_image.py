@@ -338,7 +338,7 @@ class ACAImage(np.ndarray):
                 cdf_bins.append(hdr[f'cdf_bin{ii}'])
             cls.flicker_cdf_bins = np.array(cdf_bins)
 
-    def flicker_init(self, mean_flicker_time=10000, flicker_scale=1.0):
+    def flicker_init(self, flicker_mean_time=10000, flicker_scale=1.0):
         """Initialize instance variables to allow for flickering pixel updates.
 
         The ``flicker_scale`` can be interpreted as follows: if the pixel
@@ -347,14 +347,14 @@ class ACAImage(np.ndarray):
         that increase the amplitude.  For flickers that make the value smaller,
         then it would be 1 / (1 + x) => 1 / (1 + x * flicker_scale).
 
-        :param mean_flicker_time: mean flickering time (sec, default=10000)
+        :param flicker_mean_time: mean flickering time (sec, default=10000)
         :param flicker_scale: multiplicative factor beyond model default for
                flickering amplitude (default=1.0)
         """
         if not hasattr(self, 'flicker_cdf_bins'):
             self._read_flicker_cdfs()
 
-        self.mean_flicker_time = mean_flicker_time
+        self.flicker_mean_time = flicker_mean_time
         self.flicker_scale = flicker_scale
 
         # Make a flattened view of the image for easier update processing.
@@ -375,7 +375,7 @@ class ACAImage(np.ndarray):
         # time assume the flickering is randomly phased within that interval.
         phase = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
         rand_unifs = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
-        t_flicker = -np.log(1.0 - rand_unifs) * mean_flicker_time
+        t_flicker = -np.log(1.0 - rand_unifs) * flicker_mean_time
         self.flicker_times = t_flicker * phase
 
         # Pixels where self.flicker_cdf_idxs == 0 have val < 50 (no CDF) and are
@@ -426,7 +426,7 @@ class ACAImage(np.ndarray):
             self.flicker_vals[idx] = val
 
             # Get the new time before next flicker
-            t_flicker = -np.log(1.0 - rand_time) * self.mean_flicker_time
+            t_flicker = -np.log(1.0 - rand_time) * self.flicker_mean_time
             self.flicker_times[idx] = t_flicker
 
 
