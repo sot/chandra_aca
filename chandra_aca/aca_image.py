@@ -383,18 +383,36 @@ class ACAImage(np.ndarray):
         # modeled as not flickering.  Make a mask to indicate which ones flicker.
         self.flicker_mask = self.flicker_cdf_idxs >= 0
 
-    def flicker_update(self, dt):
+    def flicker_update(self, dt, use_numba=True):
         """
         Propagate the image forward by ``dt`` seconds and update any pixels
         that have flickered during that interval.
 
-        TO DO: use numba for this once numba with np.interp is available in Ska3.
-        (E.g. 0.43 has it).  This will probably be substantially faster.
+        This has the option to use one of two implementations.  The default is
+        to use the numba-based version which is about 6 times faster.  The
+        vectorized version is left in for reference.
 
         :param dt: time (secs) to propagate image
+        :param use_numba: use the numba version of updating (default=True)
         """
         if not hasattr(self, 'flicker_times'):
             self.flicker_init()
+
+        if use_numba:
+            _flicker_update_numba(dt, len(self.flicker_vals),
+                                  self.flicker_vals0,
+                                  self.flicker_vals,
+                                  self.flicker_mask,
+                                  self.flicker_times,
+                                  self.flicker_cdf_idxs,
+                                  self.flicker_cdf_x,
+                                  self.flicker_cdfs,
+                                  self.flicker_scale,
+                                  self.flicker_mean_time)
+        else:
+            self._flicker_update_vectorized(dt)
+
+    def _flicker_update_vectorized(self, dt):
 
         self.flicker_times[self.flicker_mask] -= dt
 
@@ -429,18 +447,6 @@ class ACAImage(np.ndarray):
             # Get the new time before next flicker
             t_flicker = -np.log(1.0 - rand_time) * self.flicker_mean_time
             self.flicker_times[idx] = t_flicker
-
-    def flicker_update_numba(self, dt):
-        _flicker_update_numba(dt, len(self.flicker_vals),
-                              self.flicker_vals0,
-                              self.flicker_vals,
-                              self.flicker_mask,
-                              self.flicker_times,
-                              self.flicker_cdf_idxs,
-                              self.flicker_cdf_x,
-                              self.flicker_cdfs,
-                              self.flicker_scale,
-                              self.flicker_mean_time)
 
 
 @numba.jit(nopython=True)
