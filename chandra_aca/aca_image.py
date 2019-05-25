@@ -382,6 +382,13 @@ class ACAImage(np.ndarray):
         self.flicker_vals0 = self.flicker_vals.copy()
         self.flicker_n_vals = len(self.flicker_vals)
 
+        # Make a bool ACAImage like self to allow convenient mask/unmask of
+        # pixels to flicker.  This is used in annie.  Also make the corresponding
+        # 1-d ravelled version.
+        self.flicker_mask = ACAImage(np.ones(self.shape, dtype=np.bool),
+                                     row0=self.row0, col0=self.col0)
+        self.flicker_mask_vals = self.flicker_mask.view(np.ndarray).ravel()
+
         # Get the index to the CDFs which is appropriate for each pixel
         # based on its initial value.
         self.flicker_cdf_idxs = np.searchsorted(self.flicker_cdf_bins,
@@ -394,10 +401,6 @@ class ACAImage(np.ndarray):
         rand_unifs = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
         t_flicker = -np.log(1.0 - rand_unifs) * flicker_mean_time
         self.flicker_times = t_flicker * phase
-
-        # Pixels where self.flicker_cdf_idxs == 0 have val < 50 (no CDF) and are
-        # modeled as not flickering.  Make a mask to indicate which ones flicker.
-        self.flicker_mask = self.flicker_cdf_idxs >= 0
 
     def flicker_update(self, dt, use_numba=True):
         """
@@ -418,7 +421,7 @@ class ACAImage(np.ndarray):
             _flicker_update_numba(dt, len(self.flicker_vals),
                                   self.flicker_vals0,
                                   self.flicker_vals,
-                                  self.flicker_mask,
+                                  self.flicker_mask_vals,
                                   self.flicker_times,
                                   self.flicker_cdf_idxs,
                                   self.flicker_cdf_x,
@@ -430,10 +433,11 @@ class ACAImage(np.ndarray):
 
     def _flicker_update_vectorized(self, dt):
 
-        self.flicker_times[self.flicker_mask] -= dt
+        self.flicker_times[self.flicker_mask_vals] -= dt
 
         # When flicker_times < 0 that means a flicker occurs
-        idxs = np.where(self.flicker_times < 0)[0]
+        ok = (self.flicker_times < 0) & (self.flicker_cdf_idxs >= 0)
+        idxs = np.where(ok)[0]
 
         # Random uniform used for (1) distribution of flickering amplitude
         # via the CDFs and (2) distribution of time to next flicker.
@@ -474,7 +478,7 @@ def _numba_random_seed(seed):
 def _flicker_update_numba(dt, nvals,
                           flicker_vals0,
                           flicker_vals,
-                          flicker_mask,
+                          flicker_mask_vals,
                           flicker_times,
                           flicker_cdf_idxs,
                           flicker_cdf_x,
@@ -486,7 +490,10 @@ def _flicker_update_numba(dt, nvals,
     that have flickered during that interval.
     """
     for ii in range(nvals):  # nvals
-        if not flicker_mask[ii]:
+        # cdf_idx is -1 for pixels with dark current in range that does not flicker.
+        # Don't flicker those ones or pixels that are masked out.
+        cdf_idx = flicker_cdf_idxs[ii]
+        if cdf_idx < 0 or not flicker_mask_vals[ii]:
             continue
 
         flicker_times[ii] -= dt
@@ -501,7 +508,6 @@ def _flicker_update_numba(dt, nvals,
 
         # Determine the new value after flickering and set in array view.
         # First get the right CDF from the list of CDFs based on the pixel value.
-        cdf_idx = flicker_cdf_idxs[ii]
         y = np_interp(yin=flicker_cdf_x,
                       xin=flicker_cdfs[cdf_idx],
                       xout=rand_ampl)
