@@ -461,7 +461,7 @@ class ACAImage(np.ndarray):
                 dy = (10 ** np.abs(y) - 1.0) * self.flicker_scale + 1.0
                 y = np.log10(dy) * np.sign(y)
 
-            val = 10 ** (np.log10(self.flicker_vals0[idx]) + y)
+            val = self.flicker_vals0[idx] * 10 ** y
             self.flicker_vals[idx] = val
 
             # Get the new time before next flicker
