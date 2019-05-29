@@ -369,8 +369,9 @@ class ACAImage(np.ndarray):
 
         self.flicker_mean_time = flicker_mean_time
         self.flicker_scale = flicker_scale
+        self.test_idx = 1 if seed == -1 else 0
 
-        if seed is not None:
+        if seed is not None and seed != -1:
             np.random.seed(seed)
             _numba_random_seed(seed)
 
@@ -395,16 +396,21 @@ class ACAImage(np.ndarray):
                                                 self.flicker_vals0) - 1
 
         # Create an array of time (secs) until next flicker for each pixel
-        # This is drawing from an exponential distribution.  For the initial
-        # time assume the flickering is randomly phased within that interval.
-        phase = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
-        rand_unifs = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
-        t_flicker = -np.log(1.0 - rand_unifs) * flicker_mean_time
+        if seed == -1:
+            # Special case of testing, use a constant flicker_mean_time initially
+            t_flicker = np.ones(shape=(self.flicker_n_vals,)) * flicker_mean_time
+            phase = 1.0
+        else:
+            # This is drawing from an exponential distribution.  For the initial
+            # time assume the flickering is randomly phased within that interval.
+            phase = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
+            rand_unifs = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
+            t_flicker = -np.log(1.0 - rand_unifs) * flicker_mean_time
+
         self.flicker_times = t_flicker * phase
 
     def flicker_update(self, dt, use_numba=True):
-        """
-        Propagate the image forward by ``dt`` seconds and update any pixels
+        """Propagate the image forward by ``dt`` seconds and update any pixels
         that have flickered during that interval.
 
         This has the option to use one of two implementations.  The default is
@@ -418,7 +424,9 @@ class ACAImage(np.ndarray):
             self.flicker_init()
 
         if use_numba:
-            _flicker_update_numba(dt, len(self.flicker_vals),
+            _flicker_update_numba(dt,
+                                  len(self.flicker_vals),
+                                  self.test_idx,
                                   self.flicker_vals0,
                                   self.flicker_vals,
                                   self.flicker_mask_vals,
@@ -428,6 +436,8 @@ class ACAImage(np.ndarray):
                                   self.flicker_cdfs,
                                   self.flicker_scale,
                                   self.flicker_mean_time)
+            if self.test_idx > 0:
+                self.test_idx += 1
         else:
             self._flicker_update_vectorized(dt)
 
@@ -475,7 +485,7 @@ def _numba_random_seed(seed):
 
 
 @numba.jit(nopython=True)
-def _flicker_update_numba(dt, nvals,
+def _flicker_update_numba(dt, nvals, test_idx,
                           flicker_vals0,
                           flicker_vals,
                           flicker_mask_vals,
@@ -501,10 +511,16 @@ def _flicker_update_numba(dt, nvals,
         if flicker_times[ii] > 0:
             continue
 
-        # Random uniform used for (1) distribution of flickering amplitude
-        # via the CDFs and (2) distribution of time to next flicker.
-        rand_ampl = np.random.uniform(0.0, 1.0)
-        rand_time = np.random.uniform(0.0, 1.0)
+        if test_idx > 0:
+            # Deterministic and reproducible but bouncy sequence that is reproducible in C
+            # (which has a different random number generator).
+            rand_ampl = np.abs(np.sin(float(ii + test_idx)))
+            rand_time = np.abs(np.cos(float(ii + test_idx)))
+        else:
+            # Random uniform used for (1) distribution of flickering amplitude
+            # via the CDFs and (2) distribution of time to next flicker.
+            rand_ampl = np.random.uniform(0.0, 1.0)
+            rand_time = np.random.uniform(0.0, 1.0)
 
         # Determine the new value after flickering and set in array view.
         # First get the right CDF from the list of CDFs based on the pixel value.
