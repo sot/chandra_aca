@@ -3,10 +3,12 @@ import os
 from math import floor
 from itertools import count, chain
 from copy import deepcopy
+from pathlib import Path
 
 import six
 from six.moves import zip
 
+import numba
 import numpy as np
 from astropy.utils.compat.misc import override__dir__
 
@@ -309,6 +311,257 @@ class ACAImage(np.ndarray):
     def col0(self, value):
         self.meta['IMGCOL0'] = np.int64(value)
 
+    @classmethod
+    def _read_flicker_cdfs(cls):
+        """Read flickering pixel model cumulative distribution functions
+        and associated metadata.  Set up class variables accordingly.
+
+        The flicker_cdf file here was created using:
+        /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
+
+        """
+        from astropy.io import fits
+
+        filename = Path(__file__).parent / 'data' / 'flicker_cdf.fits.gz'
+        with fits.open(filename) as hdus:
+            hdu = hdus[0]
+            hdr = hdu.header
+
+            # Get the main data, which is an n_cdf * n_cdf_x array.  Each row corresponds
+            # to the CDF for a particular bin range in e-/sec, e.g. 200 to 300 e-/sec.
+            # CDF will go from 0.0 to 1.0
+            cls.flicker_cdfs = hdu.data.astype(np.float64)
+
+            # CDF_x is the x-value of the distribution, namely the log-amplitude change
+            # in pixel value due to a flicker event.
+            cls.flicker_cdf_x = np.linspace(hdr['cdf_x0'], hdr['cdf_x1'], hdr['n_cdf_x'])
+
+            # CDF bin range (e-/sec) for each for in flicker_cdfs.
+            cdf_bins = []
+            for ii in range(hdr['n_bin']):
+                cdf_bins.append(hdr[f'cdf_bin{ii}'])
+            cls.flicker_cdf_bins = np.array(cdf_bins)
+
+    def flicker_init(self, flicker_mean_time=10000, flicker_scale=1.0, seed=None):
+        """Initialize instance variables to allow for flickering pixel updates.
+
+        The ``flicker_scale`` can be interpreted as follows: if the pixel
+        was going to flicker by a multiplicative factor of (1 + x), now
+        make it flicker by (1 + x * flicker_scale).  This applies for flickers
+        that increase the amplitude.  For flickers that make the value smaller,
+        then it would be 1 / (1 + x) => 1 / (1 + x * flicker_scale).
+
+        The flicker_cdf file here was created using:
+        /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
+
+        Examples and performance details at:
+        /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-implementation.ipynb
+
+        The model was reviewed and approved at SS&AWG on 2019-05-22.
+
+        :param flicker_mean_time: mean flickering time (sec, default=10000)
+        :param flicker_scale: multiplicative factor beyond model default for
+               flickering amplitude (default=1.0)
+        :param seed: random seed for reproducibility (default=None => no seed)
+        """
+        if not hasattr(self, 'flicker_cdf_bins'):
+            self._read_flicker_cdfs()
+
+        self.flicker_mean_time = flicker_mean_time
+        self.flicker_scale = flicker_scale
+        self.test_idx = 1 if seed == -1 else 0
+
+        if seed is not None and seed != -1:
+            np.random.seed(seed)
+            _numba_random_seed(seed)
+
+        # Make a flattened view of the image for easier update processing.
+        # Also store the initial pixel values, since flicker updates are
+        # relative to the initial value, not the current value (which would
+        # end up random-walking).
+        self.flicker_vals = self.view(np.ndarray).ravel()
+        self.flicker_vals0 = self.flicker_vals.copy()
+        self.flicker_n_vals = len(self.flicker_vals)
+
+        # Make a bool ACAImage like self to allow convenient mask/unmask of
+        # pixels to flicker.  This is used in annie.  Also make the corresponding
+        # 1-d ravelled version.
+        self.flicker_mask = ACAImage(np.ones(self.shape, dtype=np.bool),
+                                     row0=self.row0, col0=self.col0)
+        self.flicker_mask_vals = self.flicker_mask.view(np.ndarray).ravel()
+
+        # Get the index to the CDFs which is appropriate for each pixel
+        # based on its initial value.
+        self.flicker_cdf_idxs = np.searchsorted(self.flicker_cdf_bins,
+                                                self.flicker_vals0) - 1
+
+        # Create an array of time (secs) until next flicker for each pixel
+        if seed == -1:
+            # Special case of testing, use a constant flicker_mean_time initially
+            t_flicker = np.ones(shape=(self.flicker_n_vals,)) * flicker_mean_time
+            phase = 1.0
+        else:
+            # This is drawing from an exponential distribution.  For the initial
+            # time assume the flickering is randomly phased within that interval.
+            phase = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
+            rand_unifs = np.random.uniform(0.0, 1.0, size=self.flicker_n_vals)
+            t_flicker = -np.log(1.0 - rand_unifs) * flicker_mean_time
+
+        self.flicker_times = t_flicker * phase
+
+    def flicker_update(self, dt, use_numba=True):
+        """Propagate the image forward by ``dt`` seconds and update any pixels
+        that have flickered during that interval.
+
+        This has the option to use one of two implementations.  The default is
+        to use the numba-based version which is about 6 times faster.  The
+        vectorized version is left in for reference.
+
+        :param dt: time (secs) to propagate image
+        :param use_numba: use the numba version of updating (default=True)
+        """
+        if not hasattr(self, 'flicker_times'):
+            self.flicker_init()
+
+        if use_numba:
+            _flicker_update_numba(dt,
+                                  len(self.flicker_vals),
+                                  self.test_idx,
+                                  self.flicker_vals0,
+                                  self.flicker_vals,
+                                  self.flicker_mask_vals,
+                                  self.flicker_times,
+                                  self.flicker_cdf_idxs,
+                                  self.flicker_cdf_x,
+                                  self.flicker_cdfs,
+                                  self.flicker_scale,
+                                  self.flicker_mean_time)
+            if self.test_idx > 0:
+                self.test_idx += 1
+        else:
+            self._flicker_update_vectorized(dt)
+
+    def _flicker_update_vectorized(self, dt):
+
+        self.flicker_times[self.flicker_mask_vals] -= dt
+
+        # When flicker_times < 0 that means a flicker occurs
+        ok = (self.flicker_times < 0) & (self.flicker_cdf_idxs >= 0)
+        idxs = np.where(ok)[0]
+
+        # Random uniform used for (1) distribution of flickering amplitude
+        # via the CDFs and (2) distribution of time to next flicker.
+        rand_ampls = np.random.uniform(0.0, 1.0, size=len(idxs))
+        rand_times = np.random.uniform(0.0, 1.0, size=len(idxs))
+
+        for idx, rand_time, rand_ampl in zip(idxs, rand_times, rand_ampls):
+            # Determine the new value after flickering and set in array view.
+            # First get the right CDF from the list of CDFs based on the pixel value.
+            cdf_idx = self.flicker_cdf_idxs[idx]
+            y = np.interp(fp=self.flicker_cdf_x,
+                          xp=self.flicker_cdfs[cdf_idx],
+                          x=rand_ampl)
+
+            if self.flicker_scale != 1.0:
+                # Express the multiplicative change as (1 + x) and change
+                # it to be (1 + x * scale).  This makes sense for positive y,
+                # so use abs(y) and then flip the sign back at the end.  For
+                # negative y this is the same as doing this trick expressing the
+                # change as 1 / (1 + x).
+                dy = (10 ** np.abs(y) - 1.0) * self.flicker_scale + 1.0
+                y = np.log10(dy) * np.sign(y)
+
+            val = self.flicker_vals0[idx] * 10 ** y
+            self.flicker_vals[idx] = val
+
+            # Get the new time before next flicker
+            t_flicker = -np.log(1.0 - rand_time) * self.flicker_mean_time
+            self.flicker_times[idx] = t_flicker
+
+
+@numba.jit(nopython=True)
+def _numba_random_seed(seed):
+    np.random.seed(seed)
+
+
+@numba.jit(nopython=True)
+def _flicker_update_numba(dt, nvals, test_idx,
+                          flicker_vals0,
+                          flicker_vals,
+                          flicker_mask_vals,
+                          flicker_times,
+                          flicker_cdf_idxs,
+                          flicker_cdf_x,
+                          flicker_cdfs,
+                          flicker_scale,
+                          flicker_mean_time):
+    """
+    Propagate the image forward by ``dt`` seconds and update any pixels
+    that have flickered during that interval.
+    """
+    for ii in range(nvals):  # nvals
+        # cdf_idx is -1 for pixels with dark current in range that does not flicker.
+        # Don't flicker those ones or pixels that are masked out.
+        cdf_idx = flicker_cdf_idxs[ii]
+        if cdf_idx < 0 or not flicker_mask_vals[ii]:
+            continue
+
+        flicker_times[ii] -= dt
+
+        if flicker_times[ii] > 0:
+            continue
+
+        if test_idx > 0:
+            # Deterministic and reproducible but bouncy sequence that is reproducible in C
+            # (which has a different random number generator).
+            rand_ampl = np.abs(np.sin(float(ii + test_idx)))
+            rand_time = np.abs(np.cos(float(ii + test_idx)))
+        else:
+            # Random uniform used for (1) distribution of flickering amplitude
+            # via the CDFs and (2) distribution of time to next flicker.
+            rand_ampl = np.random.uniform(0.0, 1.0)
+            rand_time = np.random.uniform(0.0, 1.0)
+
+        # Determine the new value after flickering and set in array view.
+        # First get the right CDF from the list of CDFs based on the pixel value.
+        y = np_interp(yin=flicker_cdf_x,
+                      xin=flicker_cdfs[cdf_idx],
+                      xout=rand_ampl)
+
+        if flicker_scale != 1.0:
+            # Express the multiplicative change as (1 + x) and change
+            # it to be (1 + x * scale).  This makes sense for positive y,
+            # so use abs(y) and then flip the sign back at the end.  For
+            # negative y this is the same as doing this trick expressing the
+            # change as 1 / (1 + x).
+            dy = (10 ** np.abs(y) - 1.0) * flicker_scale + 1.0
+            y = np.log10(dy) * np.sign(y)
+
+        val = 10 ** (np.log10(flicker_vals0[ii]) + y)
+        flicker_vals[ii] = val
+
+        # Get the new time before next flicker
+        t_flicker = -np.log(1.0 - rand_time) * flicker_mean_time
+        flicker_times[ii] = t_flicker
+
+
+@numba.jit(nopython=True)
+def np_interp(yin, xin, xout):
+    idx = np.searchsorted(xin, xout)
+
+    if idx == 0:
+        return yin[0]
+
+    if idx == len(xin):
+        return yin[-1]
+
+    x0 = xin[idx - 1]
+    x1 = xin[idx]
+    y0 = yin[idx - 1]
+    y1 = yin[idx]
+    yout = (xout - x0) / (x1 - x0) * (y1 - y0) + y0
+
+    return yout
 
 
 def _prep_6x6(img, bgd=None):

@@ -325,3 +325,76 @@ def test_aca_image_operators():
                           [6, -93, -192, 9],
                           [10, -289, -388, 13],
                           [14, 15, 16, 17]])
+
+
+def test_flicker_numba():
+    a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
+    a.flicker_init(flicker_mean_time=1000, flicker_scale=1.5, seed=10)
+    for ii in range(10):
+        a.flicker_update(100.0, use_numba=True)
+
+    assert np.all(np.round(a) == [[0, 81, 200],
+                                  [326, 176, 609],
+                                  [659, 720, 1043]])
+
+
+def test_flicker_vectorized():
+    a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
+    a.flicker_init(flicker_mean_time=1000, flicker_scale=1.5, seed=10)
+    for ii in range(10):
+        a.flicker_update(100.0, use_numba=False)
+
+    assert np.all(np.round(a) == [[0, 111, 200],
+                                  [219, 436, 531],
+                                  [470, 829, 822]])
+
+
+def test_flicker_no_seed():
+    """Make sure results vary when seed is not supplied"""
+    a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
+    a.flicker_init(flicker_mean_time=300)
+    for ii in range(10):
+        a.flicker_update(100.0)
+
+    b = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
+    b.flicker_init(flicker_mean_time=300)
+    for ii in range(10):
+        b.flicker_update(100.0)
+
+    assert np.any(a != b)
+
+
+def test_flicker_test_sequence():
+    """Test the deterministic testing sequence that allows for
+    cross-implementation comparison.  This uses the seed=-1 pathway.
+    """
+    a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
+    a.flicker_init(seed=-1, flicker_mean_time=15)
+    dt = 10
+    assert np.all(np.round(a) == [[0, 100, 200],
+                                  [300, 400, 500],
+                                  [600, 700, 800]])
+
+    a.flicker_update(dt)
+    assert np.all(np.round(a) == [[0, 100, 200],
+                                  [300, 400, 500],
+                                  [600, 700, 800]])
+
+    a.flicker_update(dt)
+    assert np.all(np.round(a) == [[0, 80, 229],
+                                  [447, 374, 531],
+                                  [952, 693, 815]])
+    a.flicker_update(dt)
+    assert np.all(np.round(a) == [[0, 80, 229],
+                                  [278, 374, 531],
+                                  [592, 693, 815]])
+
+    a.flicker_update(dt)
+    assert np.all(np.round(a) == [[0, 80, 185],
+                                  [278, 374, 531],
+                                  [592, 693, 815]])
+
+    assert np.allclose(a.flicker_times,
+                       np.array([15., 49.06630191, 48.34713118, 38.34713118,
+                                 28.34713118, 1.03039723, 26.30875397, 16.30875397,
+                                 7.40192939]))
