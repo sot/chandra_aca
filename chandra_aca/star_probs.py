@@ -15,12 +15,9 @@ Final review and approval: 2018-11-28
 
 """
 
-from __future__ import print_function, division
-
 import os
 import warnings
 from numba import jit
-from six.moves import zip
 
 from scipy.optimize import brentq, bisect
 import scipy.stats
