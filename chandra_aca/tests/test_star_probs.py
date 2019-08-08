@@ -9,7 +9,8 @@ from astropy.table import Table
 
 from chandra_aca.star_probs import (t_ccd_warm_limit, mag_for_p_acq, acq_success_prob,
                                     guide_count, t_ccd_warm_limit_for_guide,
-                                    grid_model_acq_prob, snr_mag_for_t_ccd)
+                                    grid_model_acq_prob, snr_mag_for_t_ccd,
+                                    binom_ppf)
 
 # Acquisition probabilities regression test data
 ACQ_PROBS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'acq_probs.dat')
@@ -294,3 +295,8 @@ def test_grid_floor_2018_11():
                      -0.875, -0.695, -0.382, -0.204, 0.386, 0.758, 0.938, 1.133,
                      1.476, 1.639])
     assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.001)
+
+
+def test_binom_ppf():
+    vals = binom_ppf(4, 5, [0.17, 0.84])
+    assert np.allclose(vals, [0.55463945, 0.87748177])
