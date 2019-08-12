@@ -15,12 +15,9 @@ Final review and approval: 2018-11-28
 
 """
 
-from __future__ import print_function, division
-
 import os
 import warnings
 from numba import jit
-from six.moves import zip
 
 from scipy.optimize import brentq, bisect
 import scipy.stats
@@ -726,3 +723,35 @@ def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_
         return count - min_guide_count
 
     return bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=0.001, rtol=1e-15, full_output=False)
+
+
+def binom_ppf(k, n, conf, n_sample=1000):
+    """
+    Compute percent point function (inverse of CDF) for binomial, where
+    the percentage is with respect to the "p" (binomial probability) parameter
+    not the "k" parameter.  The latter is what one gets with scipy.stats.binom.ppf().
+
+    This function internally generates ``n_sample`` samples of the binomal PMF in
+    order to compute the CDF and finally interpolate to get the PPF.
+
+    The following example returns the 1-sigma (0.17 - 0.84) confidence interval
+    on the true binomial probability for an experiment with 4 successes in 5 trials.
+
+    Example::
+
+      >>> binom_ppf(4, 5, [0.17, 0.84])
+      array([ 0.55463945,  0.87748177])
+
+    :param k: int, number of successes (0 < k <= n)
+    :param n: int, number of trials
+    :param conf: float or array of floats, percent point values
+    :param n_sample: number of PMF samples for interpolation
+
+    :return: percent point function values corresponding to ``conf``
+    """
+    ps = np.linspace(0, 1, n_sample)  # Probability values
+    pmfs = scipy.stats.binom.pmf(k=k, n=n, p=ps)
+    cdf = np.cumsum(pmfs) / np.sum(pmfs)
+    out = np.interp(conf, xp=cdf, fp=ps)
+
+    return out
