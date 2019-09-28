@@ -12,7 +12,7 @@ import agasc
 import Quaternion
 from Ska.quatutil import radec2yagzag
 
-from .transform import pixels_to_yagzag, yagzag_to_pixels
+from .transform import yagzag_to_pixels
 
 # rc definitions
 frontcolor = 'black'
@@ -183,9 +183,9 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         error = error.clip(mag_error_low_limit)
         # Faint and bad stars will keep their BAD_STAR_COLOR
         # Only use the faint mask on stars that are not bad
-        colors[(stars['MAG_ACA'] >= red_mag_lim)
-               & (stars['MAG_ACA'] < red_mag_lim + error)
-               & ~bad_stars] = FAINT_STAR_COLOR
+        colors[(stars['MAG_ACA'] >= red_mag_lim) &
+               (stars['MAG_ACA'] < red_mag_lim + error) &
+               ~bad_stars] = FAINT_STAR_COLOR
         # Don't plot those for which MAG_ACA is fainter than red_mag_lim + error
         # This overrides any that may be 'bad'
         colors[stars['MAG_ACA'] >= red_mag_lim + error] = 'none'

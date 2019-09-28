@@ -12,7 +12,6 @@ from Quaternion import Quat
 from Chandra.Time import DateTime
 
 import chandra_aca
-from chandra_aca.star_probs import t_ccd_warm_limit, mag_for_p_acq, acq_success_prob
 from chandra_aca.transform import (snr_mag_for_t_ccd, radec_to_yagzag,
                                    yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels)
 from chandra_aca import drift
@@ -186,8 +185,8 @@ def test_aca_targ_transforms():
 
 def test_get_aimpoint():
     obstests = [('2016-08-22', 15, 'ACIS-S'),
-               ('2014-08-22', 16, 'HRC-I', True),
-               ('2017-09-01', 18, 'ACIS-I')]
+                ('2014-08-22', 16, 'HRC-I', True),
+                ('2017-09-01', 18, 'ACIS-I')]
     answers = [(224.0, 490.0, 7),
                (7606.0, 7941.0, 0),
                (970.0, 975.0, 3)]
@@ -198,7 +197,8 @@ def test_get_aimpoint():
         assert chip_id == answer[2]
     zot = Table.read("""date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
 2012-12-15      15               ACIS-I    888   999   -1        1.6""", format='ascii')
-    chipx, chipy, chip_id = drift.get_target_aimpoint('2016-08-22', 15, 'ACIS-I', zero_offset_table=zot)
+    chipx, chipy, chip_id = drift.get_target_aimpoint(
+        '2016-08-22', 15, 'ACIS-I', zero_offset_table=zot)
     assert chipx == 888
     assert chipy == 999
     assert chip_id == -1
@@ -244,8 +244,10 @@ def test_get_aca_offsets():
 def test_snr_mag():
     same = snr_mag_for_t_ccd(-11.5, ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=5)
     assert np.isclose(same, 10.3, atol=0.0001, rtol=0)
-    # Show a few different combinations of results based on different values for ref_mag and ref_t_ccd
-    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=1.59)
+    # Show a fewdifferent combinations of results based on different values
+    # for ref_mag and ref_t_ccd
+    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]),
+                            ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=1.59)
     assert np.allclose(arr, [10.3, 10.1112, 9.4818], atol=0.0001, rtol=0)
     arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-11.5, scale_4c=1.59)
     assert np.allclose(arr, [9.0, 8.8112, 8.1818], atol=0.0001, rtol=0)

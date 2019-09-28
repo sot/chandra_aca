@@ -208,6 +208,7 @@ class CubicSpline(PPoly):
             on Wikiversity.
     .. [2] Carl de Boor, "A Practical Guide to Splines", Springer-Verlag, 1978.
     """
+
     def __init__(self, x, y, axis=0, bc_type='not-a-knot', extrapolate=None):
         x, y = map(np.asarray, (x, y))
 
@@ -358,7 +359,7 @@ class CubicSpline(PPoly):
                     A[1, 0] = dx[1]
                     A[0, 1] = x[2] - x[0]
                     d = x[2] - x[0]
-                    b[0] = ((dxr[0] + 2*d) * dxr[1] * slope[0] +
+                    b[0] = ((dxr[0] + 2 * d) * dxr[1] * slope[0] +
                             dxr[0]**2 * slope[1]) / d
                 elif bc_start[0] == 1:
                     A[1, 0] = 1
@@ -373,8 +374,8 @@ class CubicSpline(PPoly):
                     A[1, -1] = dx[-2]
                     A[-1, -2] = x[-1] - x[-3]
                     d = x[-1] - x[-3]
-                    b[-1] = ((dxr[-1]**2*slope[-2] +
-                             (2*d + dxr[-1])*dxr[-2]*slope[-1]) / d)
+                    b[-1] = ((dxr[-1]**2 * slope[-2] +
+                              (2 * d + dxr[-1]) * dxr[-2] * slope[-1]) / d)
                 elif bc_end[0] == 1:
                     A[1, -1] = 1
                     A[-1, -2] = 0

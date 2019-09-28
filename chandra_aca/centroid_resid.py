@@ -82,8 +82,8 @@ class CentroidResiduals(object):
      649201816
 
     This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
-    and ground centroids.  Here is another example that does the same thing without using the ``for_slot``
-    convenience.
+    and ground centroids.  Here is another example that does the same thing without using the
+    ``for_slot`` convenience.
 
     Example usage::
 
@@ -136,8 +136,8 @@ class CentroidResiduals(object):
         if source == 'ground':
             acen_files = sorted(asp_l1.get_files(start=start, stop=stop, content=['ACACENT']))
             acen = vstack([Table.read(f) for f in sorted(acen_files)], metadata_conflicts='silent')
-            ok = ((acen['slot'] == slot) & (acen['alg'] == alg) & (acen['status'] == 0)
-                  & (acen['time'] >= DateTime(start).secs) & (acen['time'] <= DateTime(stop).secs))
+            ok = ((acen['slot'] == slot) & (acen['alg'] == alg) & (acen['status'] == 0) &
+                  (acen['time'] >= DateTime(start).secs) & (acen['time'] <= DateTime(stop).secs))
             yags = np.array(acen[ok]['ang_y'] * 3600)
             zags = np.array(acen[ok]['ang_z'] * 3600)
             yag_times = np.array(acen[ok]['time'])
@@ -182,8 +182,8 @@ class CentroidResiduals(object):
                 obsid_stop = fetch.Msid('COBSRQID', tstop - 60, tstop)
                 if len(obsid_start.vals) == 0 or len(obsid_stop.vals) == 0:
                     raise ValueError(
-                        "Error getting COBSRQID telem for tstart:{} tstop:{} from fetch_source:{}".format(
-                            tstart, tstop, fetch.data_source.sources()[0]))
+                        "Error getting COBSRQID telem for tstart:{} tstop:{} from fetch_source:{}"
+                        .format(tstart, tstop, fetch.data_source.sources()[0]))
                 if obsid_start.vals[-1] != obsid_stop.vals[0]:
                     raise ValueError("Time range covers more than one obsid; Not supported.")
                 self.obsid = obsid_start.vals[-1]
@@ -199,9 +199,9 @@ class CentroidResiduals(object):
         self.atts = atts[ok, :]  # (N, 4) numpy array
         self.att_times = att_times[ok]
 
-
     def set_atts_from_solfiles(self, asol_files, acal_files, aqual_files, filter=True):
-        atts, att_times, asol_recs = asp_l1.get_atts_from_files(asol_files, acal_files, aqual_files, filter=filter)
+        atts, att_times, asol_recs = asp_l1.get_atts_from_files(
+            asol_files, acal_files, aqual_files, filter=filter)
         obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
         if len(obsids) > 1:
             raise ValueError("Time range covers more than one obsid; Not supported.")
@@ -221,11 +221,12 @@ class CentroidResiduals(object):
             star = agasc.get_star(agasc_id, date=self.start)
         elif slot is not None:
             sc = mica.starcheck.get_starcheck_catalog_at_date(self.start)
-            stars = sc['cat'][(sc['cat']['slot'] == slot)
-                             & ((sc['cat']['type'] == 'GUI') | (sc['cat']['type'] == 'BOT'))]
+            stars = sc['cat'][(sc['cat']['slot'] == slot) &
+                              ((sc['cat']['type'] == 'GUI') | (sc['cat']['type'] == 'BOT'))]
             if not len(stars):
                 raise ValueError(
-                    "No GUI or BOT in slot {} at time {} in dwell".format(slot, DateTime(self.start).date))
+                    "No GUI or BOT in slot {} at time {} in dwell"
+                    .format(slot, DateTime(self.start).date))
             star = agasc.get_star(stars[0]['id'], date=self.start)
         else:
             raise ValueError("Need to supply agasc_id or slot to look up star")
@@ -278,8 +279,8 @@ class CentroidResiduals(object):
     def set_offsets(self):
         """
         Apply time offsets to centroids based on type and source of centroid, obsid
-        (suggesting 8x8 or 6x6 data), telemetry source ('maude' or 'cxc') and aspect solution source.
-        These time offsets were fit.  See fit notebooks at:
+        (suggesting 8x8 or 6x6 data), telemetry source ('maude' or 'cxc') and aspect solution
+        source. These time offsets were fit.  See fit notebooks at:
 
         http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
 
@@ -295,15 +296,19 @@ class CentroidResiduals(object):
             return
         # Get and check reasonable-ness of fetch data source
         if len(fetch.data_source.sources()) > 1:
-            warnings.warn("Can't set offsets based on fetch data source if multiple data sources set")
+            warnings.warn("Can't set offsets based on fetch data "
+                          "source if multiple data sources set")
             return
         fetch_source = fetch.data_source.sources()[0]
         if fetch_source != 'cxc' and fetch_source != 'maude':
-            warnings.warn("Only maude and cxc fetch data sources are supported for offsets. Not applying offsets.")
+            warnings.warn(
+                "Only maude and cxc fetch data sources are supported for offsets. "
+                "Not applying offsets.")
             return
         obstype = 'or' if self.obsid < 38000 else 'er'
         if fetch_source == 'maude' and obstype == 'er':
-            warnings.warn("Centroid time offsets not well fit for 'maude' telem source on ERs. Use caution.")
+            warnings.warn(
+                "Centroid time offsets not well fit for 'maude' telem source on ERs. Use caution.")
 
         # Offsets calculated using OR and ER notebooks in SKA/analysis/centroid_and_sol_time_offsets
         offsets = {
@@ -322,7 +327,7 @@ class CentroidResiduals(object):
             ('obc', 'obc', 'maude', 'er'): -2.90454699136,
             ('obc', 'ground', 'maude', 'er'): -3.00151559564,
             ('ground', 'obc', 'maude', 'er'): 0.116096583881,
-            }
+        }
 
         self.centroid_dt = offsets[(self.centroid_source,
                                     self.att_source,
@@ -348,7 +353,8 @@ class CentroidResiduals(object):
         if self.centroid_dt is None:
             warnings.warn("Residuals calculated on centroids without time offsets applied")
         if len(self.att_times) < 2:
-            raise ValueError("Cannot attempt to calculate residuals with fewer than 2 attitude samples")
+            raise ValueError(
+                "Cannot attempt to calculate residuals with fewer than 2 attitude samples")
         eci = Ska.quatutil.radec2eci(self.ra, self.dec)
         # Transform the 3x3 to get the axes to align to have the dot product make sense
         d_aca = np.dot(quat_vtransform(self.atts).transpose(0, 2, 1), eci)
@@ -358,7 +364,6 @@ class CentroidResiduals(object):
         self.pred_zags = interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
         self.dyags = self.yags - self.pred_yags
         self.dzags = self.zags - self.pred_zags
-
 
     @classmethod
     def for_slot(cls, obsid=None, start=None, stop=None,

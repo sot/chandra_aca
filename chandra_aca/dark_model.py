@@ -203,7 +203,7 @@ def get_sbp_pars(dates):
     # Poly fit parameter for pre-2012 and post-2012.  Vals here are:
     # y_mid, slope_pre, slope_post
     par_fits = ((0.075, -0.00692, -0.0207),  # g1
-                (3.32, 0.0203, 0*0.0047),  # g2
+                (3.32, 0.0203, 0 * 0.0047),  # g2
                 (2.40, 0.061, 0.061),  # g3
                 (192, 0.1, 0.1),  # x_b
                 (18400, 1.45e3, 742),  # ampl

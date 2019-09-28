@@ -76,12 +76,14 @@ SIM_MM_TO_ARCSEC = 20.493
 # Cache for the zero offset table
 CACHE = {}
 
+
 class AcaDriftModel(object):
     """
     Define a drift model for aspect solution SIM DY/DZ values as a function of
     time and ACA CCD temperature.  This expresses the model which is defined
     and fitted in the fit_aimpoint_drift notebook in this repo.
     """
+
     def __init__(self, scale, offset, trend, jumps, year0):
         self.scale = scale
         self.offset = offset
@@ -132,6 +134,7 @@ class AcaDriftModel(object):
             out[jump_idx:] += jump
 
         return out[0] if is_scalar else out
+
 
 # Define model instances using calibrated parameters
 DRIFT_Y = AcaDriftModel(**DRIFT_Y_PARS)
@@ -194,7 +197,7 @@ def get_default_zero_offset_table():
         CACHE['ZERO_OFFSET_TABLE'] = Table.read(
             '/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt',
             format='ascii')
-    except:
+    except FileNotFoundError:
         CACHE['ZERO_OFFSET_TABLE'] = Table.read(
             "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt",
             format='ascii')
