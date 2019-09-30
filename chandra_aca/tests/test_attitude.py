@@ -40,6 +40,7 @@ def test_calc_roll(roll):
     # Computed roll is within 0.1% of actual roll
     assert np.isclose(roll, out_roll, atol=0.0, rtol=0.001)
 
+
 # Star fields.  This includes a "normal" set of stars and
 # a weird set with just two stars that are close together
 # but far off axis.  In this case the rotation will

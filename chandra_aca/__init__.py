@@ -1,5 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from .transform import *
+from .transform import *  # noqa
 
 __version__ = '4.27'
 

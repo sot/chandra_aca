@@ -85,14 +85,16 @@ def test_t_ccd_warm_limit_2_spline():
 
 def test_t_ccd_warm_limit_3():
     halfwidth = [40, 80, 120, 160, 180, 240]
-    box = t_ccd_warm_limit([10.4] * 6, date='2015:001', halfwidths=halfwidth, min_n_acq=(2, 8e-3), model='sota')
+    box = t_ccd_warm_limit([10.4] * 6, date='2015:001', halfwidths=halfwidth,
+                           min_n_acq=(2, 8e-3), model='sota')
     assert np.allclose(box[0], -15.6325, atol=0.01, rtol=0)
     assert np.allclose(box[1], 0.008, atol=0.0001, rtol=0)
 
 
 def test_t_ccd_warm_limit_3_spline():
     halfwidth = [40, 80, 120, 160, 180, 240]
-    box = t_ccd_warm_limit([10.0] * 6, date='2018:180', halfwidths=halfwidth, min_n_acq=(2, 8e-3), model='spline')
+    box = t_ccd_warm_limit([10.0] * 6, date='2018:180', halfwidths=halfwidth,
+                           min_n_acq=(2, 8e-3), model='spline')
     assert np.allclose(box[0], -11.0192, atol=0.01, rtol=0)
     assert np.allclose(box[1], 0.008, atol=0.0001, rtol=0)
 
@@ -176,21 +178,21 @@ def test_halfwidth_adjustment():
     p120 = acq_success_prob(mag=mag, date='2018:001', t_ccd=-19, halfwidth=120, model='sota')
     pacq = acq_success_prob(mag=mag, date='2018:001', t_ccd=-19, halfwidth=halfwidth, model='sota')
     mults = pacq / p120
-    assert np.allclose(mults, [1.07260318, 1.04512285,  1., 0.91312975, 0.83667405])
+    assert np.allclose(mults, [1.07260318, 1.04512285, 1., 0.91312975, 0.83667405])
 
 
 def test_acq_success_prob_date():
     date = ['2014:001', '2015:001', '2016:001', '2017:001']
     probs = acq_success_prob(date=date, t_ccd=-10, mag=10.3, spoiler=False, color=0.6,
                              model='sota')
-    assert np.allclose(probs, [0.76856955,  0.74345895,  0.71609812,  0.68643974])
+    assert np.allclose(probs, [0.76856955, 0.74345895, 0.71609812, 0.68643974])
 
 
 def test_acq_success_prob_t_ccd():
     t_ccd = [-16, -14, -12, -10]
     probs = acq_success_prob(date='2017:001', t_ccd=t_ccd, mag=10.3, spoiler=False, color=0.6,
                              model='sota')
-    assert np.allclose(probs, [0.87007558,  0.81918958,  0.75767782,  0.68643974])
+    assert np.allclose(probs, [0.87007558, 0.81918958, 0.75767782, 0.68643974])
 
 
 def test_acq_success_prob_mag():
@@ -250,7 +252,6 @@ def test_acq_success_prob_from_stars():
               0.89249933,
               0.57800025]
     hws = [160, 160, 120, 160, 120, 120, 120, 120]
-
 
     # SOTA
     probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors,

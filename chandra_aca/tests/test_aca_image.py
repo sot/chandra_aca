@@ -246,7 +246,7 @@ def test_aca_image_operators():
     # Test case of adding in native (non-ACA) coordinates.  Just like normal
     # numpy array add.
     a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
-    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0-2, col0=col0-1) * 10
+    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0 - 2, col0=col0 - 1) * 10
     # In [8]: a
     # <ACAImage row0=10 col0=10
     # array([[2, 2, 2, 2],
@@ -288,7 +288,7 @@ def test_aca_image_operators():
 
     # Test for one image fully enclosed in the other
     a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
-    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0+2, col0=col0-2) * 10
+    b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0 + 2, col0=col0 - 2) * 10
 
     assert np.all(a + b.aca == [[2, 2, 2, 2],
                                 [2, 2, 2, 2],
@@ -296,7 +296,7 @@ def test_aca_image_operators():
                                 [72, 82, 2, 2]])
 
     a = ACAImage(np.arange(16).reshape(4, 4), row0=row0, col0=col0) + 2
-    b = ACAImage([[100, 200], [300, 400]], row0=row0+1, col0=col0+1)
+    b = ACAImage([[100, 200], [300, 400]], row0=row0 + 1, col0=col0 + 1)
 
     # Shape mismatch
     with pytest.raises(ValueError):
