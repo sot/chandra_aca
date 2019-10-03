@@ -11,9 +11,10 @@ class AcaTelemetryMsidList(list):
     """
 
     def __init__(self, pea_choice=1):
+        super(AcaTelemetryMsidList, self).__init__()
         if pea_choice == 1:
             msid_prefix = 'A'
-        elif pea_choise == 2:
+        elif pea_choice == 2:
             msid_prefix = 'R'
         else:
             raise Exception(f'Invalid PEA choice {pea_choice}')
@@ -22,11 +23,11 @@ class AcaTelemetryMsidList(list):
         primary_msid = f'{msid_prefix}CCMDS'
 
         px_msid_prefix = f'{msid_prefix}CIMG'
-        px_ids = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'}
-        px_nums = [str(n) for n in range(1,5)]
+        px_ids = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'}
+        px_nums = [str(n) for n in range(1, 5)]
         px_img_nums = [str(n) for n in range(8)]
 
-        #title = 'ACA Image Layout'
+        # title = 'ACA Image Layout'
         sizes = [f'{msid_prefix}CA00040',   # Size of image 0
                  f'{msid_prefix}CA00043',   # Size of image 1
                  f'{msid_prefix}CA00046',   # Size of image 2
@@ -52,7 +53,7 @@ class AcaTelemetryMsidList(list):
                 f'{msid_prefix}CA00950',   # Column of pixel A1 of image 4
                 f'{msid_prefix}CA01166',   # Column of pixel A1 of image 5
                 f'{msid_prefix}CA01382',   # Column of pixel A1 of image 6
-                f'{msid_prefix}CA01598' ]  # Column of pixel A1 of image 7
+                f'{msid_prefix}CA01598']  # Column of pixel A1 of image 7
 
         scale_factor = [f'{msid_prefix}CA00096',   # Scale factor of image 0
                         f'{msid_prefix}CA00312',   # Scale factor of image 1
@@ -65,15 +66,16 @@ class AcaTelemetryMsidList(list):
 
         pixels = []
         for px_img_num in px_img_nums:
-            #title = f'{px_msid_prefix}{px_img_nums[i]}x{px_nums[k]}'
-            pixels.append([f'{px_msid_prefix}{px_img_num}{px_id}{px_num}' for px_num in px_nums for px_id in px_ids])
+            # title = f'{px_msid_prefix}{px_img_nums[i]}x{px_nums[k]}'
+            pixels.append([f'{px_msid_prefix}{px_img_num}{px_id}{px_num}'
+                           for px_num in px_nums for px_id in px_ids])
 
-        self += [primary_msid]
-        self += sizes
-        self += rows
-        self += cols
-        self += scale_factor
-        self += sum(pixels, [])
+        self.append(primary_msid)
+        self.extend(sizes)
+        self.extend(rows)
+        self.extend(cols)
+        self.extend(scale_factor)
+        self.extend(sum(pixels, []))
 
         self.sizes = sizes
         self.rows = rows
@@ -170,7 +172,8 @@ def assemble_image(pixel_data, img_size):
     """
     if list(pixel_data.values())[0]['values'].shape[-1] != len(img_size):
         s1, s2 = list(pixel_data.values())[0]['values'].shape[-1], len(img_size)
-        raise Exception(f'Pixel data shape ({s1},) and image size array shape ({s2},) do not agree.')
+        raise Exception(
+            f'Pixel data shape ({s1},) and image size array shape ({s2},) do not agree.')
 
     img = np.ones((8, 8, len(img_size))) * np.nan
 
@@ -178,9 +181,10 @@ def assemble_image(pixel_data, img_size):
     assert len(msid_img) == 1
     msid_img = msid_img[0]
 
-    size_4X4 = (img_size == '4X41')
-    size_6X6 = (img_size == '6X61') + (img_size == '6X62')
-    size_8X8 = (img_size == '8X81') + (img_size == '8X82') + (img_size == '8X83') + (img_size == '8X84')
+    size_4x4 = (img_size == '4X41')
+    size_6x6 = (img_size == '6X61') + (img_size == '6X62')
+    size_8x8 = ((img_size == '8X81') + (img_size == '8X82') +
+                (img_size == '8X83') + (img_size == '8X84'))
 
     # -----------------------------------------
     # | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -199,22 +203,22 @@ def assemble_image(pixel_data, img_size):
     # -----------------------------------------
     # | -- | -- | -- | -- | -- | -- | -- | -- |
     # -----------------------------------------
-    img[2,2, size_4X4] = pixel_data[f'{msid_img}A1']['values'][size_4X4]
-    img[3,2, size_4X4] = pixel_data[f'{msid_img}E1']['values'][size_4X4]
-    img[4,2, size_4X4] = pixel_data[f'{msid_img}I1']['values'][size_4X4]
-    img[5,2, size_4X4] = pixel_data[f'{msid_img}M1']['values'][size_4X4]
-    img[2,3, size_4X4] = pixel_data[f'{msid_img}B1']['values'][size_4X4]
-    img[3,3, size_4X4] = pixel_data[f'{msid_img}F1']['values'][size_4X4]
-    img[4,3, size_4X4] = pixel_data[f'{msid_img}J1']['values'][size_4X4]
-    img[5,3, size_4X4] = pixel_data[f'{msid_img}N1']['values'][size_4X4]
-    img[2,4, size_4X4] = pixel_data[f'{msid_img}C1']['values'][size_4X4]
-    img[3,4, size_4X4] = pixel_data[f'{msid_img}G1']['values'][size_4X4]
-    img[4,4, size_4X4] = pixel_data[f'{msid_img}K1']['values'][size_4X4]
-    img[5,4, size_4X4] = pixel_data[f'{msid_img}O1']['values'][size_4X4]
-    img[2,5, size_4X4] = pixel_data[f'{msid_img}D1']['values'][size_4X4]
-    img[3,5, size_4X4] = pixel_data[f'{msid_img}H1']['values'][size_4X4]
-    img[4,5, size_4X4] = pixel_data[f'{msid_img}L1']['values'][size_4X4]
-    img[5,5, size_4X4] = pixel_data[f'{msid_img}P1']['values'][size_4X4]
+    img[2, 2, size_4x4] = pixel_data[f'{msid_img}A1']['values'][size_4x4]
+    img[3, 2, size_4x4] = pixel_data[f'{msid_img}E1']['values'][size_4x4]
+    img[4, 2, size_4x4] = pixel_data[f'{msid_img}I1']['values'][size_4x4]
+    img[5, 2, size_4x4] = pixel_data[f'{msid_img}M1']['values'][size_4x4]
+    img[2, 3, size_4x4] = pixel_data[f'{msid_img}B1']['values'][size_4x4]
+    img[3, 3, size_4x4] = pixel_data[f'{msid_img}F1']['values'][size_4x4]
+    img[4, 3, size_4x4] = pixel_data[f'{msid_img}J1']['values'][size_4x4]
+    img[5, 3, size_4x4] = pixel_data[f'{msid_img}N1']['values'][size_4x4]
+    img[2, 4, size_4x4] = pixel_data[f'{msid_img}C1']['values'][size_4x4]
+    img[3, 4, size_4x4] = pixel_data[f'{msid_img}G1']['values'][size_4x4]
+    img[4, 4, size_4x4] = pixel_data[f'{msid_img}K1']['values'][size_4x4]
+    img[5, 4, size_4x4] = pixel_data[f'{msid_img}O1']['values'][size_4x4]
+    img[2, 5, size_4x4] = pixel_data[f'{msid_img}D1']['values'][size_4x4]
+    img[3, 5, size_4x4] = pixel_data[f'{msid_img}H1']['values'][size_4x4]
+    img[4, 5, size_4x4] = pixel_data[f'{msid_img}L1']['values'][size_4x4]
+    img[5, 5, size_4x4] = pixel_data[f'{msid_img}P1']['values'][size_4x4]
 
     # -----------------------------------------
     # | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -233,38 +237,38 @@ def assemble_image(pixel_data, img_size):
     # -----------------------------------------
     # | -- | -- | -- | -- | -- | -- | -- | -- |
     # -----------------------------------------
-    img[2,1, size_6X6] = pixel_data[f'{msid_img}P2']['values'][size_6X6]
-    img[3,1, size_6X6] = pixel_data[f'{msid_img}O2']['values'][size_6X6]
-    img[4,1, size_6X6] = pixel_data[f'{msid_img}N2']['values'][size_6X6]
-    img[5,1, size_6X6] = pixel_data[f'{msid_img}M2']['values'][size_6X6]
-    img[1,2, size_6X6] = pixel_data[f'{msid_img}A2']['values'][size_6X6]
-    img[2,2, size_6X6] = pixel_data[f'{msid_img}A1']['values'][size_6X6]
-    img[3,2, size_6X6] = pixel_data[f'{msid_img}E1']['values'][size_6X6]
-    img[4,2, size_6X6] = pixel_data[f'{msid_img}I1']['values'][size_6X6]
-    img[5,2, size_6X6] = pixel_data[f'{msid_img}M1']['values'][size_6X6]
-    img[6,2, size_6X6] = pixel_data[f'{msid_img}L2']['values'][size_6X6]
-    img[1,3, size_6X6] = pixel_data[f'{msid_img}B2']['values'][size_6X6]
-    img[2,3, size_6X6] = pixel_data[f'{msid_img}B1']['values'][size_6X6]
-    img[3,3, size_6X6] = pixel_data[f'{msid_img}F1']['values'][size_6X6]
-    img[4,3, size_6X6] = pixel_data[f'{msid_img}J1']['values'][size_6X6]
-    img[5,3, size_6X6] = pixel_data[f'{msid_img}N1']['values'][size_6X6]
-    img[6,3, size_6X6] = pixel_data[f'{msid_img}K2']['values'][size_6X6]
-    img[1,4, size_6X6] = pixel_data[f'{msid_img}C2']['values'][size_6X6]
-    img[2,4, size_6X6] = pixel_data[f'{msid_img}C1']['values'][size_6X6]
-    img[3,4, size_6X6] = pixel_data[f'{msid_img}G1']['values'][size_6X6]
-    img[4,4, size_6X6] = pixel_data[f'{msid_img}K1']['values'][size_6X6]
-    img[5,4, size_6X6] = pixel_data[f'{msid_img}O1']['values'][size_6X6]
-    img[6,4, size_6X6] = pixel_data[f'{msid_img}J2']['values'][size_6X6]
-    img[1,5, size_6X6] = pixel_data[f'{msid_img}D2']['values'][size_6X6]
-    img[2,5, size_6X6] = pixel_data[f'{msid_img}D1']['values'][size_6X6]
-    img[3,5, size_6X6] = pixel_data[f'{msid_img}H1']['values'][size_6X6]
-    img[4,5, size_6X6] = pixel_data[f'{msid_img}L1']['values'][size_6X6]
-    img[5,5, size_6X6] = pixel_data[f'{msid_img}P1']['values'][size_6X6]
-    img[6,5, size_6X6] = pixel_data[f'{msid_img}I2']['values'][size_6X6]
-    img[2,6, size_6X6] = pixel_data[f'{msid_img}E2']['values'][size_6X6]
-    img[3,6, size_6X6] = pixel_data[f'{msid_img}F2']['values'][size_6X6]
-    img[4,6, size_6X6] = pixel_data[f'{msid_img}G2']['values'][size_6X6]
-    img[5,6, size_6X6] = pixel_data[f'{msid_img}H2']['values'][size_6X6]
+    img[2, 1, size_6x6] = pixel_data[f'{msid_img}P2']['values'][size_6x6]
+    img[3, 1, size_6x6] = pixel_data[f'{msid_img}O2']['values'][size_6x6]
+    img[4, 1, size_6x6] = pixel_data[f'{msid_img}N2']['values'][size_6x6]
+    img[5, 1, size_6x6] = pixel_data[f'{msid_img}M2']['values'][size_6x6]
+    img[1, 2, size_6x6] = pixel_data[f'{msid_img}A2']['values'][size_6x6]
+    img[2, 2, size_6x6] = pixel_data[f'{msid_img}A1']['values'][size_6x6]
+    img[3, 2, size_6x6] = pixel_data[f'{msid_img}E1']['values'][size_6x6]
+    img[4, 2, size_6x6] = pixel_data[f'{msid_img}I1']['values'][size_6x6]
+    img[5, 2, size_6x6] = pixel_data[f'{msid_img}M1']['values'][size_6x6]
+    img[6, 2, size_6x6] = pixel_data[f'{msid_img}L2']['values'][size_6x6]
+    img[1, 3, size_6x6] = pixel_data[f'{msid_img}B2']['values'][size_6x6]
+    img[2, 3, size_6x6] = pixel_data[f'{msid_img}B1']['values'][size_6x6]
+    img[3, 3, size_6x6] = pixel_data[f'{msid_img}F1']['values'][size_6x6]
+    img[4, 3, size_6x6] = pixel_data[f'{msid_img}J1']['values'][size_6x6]
+    img[5, 3, size_6x6] = pixel_data[f'{msid_img}N1']['values'][size_6x6]
+    img[6, 3, size_6x6] = pixel_data[f'{msid_img}K2']['values'][size_6x6]
+    img[1, 4, size_6x6] = pixel_data[f'{msid_img}C2']['values'][size_6x6]
+    img[2, 4, size_6x6] = pixel_data[f'{msid_img}C1']['values'][size_6x6]
+    img[3, 4, size_6x6] = pixel_data[f'{msid_img}G1']['values'][size_6x6]
+    img[4, 4, size_6x6] = pixel_data[f'{msid_img}K1']['values'][size_6x6]
+    img[5, 4, size_6x6] = pixel_data[f'{msid_img}O1']['values'][size_6x6]
+    img[6, 4, size_6x6] = pixel_data[f'{msid_img}J2']['values'][size_6x6]
+    img[1, 5, size_6x6] = pixel_data[f'{msid_img}D2']['values'][size_6x6]
+    img[2, 5, size_6x6] = pixel_data[f'{msid_img}D1']['values'][size_6x6]
+    img[3, 5, size_6x6] = pixel_data[f'{msid_img}H1']['values'][size_6x6]
+    img[4, 5, size_6x6] = pixel_data[f'{msid_img}L1']['values'][size_6x6]
+    img[5, 5, size_6x6] = pixel_data[f'{msid_img}P1']['values'][size_6x6]
+    img[6, 5, size_6x6] = pixel_data[f'{msid_img}I2']['values'][size_6x6]
+    img[2, 6, size_6x6] = pixel_data[f'{msid_img}E2']['values'][size_6x6]
+    img[3, 6, size_6x6] = pixel_data[f'{msid_img}F2']['values'][size_6x6]
+    img[4, 6, size_6x6] = pixel_data[f'{msid_img}G2']['values'][size_6x6]
+    img[5, 6, size_6x6] = pixel_data[f'{msid_img}H2']['values'][size_6x6]
 
     # -----------------------------------------
     # | H1 | P1 | H2 | P2 | H3 | P3 | H4 | P4 |
@@ -283,70 +287,70 @@ def assemble_image(pixel_data, img_size):
     # -----------------------------------------
     # | A1 | I1 | A2 | I2 | A3 | I3 | A4 | I4 |
     # -----------------------------------------
-    img[0,0, size_8X8] = pixel_data[f'{msid_img}A1']['values'][size_8X8]
-    img[1,0, size_8X8] = pixel_data[f'{msid_img}I1']['values'][size_8X8]
-    img[2,0, size_8X8] = pixel_data[f'{msid_img}A2']['values'][size_8X8]
-    img[3,0, size_8X8] = pixel_data[f'{msid_img}I2']['values'][size_8X8]
-    img[4,0, size_8X8] = pixel_data[f'{msid_img}A3']['values'][size_8X8]
-    img[5,0, size_8X8] = pixel_data[f'{msid_img}I3']['values'][size_8X8]
-    img[6,0, size_8X8] = pixel_data[f'{msid_img}A4']['values'][size_8X8]
-    img[7,0, size_8X8] = pixel_data[f'{msid_img}I4']['values'][size_8X8]
-    img[0,1, size_8X8] = pixel_data[f'{msid_img}B1']['values'][size_8X8]
-    img[1,1, size_8X8] = pixel_data[f'{msid_img}J1']['values'][size_8X8]
-    img[2,1, size_8X8] = pixel_data[f'{msid_img}B2']['values'][size_8X8]
-    img[3,1, size_8X8] = pixel_data[f'{msid_img}J2']['values'][size_8X8]
-    img[4,1, size_8X8] = pixel_data[f'{msid_img}B3']['values'][size_8X8]
-    img[5,1, size_8X8] = pixel_data[f'{msid_img}J3']['values'][size_8X8]
-    img[6,1, size_8X8] = pixel_data[f'{msid_img}B4']['values'][size_8X8]
-    img[7,1, size_8X8] = pixel_data[f'{msid_img}J4']['values'][size_8X8]
-    img[0,2, size_8X8] = pixel_data[f'{msid_img}C1']['values'][size_8X8]
-    img[1,2, size_8X8] = pixel_data[f'{msid_img}K1']['values'][size_8X8]
-    img[2,2, size_8X8] = pixel_data[f'{msid_img}C2']['values'][size_8X8]
-    img[3,2, size_8X8] = pixel_data[f'{msid_img}K2']['values'][size_8X8]
-    img[4,2, size_8X8] = pixel_data[f'{msid_img}C3']['values'][size_8X8]
-    img[5,2, size_8X8] = pixel_data[f'{msid_img}K3']['values'][size_8X8]
-    img[6,2, size_8X8] = pixel_data[f'{msid_img}C4']['values'][size_8X8]
-    img[7,2, size_8X8] = pixel_data[f'{msid_img}K4']['values'][size_8X8]
-    img[0,3, size_8X8] = pixel_data[f'{msid_img}D1']['values'][size_8X8]
-    img[1,3, size_8X8] = pixel_data[f'{msid_img}L1']['values'][size_8X8]
-    img[2,3, size_8X8] = pixel_data[f'{msid_img}D2']['values'][size_8X8]
-    img[3,3, size_8X8] = pixel_data[f'{msid_img}L2']['values'][size_8X8]
-    img[4,3, size_8X8] = pixel_data[f'{msid_img}D3']['values'][size_8X8]
-    img[5,3, size_8X8] = pixel_data[f'{msid_img}L3']['values'][size_8X8]
-    img[6,3, size_8X8] = pixel_data[f'{msid_img}D4']['values'][size_8X8]
-    img[7,3, size_8X8] = pixel_data[f'{msid_img}L4']['values'][size_8X8]
-    img[0,4, size_8X8] = pixel_data[f'{msid_img}E1']['values'][size_8X8]
-    img[1,4, size_8X8] = pixel_data[f'{msid_img}M1']['values'][size_8X8]
-    img[2,4, size_8X8] = pixel_data[f'{msid_img}E2']['values'][size_8X8]
-    img[3,4, size_8X8] = pixel_data[f'{msid_img}M2']['values'][size_8X8]
-    img[4,4, size_8X8] = pixel_data[f'{msid_img}E3']['values'][size_8X8]
-    img[5,4, size_8X8] = pixel_data[f'{msid_img}M3']['values'][size_8X8]
-    img[6,4, size_8X8] = pixel_data[f'{msid_img}E4']['values'][size_8X8]
-    img[7,4, size_8X8] = pixel_data[f'{msid_img}M4']['values'][size_8X8]
-    img[0,5, size_8X8] = pixel_data[f'{msid_img}F1']['values'][size_8X8]
-    img[1,5, size_8X8] = pixel_data[f'{msid_img}N1']['values'][size_8X8]
-    img[2,5, size_8X8] = pixel_data[f'{msid_img}F2']['values'][size_8X8]
-    img[3,5, size_8X8] = pixel_data[f'{msid_img}N2']['values'][size_8X8]
-    img[4,5, size_8X8] = pixel_data[f'{msid_img}F3']['values'][size_8X8]
-    img[5,5, size_8X8] = pixel_data[f'{msid_img}N3']['values'][size_8X8]
-    img[6,5, size_8X8] = pixel_data[f'{msid_img}F4']['values'][size_8X8]
-    img[7,5, size_8X8] = pixel_data[f'{msid_img}N4']['values'][size_8X8]
-    img[0,6, size_8X8] = pixel_data[f'{msid_img}G1']['values'][size_8X8]
-    img[1,6, size_8X8] = pixel_data[f'{msid_img}O1']['values'][size_8X8]
-    img[2,6, size_8X8] = pixel_data[f'{msid_img}G2']['values'][size_8X8]
-    img[3,6, size_8X8] = pixel_data[f'{msid_img}O2']['values'][size_8X8]
-    img[4,6, size_8X8] = pixel_data[f'{msid_img}G3']['values'][size_8X8]
-    img[5,6, size_8X8] = pixel_data[f'{msid_img}O3']['values'][size_8X8]
-    img[6,6, size_8X8] = pixel_data[f'{msid_img}G4']['values'][size_8X8]
-    img[7,6, size_8X8] = pixel_data[f'{msid_img}O4']['values'][size_8X8]
-    img[0,7, size_8X8] = pixel_data[f'{msid_img}H1']['values'][size_8X8]
-    img[1,7, size_8X8] = pixel_data[f'{msid_img}P1']['values'][size_8X8]
-    img[2,7, size_8X8] = pixel_data[f'{msid_img}H2']['values'][size_8X8]
-    img[3,7, size_8X8] = pixel_data[f'{msid_img}P2']['values'][size_8X8]
-    img[4,7, size_8X8] = pixel_data[f'{msid_img}H3']['values'][size_8X8]
-    img[5,7, size_8X8] = pixel_data[f'{msid_img}P3']['values'][size_8X8]
-    img[6,7, size_8X8] = pixel_data[f'{msid_img}H4']['values'][size_8X8]
-    img[7,7, size_8X8] = pixel_data[f'{msid_img}P4']['values'][size_8X8]
+    img[0, 0, size_8x8] = pixel_data[f'{msid_img}A1']['values'][size_8x8]
+    img[1, 0, size_8x8] = pixel_data[f'{msid_img}I1']['values'][size_8x8]
+    img[2, 0, size_8x8] = pixel_data[f'{msid_img}A2']['values'][size_8x8]
+    img[3, 0, size_8x8] = pixel_data[f'{msid_img}I2']['values'][size_8x8]
+    img[4, 0, size_8x8] = pixel_data[f'{msid_img}A3']['values'][size_8x8]
+    img[5, 0, size_8x8] = pixel_data[f'{msid_img}I3']['values'][size_8x8]
+    img[6, 0, size_8x8] = pixel_data[f'{msid_img}A4']['values'][size_8x8]
+    img[7, 0, size_8x8] = pixel_data[f'{msid_img}I4']['values'][size_8x8]
+    img[0, 1, size_8x8] = pixel_data[f'{msid_img}B1']['values'][size_8x8]
+    img[1, 1, size_8x8] = pixel_data[f'{msid_img}J1']['values'][size_8x8]
+    img[2, 1, size_8x8] = pixel_data[f'{msid_img}B2']['values'][size_8x8]
+    img[3, 1, size_8x8] = pixel_data[f'{msid_img}J2']['values'][size_8x8]
+    img[4, 1, size_8x8] = pixel_data[f'{msid_img}B3']['values'][size_8x8]
+    img[5, 1, size_8x8] = pixel_data[f'{msid_img}J3']['values'][size_8x8]
+    img[6, 1, size_8x8] = pixel_data[f'{msid_img}B4']['values'][size_8x8]
+    img[7, 1, size_8x8] = pixel_data[f'{msid_img}J4']['values'][size_8x8]
+    img[0, 2, size_8x8] = pixel_data[f'{msid_img}C1']['values'][size_8x8]
+    img[1, 2, size_8x8] = pixel_data[f'{msid_img}K1']['values'][size_8x8]
+    img[2, 2, size_8x8] = pixel_data[f'{msid_img}C2']['values'][size_8x8]
+    img[3, 2, size_8x8] = pixel_data[f'{msid_img}K2']['values'][size_8x8]
+    img[4, 2, size_8x8] = pixel_data[f'{msid_img}C3']['values'][size_8x8]
+    img[5, 2, size_8x8] = pixel_data[f'{msid_img}K3']['values'][size_8x8]
+    img[6, 2, size_8x8] = pixel_data[f'{msid_img}C4']['values'][size_8x8]
+    img[7, 2, size_8x8] = pixel_data[f'{msid_img}K4']['values'][size_8x8]
+    img[0, 3, size_8x8] = pixel_data[f'{msid_img}D1']['values'][size_8x8]
+    img[1, 3, size_8x8] = pixel_data[f'{msid_img}L1']['values'][size_8x8]
+    img[2, 3, size_8x8] = pixel_data[f'{msid_img}D2']['values'][size_8x8]
+    img[3, 3, size_8x8] = pixel_data[f'{msid_img}L2']['values'][size_8x8]
+    img[4, 3, size_8x8] = pixel_data[f'{msid_img}D3']['values'][size_8x8]
+    img[5, 3, size_8x8] = pixel_data[f'{msid_img}L3']['values'][size_8x8]
+    img[6, 3, size_8x8] = pixel_data[f'{msid_img}D4']['values'][size_8x8]
+    img[7, 3, size_8x8] = pixel_data[f'{msid_img}L4']['values'][size_8x8]
+    img[0, 4, size_8x8] = pixel_data[f'{msid_img}E1']['values'][size_8x8]
+    img[1, 4, size_8x8] = pixel_data[f'{msid_img}M1']['values'][size_8x8]
+    img[2, 4, size_8x8] = pixel_data[f'{msid_img}E2']['values'][size_8x8]
+    img[3, 4, size_8x8] = pixel_data[f'{msid_img}M2']['values'][size_8x8]
+    img[4, 4, size_8x8] = pixel_data[f'{msid_img}E3']['values'][size_8x8]
+    img[5, 4, size_8x8] = pixel_data[f'{msid_img}M3']['values'][size_8x8]
+    img[6, 4, size_8x8] = pixel_data[f'{msid_img}E4']['values'][size_8x8]
+    img[7, 4, size_8x8] = pixel_data[f'{msid_img}M4']['values'][size_8x8]
+    img[0, 5, size_8x8] = pixel_data[f'{msid_img}F1']['values'][size_8x8]
+    img[1, 5, size_8x8] = pixel_data[f'{msid_img}N1']['values'][size_8x8]
+    img[2, 5, size_8x8] = pixel_data[f'{msid_img}F2']['values'][size_8x8]
+    img[3, 5, size_8x8] = pixel_data[f'{msid_img}N2']['values'][size_8x8]
+    img[4, 5, size_8x8] = pixel_data[f'{msid_img}F3']['values'][size_8x8]
+    img[5, 5, size_8x8] = pixel_data[f'{msid_img}N3']['values'][size_8x8]
+    img[6, 5, size_8x8] = pixel_data[f'{msid_img}F4']['values'][size_8x8]
+    img[7, 5, size_8x8] = pixel_data[f'{msid_img}N4']['values'][size_8x8]
+    img[0, 6, size_8x8] = pixel_data[f'{msid_img}G1']['values'][size_8x8]
+    img[1, 6, size_8x8] = pixel_data[f'{msid_img}O1']['values'][size_8x8]
+    img[2, 6, size_8x8] = pixel_data[f'{msid_img}G2']['values'][size_8x8]
+    img[3, 6, size_8x8] = pixel_data[f'{msid_img}O2']['values'][size_8x8]
+    img[4, 6, size_8x8] = pixel_data[f'{msid_img}G3']['values'][size_8x8]
+    img[5, 6, size_8x8] = pixel_data[f'{msid_img}O3']['values'][size_8x8]
+    img[6, 6, size_8x8] = pixel_data[f'{msid_img}G4']['values'][size_8x8]
+    img[7, 6, size_8x8] = pixel_data[f'{msid_img}O4']['values'][size_8x8]
+    img[0, 7, size_8x8] = pixel_data[f'{msid_img}H1']['values'][size_8x8]
+    img[1, 7, size_8x8] = pixel_data[f'{msid_img}P1']['values'][size_8x8]
+    img[2, 7, size_8x8] = pixel_data[f'{msid_img}H2']['values'][size_8x8]
+    img[3, 7, size_8x8] = pixel_data[f'{msid_img}P2']['values'][size_8x8]
+    img[4, 7, size_8x8] = pixel_data[f'{msid_img}H3']['values'][size_8x8]
+    img[5, 7, size_8x8] = pixel_data[f'{msid_img}P3']['values'][size_8x8]
+    img[6, 7, size_8x8] = pixel_data[f'{msid_img}H4']['values'][size_8x8]
+    img[7, 7, size_8x8] = pixel_data[f'{msid_img}P4']['values'][size_8x8]
 
     return img
 
@@ -375,20 +379,21 @@ def _reshape_values(data, tref):
     # ok = tref[np.newaxis, :] == t[:, np.newaxis]
     # instead, I use np.isclose with a tolerance that has to be checked:
     ok = np.isclose(tref[np.newaxis, :], t[:, np.newaxis], atol=np.min(np.diff(tref))/2, rtol=0)
-    i,j = np.broadcast_arrays(np.arange(ok.shape[1])[np.newaxis,:], np.arange(ok.shape[0])[:,np.newaxis])
+    i, j = np.broadcast_arrays(
+        np.arange(ok.shape[1])[np.newaxis, :],  np.arange(ok.shape[0])[:, np.newaxis])
     v = np.ones(tref.shape)*np.nan
     v[i[ok]] = data['values'][j[ok]]
     return {'times': tref, 'values': v}
 
 
-def fetch(start, stop, pea_choice = 1):
+def fetch(start, stop, pea_choice=1):
     """
     This is an example of fetching and assembling data using maude.
 
     Example usage::
 
-      >>> import aca_view.maude
-      >>> data = acv_maude.fetch(start, stop, 1)
+      >>> from chandra_aca import maude_decom
+      >>> data = maude_decom.fetch(start, stop, 1)
 
     It will be changed once we know::
 
@@ -401,10 +406,11 @@ def fetch(start, stop, pea_choice = 1):
     msids = AcaTelemetryMsidList(pea_choice)
 
     # get maude data in batches of at most 100 (it fails otherwise)
-    tmp = sum([maude.get_msids(s, start=start, stop=stop)['data'] for s in _subsets(msids, 100)], [])
+    tmp = sum([maude.get_msids(s, start=start, stop=stop)['data'] for s in _subsets(msids, 100)],
+              [])
 
     # store it as a dictionary for convenience
-    res = {e['msid']:e for e in tmp}
+    res = {e['msid']: e for e in tmp}
 
     # and reshape all values using the times from an MSID we know will be there at all sample times:
     tref = res[msids.sizes[0]]['times']
@@ -412,11 +418,11 @@ def fetch(start, stop, pea_choice = 1):
 
     images = []
     for slot in range(8):
-        pixel_data = {k:data[k] for k in msids.pixels[slot]}
+        pixel_data = {k: data[k] for k in msids.pixels[slot]}
         img_size = data[msids.sizes[slot]]['values']
         images.append(assemble_image(pixel_data, img_size))
 
-    result = [{} for i in range(8)]
+    result = [{} for _ in range(8)]
     for slot in range(8):
         result[slot]['size'] = data[msids.sizes[slot]]
         result[slot]['row'] = data[msids.rows[slot]]
