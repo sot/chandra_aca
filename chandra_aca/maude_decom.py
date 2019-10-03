@@ -381,7 +381,7 @@ def _reshape_values(data, tref):
     ok = np.isclose(tref[np.newaxis, :], t[:, np.newaxis], atol=np.min(np.diff(tref)) / 2, rtol=0)
     i, j = np.broadcast_arrays(
         np.arange(ok.shape[1])[np.newaxis, :], np.arange(ok.shape[0])[:, np.newaxis])
-    v = np.ones(tref.shape)*np.nan
+    v = np.ones(tref.shape) * np.nan
     v[i[ok]] = data['values'][j[ok]]
     return {'times': tref, 'values': v}
 
