@@ -357,9 +357,9 @@ def assemble_image(pixel_data, img_size):
 
 def _subsets(l, n):
     # consecutive subsets of a list, each with at most n elements
-    for i in range(0, len(l)+n, n):
-        if l[i:i+n]:
-            yield l[i:i+n]
+    for i in range(0, len(l) + n, n):
+        if l[i:i + n]:
+            yield l[i:i + n]
 
 
 def _reshape_values(data, tref):
@@ -378,9 +378,9 @@ def _reshape_values(data, tref):
     # the following line would fail because times are not exactly the same
     # ok = tref[np.newaxis, :] == t[:, np.newaxis]
     # instead, I use np.isclose with a tolerance that has to be checked:
-    ok = np.isclose(tref[np.newaxis, :], t[:, np.newaxis], atol=np.min(np.diff(tref))/2, rtol=0)
+    ok = np.isclose(tref[np.newaxis, :], t[:, np.newaxis], atol=np.min(np.diff(tref)) / 2, rtol=0)
     i, j = np.broadcast_arrays(
-        np.arange(ok.shape[1])[np.newaxis, :],  np.arange(ok.shape[0])[:, np.newaxis])
+        np.arange(ok.shape[1])[np.newaxis, :], np.arange(ok.shape[0])[:, np.newaxis])
     v = np.ones(tref.shape)*np.nan
     v[i[ok]] = data['values'][j[ok]]
     return {'times': tref, 'values': v}
