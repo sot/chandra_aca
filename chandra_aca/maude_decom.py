@@ -308,7 +308,7 @@ def combine_sub_images(table):
     return table
 
 
-def assemble(msids, data, full=False):
+def assemble(msids, data, full=False, calibrate=False):
     """
     This is an example of fetching and assembling data using maude.
 
@@ -365,10 +365,16 @@ def assemble(msids, data, full=False):
         result.append(table)
 
     result = vstack([Table(r) for r in result])
+
+    if calibrate:
+        # as specified in ACA L0 ICD, section D.2.2 (scale_factor is already divided by 32)
+        result['img'] *= result['scale_factor'][:, np.newaxis, np.newaxis]
+        result['img'] -= 50
+
     return result
 
 
-def fetch(start, stop, pea_choice=1, full=False):
+def fetch(start, stop, pea_choice=1, full=False, calibrate=False):
     """
     This is an example of fetching and assembling data using maude.
 
@@ -388,4 +394,4 @@ def fetch(start, stop, pea_choice=1, full=False):
     # get maude data in batches of at most 100 (it fails otherwise)
     tmp = sum([maude.get_msids(s, start=start, stop=stop)['data'] for s in _subsets(msids, 100)],
               [])
-    return assemble(msids, tmp, full=full)
+    return assemble(msids, tmp, full=full, calibrate=calibrate)
