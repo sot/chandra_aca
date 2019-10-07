@@ -334,6 +334,8 @@ def assemble(msids, data, full=False, calibrate=False):
     images = []
     subimage = np.zeros((8, len(tref)), dtype=int)
     for slot in range(8):
+        if len(tref) == 0:
+            continue
         pixel_data = {k: data[k] for k in msids.pixels[slot]}
         img_size = data[msids.sizes[slot]]['values']
         images.append(assemble_image(pixel_data, img_size))
