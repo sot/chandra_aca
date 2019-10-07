@@ -37,9 +37,9 @@ PIXEL_MAP = {
 PIXEL_MASK = {k: PIXEL_MAP[k] == '  ' for k in PIXEL_MAP}
 ROWS, COLS = np.meshgrid(np.arange(8), np.arange(8), indexing='ij')
 
-PIXEL_MAP_INV = {k: {p:(i, j) for i, j, p in zip(ROWS[PIXEL_MAP[k] != '  '],
-                                                 COLS[PIXEL_MAP[k] != '  '],
-                                                 PIXEL_MAP[k][PIXEL_MAP[k] != '  '])}
+PIXEL_MAP_INV = {k: {p: (i, j) for i, j, p in zip(ROWS[PIXEL_MAP[k] != '  '],
+                                                  COLS[PIXEL_MAP[k] != '  '],
+                                                  PIXEL_MAP[k][PIXEL_MAP[k] != '  '])}
                  for k in ['6x6', '4x4', '8x8']}
 
 
@@ -123,8 +123,8 @@ class AcaTelemetryMsidList(list):
         self.ref = primary_msid
 
     def slot(self, i):
-        return [self.sizes[i], self.rows[i], self.cols[i], self.scale_factor[i]] + \
-               self.pixels[i]
+        return [self.sizes[i], self.rows[i], self.cols[i], self.scale_factor[i]] + self.pixels[i]
+
 
 def assemble_image(pixel_data, img_size):
     """
@@ -284,7 +284,8 @@ def combine_sub_images(table):
     # now add the partial images (with subimage > 1) to the first partial image
     # for 8x8:
     i = np.arange(len(tref))[ok_8x8]
-    table['img'][i] = np.nansum([table['img'][i], table['img'][i + 1], table['img'][i + 2], table['img'][i + 3]],
+    table['img'][i] = np.nansum([table['img'][i], table['img'][i + 1],
+                                 table['img'][i + 2], table['img'][i + 3]],
                                 axis=0)
     # and for some reason I also had to do this:
     for k in ['row0', 'col0', 'scale_factor']:
@@ -337,8 +338,8 @@ def assemble(msids, data, full=False):
         img_size = data[msids.sizes[slot]]['values']
         images.append(assemble_image(pixel_data, img_size))
         # there must be an MSID to fetch this, but this works
-        subimage[slot] = np.char.replace(
-            np.char.replace(np.char.replace(img_size, '8X8', ''), '6X6', ''), '4X4', '').astype(int) - 1
+        subimage[slot] = np.char.replace( np.char.replace(
+            np.char.replace(img_size, '8X8', ''), '6X6', ''), '4X4', '').astype(int) - 1
 
     result = []
     for slot in range(8):
