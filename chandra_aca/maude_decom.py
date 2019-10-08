@@ -344,8 +344,8 @@ def assemble(msids, data, full=False, calibrate=False, adjust_time=False, adjust
         img_size = data[msids.sizes[slot]]['values']
         images.append(assemble_image(pixel_data, img_size))
         # there must be an MSID to fetch this, but this works
-        subimage[slot] = np.char.replace( np.char.replace(
-            np.char.replace(img_size, '8X8', ''), '6X6', ''), '4X4', '').astype(int) - 1
+        subimage[slot] = np.char.replace(np.char.replace(np.char.replace(
+            img_size, '8X8', ''), '6X6', ''), '4X4', '').astype(int) - 1
 
     result = []
     for slot in range(8):
@@ -379,7 +379,7 @@ def assemble(msids, data, full=False, calibrate=False, adjust_time=False, adjust
         result['img'] -= 50
 
     if adjust_time:
-        result['time'] -= (result['integ']/2 + 1.025)
+        result['time'] -= (result['integ'] / 2 + 1.025)
 
     if adjust_corner:
         result['row0'][result['size'] == '6X61'] -= 1
@@ -393,7 +393,8 @@ def assemble(msids, data, full=False, calibrate=False, adjust_time=False, adjust
     return result
 
 
-def fetch(start, stop, pea_choice=1, full=False, calibrate=False, adjust_time=False, adjust_corner=False):
+def fetch(start, stop, pea_choice=1, full=False,
+          calibrate=False, adjust_time=False, adjust_corner=False):
     """
     This is an example of fetching and assembling data using maude.
 

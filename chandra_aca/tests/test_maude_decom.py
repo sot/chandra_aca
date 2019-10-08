@@ -12,7 +12,7 @@ with open(os.path.join(os.path.dirname(__file__), 'data', 'maude_decom.pcl'), 'r
 
 
 def test_msids():
-    msids = maude_decom.AcaTelemetryMsidList(1)
+    _ = maude_decom.AcaTelemetryMsidList(1)
 
 
 def test_empty():
@@ -20,6 +20,7 @@ def test_empty():
     data = test_data['176267186-176267186']
     table = maude_decom.assemble(msids, data, full=True, calibrate=False)
     assert len(table) == 0
+
 
 def test_assembly():
     msids = maude_decom.AcaTelemetryMsidList(1)
@@ -48,7 +49,7 @@ def test_scale():
     msids = maude_decom.AcaTelemetryMsidList(1)
     data = test_data['686111007-686111017']['data']
     table = maude_decom.assemble(msids, data, full=True, calibrate=False)
-    table = table[table['imgnum']==4]
+    table = table[table['imgnum'] == 4]
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                [np.nan, np.nan, 60.00, 76.00, 85.00, 82.00, np.nan, np.nan],
                [np.nan, 76.00, 109.00, 217.00, 203.00, 109.00, 95.00, np.nan],
@@ -60,7 +61,7 @@ def test_scale():
     assert np.all((table[0]['img'] == img_ref) + (np.isnan(img_ref)))
 
     table = maude_decom.assemble(msids, data, full=True, calibrate=True)
-    table = table[table['imgnum']==4]
+    table = table[table['imgnum'] == 4]
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                [np.nan, np.nan, 10.00, 26.00, 35.00, 32.00, np.nan, np.nan],
                [np.nan, 26.00, 59.00, 167.00, 153.00, 59.00, 45.00, np.nan],
@@ -70,6 +71,7 @@ def test_scale():
                [np.nan, np.nan, 48.00, 92.00, 301.00, 38.00, np.nan, np.nan],
                [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]
     assert np.all((table[0]['img'] == img_ref) + (np.isnan(img_ref)))
+
 
 if __name__ == '__main__':
     test_msids()
