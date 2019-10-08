@@ -25,10 +25,10 @@ def test_empty():
 def test_assembly():
     msids = maude_decom.AcaTelemetryMsidList(1)
 
-    data = test_data['686111007-686111017']['data']
+    data = test_data['686111007-686111017']
     r_full = maude_decom.assemble(msids, data, full=True)
     assert [len(r_full[r_full['imgnum'] == i]) for i in range(8)] == [1, 1, 1, 4, 4, 4, 4, 4]
-    assert np.all(r_full[r_full['imgnum'] == 3]['size'].data == ['6X61', '6X61', '6X61', '6X61'])
+    assert np.all(r_full[r_full['imgnum'] == 3]['size'].data == ['6X6', '6X6', '6X6', '6X6'])
 
     r = maude_decom.assemble(msids, data)
     assert [len(r[r['imgnum'] == i]) for i in range(8)] == [10, 10, 10, 10, 10, 10, 10, 10]
@@ -47,7 +47,7 @@ def test_assembly():
 
 def test_scale():
     msids = maude_decom.AcaTelemetryMsidList(1)
-    data = test_data['686111007-686111017']['data']
+    data = test_data['686111007-686111017']
     table = maude_decom.assemble(msids, data, full=True, calibrate=False)
     table = table[table['imgnum'] == 4]
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
