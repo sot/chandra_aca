@@ -60,6 +60,8 @@ class AcaTelemetryMsidList(list):
         # This msid is not stored, it is just used for retrieving data at consistent times (?)
         primary_msid = f'{msid_prefix}CCMDS'
 
+        integration_time = f'{msid_prefix}ACAINT0'
+
         px_msid_prefix = f'{msid_prefix}CIMG'
         px_ids = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'}
         px_nums = [str(n) for n in range(1, 5)]
@@ -114,6 +116,7 @@ class AcaTelemetryMsidList(list):
         self.extend(cols)
         self.extend(scale_factor)
         self.extend(sum(pixels, []))
+        self.append(integration_time)
 
         self.sizes = sizes
         self.rows = rows
@@ -121,6 +124,7 @@ class AcaTelemetryMsidList(list):
         self.scale_factor = scale_factor
         self.pixels = pixels
         self.ref = primary_msid
+        self.integration_time = integration_time
 
     def slot(self, i):
         return [self.sizes[i], self.rows[i], self.cols[i], self.scale_factor[i]] + self.pixels[i]
@@ -308,7 +312,7 @@ def combine_sub_images(table):
     return table
 
 
-def assemble(msids, data, full=False, calibrate=False):
+def assemble(msids, data, full=False, calibrate=False, adjust_time=False, adjust_corner=False):
     """
     This is an example of fetching and assembling data using maude.
 
@@ -346,8 +350,8 @@ def assemble(msids, data, full=False, calibrate=False):
     result = []
     for slot in range(8):
         if len(tref) == 0:
-            names = ['time', 'imgnum', 'size', 'row0', 'col0', 'scale_factor', 'img']
-            dtype = ['<f8', '<i8', '<U4', '<f8', '<f8', '<f8', ('<f8', (8, 8))]
+            names = ['time', 'imgnum', 'size', 'row0', 'col0', 'scale_factor', 'integ', 'img']
+            dtype = ['<f8', '<i8', '<U4', '<f8', '<f8', '<f8', '<f8', ('<f8', (8, 8))]
             table = {n: np.array([], dtype=t) for n, t in zip(names, dtype)}
         else:
             table = {
@@ -358,6 +362,7 @@ def assemble(msids, data, full=False, calibrate=False):
                 'row0': data[msids.rows[slot]]['values'],
                 'col0': data[msids.cols[slot]]['values'],
                 'scale_factor': data[msids.scale_factor[slot]]['values'],
+                'integ': 0.016 * data[msids.integration_time]['values'],
                 'img': images[slot]
             }
             if full:
@@ -373,10 +378,22 @@ def assemble(msids, data, full=False, calibrate=False):
         result['img'] *= result['scale_factor'][:, np.newaxis, np.newaxis]
         result['img'] -= 50
 
+    if adjust_time:
+        result['time'] -= (result['integ']/2 + 1.025)
+
+    if adjust_corner:
+        result['row0'][result['size'] == '6X61'] -= 1
+        result['col0'][result['size'] == '6X61'] -= 1
+
+    if full:
+        result['size'][result['size'] == '4X41'] = '4X4'
+        result['size'][result['size'] == '6X61'] = '6X6'
+        result['size'][result['size'] == '8X81'] = '8X8'
+
     return result
 
 
-def fetch(start, stop, pea_choice=1, full=False, calibrate=False):
+def fetch(start, stop, pea_choice=1, full=False, calibrate=False, adjust_time=False, adjust_corner=False):
     """
     This is an example of fetching and assembling data using maude.
 
@@ -396,4 +413,5 @@ def fetch(start, stop, pea_choice=1, full=False, calibrate=False):
     # get maude data in batches of at most 100 (it fails otherwise)
     tmp = sum([maude.get_msids(s, start=start, stop=stop)['data'] for s in _subsets(msids, 100)],
               [])
-    return assemble(msids, tmp, full=full, calibrate=calibrate)
+    return assemble(msids, tmp, full=full,
+                    calibrate=calibrate, adjust_time=adjust_time, adjust_corner=adjust_corner)
