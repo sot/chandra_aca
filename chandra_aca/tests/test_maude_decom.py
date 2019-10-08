@@ -3,6 +3,7 @@
 import os
 import pickle
 import numpy as np
+from astropy.table import vstack
 
 from chandra_aca import maude_decom
 
@@ -11,26 +12,22 @@ with open(os.path.join(os.path.dirname(__file__), 'data', 'maude_decom.pcl'), 'r
     test_data = pickle.load(f)
 
 
-def test_msids():
-    _ = maude_decom.AcaTelemetryMsidList(1)
-
-
 def test_empty():
-    msids = maude_decom.AcaTelemetryMsidList(1)
-    data = test_data['176267186-176267186']
-    table = maude_decom.assemble(msids, data, full=True, calibrate=False)
+    pea = 1
+    data = {e['msid']: e for e in test_data['176267186-176267186']}
+    table = maude_decom._assemble_img(1, pea, data, full=True, calibrate=False)
     assert len(table) == 0
 
 
 def test_assembly():
-    msids = maude_decom.AcaTelemetryMsidList(1)
+    pea = 1
 
-    data = test_data['686111007-686111017']
-    r_full = maude_decom.assemble(msids, data, full=True)
+    data = {e['msid']: e for e in test_data['686111007-686111017']}
+    r_full = vstack([maude_decom._assemble_img(i, pea, data, full=True) for i in range(8)])
     assert [len(r_full[r_full['imgnum'] == i]) for i in range(8)] == [1, 1, 1, 4, 4, 4, 4, 4]
     assert np.all(r_full[r_full['imgnum'] == 3]['size'].data == ['6X6', '6X6', '6X6', '6X6'])
 
-    r = maude_decom.assemble(msids, data)
+    r = vstack([maude_decom._assemble_img(i, pea, data) for i in range(8)])
     assert [len(r[r['imgnum'] == i]) for i in range(8)] == [10, 10, 10, 10, 10, 10, 10, 10]
     assert np.all(r[r['imgnum'] == 3]['size'].data ==
                   ['6X62', '6X61', '6X62', '6X61', '6X62', '6X61', '6X62', '6X61', '6X62', '6X61'])
@@ -46,10 +43,10 @@ def test_assembly():
 
 
 def test_scale():
-    msids = maude_decom.AcaTelemetryMsidList(1)
-    data = test_data['686111007-686111017']
-    table = maude_decom.assemble(msids, data, full=True, calibrate=False)
-    table = table[table['imgnum'] == 4]
+    pea = 1
+
+    data = {e['msid']: e for e in test_data['686111007-686111017']}
+    table = maude_decom._assemble_img(4, pea, data, full=True, calibrate=False)
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                [np.nan, np.nan, 60.00, 76.00, 85.00, 82.00, np.nan, np.nan],
                [np.nan, 76.00, 109.00, 217.00, 203.00, 109.00, 95.00, np.nan],
@@ -60,8 +57,7 @@ def test_scale():
                [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]
     assert np.all((table[0]['img'] == img_ref) + (np.isnan(img_ref)))
 
-    table = maude_decom.assemble(msids, data, full=True, calibrate=True)
-    table = table[table['imgnum'] == 4]
+    table = maude_decom._assemble_img(4, pea, data, full=True, calibrate=True)
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                [np.nan, np.nan, 10.00, 26.00, 35.00, 32.00, np.nan, np.nan],
                [np.nan, 26.00, 59.00, 167.00, 153.00, 59.00, 45.00, np.nan],
@@ -73,5 +69,7 @@ def test_scale():
     assert np.all((table[0]['img'] == img_ref) + (np.isnan(img_ref)))
 
 
-if __name__ == '__main__':
-    test_msids()
+def test_fetch():
+    pea = 1
+    start, stop = 686111007, 686111017
+    maude_decom.fetch(start, stop)

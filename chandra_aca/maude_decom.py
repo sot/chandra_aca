@@ -43,91 +43,82 @@ PIXEL_MAP_INV = {k: {p: (i, j) for i, j, p in zip(ROWS[PIXEL_MAP[k] != '  '],
                  for k in ['6x6', '4x4', '8x8']}
 
 
-class AcaTelemetryMsidList(list):
-    """
-    List of MSIDs required to assemble ACA telemetry data.
-    """
+_msid_prefix = {
+    1: 'A',
+    2: 'R'
+}
 
-    def __init__(self, pea_choice=1):
-        super(AcaTelemetryMsidList, self).__init__()
-        if pea_choice == 1:
-            msid_prefix = 'A'
-        elif pea_choice == 2:
-            msid_prefix = 'R'
-        else:
-            raise Exception(f'Invalid PEA choice {pea_choice}')
 
-        # This msid is not stored, it is just used for retrieving data at consistent times (?)
-        primary_msid = f'{msid_prefix}CCMDS'
+def _aca_msid_list(pea):
+    return {
+        'command_count': f'{_msid_prefix[pea]}CCMDS',
+        'integration_time': f'{_msid_prefix[pea]}ACAINT0'
+    }
 
-        integration_time = f'{msid_prefix}ACAINT0'
 
-        px_msid_prefix = f'{msid_prefix}CIMG'
-        px_ids = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'}
-        px_nums = [str(n) for n in range(1, 5)]
-        px_img_nums = [str(n) for n in range(8)]
+def _aca_image_msid_list(pea):
+    msid_prefix = _msid_prefix[pea]
 
-        # title = 'ACA Image Layout'
-        sizes = [f'{msid_prefix}CA00040',   # Size of image 0
-                 f'{msid_prefix}CA00043',   # Size of image 1
-                 f'{msid_prefix}CA00046',   # Size of image 2
-                 f'{msid_prefix}CA00049',   # Size of image 3
-                 f'{msid_prefix}CA00052',   # Size of image 4
-                 f'{msid_prefix}CA00055',   # Size of image 5
-                 f'{msid_prefix}CA00058',   # Size of image 6
-                 f'{msid_prefix}CA00061']   # Size of image 7
+    px_ids = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'}
+    px_nums = [str(n) for n in range(1, 5)]
+    px_img_nums = [str(n) for n in range(8)]
 
-        rows = [f'{msid_prefix}CA00076',   # Row of pixel A1 of image 0
-                f'{msid_prefix}CA00292',   # Row of pixel A1 of image 1
-                f'{msid_prefix}CA00508',   # Row of pixel A1 of image 2
-                f'{msid_prefix}CA00724',   # Row of pixel A1 of image 3
-                f'{msid_prefix}CA00940',   # Row of pixel A1 of image 4
-                f'{msid_prefix}CA01156',   # Row of pixel A1 of image 5
-                f'{msid_prefix}CA01372',   # Row of pixel A1 of image 6
-                f'{msid_prefix}CA01588']   # Row of pixel A1 of image 7
+    pixels = [[f'{msid_prefix}CIMG{px_img_num}{px_id}{px_num}' for px_num in px_nums for px_id in px_ids]
+              for px_img_num in px_img_nums]
 
-        cols = [f'{msid_prefix}CA00086',   # Column of pixel A1 of image 0
-                f'{msid_prefix}CA00302',   # Column of pixel A1 of image 1
-                f'{msid_prefix}CA00518',   # Column of pixel A1 of image 2
-                f'{msid_prefix}CA00734',   # Column of pixel A1 of image 3
-                f'{msid_prefix}CA00950',   # Column of pixel A1 of image 4
-                f'{msid_prefix}CA01166',   # Column of pixel A1 of image 5
-                f'{msid_prefix}CA01382',   # Column of pixel A1 of image 6
-                f'{msid_prefix}CA01598']  # Column of pixel A1 of image 7
+    res = {
+        'pixels': pixels,
+        'sizes': [f'{msid_prefix}CA00040',   # Size of image 0
+                  f'{msid_prefix}CA00043',   # Size of image 1
+                  f'{msid_prefix}CA00046',   # Size of image 2
+                  f'{msid_prefix}CA00049',   # Size of image 3
+                  f'{msid_prefix}CA00052',   # Size of image 4
+                  f'{msid_prefix}CA00055',   # Size of image 5
+                  f'{msid_prefix}CA00058',   # Size of image 6
+                  f'{msid_prefix}CA00061'],   # Size of image 7
 
-        scale_factor = [f'{msid_prefix}CA00096',   # Scale factor of image 0
-                        f'{msid_prefix}CA00312',   # Scale factor of image 1
-                        f'{msid_prefix}CA00528',   # Scale factor of image 2
-                        f'{msid_prefix}CA00744',   # Scale factor of image 3
-                        f'{msid_prefix}CA00960',   # Scale factor of image 4
-                        f'{msid_prefix}CA01176',   # Scale factor of image 5
-                        f'{msid_prefix}CA01392',   # Scale factor of image 6
-                        f'{msid_prefix}CA01608']  # Scale factor of image 7
+        'rows': [f'{msid_prefix}CA00076',   # Row of pixel A1 of image 0
+                 f'{msid_prefix}CA00292',   # Row of pixel A1 of image 1
+                 f'{msid_prefix}CA00508',   # Row of pixel A1 of image 2
+                 f'{msid_prefix}CA00724',   # Row of pixel A1 of image 3
+                 f'{msid_prefix}CA00940',   # Row of pixel A1 of image 4
+                 f'{msid_prefix}CA01156',   # Row of pixel A1 of image 5
+                 f'{msid_prefix}CA01372',   # Row of pixel A1 of image 6
+                 f'{msid_prefix}CA01588'],   # Row of pixel A1 of image 7
 
-        pixels = []
-        for px_img_num in px_img_nums:
-            # title = f'{px_msid_prefix}{px_img_nums[i]}x{px_nums[k]}'
-            pixels.append([f'{px_msid_prefix}{px_img_num}{px_id}{px_num}'
-                           for px_num in px_nums for px_id in px_ids])
+        'cols': [f'{msid_prefix}CA00086',   # Column of pixel A1 of image 0
+                 f'{msid_prefix}CA00302',   # Column of pixel A1 of image 1
+                 f'{msid_prefix}CA00518',   # Column of pixel A1 of image 2
+                 f'{msid_prefix}CA00734',   # Column of pixel A1 of image 3
+                 f'{msid_prefix}CA00950',   # Column of pixel A1 of image 4
+                 f'{msid_prefix}CA01166',   # Column of pixel A1 of image 5
+                 f'{msid_prefix}CA01382',   # Column of pixel A1 of image 6
+                 f'{msid_prefix}CA01598'],  # Column of pixel A1 of image 7
 
-        self.append(primary_msid)
-        self.extend(sizes)
-        self.extend(rows)
-        self.extend(cols)
-        self.extend(scale_factor)
-        self.extend(sum(pixels, []))
-        self.append(integration_time)
+        'scale_factor': [f'{msid_prefix}CA00096',   # Scale factor of image 0
+                         f'{msid_prefix}CA00312',   # Scale factor of image 1
+                         f'{msid_prefix}CA00528',   # Scale factor of image 2
+                         f'{msid_prefix}CA00744',   # Scale factor of image 3
+                         f'{msid_prefix}CA00960',   # Scale factor of image 4
+                         f'{msid_prefix}CA01176',   # Scale factor of image 5
+                         f'{msid_prefix}CA01392',   # Scale factor of image 6
+                         f'{msid_prefix}CA01608'],  # Scale factor of image 7
 
-        self.sizes = sizes
-        self.rows = rows
-        self.cols = cols
-        self.scale_factor = scale_factor
-        self.pixels = pixels
-        self.ref = primary_msid
-        self.integration_time = integration_time
+        'background_rms': [f'{msid_prefix}CRMSBG{i}' for i in range(8)],
+        'background_avg': [f'{msid_prefix}CA00110', f'{msid_prefix}CA00326',
+                           f'{msid_prefix}CA00542', f'{msid_prefix}CA00758',
+                           f'{msid_prefix}CA00974', f'{msid_prefix}CA01190',
+                           f'{msid_prefix}CA01406', f'{msid_prefix}CA01622'],
+        'housing_temperature': [f'{msid_prefix}ACH1T{i}2' for i in range(8)],  # AC HOUSING TEMPERATURE
+        'ccd_temperature': [f'{msid_prefix}CCDPT{i}2' for i in range(8)],  # CCD TEMPERATURE
+        'primary_temperature': [f'{msid_prefix}QTAPMT{i}' for i in range(8)],  # PRIMARY MIRROR/LENS CELL TEMP
+        'secondary_temperature': [f'{msid_prefix}QTH2MT{i}' for i in range(8)]  # AC SECONDARY MIRROR TEMPERATURE
+    }
+    return [{k: res[k][i] for k in res.keys()} for i in range(8)]
 
-    def slot(self, i):
-        return [self.sizes[i], self.rows[i], self.cols[i], self.scale_factor[i]] + self.pixels[i]
+
+ACA_MSID_LIST = {i+1: _aca_msid_list(i+1) for i in range(2)}
+ACA_SLOT_MSID_LIST = {i+1: _aca_image_msid_list(i+1) for i in range(2)}
 
 
 def assemble_image(pixel_data, img_size):
@@ -271,6 +262,13 @@ def _reshape_values(data, tref):
 
 
 def combine_sub_images(table):
+    """
+    Take a table as input and combine consecutive image segments.
+    Partial images are discarded.
+
+    :param table: astropy.Table with ACA image telemetry data
+    :return:
+    """
     subimage = table['subimage']
     tref = table['time']
     # What follows is not trivial and needs attention.
@@ -309,91 +307,87 @@ def combine_sub_images(table):
     # (only if discarded in all slots)
     ok = ok_4x4 + ok_6x6 + ok_8x8
     table = {k: v[ok] for k, v in table.items()}
+
+    table['size'][table['size'] == '4X41'] = '4X4'
+    table['size'][table['size'] == '6X61'] = '6X6'
+    table['size'][table['size'] == '8X81'] = '8X8'
+
     return table
 
 
-def assemble(msids, data, full=False, calibrate=False, adjust_time=False, adjust_corner=False):
+def _assemble_img(slot, pea, data, full=False,
+                  calibrate=False, adjust_time=False, adjust_corner=False):
     """
-    This is an example of fetching and assembling data using maude.
+    This method assembles an astropy.Table for a given PEA and slot.
 
-    Example usage::
+    :param slot: integer in range(8)
+    :param pea_choice: integer 1 or 2
+    :param data: dictionary with maude data.
 
-      >>> from chandra_aca import maude_decom
-      >>> data = maude_decom.fetch(start, stop, 1)
+    Each entry in the dictionary is a values returned by maude.get_msids.
+    Something like this:
 
-    It will be changed once we know::
+        >>> import maude
+        >>> start, stop = 686111007, 686111017
+        >>> data = {e['msid']:e for e in maude.get_msids([...], start=start, stop=stop)['data']}
 
-      - what other telemetry to include
-      - what structure should the data be in the viewer
-
+    :param full: bool. Combine partial image segments into full images
+    :param calibrate: bool. Scale image values.
+    :param adjust_time: bool. Correct times the way it is done in level 0.
+    :param adjust_corner: bool. Shift col0 and row0 the way it is done in level 0.
     """
 
-    # store it as a dictionary for convenience
-    res = {e['msid']: e for e in data}
+    msids = ACA_MSID_LIST[pea]
+    slot_msids = ACA_SLOT_MSID_LIST[pea][slot]
 
-    # and reshape all values using the times from an MSID we know will be there at all sample times:
-    tref = res[msids.sizes[0]]['times']
-    data = {k: _reshape_values(res[k], tref) for k in msids}
+    tref = data[slot_msids['sizes']]['times']
 
-    images = []
-    subimage = np.zeros((8, len(tref)), dtype=int)
-    for slot in range(8):
-        if len(tref) == 0:
-            continue
-        pixel_data = {k: data[k] for k in msids.pixels[slot]}
-        img_size = data[msids.sizes[slot]]['values']
-        images.append(assemble_image(pixel_data, img_size))
+    # reshape all values using the times from an MSID we know will be there at all sample times:
+    data = {k: _reshape_values(data[k], tref) for k in data}
+
+    if len(tref) == 0:
+        names = ['time', 'imgnum', 'size', 'row0', 'col0', 'scale_factor', 'integ', 'img']
+        dtype = ['<f8', '<i8', '<U4', '<f8', '<f8', '<f8', '<f8', ('<f8', (8, 8))]
+        result = {n: np.array([], dtype=t) for n, t in zip(names, dtype)}
+    else:
+        pixel_data = {k: data[k] for k in slot_msids['pixels']}
+        img_size = data[slot_msids['sizes']]['values']
+        image = assemble_image(pixel_data, img_size)
         # there must be an MSID to fetch this, but this works
-        subimage[slot] = np.char.replace(np.char.replace(np.char.replace(
+        subimage = np.char.replace(np.char.replace(np.char.replace(
             img_size, '8X8', ''), '6X6', ''), '4X4', '').astype(int) - 1
 
-    result = []
-    for slot in range(8):
-        if len(tref) == 0:
-            names = ['time', 'imgnum', 'size', 'row0', 'col0', 'scale_factor', 'integ', 'img']
-            dtype = ['<f8', '<i8', '<U4', '<f8', '<f8', '<f8', '<f8', ('<f8', (8, 8))]
-            table = {n: np.array([], dtype=t) for n, t in zip(names, dtype)}
-        else:
-            table = {
-                'time': data[msids.sizes[slot]]['times'],
-                'imgnum': np.ones(len(tref), dtype='<i8') * slot,
-                'subimage': subimage[slot],
-                'size': data[msids.sizes[slot]]['values'],
-                'row0': data[msids.rows[slot]]['values'],
-                'col0': data[msids.cols[slot]]['values'],
-                'scale_factor': data[msids.scale_factor[slot]]['values'],
-                'integ': 0.016 * data[msids.integration_time]['values'],
-                'img': images[slot]
-            }
-            if full:
-                table = combine_sub_images(table)
-                del table['subimage']
+        result = {
+            'time': data[slot_msids['sizes']]['times'],
+            'imgnum': np.ones(len(tref), dtype='<i8') * slot,
+            'subimage': subimage,
+            'size': data[slot_msids['sizes']]['values'],
+            'row0': data[slot_msids['rows']]['values'],
+            'col0': data[slot_msids['cols']]['values'],
+            'scale_factor': data[slot_msids['scale_factor']]['values'],
+            'integ': 0.016 * data[msids['integration_time']]['values'],
+            'img': image
+        }
+        if full:
+            result = combine_sub_images(result)
+            del result['subimage']
 
-        result.append(table)
+        if calibrate:
+            # as specified in ACA L0 ICD, section D.2.2 (scale_factor is already divided by 32)
+            result['img'] *= result['scale_factor'][:, np.newaxis, np.newaxis]
+            result['img'] -= 50
 
-    result = vstack([Table(r) for r in result])
+        if adjust_time:
+            result['time'] -= (result['integ'] / 2 + 1.025)
 
-    if calibrate:
-        # as specified in ACA L0 ICD, section D.2.2 (scale_factor is already divided by 32)
-        result['img'] *= result['scale_factor'][:, np.newaxis, np.newaxis]
-        result['img'] -= 50
+        if adjust_corner:
+            result['row0'][result['size'] == '6X61'] -= 1
+            result['col0'][result['size'] == '6X61'] -= 1
 
-    if adjust_time:
-        result['time'] -= (result['integ'] / 2 + 1.025)
-
-    if adjust_corner:
-        result['row0'][result['size'] == '6X61'] -= 1
-        result['col0'][result['size'] == '6X61'] -= 1
-
-    if full:
-        result['size'][result['size'] == '4X41'] = '4X4'
-        result['size'][result['size'] == '6X61'] = '6X6'
-        result['size'][result['size'] == '8X81'] = '8X8'
-
-    return result
+    return Table(result)
 
 
-def fetch(start, stop, pea_choice=1, full=False,
+def fetch(start, stop, slots=range(8), pea=1, full=False,
           calibrate=False, adjust_time=False, adjust_corner=False):
     """
     This is an example of fetching and assembling data using maude.
@@ -408,11 +402,31 @@ def fetch(start, stop, pea_choice=1, full=False,
       - what other telemetry to include
       - what structure should the data be in the viewer
 
-    """
-    msids = AcaTelemetryMsidList(pea_choice)
+    :param start: timestamp
+    :param stop: timestamp
+    :param pea_choice: integer 1 or 2
 
-    # get maude data in batches of at most 100 (it fails otherwise)
-    tmp = sum([maude.get_msids(s, start=start, stop=stop)['data'] for s in _subsets(msids, 100)],
-              [])
-    return assemble(msids, tmp, full=full,
-                    calibrate=calibrate, adjust_time=adjust_time, adjust_corner=adjust_corner)
+    Each entry in the dictionary is a values returned by maude.get_msids.
+    Something like this:
+
+        >>> import maude
+        >>> start, stop = 686111007, 686111017
+        >>> data = {e['msid']:e for e in maude.get_msids([...], start=start, stop=stop)['data']}
+
+    :param full: bool. Combine partial image segments into full images
+    :param calibrate: bool. Scale image values.
+    :param adjust_time: bool. Correct times the way it is done in level 0.
+    :param adjust_corner: bool. Shift col0 and row0 the way it is done in level 0.
+    """
+    tables = []
+    for slot in slots:
+        msids = ['sizes', 'rows', 'cols', 'scale_factor']  # the MSIDs we fetch (plus IMG pixels)
+        msids = (ACA_SLOT_MSID_LIST[pea][slot]['pixels'] +
+                 [ACA_SLOT_MSID_LIST[pea][slot][k] for k in msids] +
+                 [ACA_MSID_LIST[pea]['integration_time']])
+        res = {e['msid']: e for e in maude.get_msids(msids, start=start, stop=stop)['data']}
+        tables.append(_assemble_img(slot, pea, res, full=full, calibrate=calibrate,
+                                    adjust_time=adjust_time, adjust_corner=adjust_corner))
+    result = vstack(tables)
+    result = result[(result['time'] >= start)*(result['time'] <= stop)]
+    return result
