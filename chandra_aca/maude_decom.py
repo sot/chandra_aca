@@ -52,6 +52,7 @@ _msid_prefix = {
 
 
 def _aca_msid_list(pea):
+    # helper method to make a dictionary with all global (non-slot) MSIDs used here
     return {
         'command_count': f'{_msid_prefix[pea]}CCMDS',
         'integration_time': f'{_msid_prefix[pea]}ACAINT0'
@@ -59,6 +60,7 @@ def _aca_msid_list(pea):
 
 
 def _aca_image_msid_list(pea):
+    # helper method to make a list of dictionaries with MSIDs for each slot in a given PEA.
     msid_prefix = _msid_prefix[pea]
 
     px_ids = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'}
@@ -111,9 +113,9 @@ def _aca_image_msid_list(pea):
                            f'{msid_prefix}CA00542', f'{msid_prefix}CA00758',
                            f'{msid_prefix}CA00974', f'{msid_prefix}CA01190',
                            f'{msid_prefix}CA01406', f'{msid_prefix}CA01622'],
-        'housing_temperature': [f'{msid_prefix}ACH1T{i}2' for i in range(8)],  # AC HOUSING TEMPERATURE
-        'ccd_temperature': [f'{msid_prefix}CCDPT{i}2' for i in range(8)],  # CCD TEMPERATURE
-        'primary_temperature': [f'{msid_prefix}QTAPMT{i}' for i in range(8)],  # PRIMARY MIRROR/LENS CELL TEMP
+        'housing_temperature': [f'{msid_prefix}ACH1T{i}2' for i in range(8)],   # AC HOUSING TEMPERATURE
+        'ccd_temperature': [f'{msid_prefix}CCDPT{i}2' for i in range(8)],       # CCD TEMPERATURE
+        'primary_temperature': [f'{msid_prefix}QTAPMT{i}' for i in range(8)],   # PRIMARY MIRROR/LENS CELL TEMP
         'secondary_temperature': [f'{msid_prefix}QTH2MT{i}' for i in range(8)]  # AC SECONDARY MIRROR TEMPERATURE
     }
     return [{k: res[k][i] for k in res.keys()} for i in range(8)]
@@ -323,10 +325,10 @@ def _assemble_img(slot, pea, data, full=False,
     This method assembles an astropy.Table for a given PEA and slot.
 
     :param slot: integer in range(8)
-    :param pea_choice: integer 1 or 2
+    :param pea: integer 1 or 2
     :param data: dictionary with maude data.
 
-    Each entry in the dictionary is a values returned by maude.get_msids.
+    Each entry in the dictionary is a value returned by maude.get_msids.
     Something like this:
 
         >>> import maude
@@ -334,7 +336,7 @@ def _assemble_img(slot, pea, data, full=False,
         >>> data = {e['msid']:e for e in maude.get_msids([...], start=start, stop=stop)['data']}
 
     :param full: bool. Combine partial image segments into full images
-    :param calibrate: bool. Scale image values.
+    :param calibrate: bool. Scale image values (ignored if full=False).
     :param adjust_time: bool. Correct times the way it is done in level 0.
     :param adjust_corner: bool. Shift col0 and row0 the way it is done in level 0.
     """
@@ -427,25 +429,13 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
     Example usage::
 
       >>> from chandra_aca import maude_decom
-      >>> data = maude_decom.fetch(start, stop, 1)
+      >>> data = maude_decom.fetch(start, stop, pea=1)
 
-    It will be changed once we know::
-
-      - what other telemetry to include
-      - what structure should the data be in the viewer
-
-    :param start: timestamp
-    :param stop: timestamp
-    :param pea_choice: integer 1 or 2
-
-    Each entry in the dictionary is a values returned by maude.get_msids.
-    Something like this:
-
-        >>> import maude
-        >>> start, stop = 686111007, 686111017
-        >>> data = {e['msid']:e for e in maude.get_msids([...], start=start, stop=stop)['data']}
-
-    :param full: bool. Combine partial image segments into full images
+    :param start: timestamp interpreted as a Chandra.Time.DateTime
+    :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :param slots: iterable of ints. Default: range(8)
+    :param pea: integer 1 or 2. Default: 1
+    :param full: bool. Combine partial image segments into full images.
     :param calibrate: bool. Scale image values.
     :param adjust_time: bool. Correct times the way it is done in level 0.
     :param adjust_corner: bool. Shift col0 and row0 the way it is done in level 0.
