@@ -72,4 +72,23 @@ def test_scale():
 def test_fetch():
     pea = 1
     start, stop = 686111007, 686111017
-    maude_decom.fetch(start, stop)
+
+    result = maude_decom.fetch(start, stop)
+    assert np.all(result['time'] >= start)
+    assert np.all(result['time'] <= stop)
+    assert len(result) == 80
+
+    result = maude_decom.fetch(start, stop, full=True)
+    assert np.all(result['time'] >= start)
+    assert np.all(result['time'] <= stop)
+    assert len(result) == 31
+
+    result = maude_decom.fetch(start, stop, calibrate=True)
+    assert np.all(result['time'] >= start)
+    assert np.all(result['time'] <= stop)
+    assert len(result) == 80
+
+    result = maude_decom.fetch(start, stop, adjust_time=True)
+    assert np.all(result['time'] >= start)
+    assert np.all(result['time'] <= stop)
+    assert len(result) == 64
