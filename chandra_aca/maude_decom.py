@@ -54,8 +54,14 @@ _msid_prefix = {
 def _aca_msid_list(pea):
     # helper method to make a dictionary with all global (non-slot) MSIDs used here
     return {
+        'status': 'AOACSTAT',  # ASPECT CAMERA DATA PROCESSING OVERALL STATUS FLAG
         'command_count': f'{_msid_prefix[pea]}CCMDS',
-        'integration_time': f'{_msid_prefix[pea]}ACAINT0'
+        'integration_time': f'{_msid_prefix[pea]}ACAINT0',
+        'major_frame': 'CVCMJCTR',
+        'minor_frame': 'CVCMNCTR',
+        'cmd_count': f'{_msid_prefix[pea]}CCMDS',
+        'cmd_progress': f'{_msid_prefix[pea]}AROW2GO'  # NUMBER OF ROWS TO GO COMMAND PROGRESS
+
     }
 
 
@@ -108,15 +114,29 @@ def _aca_image_msid_list(pea):
                          f'{msid_prefix}CA01392',   # Scale factor of image 6
                          f'{msid_prefix}CA01608'],  # Scale factor of image 7
 
+        'image_status': [f'AOIMAGE{i}' for i in range(8)],    # IMAGE 0 STATUS FLAG
+        'fiducial_flag': [f'AOACFID0{i}' for i in range(8)],  # FIDUCIAL LIGHT FLAG (OBC)
+        'image_function': [f'AOACFCT{i}' for i in range(8)],  # IMAGE FUNCTION (OBC)
+        # this one exists also as FUNCTION2/3/4
+        #'image_function_pea':
+        #    [f'{msid_prefix}AIMGF{i}1' for i in range(8)],  # IMAGE FUNCTION1 (PEA)
+
         'background_rms': [f'{msid_prefix}CRMSBG{i}' for i in range(8)],
         'background_avg': [f'{msid_prefix}CA00110', f'{msid_prefix}CA00326',
                            f'{msid_prefix}CA00542', f'{msid_prefix}CA00758',
                            f'{msid_prefix}CA00974', f'{msid_prefix}CA01190',
                            f'{msid_prefix}CA01406', f'{msid_prefix}CA01622'],
-        'housing_temperature': [f'{msid_prefix}ACH1T{i}2' for i in range(8)],   # AC HOUSING TEMPERATURE
-        'ccd_temperature': [f'{msid_prefix}CCDPT{i}2' for i in range(8)],       # CCD TEMPERATURE
-        'primary_temperature': [f'{msid_prefix}QTAPMT{i}' for i in range(8)],   # PRIMARY MIRROR/LENS CELL TEMP
-        'secondary_temperature': [f'{msid_prefix}QTH2MT{i}' for i in range(8)]  # AC SECONDARY MIRROR TEMPERATURE
+        'housing_temperature':
+            [f'{msid_prefix}ACH1T{i}2' for i in range(8)],                 # AC HOUSING TEMPERATURE
+        'ccd_temperature': [f'{msid_prefix}CCDPT{i}2' for i in range(8)],  # CCD TEMPERATURE
+        'primary_temperature':
+            [f'{msid_prefix}QTAPMT{i}' for i in range(8)],  # PRIMARY MIRROR/LENS CELL TEMP
+        'secondary_temperature':
+            [f'{msid_prefix}QTH2MT{i}' for i in range(8)],  # AC SECONDARY MIRROR TEMPERATURE
+
+        'magnitude': [f'AOACMAG{i}' for i in range(8)],       # STAR OR FIDUCIAL MAGNITUDE (OBC)
+        'centroid_ang_y': [f'AOACYAN{i}' for i in range(8)],  # YAG CENTROID Y ANGLE (OBC)
+        'centroid_ang_z': [f'AOACZAN{i}' for i in range(8)],  # ZAG CENTROID Z ANGLE (OBC)
     }
     return [{k: res[k][i] for k in res.keys()} for i in range(8)]
 
