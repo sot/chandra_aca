@@ -7,6 +7,8 @@ import numpy as np
 from astropy.table import Table, vstack
 import maude
 
+from Chandra.Time import DateTime
+
 PIXEL_MAP = {
     '4x4': np.array([['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
                      ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
@@ -368,14 +370,6 @@ def _assemble_img(slot, pea, data, full=False,
             'integ': 0.016 * data[msids['integration_time']]['values'],
             'img': image
         }
-        if full:
-            result = combine_sub_images(result)
-            del result['subimage']
-
-        if calibrate:
-            # as specified in ACA L0 ICD, section D.2.2 (scale_factor is already divided by 32)
-            result['img'] *= result['scale_factor'][:, np.newaxis, np.newaxis]
-            result['img'] -= 50
 
         if adjust_time:
             result['time'] -= (result['integ'] / 2 + 1.025)
@@ -383,6 +377,44 @@ def _assemble_img(slot, pea, data, full=False,
         if adjust_corner:
             result['row0'][result['size'] == '6X61'] -= 1
             result['col0'][result['size'] == '6X61'] -= 1
+
+        if calibrate:
+            # scale specified in ACA L0 ICD, section D.2.2 (scale_factor is already divided by 32)
+            #
+            # for an incomplete images the result can look like this:
+            #     size scale_factor
+            #     str4   float64
+            #     ---- ------------
+            #     8X84          nan
+            #     8X81          1.0
+            #     8X82          nan
+            #     8X83          nan
+            #     8X84          nan
+            #     8X81          1.0
+            #     8X82          nan
+            #     8X83          nan
+            #     8X84          nan
+            #     8X81          1.0
+            #
+            # so one has to set the proper scale for images 6X62, 8X82, 8X83 and 8X84.
+            # the data should cover a larger interval than requested to avoid edge effects.
+            # I also do not want to change the original array
+            # this assumes that image sizes ALWAYS alternate
+            # is there a better way to do this?
+            scale = np.array(result['scale_factor'])
+            for name, n in [('6X61', 2), ('8X81', 4)]:
+                s1 = (result['size'] == name)
+                for i in range(1,n):
+                    s2 = np.roll(s1, i)  # roll and drop the ones that go over the edge
+                    s2[:i] = False
+                    scale[s2] = scale[s1][:sum(s2)]
+            result['img'] *= scale[:, np.newaxis, np.newaxis]
+            result['img'] -= 50
+
+        if full:
+            result = combine_sub_images(result)
+            del result['subimage']
+
 
     return Table(result)
 
@@ -418,6 +450,13 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
     :param adjust_time: bool. Correct times the way it is done in level 0.
     :param adjust_corner: bool. Shift col0 and row0 the way it is done in level 0.
     """
+
+    start, stop = DateTime(start), DateTime(stop)
+    if calibrate or adjust_time:
+        start -= 6 / 86400  # padding at the beginning in case of time/scale adjustments
+    if full:
+        stop += 6 / 86400  # padding at the end in case of trailing partial images
+
     tables = []
     for slot in slots:
         msids = ['sizes', 'rows', 'cols', 'scale_factor']  # the MSIDs we fetch (plus IMG pixels)
@@ -428,5 +467,6 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
         tables.append(_assemble_img(slot, pea, res, full=full, calibrate=calibrate,
                                     adjust_time=adjust_time, adjust_corner=adjust_corner))
     result = vstack(tables)
-    result = result[(result['time'] >= start)*(result['time'] <= stop)]
+    # and chop the padding we added above
+    result = result[(result['time'] >= start.secs)*(result['time'] <= stop.secs)]
     return result
