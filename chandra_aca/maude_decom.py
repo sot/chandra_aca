@@ -462,10 +462,12 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
     """
 
     start, stop = DateTime(start), DateTime(stop)
+    start_pad = 0
+    stop_pad = 0
     if calibrate or adjust_time:
-        start -= 6 / 86400  # padding at the beginning in case of time/scale adjustments
+        start_pad = 6 / 86400  # padding at the beginning in case of time/scale adjustments
     if full:
-        stop += 6 / 86400  # padding at the end in case of trailing partial images
+        stop_pad = 6 / 86400  # padding at the end in case of trailing partial images
 
     tables = []
     for slot in slots:
@@ -473,7 +475,8 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
         msids = (ACA_SLOT_MSID_LIST[pea][slot]['pixels'] +
                  [ACA_SLOT_MSID_LIST[pea][slot][k] for k in msids] +
                  [ACA_MSID_LIST[pea]['integration_time']])
-        res = {e['msid']: e for e in maude.get_msids(msids, start=start, stop=stop)['data']}
+        res = {e['msid']: e for e in
+               maude.get_msids(msids, start=start - start_pad, stop=stop + stop_pad)['data']}
         tables.append(_assemble_img(slot, pea, res, full=full, calibrate=calibrate,
                                     adjust_time=adjust_time, adjust_corner=adjust_corner))
     result = vstack(tables)
