@@ -70,7 +70,6 @@ def test_scale():
 
 
 def test_fetch():
-    pea = 1
     start, stop = 686111007, 686111017
 
     result = maude_decom.fetch(start, stop)
@@ -155,7 +154,6 @@ def test_partial_images():
     }
 
     pea = 1
-    start, stop = 686111007, 686111017
     data = {e['msid']: e for e in test_data['686111007-686111017']}
     r = vstack([maude_decom._assemble_img(i, pea, data) for i in range(8)])
     for i in range(len(r[r['IMGNUM'] == 0]['IMG'])):

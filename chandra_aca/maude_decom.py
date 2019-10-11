@@ -73,7 +73,8 @@ def _aca_image_msid_list(pea):
     px_nums = [str(n) for n in range(1, 5)]
     px_img_nums = [str(n) for n in range(8)]
 
-    pixels = [[f'{msid_prefix}CIMG{px_img_num}{px_id}{px_num}' for px_num in px_nums for px_id in px_ids]
+    pixels = [[f'{msid_prefix}CIMG{px_img_num}{px_id}{px_num}'
+               for px_num in px_nums for px_id in px_ids]
               for px_img_num in px_img_nums]
 
     res = {
@@ -118,8 +119,8 @@ def _aca_image_msid_list(pea):
         'fiducial_flag': [f'AOACFID0{i}' for i in range(8)],  # FIDUCIAL LIGHT FLAG (OBC)
         'image_function': [f'AOACFCT{i}' for i in range(8)],  # IMAGE FUNCTION (OBC)
         # this one exists also as FUNCTION2/3/4
-        #'image_function_pea':
-        #    [f'{msid_prefix}AIMGF{i}1' for i in range(8)],  # IMAGE FUNCTION1 (PEA)
+        # 'image_function_pea':
+        #     [f'{msid_prefix}AIMGF{i}1' for i in range(8)],  # IMAGE FUNCTION1 (PEA)
 
         'background_rms': [f'{msid_prefix}CRMSBG{i}' for i in range(8)],
         'background_avg': [f'{msid_prefix}CA00110', f'{msid_prefix}CA00326',
@@ -141,8 +142,8 @@ def _aca_image_msid_list(pea):
     return [{k: res[k][i] for k in res.keys()} for i in range(8)]
 
 
-ACA_MSID_LIST = {i+1: _aca_msid_list(i+1) for i in range(2)}
-ACA_SLOT_MSID_LIST = {i+1: _aca_image_msid_list(i+1) for i in range(2)}
+ACA_MSID_LIST = {i + 1: _aca_msid_list(i + 1) for i in range(2)}
+ACA_SLOT_MSID_LIST = {i + 1: _aca_image_msid_list(i + 1) for i in range(2)}
 
 
 def assemble_image(pixel_data, img_size):
@@ -221,7 +222,7 @@ def assemble_image(pixel_data, img_size):
 
     :param pixel_data: dictionary containing MSID values and times.
 
-    The keys of ``pizel_data`` must be MSIDs.
+    The keys of ``pixel_data`` must be MSIDs.
     The values must be dictionaries with keys ['times', 'values']
 
     :param img_size: an array of image size specifications.
@@ -395,6 +396,7 @@ def _assemble_img(slot, pea, data, full=False,
 
         if adjust_time:
             result['TIME'] -= (result['INTEG'] / 2 + 1.025)
+            # result['END_INTEG_TIME'] = result['TIME'] + result['INTEG']
 
         if adjust_corner:
             result['IMGROW0'][result['IMGSIZE'] == '6X61'] -= 1
@@ -426,7 +428,7 @@ def _assemble_img(slot, pea, data, full=False,
             scale = np.array(result['SCALE_FACTOR'])
             for name, n in [('6X61', 2), ('8X81', 4)]:
                 s1 = (result['IMGSIZE'] == name)
-                for i in range(1,n):
+                for i in range(1, n):
                     s2 = np.roll(s1, i)  # roll and drop the ones that go over the edge
                     s2[:i] = False
                     scale[s2] = scale[s1][:sum(s2)]
@@ -436,7 +438,6 @@ def _assemble_img(slot, pea, data, full=False,
         if full:
             result = combine_sub_images(result)
             del result['subimage']
-
 
     return Table(result)
 
@@ -481,5 +482,5 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
                                     adjust_time=adjust_time, adjust_corner=adjust_corner))
     result = vstack(tables)
     # and chop the padding we added above
-    result = result[(result['TIME'] >= start.secs)*(result['TIME'] <= stop.secs)]
+    result = result[(result['TIME'] >= start.secs) * (result['TIME'] <= stop.secs)]
     return result
