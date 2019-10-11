@@ -278,7 +278,7 @@ def _reshape_values(data, tref):
     v = np.ones(tref.shape) * np.nan
     if t.shape[0] != 0:
         dt = (t[np.newaxis] - tref[:, np.newaxis])
-        dt = np.where(dt > 0, dt, np.inf)
+        dt = np.where(dt >= 0, dt, np.inf)
         i = np.argmin(dt, axis=0)
         v[i] = data['values']
 

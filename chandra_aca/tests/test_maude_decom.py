@@ -92,3 +92,74 @@ def test_fetch():
     assert np.all(result['time'] >= start)
     assert np.all(result['time'] <= stop)
     assert len(result) == 64
+
+
+def test_partial_images():
+    mask = {
+        '4X41': np.array([[True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, True, True, True, True, True, True]]),
+        '6X61': np.array([[True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, True, True, True, True, True, True]]),
+        '6X62': np.array([[True, True, True, True, True, True, True, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, False, True, True, True, True, False, True],
+                          [True, False, True, True, True, True, False, True],
+                          [True, False, True, True, True, True, False, True],
+                          [True, False, True, True, True, True, False, True],
+                          [True, True, False, False, False, False, True, True],
+                          [True, True, True, True, True, True, True, True]]),
+        '8X81': np.array([[False, False, False, False, False, False, False, False],
+                          [False, False, False, False, False, False, False, False],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True]]),
+        '8X82': np.array([[True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [False, False, False, False, False, False, False, False],
+                          [False, False, False, False, False, False, False, False],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True]]),
+        '8X83': np.array([[True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [False, False, False, False, False, False, False, False],
+                          [False, False, False, False, False, False, False, False],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True]]),
+        '8X84': np.array([[True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [True, True, True, True, True, True, True, True],
+                          [False, False, False, False, False, False, False, False],
+                          [False, False, False, False, False, False, False, False]]),
+    }
+
+    pea = 1
+    start, stop = 686111007, 686111017
+    data = {e['msid']: e for e in test_data['686111007-686111017']}
+    r = vstack([maude_decom._assemble_img(i, pea, data) for i in range(8)])
+    for i in range(len(r[r['imgnum'] == 0]['img'])):
+        img = r[r['imgnum'] == 0]['img'][i]
+        imgsize = r[r['imgnum'] == 0]['size'][i]
+        assert np.all(np.isnan(img[mask[imgsize]]))
+        assert np.all(~np.isnan(img[~mask[imgsize]]))
