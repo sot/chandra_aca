@@ -24,20 +24,20 @@ def test_assembly():
 
     data = {e['msid']: e for e in test_data['686111007-686111017']}
     r_full = vstack([maude_decom._assemble_img(i, pea, data, full=True) for i in range(8)])
-    assert [len(r_full[r_full['imgnum'] == i]) for i in range(8)] == [1, 1, 1, 4, 4, 4, 4, 4]
-    assert np.all(r_full[r_full['imgnum'] == 3]['size'].data == ['6X6', '6X6', '6X6', '6X6'])
+    assert [len(r_full[r_full['IMGNUM'] == i]) for i in range(8)] == [1, 1, 1, 4, 4, 4, 4, 4]
+    assert np.all(r_full[r_full['IMGNUM'] == 3]['IMGSIZE'].data == ['6X6', '6X6', '6X6', '6X6'])
 
     r = vstack([maude_decom._assemble_img(i, pea, data) for i in range(8)])
-    assert [len(r[r['imgnum'] == i]) for i in range(8)] == [10, 10, 10, 10, 10, 10, 10, 10]
-    assert np.all(r[r['imgnum'] == 3]['size'].data ==
+    assert [len(r[r['IMGNUM'] == i]) for i in range(8)] == [10, 10, 10, 10, 10, 10, 10, 10]
+    assert np.all(r[r['IMGNUM'] == 3]['IMGSIZE'].data ==
                   ['6X62', '6X61', '6X62', '6X61', '6X62', '6X61', '6X62', '6X61', '6X62', '6X61'])
 
-    eq = (r_full[r_full['imgnum'] == 0]['img'].data ==
-          np.nansum(r[r['imgnum'] == 0]['img'].data[3:7].reshape((-1, 4, 8, 8)), axis=1))
+    eq = (r_full[r_full['IMGNUM'] == 0]['IMG'].data ==
+          np.nansum(r[r['IMGNUM'] == 0]['IMG'].data[3:7].reshape((-1, 4, 8, 8)), axis=1))
     assert np.all(eq)
 
-    eq = (r_full[r_full['imgnum'] == 3]['img'].data ==
-          np.nansum(r[r['imgnum'] == 3]['img'].data[1:-1].reshape((-1, 2, 8, 8)), axis=1))
+    eq = (r_full[r_full['IMGNUM'] == 3]['IMG'].data ==
+          np.nansum(r[r['IMGNUM'] == 3]['IMG'].data[1:-1].reshape((-1, 2, 8, 8)), axis=1))
     e, m = np.broadcast_arrays(eq, maude_decom.PIXEL_MASK['6x6'])
     assert np.all(e[~m])
 
@@ -55,7 +55,7 @@ def test_scale():
                [np.nan, 83.00, 277.00, 372.00, 645.00, 392.00, 98.00, np.nan],
                [np.nan, np.nan, 98.00, 142.00, 351.00, 88.00, np.nan, np.nan],
                [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]
-    assert np.all((table[0]['img'] == img_ref) + (np.isnan(img_ref)))
+    assert np.all((table[0]['IMG'] == img_ref) + (np.isnan(img_ref)))
 
     table = maude_decom._assemble_img(4, pea, data, full=True, calibrate=True)
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
@@ -66,7 +66,7 @@ def test_scale():
                [np.nan, 33.00, 227.00, 322.00, 595.00, 342.00, 48.00, np.nan],
                [np.nan, np.nan, 48.00, 92.00, 301.00, 38.00, np.nan, np.nan],
                [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]
-    assert np.all((table[0]['img'] == img_ref) + (np.isnan(img_ref)))
+    assert np.all((table[0]['IMG'] == img_ref) + (np.isnan(img_ref)))
 
 
 def test_fetch():
@@ -74,23 +74,23 @@ def test_fetch():
     start, stop = 686111007, 686111017
 
     result = maude_decom.fetch(start, stop)
-    assert np.all(result['time'] >= start)
-    assert np.all(result['time'] <= stop)
+    assert np.all(result['TIME'] >= start)
+    assert np.all(result['TIME'] <= stop)
     assert len(result) == 80
 
     result = maude_decom.fetch(start, stop, full=True)
-    assert np.all(result['time'] >= start)
-    assert np.all(result['time'] <= stop)
+    assert np.all(result['TIME'] >= start)
+    assert np.all(result['TIME'] <= stop)
     assert len(result) == 31
 
     result = maude_decom.fetch(start, stop, calibrate=True)
-    assert np.all(result['time'] >= start)
-    assert np.all(result['time'] <= stop)
+    assert np.all(result['TIME'] >= start)
+    assert np.all(result['TIME'] <= stop)
     assert len(result) == 80
 
     result = maude_decom.fetch(start, stop, adjust_time=True)
-    assert np.all(result['time'] >= start)
-    assert np.all(result['time'] <= stop)
+    assert np.all(result['TIME'] >= start)
+    assert np.all(result['TIME'] <= stop)
     assert len(result) == 64
 
 
@@ -158,8 +158,8 @@ def test_partial_images():
     start, stop = 686111007, 686111017
     data = {e['msid']: e for e in test_data['686111007-686111017']}
     r = vstack([maude_decom._assemble_img(i, pea, data) for i in range(8)])
-    for i in range(len(r[r['imgnum'] == 0]['img'])):
-        img = r[r['imgnum'] == 0]['img'][i]
-        imgsize = r[r['imgnum'] == 0]['size'][i]
+    for i in range(len(r[r['IMGNUM'] == 0]['IMG'])):
+        img = r[r['IMGNUM'] == 0]['IMG'][i]
+        imgsize = r[r['IMGNUM'] == 0]['IMGSIZE'][i]
         assert np.all(np.isnan(img[mask[imgsize]]))
         assert np.all(~np.isnan(img[~mask[imgsize]]))

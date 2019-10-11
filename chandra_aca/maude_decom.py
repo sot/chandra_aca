@@ -294,37 +294,37 @@ def combine_sub_images(table):
     :return:
     """
     subimage = table['subimage']
-    tref = table['time']
+    tref = table['TIME']
     # What follows is not trivial and needs attention.
     # If requesting full images, identify complete entries first.
     # We will return complete images at the time of the first partial image and discard the rest.
     # take all 4x41 images:
-    ok_4x4 = (table['size'] == '4X41')
+    ok_4x4 = (table['IMGSIZE'] == '4X41')
     # take all 6x61 images (subimage == 1) if the next image has subimage == 2:
-    ok_6x6 = (table['size'] == '6X61') * \
+    ok_6x6 = (table['IMGSIZE'] == '6X61') * \
         np.concatenate([subimage[1:] - subimage[:-1] == 1, [False]])
     # take all 8x81 images (subimage == 1) if the 3rd image after this has subimage == 4:
-    ok_8x8 = (table['size'] == '8X81') * \
+    ok_8x8 = (table['IMGSIZE'] == '8X81') * \
         np.concatenate([subimage[3:] - subimage[:-3] == 3, [False] * 3])
 
     # now add the partial images (with subimage > 1) to the first partial image
     # for 8x8:
     i = np.arange(len(tref))[ok_8x8]
-    table['img'][i] = np.nansum([table['img'][i], table['img'][i + 1],
-                                 table['img'][i + 2], table['img'][i + 3]],
+    table['IMG'][i] = np.nansum([table['IMG'][i], table['IMG'][i + 1],
+                                 table['IMG'][i + 2], table['IMG'][i + 3]],
                                 axis=0)
     # and for some reason I also had to do this:
-    for k in ['row0', 'col0', 'scale_factor']:
+    for k in ['IMGROW0', 'IMGCOL0', 'SCALE_FACTOR']:
         table[k][i] = np.nansum([table[k][i], table[k][i + 1], table[k][i + 2], table[k][i + 3]],
                                 axis=0)
 
     # for 6x6:
     i = np.arange(len(tref))[ok_6x6]
-    tmp = np.nansum([table['img'][i], table['img'][i + 1]], axis=0)
+    tmp = np.nansum([table['IMG'][i], table['IMG'][i + 1]], axis=0)
     tmp[:, PIXEL_MASK['6x6']] = np.nan
-    table['img'][i] = tmp
+    table['IMG'][i] = tmp
     # and for some reason I also had to do this:
-    for k in ['row0', 'col0', 'scale_factor']:
+    for k in ['IMGROW0', 'IMGCOL0', 'SCALE_FACTOR']:
         table[k][i] = np.nansum([table[k][i], table[k][i + 1]], axis=0)
 
     # now actually discard partial images
@@ -332,9 +332,9 @@ def combine_sub_images(table):
     ok = ok_4x4 + ok_6x6 + ok_8x8
     table = {k: v[ok] for k, v in table.items()}
 
-    table['size'][table['size'] == '4X41'] = '4X4'
-    table['size'][table['size'] == '6X61'] = '6X6'
-    table['size'][table['size'] == '8X81'] = '8X8'
+    table['IMGSIZE'][table['IMGSIZE'] == '4X41'] = '4X4'
+    table['IMGSIZE'][table['IMGSIZE'] == '6X61'] = '6X6'
+    table['IMGSIZE'][table['IMGSIZE'] == '8X81'] = '8X8'
 
     return table
 
@@ -358,7 +358,7 @@ def _assemble_img(slot, pea, data, full=False,
     :param full: bool. Combine partial image segments into full images
     :param calibrate: bool. Scale image values (ignored if full=False).
     :param adjust_time: bool. Correct times the way it is done in level 0.
-    :param adjust_corner: bool. Shift col0 and row0 the way it is done in level 0.
+    :param adjust_corner: bool. Shift IMGCOL0 and IMGROW0 the way it is done in level 0.
     """
 
     msids = ACA_MSID_LIST[pea]
@@ -370,7 +370,7 @@ def _assemble_img(slot, pea, data, full=False,
     data = {k: _reshape_values(data[k], tref) for k in data}
 
     if len(tref) == 0:
-        names = ['time', 'imgnum', 'size', 'row0', 'col0', 'scale_factor', 'integ', 'img']
+        names = ['TIME', 'IMGNUM', 'IMGSIZE', 'IMGROW0', 'IMGCOL0', 'SCALE_FACTOR', 'INTEG', 'IMG']
         dtype = ['<f8', '<i8', '<U4', '<f8', '<f8', '<f8', '<f8', ('<f8', (8, 8))]
         result = {n: np.array([], dtype=t) for n, t in zip(names, dtype)}
     else:
@@ -382,56 +382,56 @@ def _assemble_img(slot, pea, data, full=False,
             img_size, '8X8', ''), '6X6', ''), '4X4', '').astype(int) - 1
 
         result = {
-            'time': data[slot_msids['sizes']]['times'],
-            'imgnum': np.ones(len(tref), dtype='<i8') * slot,
+            'TIME': data[slot_msids['sizes']]['times'],
+            'IMGNUM': np.ones(len(tref), dtype='<i8') * slot,
             'subimage': subimage,
-            'size': data[slot_msids['sizes']]['values'],
-            'row0': data[slot_msids['rows']]['values'],
-            'col0': data[slot_msids['cols']]['values'],
-            'scale_factor': data[slot_msids['scale_factor']]['values'],
-            'integ': 0.016 * data[msids['integration_time']]['values'],
-            'img': image
+            'IMGSIZE': data[slot_msids['sizes']]['values'],
+            'IMGROW0': data[slot_msids['rows']]['values'],
+            'IMGCOL0': data[slot_msids['cols']]['values'],
+            'SCALE_FACTOR': data[slot_msids['scale_factor']]['values'],
+            'INTEG': 0.016 * data[msids['integration_time']]['values'],
+            'IMG': image
         }
 
         if adjust_time:
-            result['time'] -= (result['integ'] / 2 + 1.025)
+            result['TIME'] -= (result['INTEG'] / 2 + 1.025)
 
         if adjust_corner:
-            result['row0'][result['size'] == '6X61'] -= 1
-            result['col0'][result['size'] == '6X61'] -= 1
+            result['IMGROW0'][result['IMGSIZE'] == '6X61'] -= 1
+            result['IMGCOL0'][result['IMGSIZE'] == '6X61'] -= 1
 
         if calibrate:
             # scale specified in ACA L0 ICD, section D.2.2 (scale_factor is already divided by 32)
             #
             # for an incomplete images the result can look like this:
-            #     size scale_factor
-            #     str4   float64
-            #     ---- ------------
-            #     8X84          nan
-            #     8X81          1.0
-            #     8X82          nan
-            #     8X83          nan
-            #     8X84          nan
-            #     8X81          1.0
-            #     8X82          nan
-            #     8X83          nan
-            #     8X84          nan
-            #     8X81          1.0
+            #     IMGSIZE SCALE_FACTOR
+            #      str4     float64
+            #     ------- ------------
+            #      8X84       nan
+            #      8X81       1.0
+            #      8X82       nan
+            #      8X83       nan
+            #      8X84       nan
+            #      8X81       1.0
+            #      8X82       nan
+            #      8X83       nan
+            #      8X84       nan
+            #      8X81       1.0
             #
             # so one has to set the proper scale for images 6X62, 8X82, 8X83 and 8X84.
             # the data should cover a larger interval than requested to avoid edge effects.
             # I also do not want to change the original array
             # this assumes that image sizes ALWAYS alternate
             # is there a better way to do this?
-            scale = np.array(result['scale_factor'])
+            scale = np.array(result['SCALE_FACTOR'])
             for name, n in [('6X61', 2), ('8X81', 4)]:
-                s1 = (result['size'] == name)
+                s1 = (result['IMGSIZE'] == name)
                 for i in range(1,n):
                     s2 = np.roll(s1, i)  # roll and drop the ones that go over the edge
                     s2[:i] = False
                     scale[s2] = scale[s1][:sum(s2)]
-            result['img'] *= scale[:, np.newaxis, np.newaxis]
-            result['img'] -= 50
+            result['IMG'] *= scale[:, np.newaxis, np.newaxis]
+            result['IMG'] -= 50
 
         if full:
             result = combine_sub_images(result)
@@ -458,7 +458,7 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
     :param full: bool. Combine partial image segments into full images.
     :param calibrate: bool. Scale image values.
     :param adjust_time: bool. Correct times the way it is done in level 0.
-    :param adjust_corner: bool. Shift col0 and row0 the way it is done in level 0.
+    :param adjust_corner: bool. Shift IMGCOL0 and IMGROW0 the way it is done in level 0.
     """
 
     start, stop = DateTime(start), DateTime(stop)
@@ -481,5 +481,5 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
                                     adjust_time=adjust_time, adjust_corner=adjust_corner))
     result = vstack(tables)
     # and chop the padding we added above
-    result = result[(result['time'] >= start.secs)*(result['time'] <= stop.secs)]
+    result = result[(result['TIME'] >= start.secs)*(result['TIME'] <= stop.secs)]
     return result
