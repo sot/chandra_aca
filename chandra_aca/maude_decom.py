@@ -2,6 +2,7 @@
 Classes and functions to help fetching ACA telemetry data using Maude.
 """
 
+from struct import unpack, Struct
 import numpy as np
 
 from astropy.table import Table, vstack
@@ -484,3 +485,286 @@ def fetch(start, stop, slots=range(8), pea=1, full=False,
     # and chop the padding we added above
     result = result[(result['TIME'] >= start.secs) * (result['TIME'] <= stop.secs)]
     return result
+
+
+_a2p = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
+indices = [
+    np.array([PIXEL_MAP_INV['4x4'][f'{k}1'] for k in _a2p]).T,
+    np.array([PIXEL_MAP_INV['6x6'][f'{k}1'] for k in _a2p]).T,
+    np.array([PIXEL_MAP_INV['6x6'][f'{k}2'] for k in _a2p]).T,
+    [],
+    np.array([PIXEL_MAP_INV['8x8'][f'{k}1'] for k in _a2p]).T,
+    np.array([PIXEL_MAP_INV['8x8'][f'{k}2'] for k in _a2p]).T,
+    np.array([PIXEL_MAP_INV['8x8'][f'{k}3'] for k in _a2p]).T,
+    np.array([PIXEL_MAP_INV['8x8'][f'{k}4'] for k in _a2p]).T
+]
+
+######################
+# VCDU-based functions
+######################
+
+# these are used multiple times
+_aca_front_fmt = Struct('>HBBBBBB')
+_size_bits = np.zeros((8, 8), dtype=np.uint8)
+_pixel_bits = np.zeros((16, 16), dtype=np.uint16)
+_bits = np.array([1 << i for i in range(64)])[::-1]
+
+
+# I'm sure there is a better way...
+def _packbits(a):
+    # take something like this: [1,0,1,1,0] and return 2^4 + 2^2 + 2
+    return np.sum(a * _bits[-len(a):])
+
+
+def _aca_header_1(bits):
+    """
+    Unpack ACA header 1 (ACA User Manual 5.3.2.2.1).
+
+    :param bits: bytes-like object of length 7
+    :return: dict
+    """
+    bits = np.unpackbits(np.array(unpack('BBBbbBB', bits), dtype=np.uint8))
+    return {
+        'fid': bool(bits[0]),
+        'IMGNUM': _packbits(bits[1:4]),
+        'IMGFUNC': _packbits(bits[4:6]),
+        'sat_pixel': bool(bits[6]),
+        'def_pixel': bool(bits[7]),
+        'IMGROW0': _packbits(bits[12:22]),
+        'IMGCOL0': _packbits(bits[22:32]),
+        'IMGSCALE': _packbits(bits[32:46]),
+        'BGDAVG': _packbits(bits[46:56])
+    }
+
+
+def _aca_header_2(bits):
+    """
+    Unpack ACA header 2 (ACA User Manual 5.3.2.2.2).
+
+    :param bits: bytes-like object of length 7
+    :return: dict
+    """
+    bits = np.array(unpack('BBBBBBB', bits), dtype=np.uint8)
+    c = np.unpackbits(bits[:2])
+    return {
+        'BGDRMS': _packbits(c[6:16]),
+        'TEMPCCD': bits[2],
+        'TEMPHOUS': bits[3],
+        'TEMPPRIM': bits[4],
+        'TEMPSEC': bits[5],
+        'BGDSTAT': bits[6],
+        'bkg_pixel_status': np.unpackbits(bits[-1:])
+    }
+
+
+def _aca_header_3(bits):
+    """
+    Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).
+
+    :param bits: bytes-like object of length 7
+    :return: dict
+    """
+    return {
+        f'DIAGNOSTIC': unpack('BBBBBB', bits[1:])
+    }
+
+
+# all headers for each kind of image
+ACA_HEADER = [
+    _aca_header_1,
+    _aca_header_1,
+    _aca_header_2,
+    None,
+    _aca_header_1,
+    _aca_header_2,
+    _aca_header_3,
+    _aca_header_3
+]
+
+
+def unpack_aca_telemetry(a):
+    """
+    Unpack ACA telemetry encoded in 225-byte packets.
+
+    :param a:
+    :return: list of list of dict
+
+    A list of frames, each with a list of slots, each being a dictionary.
+    """
+    integ, glbstat, commcnt, commprog, s1, s2, s3 = _aca_front_fmt.unpack(a[:8])
+    _size_bits[:, -3:] = np.unpackbits(np.array([[s1, s2, s3]], dtype=np.uint8).T, axis=1).reshape(
+        (8, -1))
+    img_types = np.packbits(_size_bits, axis=1).T[0]
+    slots = []
+    for img_num, i in enumerate(range(8, len(a), 27)):
+        img_header = ACA_HEADER[img_types[img_num]](a[i:i + 7])
+        img_pixels = unpack('B' * 20, a[i + 7:i + 27])
+        _pixel_bits[:, -10:] = np.unpackbits(np.array([img_pixels], dtype=np.uint8).T,
+                                             axis=1).reshape((-1, 10))
+        img_pixels = np.sum(np.packbits(_pixel_bits, axis=1) * [[2 ** 8, 1]], axis=1)
+        img_header['pixels'] = img_pixels
+        slots.append(img_header)
+    res = {'INTEG': integ, 'GLBSTAT': glbstat, 'COMMCNT': commcnt, 'COMMPROG': commprog}
+    for i, s in enumerate(slots):
+        s.update(res)
+        s['IMGTYPE'] = img_types[i]
+    return slots
+
+
+def combine_packets(aca_packets):
+    """
+    Combine a list of ACA packets into a single record.
+
+    This is intended to combine the two 6X6 packets or the four 8X8 packets.
+
+    :param aca_packets: list of dict
+    :return: dict
+    """
+    res = {}
+    pixels = np.ma.masked_all((8, 8))
+    pixels.data[:] = np.nan
+    for f in aca_packets:
+        pixels[indices[f['IMGTYPE']][0], indices[f['IMGTYPE']][1]] = f['pixels']
+
+    for f in aca_packets:
+        res.update(f)
+    del res['pixels']
+    res['IMG'] = pixels
+    return res
+
+
+def get_raw_aca_packets(start, stop):
+    """
+    Fetch 1025-byte VCDU frames using maude and extract a list of 225-byte ACA packets.
+
+    If the first minor frame in a group of four ACA packets is within (start, stop),
+    the three following minor frames are included if present.
+
+    returns a dictionary with keys ['TIME', 'MNF', 'MJF', 'packets', 'flags'].
+    These correspond to the minor frame time, minor frame count, major frame count,
+    the list of packets, and flags returned by Maude respectively.
+
+    :param start: timestamp interpreted as a Chandra.Time.DateTime
+    :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :return:
+    """
+    date_start, date_stop = DateTime(start), DateTime(stop)  # ensure input is proper date
+    stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
+
+    # also getting major and minor frames to figure out which is the first ACA packet in a group
+    vcdu_counter = maude.get_msids(['CVCMNCTR', 'CVCMJCTR'],
+                                   start=date_start,
+                                   stop=date_stop + stop_pad)
+
+    sub = vcdu_counter['data'][0]['values'] % 4  # the minor frame index within each ACA update
+    vcdu_times = vcdu_counter['data'][0]['times']
+
+    major_counter = np.cumsum(sub == 0)  # this number is monotonically increasing starting at 0
+
+    # only unpack complete ACA frames in the original range:
+    aca_frame_entries = np.ma.masked_all((major_counter.max() + 1, 4), dtype=int)
+    aca_frame_entries[major_counter, sub] = np.arange(vcdu_times.shape[0])
+    aca_frame_times = np.ma.masked_all((major_counter.max() + 1, 4))
+    aca_frame_times[major_counter, sub] = vcdu_times
+
+    # this will remove ACA records with at least one missing minor frame
+    select = ((~np.any(aca_frame_times.mask, axis=1)) *
+              (aca_frame_times[:, 0] >= date_start.secs) *
+              (aca_frame_times[:, 0] <= date_stop.secs))
+
+    # get the frames and unpack front matter
+    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad)
+    rf, flags, nblobs = unpack('<bHI', frames[:7])
+    assert nblobs == len(sub)  # this should never fail.
+
+    # assemble the 56 bit ACA minor records and times (time is not unpacked)
+    aca = []
+    aca_times = []
+    for i in range(7, len(frames), 1033):
+        aca_times.append(frames[i:i + 8])
+        aca.append(b''.join([frames[i + j + 8:i + j + 8 + 14] for j in [18, 274, 530, 780]]))
+    assert len(aca) == nblobs  # this should never fail.
+
+    # combine them into 224 byte frames (it currently ensures all 224 bytes are there)
+    aca_packets = [b''.join([aca[i] for i in entry]) for entry in aca_frame_entries[select]]
+    for a in aca_packets:
+        assert (len(a) == 224)
+
+    minor_counter = vcdu_counter['data'][0]['values'][aca_frame_entries[select, 0]]
+    major_counter = vcdu_counter['data'][1]['values'][aca_frame_entries[select, 0]]
+    times = vcdu_counter['data'][0]['times'][aca_frame_entries[select, 0]]
+
+    return {'flags': flags, 'packets': aca_packets,
+            'TIME': times, 'MNF': minor_counter, 'MJF': major_counter}
+
+
+def aca_packets_to_table(aca_packets):
+    """
+    Store ACA packets in a table.
+
+    :param aca_packets: list of dict
+    :return: astropy.table.Table
+    """
+    import copy
+    dtype = np.dtype(
+        [('TIME', np.float64), ('MJF', np.uint32), ('MNF', np.uint8), ('IMGNUM', np.uint32),
+         ('COMMCNT', np.uint8), ('COMMPROG', np.uint8), ('GLBSTAT', np.uint8),
+         ('IMGFUNC', np.uint32),
+         ('IMGTYPE', np.uint8), ('IMGSCALE', int), ('IMGROW0', np.int8), ('IMGCOL0', np.int8),
+         ('INTEG', int),
+         ('BGDAVG', np.uint32), ('BGDRMS', np.uint32), ('TEMPCCD', np.uint32),
+         ('TEMPHOUS', np.uint32),
+         ('TEMPPRIM', np.uint32), ('TEMPSEC', np.uint32), ('BGDSTAT', np.uint8)
+         ])
+
+    array = np.ma.masked_all(len(aca_packets), dtype=dtype)
+    names = copy.deepcopy(dtype.names)
+    pixels = []
+    img = []
+    for i, aca_packet in enumerate(aca_packets):
+        if 'pixels' in aca_packet:
+            pixels.append(aca_packet['pixels'])
+        if 'IMG' in aca_packet:
+            img.append(aca_packet['IMG'])
+        for k in names:
+            if k in aca_packet:
+                array[i][k] = aca_packet[k]
+
+    table = Table(array)
+    if pixels:
+        table['PIXELS'] = pixels
+    if img:
+        table['IMG'] = img
+    return table
+
+
+def get_aca_packets(start, stop, level0=False):
+    """
+    Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
+
+    Incomplete ACA packets (if there is a minor frame missing) are discarded.
+
+    :param start: timestamp interpreted as a Chandra.Time.DateTime
+    :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :param level0: bool
+    :return: astropy.table.Table
+    """
+    start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
+    if level0:
+        stop += 2. / 86400  # pad...
+
+    aca_packets = get_raw_aca_packets(start, stop)
+    aca_packets['packets'] = [unpack_aca_telemetry(a) for a in aca_packets['packets']]
+
+    table = aca_packets_to_table([f[i] for f in aca_packets['packets'] for i in range(8)])
+    table['TIME'] = [t for t in aca_packets['TIME'] for _ in range(8)]
+    table['MJF'] = [t for t in aca_packets['MJF'] for _ in range(8)]
+    table['MNF'] = [t for t in aca_packets['MNF'] for _ in range(8)]
+
+    if level0:
+        table['INTEG'] = table['INTEG'] * 0.016
+        # table['IMGSCALE'] = table['IMGSCALE'] / 32
+        table['PIXELS'] = table['PIXELS'] * table['IMGSCALE'][:, np.newaxis] / 32 - 50
+        table['TIME'] -= (table['INTEG'] / 2 + 1.025)
+        table = table[(table['TIME'] >= start.secs) * (table['TIME'] <= stop.secs)]
+    return table
