@@ -507,11 +507,11 @@ indices = [
 _aca_front_fmt = Struct('>HBBBBBB')
 _size_bits = np.zeros((8, 8), dtype=np.uint8)
 _pixel_bits = np.zeros((16, 16), dtype=np.uint16)
-_bits = np.array([1 << i for i in range(64)])[::-1]
+_bits = np.array([1 << i for i in range(64)], dtype=np.uint64)[::-1]
 
 
 # I'm sure there is a better way...
-def _packbits(a):
+def _packbits(a, dtype=np.uint8):
     # take something like this: [1,0,1,1,0] and return 2^4 + 2^2 + 2
     return np.sum(a * _bits[-len(a):])
 
@@ -620,6 +620,8 @@ def combine_packets(aca_packets):
     :param aca_packets: list of dict
     :return: dict
     """
+    # note that they are reverse-sorted so the first frame overwrites the others if they collide
+    aca_packets = sorted(aca_packets, key=lambda p: p['TIME'], reverse=True)
     res = {}
     pixels = np.ma.masked_all((8, 8))
     pixels.data[:] = np.nan
@@ -631,6 +633,23 @@ def combine_packets(aca_packets):
     del res['pixels']
     res['IMG'] = pixels
     return res
+
+
+def group_packets(packets, discard=True):
+    res = [packets[0]]
+    s = 1 if res[0]['IMGTYPE'] == 0 else (2 if res[0]['IMGTYPE'] == 1 else 4)
+    n = res[0]['MJF']*128 + res[0]['MNF'] + 4*s
+    for packet in packets[1:]:
+        if res and (packet['IMGTYPE'] in [0, 1, 4] or packet['MJF']*128 + packet['MNF'] > n):
+            if not discard or len(res) == s:
+                yield res
+            res = []
+        if not res:
+            n = packet['MJF']*128 + packet['MNF'] + 4*s
+            s = 1 if packet['IMGTYPE'] == 0 else (2 if packet['IMGTYPE'] == 1 else 4)
+        res.append(packet)
+    if res and (not discard or len(res) == s):
+        yield res
 
 
 def get_raw_aca_packets(start, stop):
@@ -738,7 +757,8 @@ def aca_packets_to_table(aca_packets):
     return table
 
 
-def get_aca_packets(start, stop, level0=False):
+def get_aca_packets(start, stop, level0=False,
+                    combine=False, adjust_time=False, calibrate_pixels=False):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
 
@@ -747,24 +767,50 @@ def get_aca_packets(start, stop, level0=False):
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
     :param level0: bool
+    :param combine: bool
+    :param adjust_time: bool
+    :param calibrate_pixels: bool
     :return: astropy.table.Table
     """
+    if level0:
+        adjust_time = True
+        combine = True
+        calibrate_pixels = True
+
     start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
-    if level0:
-        stop += 2. / 86400  # pad...
+    start_pad = 0
+    stop_pad = 0
+    if adjust_time:
+        stop_pad += 2. / 86400  # time will get shifted...
+    if combine:
+        stop_pad += 3.08 / 86400 # there can be trailing frames
 
-    aca_packets = get_raw_aca_packets(start, stop)
+    aca_packets = get_raw_aca_packets(start - start_pad, stop + stop_pad)
     aca_packets['packets'] = [unpack_aca_telemetry(a) for a in aca_packets['packets']]
+    for i in range(len(aca_packets['packets'])):
+        for j in range(8):
+            aca_packets['packets'][i][j]['TIME'] = aca_packets['TIME'][i]
+            aca_packets['packets'][i][j]['MJF'] = aca_packets['MJF'][i]
+            aca_packets['packets'][i][j]['MNF'] = aca_packets['MNF'][i]
+            aca_packets['packets'][i][j]['IMGNUM'] = j
 
-    table = aca_packets_to_table([f[i] for f in aca_packets['packets'] for i in range(8)])
-    table['TIME'] = [t for t in aca_packets['TIME'] for _ in range(8)]
-    table['MJF'] = [t for t in aca_packets['MJF'] for _ in range(8)]
-    table['MNF'] = [t for t in aca_packets['MNF'] for _ in range(8)]
+    aca_packets = [[f[i] for f in aca_packets['packets']] for i in range(8)]
+    if combine:
+        aca_packets = sum([[combine_packets(g) for g in group_packets(p)] for p in aca_packets], [])
+    else:
+        aca_packets = [row for slot in aca_packets for row in slot]
+    table = aca_packets_to_table(aca_packets)
 
-    if level0:
+    if adjust_time:
         table['INTEG'] = table['INTEG'] * 0.016
-        # table['IMGSCALE'] = table['IMGSCALE'] / 32
-        table['PIXELS'] = table['PIXELS'] * table['IMGSCALE'][:, np.newaxis] / 32 - 50
-        table['TIME'] -= (table['INTEG'] / 2 + 1.025)
+        table['TIME'] -= table['INTEG'] / 2 + 1.025
+        table['END_INTEG_TIME'] = table['TIME'] + table['INTEG'] / 2
         table = table[(table['TIME'] >= start.secs) * (table['TIME'] <= stop.secs)]
+
+    if calibrate_pixels:
+        if 'PIXELS' in table.colnames:
+            table['PIXELS'] = table['PIXELS'] * table['IMGSCALE'][:, np.newaxis] / 32 - 50
+        if 'IMG' in table.colnames:
+            table['IMG'] = table['IMG'] * table['IMGSCALE'][:, np.newaxis, np.newaxis] / 32 - 50
+
     return table
