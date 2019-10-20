@@ -511,9 +511,13 @@ _bits = np.array([1 << i for i in range(64)], dtype=np.uint64)[::-1]
 
 
 # I'm sure there is a better way...
-def _packbits(a, dtype=np.uint8):
+def _packbits(a, unsigned=True):
     # take something like this: [1,0,1,1,0] and return 2^4 + 2^2 + 2
-    return np.sum(a * _bits[-len(a):])
+    # This handles integer types only
+    n = len(a)
+    if not unsigned and a[0]:
+        return np.int64(np.sum(a * _bits[-n:]) - (1 << n))
+    return np.sum(a * _bits[-n:])
 
 
 def _aca_header_1(bits):
@@ -530,8 +534,8 @@ def _aca_header_1(bits):
         'IMGFUNC': _packbits(bits[4:6]),
         'sat_pixel': bool(bits[6]),
         'def_pixel': bool(bits[7]),
-        'IMGROW0': _packbits(bits[12:22]),
-        'IMGCOL0': _packbits(bits[22:32]),
+        'IMGROW0': _packbits(bits[12:22], unsigned=False),
+        'IMGCOL0': _packbits(bits[22:32], unsigned=False),
         'IMGSCALE': _packbits(bits[32:46]),
         'BGDAVG': _packbits(bits[46:56])
     }
@@ -729,7 +733,7 @@ def aca_packets_to_table(aca_packets):
         [('TIME', np.float64), ('MJF', np.uint32), ('MNF', np.uint8), ('IMGNUM', np.uint32),
          ('COMMCNT', np.uint8), ('COMMPROG', np.uint8), ('GLBSTAT', np.uint8),
          ('IMGFUNC', np.uint32),
-         ('IMGTYPE', np.uint8), ('IMGSCALE', int), ('IMGROW0', np.int8), ('IMGCOL0', np.int8),
+         ('IMGTYPE', np.uint8), ('IMGSCALE', int), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
          ('INTEG', int),
          ('BGDAVG', np.uint32), ('BGDRMS', np.uint32), ('TEMPCCD', np.uint32),
          ('TEMPHOUS', np.uint32),
@@ -758,7 +762,8 @@ def aca_packets_to_table(aca_packets):
 
 
 def get_aca_packets(start, stop, level0=False,
-                    combine=False, adjust_time=False, calibrate_pixels=False):
+                    combine=False, adjust_time=False, calibrate_pixels=False,
+                    adjust_corner = False):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
 
@@ -770,12 +775,14 @@ def get_aca_packets(start, stop, level0=False,
     :param combine: bool
     :param adjust_time: bool
     :param calibrate_pixels: bool
+    :param: adjust_corner: bool
     :return: astropy.table.Table
     """
     if level0:
         adjust_time = True
         combine = True
         calibrate_pixels = True
+        adjust_corner = True
 
     start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
     start_pad = 0
@@ -800,6 +807,12 @@ def get_aca_packets(start, stop, level0=False,
     else:
         aca_packets = [row for slot in aca_packets for row in slot]
     table = aca_packets_to_table(aca_packets)
+
+    if adjust_corner:
+        table['IMGROW0'][table['IMGTYPE'] == 1] -= 1
+        table['IMGCOL0'][table['IMGTYPE'] == 1] -= 1
+        table['IMGROW0'][table['IMGTYPE'] == 2] -= 1
+        table['IMGCOL0'][table['IMGTYPE'] == 2] -= 1
 
     if adjust_time:
         table['INTEG'] = table['INTEG'] * 0.016
