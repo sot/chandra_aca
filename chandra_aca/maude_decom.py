@@ -548,8 +548,8 @@ def _aca_header_2(bits):
     :param bits: bytes-like object of length 7
     :return: dict
     """
-    bits = np.array(unpack('BBBBBBB', bits), dtype=np.uint8)
-    c = np.unpackbits(bits[:2])
+    bits = unpack('BbbbbBB', bits)
+    c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
     return {
         'BGDRMS': _packbits(c[6:16]),
         'TEMPCCD': bits[2],
@@ -557,7 +557,7 @@ def _aca_header_2(bits):
         'TEMPPRIM': bits[4],
         'TEMPSEC': bits[5],
         'BGDSTAT': bits[6],
-        'bkg_pixel_status': np.unpackbits(bits[-1:])
+        'bkg_pixel_status': np.unpackbits(np.array(bits[:2], dtype=np.uint8)[-1:])
     }
 
 
@@ -730,14 +730,14 @@ def aca_packets_to_table(aca_packets):
     """
     import copy
     dtype = np.dtype(
-        [('TIME', np.float64), ('MJF', np.uint32), ('MNF', np.uint8), ('IMGNUM', np.uint32),
+        [('TIME', np.float64), ('MJF', np.uint32), ('MNF', np.uint32), ('IMGNUM', np.uint32),
          ('COMMCNT', np.uint8), ('COMMPROG', np.uint8), ('GLBSTAT', np.uint8),
          ('IMGFUNC', np.uint32),
-         ('IMGTYPE', np.uint8), ('IMGSCALE', int), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
-         ('INTEG', int),
-         ('BGDAVG', np.uint32), ('BGDRMS', np.uint32), ('TEMPCCD', np.uint32),
-         ('TEMPHOUS', np.uint32),
-         ('TEMPPRIM', np.uint32), ('TEMPSEC', np.uint32), ('BGDSTAT', np.uint8)
+         ('IMGTYPE', np.uint8), ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
+         ('INTEG', np.uint16),
+         ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
+         ('TEMPHOUS', np.int16),
+         ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16), ('BGDSTAT', np.uint8)
          ])
 
     array = np.ma.masked_all(len(aca_packets), dtype=dtype)
@@ -763,7 +763,7 @@ def aca_packets_to_table(aca_packets):
 
 def get_aca_packets(start, stop, level0=False,
                     combine=False, adjust_time=False, calibrate_pixels=False,
-                    adjust_corner = False):
+                    adjust_corner = False, calibrate_temperatures=False):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
 
@@ -783,6 +783,7 @@ def get_aca_packets(start, stop, level0=False,
         combine = True
         calibrate_pixels = True
         adjust_corner = True
+        calibrate_temperatures = True
 
     start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
     start_pad = 0
@@ -807,6 +808,10 @@ def get_aca_packets(start, stop, level0=False,
     else:
         aca_packets = [row for slot in aca_packets for row in slot]
     table = aca_packets_to_table(aca_packets)
+
+    if calibrate_temperatures:
+        for k in ['TEMPCCD', 'TEMPSEC', 'TEMPHOUS', 'TEMPPRIM']:
+            table[k] = 0.4 * table[k].astype(np.float32) + 273.15
 
     if adjust_corner:
         table['IMGROW0'][table['IMGTYPE'] == 1] -= 1
