@@ -640,17 +640,18 @@ def combine_packets(aca_packets):
 
 
 def group_packets(packets, discard=True):
-    res = [packets[0]]
-    s = 1 if res[0]['IMGTYPE'] == 0 else (2 if res[0]['IMGTYPE'] == 1 else 4)
-    n = res[0]['MJF']*128 + res[0]['MNF'] + 4*s
-    for packet in packets[1:]:
-        if res and (packet['IMGTYPE'] in [0, 1, 4] or packet['MJF']*128 + packet['MNF'] > n):
+    res = []
+    for packet in packets:
+        if res and (packet['MJF']*128 + packet['MNF'] > n):
             if not discard or len(res) == s:
                 yield res
             res = []
         if not res:
-            n = packet['MJF']*128 + packet['MNF'] + 4*s
-            s = 1 if packet['IMGTYPE'] == 0 else (2 if packet['IMGTYPE'] == 1 else 4)
+            # the number of minor frames expected within the same ACA packet
+            s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[packet['IMGTYPE']]
+            # the number of minor frames within the same ACA packet expected after this minor frame
+            remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[packet['IMGTYPE']]
+            n = packet['MJF']*128 + packet['MNF'] + 4 * remaining
         res.append(packet)
     if res and (not discard or len(res) == s):
         yield res
