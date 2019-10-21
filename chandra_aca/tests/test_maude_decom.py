@@ -161,3 +161,135 @@ def test_partial_images():
         imgsize = r[r['IMGNUM'] == 0]['IMGSIZE'][i]
         assert np.all(np.isnan(img[mask[imgsize]]))
         assert np.all(~np.isnan(img[~mask[imgsize]]))
+
+
+def test_vcdu_vs_level0():
+    from astropy.table import Table
+
+    start, stop = (686111020, 686111030)
+    table = maude_decom.get_aca_packets(start, stop, level0=True)
+    names = ['TIME', 'MJF', 'MNF', 'END_INTEG_TIME', 'INTEG', 'GLBSTAT', 'COMMCNT',
+             'COMMPROG', 'IMGROW0', 'IMGCOL0', 'IMGSCALE', 'BGDAVG', 'BGDRMS',
+             'TEMPCCD', 'TEMPHOUS', 'TEMPPRIM', 'TEMPSEC', 'BGDSTAT']
+    for slot in range(8):
+        test_data = Table.read(
+            f'/Users/javierg/SAO/git/aca_view/aca_view/tests/data/acaf686111014N001_{slot}_img0.fits.gz')
+        td = test_data[(test_data['TIME'] <= stop) * (test_data['TIME'] >= start)]
+
+        tt = table[table['IMGNUM'] == slot]
+
+        assert len(tt) == len(td)
+        n = (tt['IMG'].shape[1] - td['IMGRAW'].shape[1]) // 2
+        imgraw = np.pad(td['IMGRAW'], n, 'constant')[n:-n] if n else td['IMGRAW']
+        n = 'IMG'
+        t = np.all(np.isclose(tt[n], imgraw))
+        assert t
+        for n in names:
+            t = np.all(np.isclose(tt[n], td[n]))
+            assert t
+
+
+def test_vcdu_packet_combination():
+    import copy
+
+    # 8x8
+    test_packets_groups = [
+        {'IMGTYPE': 7, 'MJF': 9800, 'MNF': 84},
+        {'IMGTYPE': 4, 'MJF': 9800, 'MNF': 88},
+        {'IMGTYPE': 5, 'MJF': 9800, 'MNF': 92},
+        {'IMGTYPE': 6, 'MJF': 9800, 'MNF': 96},
+        {'IMGTYPE': 7, 'MJF': 9800, 'MNF': 100},
+        {'IMGTYPE': 4, 'MJF': 9800, 'MNF': 104},
+        {'IMGTYPE': 5, 'MJF': 9800, 'MNF': 108},
+        {'IMGTYPE': 6, 'MJF': 9800, 'MNF': 112},
+        {'IMGTYPE': 7, 'MJF': 9800, 'MNF': 116},
+        {'IMGTYPE': 4, 'MJF': 9800, 'MNF': 120},
+        {'IMGTYPE': 5, 'MJF': 9800, 'MNF': 124},
+        {'IMGTYPE': 6, 'MJF': 9801, 'MNF': 0}]
+
+    packets = copy.deepcopy(test_packets_groups)
+    assert [[(q['MJF'], q['MNF']) for q in p]
+            for p in maude_decom.group_packets(packets, False)] == \
+           [[(9800, 84)],
+            [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
+            [(9800, 104), (9800, 108), (9800, 112), (9800, 116)],
+            [(9800, 120), (9800, 124), (9801, 0)]]
+
+    packets = copy.deepcopy(test_packets_groups)
+    del packets[4]
+    assert [[(q['MJF'], q['MNF']) for q in p]
+            for p in maude_decom.group_packets(packets, False)] == \
+           [[(9800, 84)],
+            [(9800, 88), (9800, 92), (9800, 96)],
+            [(9800, 104), (9800, 108), (9800, 112), (9800, 116)],
+            [(9800, 120), (9800, 124), (9801, 0)]]
+
+    packets = copy.deepcopy(test_packets_groups)
+    del packets[4]
+    assert [[(q['MJF'], q['MNF']) for q in p]
+            for p in maude_decom.group_packets(packets, True)] == \
+           [[(9800, 104), (9800, 108), (9800, 112), (9800, 116)]]
+
+    packets = copy.deepcopy(test_packets_groups)
+
+    del packets[5]
+    assert [[(q['MJF'], q['MNF']) for q in p]
+            for p in maude_decom.group_packets(packets, True)] == \
+           [[(9800, 88), (9800, 92), (9800, 96), (9800, 100)]]
+
+    # 6x6
+    test_packets_groups = [
+        {'IMGTYPE': 2, 'MJF': 9800, 'MNF': 120},
+        {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 124},
+        {'IMGTYPE': 2, 'MJF': 9801, 'MNF': 0},
+        {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 4},
+        {'IMGTYPE': 2, 'MJF': 9800, 'MNF': 8},
+        {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 12},
+        {'IMGTYPE': 2, 'MJF': 9800, 'MNF': 16},
+        {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 20}]
+
+    packets = copy.deepcopy(test_packets_groups)
+    assert [[(q['MJF'], q['MNF']) for q in p] for p in
+            maude_decom.group_packets(packets, False)] == [[(9800, 120)],
+                                                           [(9800, 124), (9801, 0)],
+                                                           [(9800, 4), (9800, 8)],
+                                                           [(9800, 12), (9800, 16)],
+                                                           [(9800, 20)]]
+
+    packets = copy.deepcopy(test_packets_groups)
+    assert [[(q['MJF'], q['MNF']) for q in p]
+            for p in maude_decom.group_packets(packets, True)] == \
+           [[(9800, 124), (9801, 0)], [(9800, 4), (9800, 8)], [(9800, 12), (9800, 16)]]
+
+    # 4x4
+    test_packets_groups = [
+        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 120},
+        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 124},
+        {'IMGTYPE': 0, 'MJF': 9801, 'MNF': 0},
+        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 4},
+        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 8},
+        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 12},
+        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 16},
+        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 20}]
+
+    packets = copy.deepcopy(test_packets_groups)
+    assert [[(q['MJF'], q['MNF']) for q in p] for p in
+            maude_decom.group_packets(packets, False)] == [[(9800, 120)],
+                                                           [(9800, 124)],
+                                                           [(9801, 0)],
+                                                           [(9800, 4)],
+                                                           [(9800, 8)],
+                                                           [(9800, 12)],
+                                                           [(9800, 16)],
+                                                           [(9800, 20)]]
+
+    packets = copy.deepcopy(test_packets_groups)
+    assert [[(q['MJF'], q['MNF']) for q in p] for p in
+            maude_decom.group_packets(packets, True)] == [[(9800, 120)],
+                                                          [(9800, 124)],
+                                                          [(9801, 0)],
+                                                          [(9800, 4)],
+                                                          [(9800, 8)],
+                                                          [(9800, 12)],
+                                                          [(9800, 16)],
+                                                          [(9800, 20)]]
