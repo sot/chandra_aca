@@ -172,8 +172,8 @@ def test_vcdu_vs_level0():
              'COMMPROG', 'IMGROW0', 'IMGCOL0', 'IMGSCALE', 'BGDAVG', 'BGDRMS',
              'TEMPCCD', 'TEMPHOUS', 'TEMPPRIM', 'TEMPSEC', 'BGDSTAT']
     for slot in range(8):
-        test_data = Table.read(
-            f'/Users/javierg/SAO/git/aca_view/aca_view/tests/data/acaf686111014N001_{slot}_img0.fits.gz')
+        test_data = Table.read(os.path.join(os.path.dirname(__file__), 'data',
+                                            f'acaf686111014N001_{slot}_img0.fits.gz'))
         td = test_data[(test_data['TIME'] <= stop) * (test_data['TIME'] >= start)]
 
         tt = table[table['IMGNUM'] == slot]
@@ -208,8 +208,7 @@ def test_vcdu_packet_combination():
         {'IMGTYPE': 6, 'MJF': 9801, 'MNF': 0}]
 
     packets = copy.deepcopy(test_packets_groups)
-    p = [[(q['MJF'], q['MNF']) for q in p]
-            for p in maude_decom.group_packets(packets, False)]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
     assert p == [[(9800, 84)],
                  [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
                  [(9800, 104), (9800, 108), (9800, 112), (9800, 116)],

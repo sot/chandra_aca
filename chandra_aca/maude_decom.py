@@ -641,8 +641,10 @@ def combine_packets(aca_packets):
 
 def group_packets(packets, discard=True):
     res = []
+    n = None
+    s = None
     for packet in packets:
-        if res and (packet['MJF']*128 + packet['MNF'] > n):
+        if res and (packet['MJF'] * 128 + packet['MNF'] > n):
             if not discard or len(res) == s:
                 yield res
             res = []
@@ -651,7 +653,7 @@ def group_packets(packets, discard=True):
             s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[packet['IMGTYPE']]
             # the number of minor frames within the same ACA packet expected after this minor frame
             remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[packet['IMGTYPE']]
-            n = packet['MJF']*128 + packet['MNF'] + 4 * remaining
+            n = packet['MJF'] * 128 + packet['MNF'] + 4 * remaining
         res.append(packet)
     if res and (not discard or len(res) == s):
         yield res
@@ -733,12 +735,11 @@ def aca_packets_to_table(aca_packets):
     dtype = np.dtype(
         [('TIME', np.float64), ('MJF', np.uint32), ('MNF', np.uint32), ('IMGNUM', np.uint32),
          ('COMMCNT', np.uint8), ('COMMPROG', np.uint8), ('GLBSTAT', np.uint8),
-         ('IMGFUNC', np.uint32),
-         ('IMGTYPE', np.uint8), ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
-         ('INTEG', np.uint16),
+         ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8), ('IMGSCALE', np.uint16),
+         ('IMGROW0', np.int16), ('IMGCOL0', np.int16), ('INTEG', np.uint16),
          ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
-         ('TEMPHOUS', np.int16),
-         ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16), ('BGDSTAT', np.uint8)
+         ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
+         ('BGDSTAT', np.uint8)
          ])
 
     array = np.ma.masked_all(len(aca_packets), dtype=dtype)
@@ -764,7 +765,7 @@ def aca_packets_to_table(aca_packets):
 
 def get_aca_packets(start, stop, level0=False,
                     combine=False, adjust_time=False, calibrate_pixels=False,
-                    adjust_corner = False, calibrate_temperatures=False):
+                    adjust_corner=False, calibrate_temperatures=False):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
 
@@ -792,7 +793,7 @@ def get_aca_packets(start, stop, level0=False,
     if adjust_time:
         stop_pad += 2. / 86400  # time will get shifted...
     if combine:
-        stop_pad += 3.08 / 86400 # there can be trailing frames
+        stop_pad += 3.08 / 86400  # there can be trailing frames
 
     aca_packets = get_raw_aca_packets(start - start_pad, stop + stop_pad)
     aca_packets['packets'] = [unpack_aca_telemetry(a) for a in aca_packets['packets']]
