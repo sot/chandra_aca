@@ -208,88 +208,134 @@ def test_vcdu_packet_combination():
         {'IMGTYPE': 6, 'MJF': 9801, 'MNF': 0}]
 
     packets = copy.deepcopy(test_packets_groups)
-    assert [[(q['MJF'], q['MNF']) for q in p]
-            for p in maude_decom.group_packets(packets, False)] == \
-           [[(9800, 84)],
-            [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
-            [(9800, 104), (9800, 108), (9800, 112), (9800, 116)],
-            [(9800, 120), (9800, 124), (9801, 0)]]
+    p = [[(q['MJF'], q['MNF']) for q in p]
+            for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 84)],
+                 [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
+                 [(9800, 104), (9800, 108), (9800, 112), (9800, 116)],
+                 [(9800, 120), (9800, 124), (9801, 0)]], 'All 8X8'
 
     packets = copy.deepcopy(test_packets_groups)
     del packets[4]
-    assert [[(q['MJF'], q['MNF']) for q in p]
-            for p in maude_decom.group_packets(packets, False)] == \
-           [[(9800, 84)],
-            [(9800, 88), (9800, 92), (9800, 96)],
-            [(9800, 104), (9800, 108), (9800, 112), (9800, 116)],
-            [(9800, 120), (9800, 124), (9801, 0)]]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 84)],
+                 [(9800, 88), (9800, 92), (9800, 96)],
+                 [(9800, 104), (9800, 108), (9800, 112), (9800, 116)],
+                 [(9800, 120), (9800, 124), (9801, 0)]], 'Missing 8X81'
 
     packets = copy.deepcopy(test_packets_groups)
-    del packets[4]
-    assert [[(q['MJF'], q['MNF']) for q in p]
-            for p in maude_decom.group_packets(packets, True)] == \
-           [[(9800, 104), (9800, 108), (9800, 112), (9800, 116)]]
-
-    packets = copy.deepcopy(test_packets_groups)
-
     del packets[5]
-    assert [[(q['MJF'], q['MNF']) for q in p]
-            for p in maude_decom.group_packets(packets, True)] == \
-           [[(9800, 88), (9800, 92), (9800, 96), (9800, 100)]]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, True)]
+    assert p == [[(9800, 88), (9800, 92), (9800, 96), (9800, 100)]], 'Whole, missing 8X81'
+
+    packets = copy.deepcopy(test_packets_groups)
+    del packets[5]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 84)],
+                 [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
+                 [(9800, 108), (9800, 112), (9800, 116)],
+                 [(9800, 120), (9800, 124), (9801, 0)]], 'Missing 8X81'
+
+    packets = copy.deepcopy(test_packets_groups)
+    del packets[6]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 84)],
+                 [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
+                 [(9800, 104), (9800, 112), (9800, 116)],
+                 [(9800, 120), (9800, 124), (9801, 0)]], 'Missing 8X82'
+
+    packets = copy.deepcopy(test_packets_groups)
+    del packets[7]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 84)],
+                 [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
+                 [(9800, 104), (9800, 108), (9800, 116)],
+                 [(9800, 120), (9800, 124), (9801, 0)]], 'Missing 8X83'
+
+    packets = copy.deepcopy(test_packets_groups)
+    del packets[8]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 84)],
+                 [(9800, 88), (9800, 92), (9800, 96), (9800, 100)],
+                 [(9800, 104), (9800, 108), (9800, 112)],
+                 [(9800, 120), (9800, 124), (9801, 0)]], 'Missing 8X84'
 
     # 6x6
     test_packets_groups = [
         {'IMGTYPE': 2, 'MJF': 9800, 'MNF': 120},
         {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 124},
         {'IMGTYPE': 2, 'MJF': 9801, 'MNF': 0},
-        {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 4},
-        {'IMGTYPE': 2, 'MJF': 9800, 'MNF': 8},
-        {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 12},
-        {'IMGTYPE': 2, 'MJF': 9800, 'MNF': 16},
-        {'IMGTYPE': 1, 'MJF': 9800, 'MNF': 20}]
+        {'IMGTYPE': 1, 'MJF': 9801, 'MNF': 4},
+        {'IMGTYPE': 2, 'MJF': 9801, 'MNF': 8},
+        {'IMGTYPE': 1, 'MJF': 9801, 'MNF': 12},
+        {'IMGTYPE': 2, 'MJF': 9801, 'MNF': 16},
+        {'IMGTYPE': 1, 'MJF': 9801, 'MNF': 20}]
 
     packets = copy.deepcopy(test_packets_groups)
-    assert [[(q['MJF'], q['MNF']) for q in p] for p in
-            maude_decom.group_packets(packets, False)] == [[(9800, 120)],
-                                                           [(9800, 124), (9801, 0)],
-                                                           [(9800, 4), (9800, 8)],
-                                                           [(9800, 12), (9800, 16)],
-                                                           [(9800, 20)]]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 120)],
+                 [(9800, 124), (9801, 0)],
+                 [(9801, 4), (9801, 8)],
+                 [(9801, 12), (9801, 16)],
+                 [(9801, 20)]], 'All 6X61'
 
     packets = copy.deepcopy(test_packets_groups)
-    assert [[(q['MJF'], q['MNF']) for q in p]
-            for p in maude_decom.group_packets(packets, True)] == \
-           [[(9800, 124), (9801, 0)], [(9800, 4), (9800, 8)], [(9800, 12), (9800, 16)]]
+    del packets[2]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 120)],
+                 [(9800, 124)],
+                 [(9801, 4), (9801, 8)],
+                 [(9801, 12), (9801, 16)],
+                 [(9801, 20)]], 'Missing 6X62'
+
+    packets = copy.deepcopy(test_packets_groups)
+    del packets[1]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+
+    assert p == [[(9800, 120)],
+                 [(9801, 0)],
+                 [(9801, 4), (9801, 8)],
+                 [(9801, 12), (9801, 16)],
+                 [(9801, 20)]], 'Missing 6X61'
+
+    packets = copy.deepcopy(test_packets_groups)
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, True)]
+    assert p == [[(9800, 124), (9801, 0)], [(9801, 4), (9801, 8)], [(9801, 12), (9801, 16)]]
 
     # 4x4
     test_packets_groups = [
         {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 120},
         {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 124},
         {'IMGTYPE': 0, 'MJF': 9801, 'MNF': 0},
-        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 4},
-        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 8},
-        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 12},
-        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 16},
-        {'IMGTYPE': 0, 'MJF': 9800, 'MNF': 20}]
+        {'IMGTYPE': 0, 'MJF': 9801, 'MNF': 4},
+        {'IMGTYPE': 0, 'MJF': 9801, 'MNF': 8},
+        {'IMGTYPE': 0, 'MJF': 9801, 'MNF': 12},
+        {'IMGTYPE': 0, 'MJF': 9801, 'MNF': 16},
+        {'IMGTYPE': 0, 'MJF': 9801, 'MNF': 20}]
 
     packets = copy.deepcopy(test_packets_groups)
-    assert [[(q['MJF'], q['MNF']) for q in p] for p in
-            maude_decom.group_packets(packets, False)] == [[(9800, 120)],
-                                                           [(9800, 124)],
-                                                           [(9801, 0)],
-                                                           [(9800, 4)],
-                                                           [(9800, 8)],
-                                                           [(9800, 12)],
-                                                           [(9800, 16)],
-                                                           [(9800, 20)]]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, False)]
+    assert p == [[(9800, 120)],
+                 [(9800, 124)],
+                 [(9801, 0)],
+                 [(9801, 4)],
+                 [(9801, 8)],
+                 [(9801, 12)],
+                 [(9801, 16)],
+                 [(9801, 20)]]
 
     packets = copy.deepcopy(test_packets_groups)
-    assert [[(q['MJF'], q['MNF']) for q in p] for p in
-            maude_decom.group_packets(packets, True)] == [[(9800, 120)],
-                                                          [(9800, 124)],
-                                                          [(9801, 0)],
-                                                          [(9800, 4)],
-                                                          [(9800, 8)],
-                                                          [(9800, 12)],
-                                                          [(9800, 16)],
-                                                          [(9800, 20)]]
+    p = [[(q['MJF'], q['MNF']) for q in p] for p in maude_decom.group_packets(packets, True)]
+    assert p == [[(9800, 120)],
+                 [(9800, 124)],
+                 [(9801, 0)],
+                 [(9801, 4)],
+                 [(9801, 8)],
+                 [(9801, 12)],
+                 [(9801, 16)],
+                 [(9801, 20)]]
+
+    [None for _ in maude_decom.group_packets(packets[:0], False)]
+    [None for _ in maude_decom.group_packets(packets[:0], True)]
+    [None for _ in maude_decom.group_packets(packets[:1], False)]
+    [None for _ in maude_decom.group_packets(packets[:1], True)]
