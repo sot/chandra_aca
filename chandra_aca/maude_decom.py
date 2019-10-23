@@ -699,7 +699,7 @@ def get_raw_aca_packets(start, stop):
               (aca_frame_times[:, 0] <= date_stop.secs))
 
     # get the frames and unpack front matter
-    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad)
+    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad)['data']
     rf, flags, nblobs = unpack('<bHI', frames[:7])
     assert nblobs == len(sub)  # this should never fail.
 
