@@ -687,10 +687,11 @@ def get_raw_aca_packets(start, stop):
 
     major_counter = np.cumsum(sub == 0)  # this number is monotonically increasing starting at 0
 
+    n = major_counter.max() + 1 if len(major_counter) > 0 else 1
     # only unpack complete ACA frames in the original range:
-    aca_frame_entries = np.ma.masked_all((major_counter.max() + 1, 4), dtype=int)
+    aca_frame_entries = np.ma.masked_all((n, 4), dtype=int)
     aca_frame_entries[major_counter, sub] = np.arange(vcdu_times.shape[0])
-    aca_frame_times = np.ma.masked_all((major_counter.max() + 1, 4))
+    aca_frame_times = np.ma.masked_all((n, 4))
     aca_frame_times[major_counter, sub] = vcdu_times
 
     # this will remove ACA records with at least one missing minor frame
