@@ -500,6 +500,8 @@ def aca_packets_to_table(aca_packets):
         table['PIXELS'] = pixels
     if img:
         table['IMG'] = img
+        for i, aca_packet in enumerate(aca_packets):
+            table['IMG'].mask[i] = aca_packet['IMG'].mask
     return table
 
 
@@ -513,11 +515,19 @@ def get_aca_packets(start, stop, level0=False,
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param level0: bool
-    :param combine: bool
+    :param level0: bool.
+        Implies combine=True, adjust_time=True, calibrate_pixels=True, adjust_corner=True
+    :param combine: bool.
+        If True, multiple ACA packets are combined to form an image (depending on size),
+        If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.
     :param adjust_time: bool
+        If True, half the integration time is subtracted
     :param calibrate_pixels: bool
+        If True, pixel values will be: value * imgscale / 32 - 50
     :param: adjust_corner: bool
+        If True, 6x6 images will have imgcol0 and imgrow0 shifted by one
+    :param: calibrate_temperatures:
+        If True, temperature values will be: 0.4 * value + 273.15
     :return: astropy.table.Table
     """
     if level0:
@@ -567,7 +577,7 @@ def _get_aca_packets(aca_packets, start, stop,
     if combine:
         aca_packets = sum([[combine_aca_packets(g) for g in _group_packets(p)] for p in aca_packets], [])
     else:
-        aca_packets = [row for slot in aca_packets for row in slot]
+        aca_packets = [combine_aca_packets([row]) for slot in aca_packets for row in slot]
     table = aca_packets_to_table(aca_packets)
 
     if calibrate_temperatures:
