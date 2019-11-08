@@ -1,11 +1,81 @@
 """
 Classes and functions to help fetching ACA telemetry data using Maude.
+These include the following global variables::
+
+    - PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID
+    - PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.
+    - PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes
+    - ACA_MSID_LIST: dictionary of commonly-used ACA telemetry MSIDs.
+    - ACA_SLOT_MSID_LIST: dictionary of ACA image telemetry MSIDs.
+
+PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the image size::
+
+  - Size 4X41:
+
+    -----------------------------------------
+    | -- | -- | -- | -- | -- | -- | -- | -- |
+    -----------------------------------------
+    | -- | -- | -- | -- | -- | -- | -- | -- |
+    -----------------------------------------
+    | -- | -- | D1 | H1 | L1 | P1 | -- | -- |
+    -----------------------------------------
+    | -- | -- | C1 | G1 | K1 | O1 | -- | -- |
+    -----------------------------------------
+    | -- | -- | B1 | F1 | J1 | N1 | -- | -- |
+    -----------------------------------------
+    | -- | -- | A1 | E1 | I1 | M1 | -- | -- |
+    -----------------------------------------
+    | -- | -- | -- | -- | -- | -- | -- | -- |
+    -----------------------------------------
+    | -- | -- | -- | -- | -- | -- | -- | -- |
+    -----------------------------------------
+
+  - Size 6X61 or 6X62:
+
+    -----------------------------------------
+    | -- | -- | -- | -- | -- | -- | -- | -- |
+    -----------------------------------------
+    | -- | -- | E2 | F2 | G2 | H2 | -- | -- |
+    -----------------------------------------
+    | -- | D2 | D1 | H1 | L1 | P1 | I2 | -- |
+    -----------------------------------------
+    | -- | C2 | C1 | G1 | K1 | O1 | J2 | -- |
+    -----------------------------------------
+    | -- | B2 | B1 | F1 | J1 | N1 | K2 | -- |
+    -----------------------------------------
+    | -- | A2 | A1 | E1 | I1 | M1 | L2 | -- |
+    -----------------------------------------
+    | -- | -- | P2 | O2 | N2 | M2 | -- | -- |
+    -----------------------------------------
+    | -- | -- | -- | -- | -- | -- | -- | -- |
+    -----------------------------------------
+
+
+  - Size 8X81, 8X82, 8X83 or 8X84:
+
+    -----------------------------------------
+    | H1 | P1 | H2 | P2 | H3 | P3 | H4 | P4 |
+    -----------------------------------------
+    | G1 | O1 | G2 | O2 | G3 | O3 | G4 | O4 |
+    -----------------------------------------
+    | F1 | N1 | F2 | N2 | F3 | N3 | F4 | N4 |
+    -----------------------------------------
+    | E1 | M1 | E2 | M2 | E3 | M3 | E4 | M4 |
+    -----------------------------------------
+    | D1 | L1 | D2 | L2 | D3 | L3 | D4 | L4 |
+    -----------------------------------------
+    | C1 | K1 | C2 | K2 | C3 | K3 | C4 | K4 |
+    -----------------------------------------
+    | B1 | J1 | B2 | J2 | B3 | J3 | B4 | J4 |
+    -----------------------------------------
+    | A1 | I1 | A2 | I2 | A3 | I3 | A4 | I4 |
+    -----------------------------------------
 """
 
-from struct import unpack, Struct
+from struct import unpack as _unpack, Struct
 import numpy as np
 
-from astropy.table import Table, vstack
+from astropy.table import Table
 import maude
 
 from Chandra.Time import DateTime
@@ -38,10 +108,10 @@ PIXEL_MAP = {
 }
 
 PIXEL_MASK = {k: PIXEL_MAP[k] == '  ' for k in PIXEL_MAP}
-ROWS, COLS = np.meshgrid(np.arange(8), np.arange(8), indexing='ij')
+_ROWS, _COLS = np.meshgrid(np.arange(8), np.arange(8), indexing='ij')
 
-PIXEL_MAP_INV = {k: {p: (i, j) for i, j, p in zip(ROWS[PIXEL_MAP[k] != '  '],
-                                                  COLS[PIXEL_MAP[k] != '  '],
+PIXEL_MAP_INV = {k: {p: (i, j) for i, j, p in zip(_ROWS[PIXEL_MAP[k] != '  '],
+                                                  _COLS[PIXEL_MAP[k] != '  '],
                                                   PIXEL_MAP[k][PIXEL_MAP[k] != '  '])}
                  for k in ['6x6', '4x4', '8x8']}
 
@@ -147,348 +217,8 @@ ACA_MSID_LIST = {i + 1: _aca_msid_list(i + 1) for i in range(2)}
 ACA_SLOT_MSID_LIST = {i + 1: _aca_image_msid_list(i + 1) for i in range(2)}
 
 
-def assemble_image(pixel_data, img_size):
-    """
-    Assemble ACA images from a collection of MSID data.
-
-    This function takes pixel data values/times in the form of arrays, one for each MSID.
-    It returns an array of shape (8,8,len(img_size)).
-
-    Pixel MSIDs are mapped to array antries depending on the image size::
-
-      - Size 4X41:
-
-        -----------------------------------------
-        | -- | -- | -- | -- | -- | -- | -- | -- |
-        -----------------------------------------
-        | -- | -- | -- | -- | -- | -- | -- | -- |
-        -----------------------------------------
-        | -- | -- | D1 | H1 | L1 | P1 | -- | -- |
-        -----------------------------------------
-        | -- | -- | C1 | G1 | K1 | O1 | -- | -- |
-        -----------------------------------------
-        | -- | -- | B1 | F1 | J1 | N1 | -- | -- |
-        -----------------------------------------
-        | -- | -- | A1 | E1 | I1 | M1 | -- | -- |
-        -----------------------------------------
-        | -- | -- | -- | -- | -- | -- | -- | -- |
-        -----------------------------------------
-        | -- | -- | -- | -- | -- | -- | -- | -- |
-        -----------------------------------------
-
-      - Size 6X61 or 6X62:
-
-        -----------------------------------------
-        | -- | -- | -- | -- | -- | -- | -- | -- |
-        -----------------------------------------
-        | -- | -- | E2 | F2 | G2 | H2 | -- | -- |
-        -----------------------------------------
-        | -- | D2 | D1 | H1 | L1 | P1 | I2 | -- |
-        -----------------------------------------
-        | -- | C2 | C1 | G1 | K1 | O1 | J2 | -- |
-        -----------------------------------------
-        | -- | B2 | B1 | F1 | J1 | N1 | K2 | -- |
-        -----------------------------------------
-        | -- | A2 | A1 | E1 | I1 | M1 | L2 | -- |
-        -----------------------------------------
-        | -- | -- | P2 | O2 | N2 | M2 | -- | -- |
-        -----------------------------------------
-        | -- | -- | -- | -- | -- | -- | -- | -- |
-        -----------------------------------------
-
-
-      - Size 8X81, 8X82, 8X83 or 8X84:
-
-        -----------------------------------------
-        | H1 | P1 | H2 | P2 | H3 | P3 | H4 | P4 |
-        -----------------------------------------
-        | G1 | O1 | G2 | O2 | G3 | O3 | G4 | O4 |
-        -----------------------------------------
-        | F1 | N1 | F2 | N2 | F3 | N3 | F4 | N4 |
-        -----------------------------------------
-        | E1 | M1 | E2 | M2 | E3 | M3 | E4 | M4 |
-        -----------------------------------------
-        | D1 | L1 | D2 | L2 | D3 | L3 | D4 | L4 |
-        -----------------------------------------
-        | C1 | K1 | C2 | K2 | C3 | K3 | C4 | K4 |
-        -----------------------------------------
-        | B1 | J1 | B2 | J2 | B3 | J3 | B4 | J4 |
-        -----------------------------------------
-        | A1 | I1 | A2 | I2 | A3 | I3 | A4 | I4 |
-        -----------------------------------------
-
-    NOTE: in the previous tables, the rows are numbered in _ascending_ order.
-    If one prints the corresponding np.array they are printed in _descending_ order,
-    while if you draw them using plt.pcolor they will be in ascending order.
-
-    :param pixel_data: dictionary containing MSID values and times.
-
-    The keys of ``pixel_data`` must be MSIDs.
-    The values must be dictionaries with keys ['times', 'values']
-
-    :param img_size: an array of image size specifications.
-
-    Each entry in ``img_size`` must be one of: 4X41, 6X61, 6X62, 8X81, 8X82, 8X83 or 8X84.
-    The size of ``img_size`` must be equal to the size of the last axis of ``pixel_data``.
-
-    """
-    if list(pixel_data.values())[0]['values'].shape[-1] != len(img_size):
-        s1, s2 = list(pixel_data.values())[0]['values'].shape[-1], len(img_size)
-        raise Exception(
-            f'Pixel data shape ({s1},) and image size array shape ({s2},) do not agree.')
-
-    img = np.ones((len(img_size), 8, 8)) * np.nan
-
-    msid_img = list(set([k[:-2] for k in pixel_data.keys()]))
-    assert len(msid_img) == 1
-    msid_img = msid_img[0]
-
-    entries = {
-        '4x4': (img_size == '4X41'),
-        '6x6': (img_size == '6X61') + (img_size == '6X62'),
-        '8x8': ((img_size == '8X81') + (img_size == '8X82') +
-                (img_size == '8X83') + (img_size == '8X84'))
-    }
-
-    for k, m in PIXEL_MAP_INV.items():
-        for p, (i, j) in m.items():
-            img[entries[k], i, j] = pixel_data[f'{msid_img}{p}']['values'][entries[k]]
-
-    return img
-
-
-def _subsets(l, n):
-    # consecutive subsets of a list, each with at most n elements
-    for i in range(0, len(l) + n, n):
-        if l[i:i + n]:
-            yield l[i:i + n]
-
-
-def _reshape_values(data, tref):
-    """
-    This stores a data field coming from a maude query into a different data structure.
-
-    The most important thing this does is to reshape each MSID values array so the number
-    of samples is the same as the number of sample times in tref, with NAN values at
-    times when there is no data for the MSID.
-    """
-    t = data['times']
-    if t.shape[0] == tref.shape[0]:
-        # image size values pass through here, and they are strings, not floats
-        return {'times': t, 'values': np.array(data['values'])}
-
-    v = np.ones(tref.shape) * np.nan
-    if t.shape[0] != 0:
-        dt = (t[np.newaxis] - tref[:, np.newaxis])
-        dt = np.where(dt >= 0, dt, np.inf)
-        i = np.argmin(dt, axis=0)
-        v[i] = data['values']
-
-    return {'times': tref, 'values': v}
-
-
-def combine_sub_images(table):
-    """
-    Take a table as input and combine consecutive image segments.
-    Partial images are discarded.
-
-    :param table: astropy.Table with ACA image telemetry data
-    :return:
-    """
-    subimage = table['subimage']
-    tref = table['TIME']
-    # What follows is not trivial and needs attention.
-    # If requesting full images, identify complete entries first.
-    # We will return complete images at the time of the first partial image and discard the rest.
-    # take all 4x41 images:
-    ok_4x4 = (table['IMGSIZE'] == '4X41')
-    # take all 6x61 images (subimage == 1) if the next image has subimage == 2:
-    ok_6x6 = (table['IMGSIZE'] == '6X61') * \
-        np.concatenate([subimage[1:] - subimage[:-1] == 1, [False]])
-    # take all 8x81 images (subimage == 1) if the 3rd image after this has subimage == 4:
-    ok_8x8 = (table['IMGSIZE'] == '8X81') * \
-        np.concatenate([subimage[3:] - subimage[:-3] == 3, [False] * 3])
-
-    # now add the partial images (with subimage > 1) to the first partial image
-    # for 8x8:
-    i = np.arange(len(tref))[ok_8x8]
-    table['IMG'][i] = np.nansum([table['IMG'][i], table['IMG'][i + 1],
-                                 table['IMG'][i + 2], table['IMG'][i + 3]],
-                                axis=0)
-    # and for some reason I also had to do this:
-    for k in ['IMGROW0', 'IMGCOL0', 'SCALE_FACTOR']:
-        table[k][i] = np.nansum([table[k][i], table[k][i + 1], table[k][i + 2], table[k][i + 3]],
-                                axis=0)
-
-    # for 6x6:
-    i = np.arange(len(tref))[ok_6x6]
-    tmp = np.nansum([table['IMG'][i], table['IMG'][i + 1]], axis=0)
-    tmp[:, PIXEL_MASK['6x6']] = np.nan
-    table['IMG'][i] = tmp
-    # and for some reason I also had to do this:
-    for k in ['IMGROW0', 'IMGCOL0', 'SCALE_FACTOR']:
-        table[k][i] = np.nansum([table[k][i], table[k][i + 1]], axis=0)
-
-    # now actually discard partial images
-    # (only if discarded in all slots)
-    ok = ok_4x4 + ok_6x6 + ok_8x8
-    table = {k: v[ok] for k, v in table.items()}
-
-    table['IMGSIZE'][table['IMGSIZE'] == '4X41'] = '4X4'
-    table['IMGSIZE'][table['IMGSIZE'] == '6X61'] = '6X6'
-    table['IMGSIZE'][table['IMGSIZE'] == '8X81'] = '8X8'
-
-    return table
-
-
-def _assemble_img(slot, pea, data, full=False,
-                  calibrate=False, adjust_time=False, adjust_corner=False):
-    """
-    This method assembles an astropy.Table for a given PEA and slot.
-
-    :param slot: integer in range(8)
-    :param pea: integer 1 or 2
-    :param data: dictionary with maude data.
-
-    Each entry in the dictionary is a value returned by maude.get_msids.
-    Something like this:
-
-        >>> import maude
-        >>> start, stop = 686111007, 686111017
-        >>> data = {e['msid']:e for e in maude.get_msids([...], start=start, stop=stop)['data']}
-
-    :param full: bool. Combine partial image segments into full images
-    :param calibrate: bool. Scale image values (ignored if full=False).
-    :param adjust_time: bool. Correct times the way it is done in level 0.
-    :param adjust_corner: bool. Shift IMGCOL0 and IMGROW0 the way it is done in level 0.
-    """
-
-    msids = ACA_MSID_LIST[pea]
-    slot_msids = ACA_SLOT_MSID_LIST[pea][slot]
-
-    tref = data[slot_msids['sizes']]['times']
-
-    # reshape all values using the times from an MSID we know will be there at all sample times:
-    data = {k: _reshape_values(data[k], tref) for k in data}
-
-    if len(tref) == 0:
-        names = ['TIME', 'IMGNUM', 'IMGSIZE', 'IMGROW0', 'IMGCOL0', 'SCALE_FACTOR', 'INTEG', 'IMG']
-        dtype = ['<f8', '<i8', '<U4', '<f8', '<f8', '<f8', '<f8', ('<f8', (8, 8))]
-        result = {n: np.array([], dtype=t) for n, t in zip(names, dtype)}
-    else:
-        pixel_data = {k: data[k] for k in slot_msids['pixels']}
-        img_size = data[slot_msids['sizes']]['values']
-        image = assemble_image(pixel_data, img_size)
-        # there must be an MSID to fetch this, but this works
-        subimage = np.char.replace(np.char.replace(np.char.replace(
-            img_size, '8X8', ''), '6X6', ''), '4X4', '').astype(int) - 1
-
-        result = {
-            'TIME': data[slot_msids['sizes']]['times'],
-            'IMGNUM': np.ones(len(tref), dtype='<i8') * slot,
-            'subimage': subimage,
-            'IMGSIZE': data[slot_msids['sizes']]['values'],
-            'IMGROW0': data[slot_msids['rows']]['values'],
-            'IMGCOL0': data[slot_msids['cols']]['values'],
-            'SCALE_FACTOR': data[slot_msids['scale_factor']]['values'],
-            'INTEG': 0.016 * data[msids['integration_time']]['values'],
-            'IMG': image
-        }
-
-        if adjust_time:
-            result['TIME'] -= (result['INTEG'] / 2 + 1.025)
-            # result['END_INTEG_TIME'] = result['TIME'] + result['INTEG']
-
-        if adjust_corner:
-            result['IMGROW0'][result['IMGSIZE'] == '6X61'] -= 1
-            result['IMGCOL0'][result['IMGSIZE'] == '6X61'] -= 1
-
-        if calibrate:
-            # scale specified in ACA L0 ICD, section D.2.2 (scale_factor is already divided by 32)
-            #
-            # for an incomplete images the result can look like this:
-            #     IMGSIZE SCALE_FACTOR
-            #      str4     float64
-            #     ------- ------------
-            #      8X84       nan
-            #      8X81       1.0
-            #      8X82       nan
-            #      8X83       nan
-            #      8X84       nan
-            #      8X81       1.0
-            #      8X82       nan
-            #      8X83       nan
-            #      8X84       nan
-            #      8X81       1.0
-            #
-            # so one has to set the proper scale for images 6X62, 8X82, 8X83 and 8X84.
-            # the data should cover a larger interval than requested to avoid edge effects.
-            # I also do not want to change the original array
-            # this assumes that image sizes ALWAYS alternate
-            # is there a better way to do this?
-            scale = np.array(result['SCALE_FACTOR'])
-            for name, n in [('6X61', 2), ('8X81', 4)]:
-                s1 = (result['IMGSIZE'] == name)
-                for i in range(1, n):
-                    s2 = np.roll(s1, i)  # roll and drop the ones that go over the edge
-                    s2[:i] = False
-                    scale[s2] = scale[s1][:sum(s2)]
-            result['IMG'] *= scale[:, np.newaxis, np.newaxis]
-            result['IMG'] -= 50
-
-        if full:
-            result = combine_sub_images(result)
-            del result['subimage']
-
-    return Table(result)
-
-
-def fetch(start, stop, slots=range(8), pea=1, full=False,
-          calibrate=False, adjust_time=False, adjust_corner=False):
-    """
-    This is an example of fetching and assembling data using maude.
-
-    Example usage::
-
-      >>> from chandra_aca import maude_decom
-      >>> data = maude_decom.fetch(start, stop, pea=1)
-
-    :param start: timestamp interpreted as a Chandra.Time.DateTime
-    :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param slots: iterable of ints. Default: range(8)
-    :param pea: integer 1 or 2. Default: 1
-    :param full: bool. Combine partial image segments into full images.
-    :param calibrate: bool. Scale image values.
-    :param adjust_time: bool. Correct times the way it is done in level 0.
-    :param adjust_corner: bool. Shift IMGCOL0 and IMGROW0 the way it is done in level 0.
-    """
-
-    start, stop = DateTime(start), DateTime(stop)
-    start_pad = 0
-    stop_pad = 0
-    if calibrate or adjust_time:
-        start_pad = 6 / 86400  # padding at the beginning in case of time/scale adjustments
-    if full:
-        stop_pad = 6 / 86400  # padding at the end in case of trailing partial images
-
-    tables = []
-    for slot in slots:
-        msids = ['sizes', 'rows', 'cols', 'scale_factor']  # the MSIDs we fetch (plus IMG pixels)
-        msids = (ACA_SLOT_MSID_LIST[pea][slot]['pixels'] +
-                 [ACA_SLOT_MSID_LIST[pea][slot][k] for k in msids] +
-                 [ACA_MSID_LIST[pea]['integration_time']])
-        res = {e['msid']: e for e in
-               maude.get_msids(msids, start=start - start_pad, stop=stop + stop_pad)['data']}
-        tables.append(_assemble_img(slot, pea, res, full=full, calibrate=calibrate,
-                                    adjust_time=adjust_time, adjust_corner=adjust_corner))
-    result = vstack(tables)
-    # and chop the padding we added above
-    result = result[(result['TIME'] >= start.secs) * (result['TIME'] <= stop.secs)]
-    return result
-
-
 _a2p = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
-indices = [
+_IMG_INDICES = [
     np.array([PIXEL_MAP_INV['4x4'][f'{k}1'] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV['6x6'][f'{k}1'] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV['6x6'][f'{k}2'] for k in _a2p]).T,
@@ -527,7 +257,7 @@ def _aca_header_1(bits):
     :param bits: bytes-like object of length 7
     :return: dict
     """
-    bits = np.unpackbits(np.array(unpack('BBBbbBB', bits), dtype=np.uint8))
+    bits = np.unpackbits(np.array(_unpack('BBBbbBB', bits), dtype=np.uint8))
     return {
         'fid': bool(bits[0]),
         'IMGNUM': _packbits(bits[1:4]),
@@ -548,7 +278,7 @@ def _aca_header_2(bits):
     :param bits: bytes-like object of length 7
     :return: dict
     """
-    bits = unpack('BbbbbBB', bits)
+    bits = _unpack('BbbbbBB', bits)
     c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
     return {
         'BGDRMS': _packbits(c[6:16]),
@@ -569,7 +299,7 @@ def _aca_header_3(bits):
     :return: dict
     """
     return {
-        f'DIAGNOSTIC': unpack('BBBBBB', bits[1:])
+        f'DIAGNOSTIC': _unpack('BBBBBB', bits[1:])
     }
 
 
@@ -602,7 +332,7 @@ def unpack_aca_telemetry(a):
     slots = []
     for img_num, i in enumerate(range(8, len(a), 27)):
         img_header = ACA_HEADER[img_types[img_num]](a[i:i + 7])
-        img_pixels = unpack('B' * 20, a[i + 7:i + 27])
+        img_pixels = _unpack('B' * 20, a[i + 7:i + 27])
         _pixel_bits[:, -10:] = np.unpackbits(np.array([img_pixels], dtype=np.uint8).T,
                                              axis=1).reshape((-1, 10))
         img_pixels = np.sum(np.packbits(_pixel_bits, axis=1) * [[2 ** 8, 1]], axis=1)
@@ -615,7 +345,7 @@ def unpack_aca_telemetry(a):
     return slots
 
 
-def combine_packets(aca_packets):
+def combine_aca_packets(aca_packets):
     """
     Combine a list of ACA packets into a single record.
 
@@ -630,7 +360,7 @@ def combine_packets(aca_packets):
     pixels = np.ma.masked_all((8, 8))
     pixels.data[:] = np.nan
     for f in aca_packets:
-        pixels[indices[f['IMGTYPE']][0], indices[f['IMGTYPE']][1]] = f['pixels']
+        pixels[_IMG_INDICES[f['IMGTYPE']][0], _IMG_INDICES[f['IMGTYPE']][1]] = f['pixels']
 
     for f in aca_packets:
         res.update(f)
@@ -639,7 +369,16 @@ def combine_packets(aca_packets):
     return res
 
 
-def group_packets(packets, discard=True):
+def _group_packets(packets, discard=True):
+    """
+    ACA telemetry is packed in packets of 225 bytes. Each of these is split in four VCDU frames.
+    Before decommuting an ACA package we group the ACA-related portion of VCDU frames to form the
+    one 225-byte ACA packet.
+
+    :param packets: list of ACA sub-packets
+    :param discard: bool to discard incomplete ACA packets
+    :return: list of ACA packets
+    """
     res = []
     n = None
     s = None
@@ -701,7 +440,7 @@ def get_raw_aca_packets(start, stop):
 
     # get the frames and unpack front matter
     frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad)['data']
-    rf, flags, nblobs = unpack('<bHI', frames[:7])
+    rf, flags, nblobs = _unpack('<bHI', frames[:7])
     assert nblobs == len(sub)  # this should never fail.
 
     # assemble the 56 bit ACA minor records and times (time is not unpacked)
@@ -797,17 +536,36 @@ def get_aca_packets(start, stop, level0=False,
         stop_pad += 3.08 / 86400  # there can be trailing frames
 
     aca_packets = get_raw_aca_packets(start - start_pad, stop + stop_pad)
-    aca_packets['packets'] = [unpack_aca_telemetry(a) for a in aca_packets['packets']]
-    for i in range(len(aca_packets['packets'])):
-        for j in range(8):
-            aca_packets['packets'][i][j]['TIME'] = aca_packets['TIME'][i]
-            aca_packets['packets'][i][j]['MJF'] = aca_packets['MJF'][i]
-            aca_packets['packets'][i][j]['MNF'] = aca_packets['MNF'][i]
-            aca_packets['packets'][i][j]['IMGNUM'] = j
+    aca_packets = _get_aca_packets(
+        aca_packets, start, stop,
+        combine=combine, adjust_time=adjust_time, calibrate_pixels=calibrate_pixels,
+        adjust_corner=adjust_corner, calibrate_temperatures=calibrate_temperatures
+    )
+    return aca_packets
 
-    aca_packets = [[f[i] for f in aca_packets['packets']] for i in range(8)]
+
+def _get_aca_packets(aca_packets, start, stop,
+                     combine=False, adjust_time=False, calibrate_pixels=False,
+                     adjust_corner=False, calibrate_temperatures=False):
+    """
+    This is a convenience function that splits get_aca_packets for testing without maude.
+    Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.
+
+    NOTE: This function has a side effect. It adds decom_packets to the input aca_packets.
+    """
+    start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
+
+    aca_packets['decom_packets'] = [unpack_aca_telemetry(a) for a in aca_packets['packets']]
+    for i in range(len(aca_packets['decom_packets'])):
+        for j in range(8):
+            aca_packets['decom_packets'][i][j]['TIME'] = aca_packets['TIME'][i]
+            aca_packets['decom_packets'][i][j]['MJF'] = aca_packets['MJF'][i]
+            aca_packets['decom_packets'][i][j]['MNF'] = aca_packets['MNF'][i]
+            aca_packets['decom_packets'][i][j]['IMGNUM'] = j
+
+    aca_packets = [[f[i] for f in aca_packets['decom_packets']] for i in range(8)]
     if combine:
-        aca_packets = sum([[combine_packets(g) for g in group_packets(p)] for p in aca_packets], [])
+        aca_packets = sum([[combine_aca_packets(g) for g in _group_packets(p)] for p in aca_packets], [])
     else:
         aca_packets = [row for slot in aca_packets for row in slot]
     table = aca_packets_to_table(aca_packets)
