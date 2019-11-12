@@ -575,7 +575,8 @@ def _get_aca_packets(aca_packets, start, stop,
 
     aca_packets = [[f[i] for f in aca_packets['decom_packets']] for i in range(8)]
     if combine:
-        aca_packets = sum([[combine_aca_packets(g) for g in _group_packets(p)] for p in aca_packets], [])
+        aca_packets = sum([[combine_aca_packets(g) for g in _group_packets(p)]
+                           for p in aca_packets], [])
     else:
         aca_packets = [combine_aca_packets([row]) for slot in aca_packets for row in slot]
     table = aca_packets_to_table(aca_packets)

@@ -3,7 +3,6 @@
 import os
 import pickle
 import numpy as np
-from astropy.table import vstack
 
 from chandra_aca import maude_decom
 
@@ -12,6 +11,7 @@ test_data = {}
 
 with open(os.path.join(os.path.dirname(__file__), 'data', 'maude_decom2.pkl'), 'rb') as f:
     test_data.update(pickle.load(f))
+
 
 def test_vcdu_0_raw():
     data = maude_decom.get_raw_aca_packets(176267186, 176267186)
@@ -123,7 +123,7 @@ def test_partial_images():
 
     for i, packet in enumerate(non_combined_aca_packets):
         assert 'IMG' in packet
-        assert packet['IMG'].shape == (8,8)
+        assert packet['IMG'].shape == (8, 8)
         assert np.all(packet['IMG'].mask == mask[packet['IMGTYPE']])
 
     raw = test_data['686111007-686111017']['raw']
@@ -150,7 +150,7 @@ def test_vcdu_vs_level0():
              'TEMPCCD', 'TEMPHOUS', 'TEMPPRIM', 'TEMPSEC', 'BGDSTAT']
     for slot in range(8):
         l0_test_data = Table.read(os.path.join(os.path.dirname(__file__), 'data',
-                                            f'acaf686111014N001_{slot}_img0.fits.gz'))
+                                               f'acaf686111014N001_{slot}_img0.fits.gz'))
         td = l0_test_data[(l0_test_data['TIME'] <= stop) * (l0_test_data['TIME'] >= start)]
 
         tt = table[table['IMGNUM'] == slot]
