@@ -1,12 +1,12 @@
 """
 Classes and functions to help fetching ACA telemetry data using Maude.
-These include the following global variables::
+These include the following global variables
 
-    - PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID
-    - PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.
-    - PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes
-    - ACA_MSID_LIST: dictionary of commonly-used ACA telemetry MSIDs.
-    - ACA_SLOT_MSID_LIST: dictionary of ACA image telemetry MSIDs.
+    * PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID
+    * PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.
+    * PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes
+    * ACA_MSID_LIST: dictionary of commonly-used ACA telemetry MSIDs.
+    * ACA_SLOT_MSID_LIST: dictionary of ACA image telemetry MSIDs.
 
 PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the image size::
 
@@ -316,23 +316,23 @@ ACA_HEADER = [
 ]
 
 
-def unpack_aca_telemetry(a):
+def unpack_aca_telemetry(packet):
     """
     Unpack ACA telemetry encoded in 225-byte packets.
 
-    :param a:
-    :return: list of list of dict
+    :param packet: bytes
+    :return: list of dict
 
-    A list of frames, each with a list of slots, each being a dictionary.
+    A list of length 8, one entry per slot, where each entry is a dictionary.
     """
-    integ, glbstat, commcnt, commprog, s1, s2, s3 = _aca_front_fmt.unpack(a[:8])
+    integ, glbstat, commcnt, commprog, s1, s2, s3 = _aca_front_fmt.unpack(packet[:8])
     _size_bits[:, -3:] = np.unpackbits(np.array([[s1, s2, s3]], dtype=np.uint8).T, axis=1).reshape(
         (8, -1))
     img_types = np.packbits(_size_bits, axis=1).T[0]
     slots = []
-    for img_num, i in enumerate(range(8, len(a), 27)):
-        img_header = ACA_HEADER[img_types[img_num]](a[i:i + 7])
-        img_pixels = _unpack('B' * 20, a[i + 7:i + 27])
+    for img_num, i in enumerate(range(8, len(packet), 27)):
+        img_header = ACA_HEADER[img_types[img_num]](packet[i:i + 7])
+        img_pixels = _unpack('B' * 20, packet[i + 7:i + 27])
         _pixel_bits[:, -10:] = np.unpackbits(np.array([img_pixels], dtype=np.uint8).T,
                                              axis=1).reshape((-1, 10))
         img_pixels = np.sum(np.packbits(_pixel_bits, axis=1) * [[2 ** 8, 1]], axis=1)
@@ -345,7 +345,7 @@ def unpack_aca_telemetry(a):
     return slots
 
 
-def combine_aca_packets(aca_packets):
+def _combine_aca_packets(aca_packets):
     """
     Combine a list of ACA packets into a single record.
 
@@ -464,7 +464,7 @@ def get_raw_aca_packets(start, stop):
             'TIME': times, 'MNF': minor_counter, 'MJF': major_counter}
 
 
-def aca_packets_to_table(aca_packets):
+def _aca_packets_to_table(aca_packets):
     """
     Store ACA packets in a table.
 
@@ -484,11 +484,8 @@ def aca_packets_to_table(aca_packets):
 
     array = np.ma.masked_all(len(aca_packets), dtype=dtype)
     names = copy.deepcopy(dtype.names)
-    pixels = []
     img = []
     for i, aca_packet in enumerate(aca_packets):
-        if 'pixels' in aca_packet:
-            pixels.append(aca_packet['pixels'])
         if 'IMG' in aca_packet:
             img.append(aca_packet['IMG'])
         for k in names:
@@ -496,8 +493,6 @@ def aca_packets_to_table(aca_packets):
                 array[i][k] = aca_packet[k]
 
     table = Table(array)
-    if pixels:
-        table['PIXELS'] = pixels
     if img:
         table['IMG'] = img
         for i, aca_packet in enumerate(aca_packets):
@@ -506,36 +501,160 @@ def aca_packets_to_table(aca_packets):
 
 
 def get_aca_packets(start, stop, level0=False,
-                    combine=False, adjust_time=False, calibrate_pixels=False,
-                    adjust_corner=False, calibrate_temperatures=False):
+                    combine=False, adjust_time=False, calibrate=False):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
 
-    Incomplete ACA packets (if there is a minor frame missing) are discarded.
+    Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
+    with complete ACA telemetry. Compare these to calls to the function:
+
+            >>> from chandra_aca import maude_decom
+            >>> img = maude_decom.get_aca_packets(684089000, 684089016, combine=True)
+            >>> img = img[img['IMGNUM'] == 0]
+            >>> img['TIME', 'MJF', 'MNF', 'COMMCNT', 'GLBSTAT', 'IMGTYPE', 'IMGROW0', 'IMGCOL0',
+            >>>     'TEMPCCD', 'TEMPHOUS']
+            <Table masked=True length=4>
+                 TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS
+               float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16
+            ------------- ------ ------ ------- ------- ------- ------- ------- ------- --------
+            684089001.869  78006     32       0       0       4     469    -332     -20       83
+            684089005.969  78006     48       0       0       4     469    -332     -20       83
+            684089010.069  78006     64       0       0       4     469    -332     -20       83
+            684089014.169  78006     80       0       0       4     469    -332     -20       83
+
+    Using combined=False, results in records with incomplete images. In this case, data can be
+    missing from some records. For example, with 8X8 images, IMGROW0 and IMGCOL0 are present in the
+    first ACA packet (image type 4) while the temperature is present in the second (image type 5):
+
+        >>> from chandra_aca import maude_decom
+        >>> img = maude_decom.get_aca_packets(684089000, 684089016, combine=False)
+        >>> img = img[img['IMGNUM'] == 0]
+        >>> img['TIME', 'MJF', 'MNF', 'COMMCNT', 'GLBSTAT', 'IMGTYPE', 'IMGROW0', 'IMGCOL0',
+        >>>     'TEMPCCD', 'TEMPHOUS']
+            <Table masked=True length=15>
+                 TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS
+               float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16
+            ------------- ------ ------ ------- ------- ------- ------- ------- ------- --------
+            684089000.844  78006     28       0       0       7      --      --      --       --
+            684089001.869  78006     32       0       0       4     469    -332      --       --
+            684089002.894  78006     36       0       0       5      --      --     -20       83
+            684089003.919  78006     40       0       0       6      --      --      --       --
+            684089004.944  78006     44       0       0       7      --      --      --       --
+            684089005.969  78006     48       0       0       4     469    -332      --       --
+            684089006.994  78006     52       0       0       5      --      --     -20       83
+            684089008.019  78006     56       0       0       6      --      --      --       --
+            684089009.044  78006     60       0       0       7      --      --      --       --
+            684089010.069  78006     64       0       0       4     469    -332      --       --
+            684089011.094  78006     68       0       0       5      --      --     -20       83
+            684089012.119  78006     72       0       0       6      --      --      --       --
+            684089013.144  78006     76       0       0       7      --      --      --       --
+            684089014.169  78006     80       0       0       4     469    -332      --       --
+            684089015.194  78006     84       0       0       5      --      --     -20       83
+
+        >>> img['IMG'].data[1]
+        masked_BaseColumn(data =
+         [[60.0 97.0 70.0 120.0 74.0 111.0 103.0 108.0]
+         [67.0 90.0 144.0 96.0 88.0 306.0 82.0 67.0]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]],
+                          mask =
+         [[False False False False False False False False]
+         [False False False False False False False False]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]],
+                    fill_value = 1e+20)
+
+        >>> img['IMG'].data[2]
+        masked_BaseColumn(data =
+         [[-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [76.0 81.0 160.0 486.0 449.0 215.0 88.0 156.0]
+         [68.0 91.0 539.0 483.0 619.0 412.0 105.0 77.0]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]],
+                          mask =
+         [[ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [False False False False False False False False]
+         [False False False False False False False False]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]],
+                    fill_value = 1e+20)
+
+        >>> img['IMG'].data[3]
+        masked_BaseColumn(data =
+         [[-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [86.0 101.0 408.0 344.0 556.0 343.0 122.0 67.0]
+         [196.0 195.0 114.0 321.0 386.0 115.0 69.0 189.0]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]],
+                          mask =
+         [[ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [False False False False False False False False]
+         [False False False False False False False False]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]],
+                    fill_value = 1e+20)
+
+        >>> img['IMG'].data[4]
+        Out[10]:
+        masked_BaseColumn(data =
+         [[-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [-- -- -- -- -- -- -- --]
+         [67.0 61.0 67.0 176.0 99.0 72.0 79.0 88.0]
+         [70.0 62.0 101.0 149.0 163.0 89.0 60.0 76.0]],
+                          mask =
+         [[ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [ True  True  True  True  True  True  True  True]
+         [False False False False False False False False]
+         [False False False False False False False False]],
+                    fill_value = 1e+20)
+
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
     :param level0: bool.
-        Implies combine=True, adjust_time=True, calibrate_pixels=True, adjust_corner=True
+        Implies combine=True, adjust_time=True, calibrate=True
     :param combine: bool.
         If True, multiple ACA packets are combined to form an image (depending on size),
         If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.
     :param adjust_time: bool
         If True, half the integration time is subtracted
-    :param calibrate_pixels: bool
-        If True, pixel values will be: value * imgscale / 32 - 50
-    :param: adjust_corner: bool
-        If True, 6x6 images will have imgcol0 and imgrow0 shifted by one
-    :param: calibrate_temperatures:
-        If True, temperature values will be: 0.4 * value + 273.15
+    :param calibrate: bool
+        If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
+        be: 0.4 * value + 273.15
     :return: astropy.table.Table
     """
     if level0:
         adjust_time = True
         combine = True
-        calibrate_pixels = True
-        adjust_corner = True
-        calibrate_temperatures = True
+        calibrate = True
 
     start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
     start_pad = 0
@@ -548,15 +667,13 @@ def get_aca_packets(start, stop, level0=False,
     aca_packets = get_raw_aca_packets(start - start_pad, stop + stop_pad)
     aca_packets = _get_aca_packets(
         aca_packets, start, stop,
-        combine=combine, adjust_time=adjust_time, calibrate_pixels=calibrate_pixels,
-        adjust_corner=adjust_corner, calibrate_temperatures=calibrate_temperatures
+        combine=combine, adjust_time=adjust_time, calibrate=calibrate
     )
     return aca_packets
 
 
 def _get_aca_packets(aca_packets, start, stop,
-                     combine=False, adjust_time=False, calibrate_pixels=False,
-                     adjust_corner=False, calibrate_temperatures=False):
+                     combine=False, adjust_time=False, calibrate=False):
     """
     This is a convenience function that splits get_aca_packets for testing without maude.
     Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.
@@ -575,21 +692,31 @@ def _get_aca_packets(aca_packets, start, stop,
 
     aca_packets = [[f[i] for f in aca_packets['decom_packets']] for i in range(8)]
     if combine:
-        aca_packets = sum([[combine_aca_packets(g) for g in _group_packets(p)]
+        aca_packets = sum([[_combine_aca_packets(g) for g in _group_packets(p)]
                            for p in aca_packets], [])
     else:
-        aca_packets = [combine_aca_packets([row]) for slot in aca_packets for row in slot]
-    table = aca_packets_to_table(aca_packets)
+        aca_packets = [_combine_aca_packets([row]) for slot in aca_packets for row in slot]
+    table = _aca_packets_to_table(aca_packets)
 
-    if calibrate_temperatures:
+    if calibrate:
         for k in ['TEMPCCD', 'TEMPSEC', 'TEMPHOUS', 'TEMPPRIM']:
             table[k] = 0.4 * table[k].astype(np.float32) + 273.15
 
-    if adjust_corner:
-        table['IMGROW0'][table['IMGTYPE'] == 1] -= 1
-        table['IMGCOL0'][table['IMGTYPE'] == 1] -= 1
-        table['IMGROW0'][table['IMGTYPE'] == 2] -= 1
-        table['IMGCOL0'][table['IMGTYPE'] == 2] -= 1
+    # IMGROW0/COL0 are actually the row/col of pixel A1, so we just copy them
+    table['IMGROW_A1'] = table['IMGROW0']
+    table['IMGCOL_A1'] = table['IMGCOL0']
+
+    # if the image is embedded in an 8x8 image, row/col of the 8x8 shifts for sizes 4x4 and 6x6
+    table['IMGROW0_8X8'] = table['IMGROW_A1']
+    table['IMGCOL0_8X8'] = table['IMGCOL_A1']
+    table['IMGROW0_8X8'][table['IMGTYPE'] < 4] -= 2
+    table['IMGCOL0_8X8'][table['IMGTYPE'] < 4] -= 2
+
+    # and the usual row/col needs to be adjusted only for 6x6 images
+    table['IMGROW0'][table['IMGTYPE'] == 1] -= 1
+    table['IMGCOL0'][table['IMGTYPE'] == 1] -= 1
+    table['IMGROW0'][table['IMGTYPE'] == 2] -= 1
+    table['IMGCOL0'][table['IMGTYPE'] == 2] -= 1
 
     if adjust_time:
         table['INTEG'] = table['INTEG'] * 0.016
@@ -597,10 +724,19 @@ def _get_aca_packets(aca_packets, start, stop,
         table['END_INTEG_TIME'] = table['TIME'] + table['INTEG'] / 2
         table = table[(table['TIME'] >= start.secs) * (table['TIME'] <= stop.secs)]
 
-    if calibrate_pixels:
-        if 'PIXELS' in table.colnames:
-            table['PIXELS'] = table['PIXELS'] * table['IMGSCALE'][:, np.newaxis] / 32 - 50
+    if calibrate:
         if 'IMG' in table.colnames:
             table['IMG'] = table['IMG'] * table['IMGSCALE'][:, np.newaxis, np.newaxis] / 32 - 50
 
     return table
+
+
+def get_aca_images(start, stop):
+    """
+    Fetch ACA image telemetry
+
+    :param start: timestamp interpreted as a Chandra.Time.DateTime
+    :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :return: astropy.table.Table
+    """
+    return get_aca_packets(start, stop, level0=True)

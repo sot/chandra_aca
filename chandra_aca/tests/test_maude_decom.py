@@ -9,7 +9,7 @@ from chandra_aca import maude_decom
 
 test_data = {}
 
-with open(os.path.join(os.path.dirname(__file__), 'data', 'maude_decom2.pkl'), 'rb') as f:
+with open(os.path.join(os.path.dirname(__file__), 'data', 'maude_decom.pkl'), 'rb') as f:
     test_data.update(pickle.load(f))
 
 
@@ -30,7 +30,7 @@ def test_vcdu_0_raw():
 def test_scale():
     raw = test_data['686111007-686111017']['raw']
     table = maude_decom._get_aca_packets(raw, 686111007, 686111017,
-                                         combine=True, calibrate_pixels=False)
+                                         combine=True, calibrate=False)
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                [np.nan, np.nan, 60.00, 76.00, 85.00, 82.00, np.nan, np.nan],
                [np.nan, 76.00, 109.00, 217.00, 203.00, 109.00, 95.00, np.nan],
@@ -42,7 +42,7 @@ def test_scale():
     assert np.all((table[table['IMGNUM'] == 4]['IMG'][0].data == img_ref) + (np.isnan(img_ref)))
 
     table = maude_decom._get_aca_packets(raw, 686111007, 686111017,
-                                         combine=True, calibrate_pixels=True)
+                                         combine=True, calibrate=True)
     img_ref = [[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                [np.nan, np.nan, 10.00, 26.00, 35.00, 32.00, np.nan, np.nan],
                [np.nan, 26.00, 59.00, 167.00, 153.00, 59.00, 45.00, np.nan],
@@ -118,7 +118,7 @@ def test_partial_images():
          4: mask['8X81'], 5: mask['8X82'], 6: mask['8X83'], 7: mask['8X84']}
     )
     aca_packets = test_data['686111007-686111017']['packets']
-    non_combined_aca_packets = [maude_decom.combine_aca_packets([row]) for
+    non_combined_aca_packets = [maude_decom._combine_aca_packets([row]) for
                                 slot in aca_packets for row in slot]
 
     for i, packet in enumerate(non_combined_aca_packets):
@@ -130,19 +130,21 @@ def test_partial_images():
     table = maude_decom._get_aca_packets(raw, 686111007, 686111017, combine=False)
 
     for i in range(len(table)):
-        table[i]['IMG'].mask == mask[table[i]['IMGTYPE']]
+        assert np.all(table[i]['IMG'].mask == mask[table[i]['IMGTYPE']])
 
 
 def test_vcdu_vs_level0():
     from astropy.table import Table
 
     start, stop = (686111020, 686111030)
+
+    _ = maude_decom.get_aca_images(start, stop)
+
     table = maude_decom.get_aca_packets(start, stop, level0=True)
 
     raw = test_data[f'686111010-686111040']['raw']
     table2 = maude_decom._get_aca_packets(raw, start, stop,
-                                          combine=True, adjust_time=True, calibrate_pixels=True,
-                                          adjust_corner=True, calibrate_temperatures=True)
+                                          combine=True, adjust_time=True, calibrate=True)
     assert np.all(table == table2)
 
     names = ['TIME', 'MJF', 'MNF', 'END_INTEG_TIME', 'INTEG', 'GLBSTAT', 'COMMCNT',
@@ -315,3 +317,27 @@ def test_vcdu_packet_combination():
     [None for _ in maude_decom._group_packets(packets[:0], True)]
     [None for _ in maude_decom._group_packets(packets[:1], False)]
     [None for _ in maude_decom._group_packets(packets[:1], True)]
+
+
+def test_row_col():
+    # this tests consistency between different row/col references
+    # absolute values are tested elsewhere
+    start, stop = (686111020, 686111030)
+    raw = test_data[f'{start}-{stop}']['raw']
+    table = maude_decom._get_aca_packets(raw, start, stop,
+                                         combine=False)
+
+    assert np.all(table[table['IMGTYPE'] == 0]['IMGCOL0'] - 2 ==
+                  table[table['IMGTYPE'] == 0]['IMGCOL0_8X8'])
+    assert np.all(table[table['IMGTYPE'] == 0]['IMGROW0'] - 2 ==
+                  table[table['IMGTYPE'] == 0]['IMGROW0_8X8'])
+
+    assert np.all(table[table['IMGTYPE'] == 4]['IMGCOL0'] ==
+                  table[table['IMGTYPE'] == 4]['IMGCOL0_8X8'])
+    assert np.all(table[table['IMGTYPE'] == 4]['IMGROW0'] ==
+                  table[table['IMGTYPE'] == 4]['IMGROW0_8X8'])
+
+    assert np.all(table[table['IMGTYPE'] == 1]['IMGCOL0'] - 1 ==
+                  table[table['IMGTYPE'] == 1]['IMGCOL0_8X8'])
+    assert np.all(table[table['IMGTYPE'] == 1]['IMGROW0'] - 1 ==
+                  table[table['IMGTYPE'] == 1]['IMGROW0_8X8'])
