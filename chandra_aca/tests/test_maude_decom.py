@@ -350,7 +350,7 @@ def test_start_stop():
 
     raw = test_data[f'686111010-686111040']['raw']
     table = maude_decom._get_aca_packets(raw, start, stop,
-                                          combine=True, adjust_time=True, calibrate=True)
+                                         combine=True, adjust_time=True, calibrate=True)
     n1 = len(table)
     # query is done in the closed/open interval [start, stop)
     start, stop = table['TIME'].min(), table['TIME'].max()
