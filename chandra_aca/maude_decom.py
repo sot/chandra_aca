@@ -75,7 +75,7 @@ PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the ima
 from struct import unpack as _unpack, Struct
 import numpy as np
 
-from astropy.table import Table
+from astropy.table import Table, vstack
 import maude
 
 from Chandra.Time import DateTime
@@ -411,7 +411,9 @@ def get_raw_aca_packets(start, stop):
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :return:
+    :return: dict
+        {'flags': int, 'packets': [],
+         'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
     """
     date_start, date_stop = DateTime(start), DateTime(stop)  # ensure input is proper date
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
@@ -657,19 +659,29 @@ def get_aca_packets(start, stop, level0=False,
         calibrate = True
 
     start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
-    start_pad = 0
+    if 24 * (stop - start) > 3:
+        raise ValueError(f'Requested {24 * (stop - start)} hours of telemetry. '
+                         'Maximum allowed is 3 hours at a time')
+
     stop_pad = 0
     if adjust_time:
         stop_pad += 2. / 86400  # time will get shifted...
     if combine:
         stop_pad += 3.08 / 86400  # there can be trailing frames
 
-    aca_packets = get_raw_aca_packets(start - start_pad, stop + stop_pad)
-    aca_packets = _get_aca_packets(
-        aca_packets, start, stop,
-        combine=combine, adjust_time=adjust_time, calibrate=calibrate
-    )
-    return aca_packets
+    n = int(np.ceil(86400 * (stop - start) / 300))
+    dt = (stop - start) / n
+    batches = [(start + i * dt, start + (i + 1) * dt) for i in range(n)]  # 0.0001????
+    aca_packets = []
+    for t1, t2 in batches:
+        raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad)
+        packets = _get_aca_packets(
+            raw_aca_packets, t1, t2,
+            combine=combine, adjust_time=adjust_time, calibrate=calibrate
+        )
+        aca_packets.append(packets)
+
+    return vstack(aca_packets)
 
 
 def _get_aca_packets(aca_packets, start, stop,
@@ -722,12 +734,12 @@ def _get_aca_packets(aca_packets, start, stop,
         table['INTEG'] = table['INTEG'] * 0.016
         table['TIME'] -= table['INTEG'] / 2 + 1.025
         table['END_INTEG_TIME'] = table['TIME'] + table['INTEG'] / 2
-        table = table[(table['TIME'] >= start.secs) * (table['TIME'] <= stop.secs)]
 
     if calibrate:
         if 'IMG' in table.colnames:
             table['IMG'] = table['IMG'] * table['IMGSCALE'][:, np.newaxis, np.newaxis] / 32 - 50
 
+    table = table[(table['TIME'] >= start.secs) * (table['TIME'] < stop.secs)]
     return table
 
 

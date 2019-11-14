@@ -3,6 +3,7 @@
 import os
 import pickle
 import numpy as np
+import pytest
 
 from chandra_aca import maude_decom
 
@@ -138,9 +139,10 @@ def test_vcdu_vs_level0():
 
     start, stop = (686111020, 686111030)
 
-    _ = maude_decom.get_aca_images(start, stop)
-
     table = maude_decom.get_aca_packets(start, stop, level0=True)
+
+    table2 = maude_decom.get_aca_images(start, stop)
+    assert np.all(table == table2)
 
     raw = test_data[f'686111010-686111040']['raw']
     table2 = maude_decom._get_aca_packets(raw, start, stop,
@@ -158,13 +160,12 @@ def test_vcdu_vs_level0():
         tt = table[table['IMGNUM'] == slot]
 
         assert len(tt) == len(td)
-        n = (tt['IMG'].shape[1] - td['IMGRAW'].shape[1]) // 2
-        imgraw = np.pad(td['IMGRAW'], n, 'constant')[n:-n] if n else td['IMGRAW']
-        n = 'IMG'
-        t = np.all(np.isclose(tt[n], imgraw))
+        n = (tt['IMG'].shape[1] - td['IMGRAW'].shape[1]) // 2  # the padding to fit in an 8x8 image
+        imgraw = np.pad(td['IMGRAW'], n, 'constant')[n:-n] if n else td['IMGRAW']  # padded image
+        t = np.all(np.isclose(tt['IMG'], imgraw))
         assert t
-        for n in names:
-            t = np.all(np.isclose(tt[n], td[n]))
+        for name in names:
+            t = np.all(np.isclose(tt[name], td[name]))
             assert t
 
 
@@ -341,3 +342,30 @@ def test_row_col():
                   table[table['IMGTYPE'] == 1]['IMGCOL0_8X8'])
     assert np.all(table[table['IMGTYPE'] == 1]['IMGROW0'] - 1 ==
                   table[table['IMGTYPE'] == 1]['IMGROW0_8X8'])
+
+
+def test_start_stop():
+    # check some conventions on start/stop times
+    start, stop = (686111020, 686111028.893)
+
+    raw = test_data[f'686111010-686111040']['raw']
+    table = maude_decom._get_aca_packets(raw, start, stop,
+                                          combine=True, adjust_time=True, calibrate=True)
+    n1 = len(table)
+    # query is done in the closed/open interval [start, stop)
+    start, stop = table['TIME'].min(), table['TIME'].max()
+    table = maude_decom._get_aca_packets(raw, start, stop,
+                                         combine=True, adjust_time=True, calibrate=True)
+    n2 = len(table)
+    assert start == table['TIME'].min()
+    assert stop > table['TIME'].max()
+    assert n2 == n1 - 8
+
+    # it should be ok to query a few kiloseconds
+    start, stop = (686111020, 686112020)
+    _ = maude_decom.get_aca_packets(start, stop)
+
+    # it should raise an exception if the interval is too large
+    with pytest.raises(ValueError, match='Maximum allowed'):
+        start, stop = (686111020, 686219020)
+        _ = maude_decom.get_aca_packets(start, stop)
