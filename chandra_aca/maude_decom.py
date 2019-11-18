@@ -8,7 +8,9 @@ These include the following global variables
     * ACA_MSID_LIST: dictionary of commonly-used ACA telemetry MSIDs.
     * ACA_SLOT_MSID_LIST: dictionary of ACA image telemetry MSIDs.
 
-PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the image size::
+PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the image size.
+In the following tables, column index increases to the right and row index increases to the top
+(c.f. ACA User Manual Figs 1.8 and 1.9 )::
 
   - Size 4X41:
 
@@ -80,6 +82,8 @@ import maude
 
 from Chandra.Time import DateTime
 
+# The following are the tables in the docstring above. They appear to be transposed,
+# but the resultt agrees with level0.
 PIXEL_MAP = {
     '4x4': np.array([['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
                      ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
