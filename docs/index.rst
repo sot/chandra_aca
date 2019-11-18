@@ -290,7 +290,7 @@ as object attributes instead of going through the ``meta`` dict::
 
 
 
-Maude Decom
+MAUDE Decom
 -----------
 
 .. automodule:: chandra_aca.maude_decom

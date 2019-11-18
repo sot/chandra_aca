@@ -1,5 +1,5 @@
 """
-Classes and functions to help fetching ACA telemetry data using Maude.
+Classes and functions to help fetching ACA telemetry data using MAUDE.
 These include the following global variables
 
     * PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID
@@ -404,14 +404,14 @@ def _group_packets(packets, discard=True):
 
 def get_raw_aca_packets(start, stop):
     """
-    Fetch 1025-byte VCDU frames using maude and extract a list of 225-byte ACA packets.
+    Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.
 
     If the first minor frame in a group of four ACA packets is within (start, stop),
     the three following minor frames are included if present.
 
     returns a dictionary with keys ['TIME', 'MNF', 'MJF', 'packets', 'flags'].
     These correspond to the minor frame time, minor frame count, major frame count,
-    the list of packets, and flags returned by Maude respectively.
+    the list of packets, and flags returned by MAUDE respectively.
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
@@ -690,7 +690,7 @@ def get_aca_packets(start, stop, level0=False,
 def _get_aca_packets(aca_packets, start, stop,
                      combine=False, adjust_time=False, calibrate=False):
     """
-    This is a convenience function that splits get_aca_packets for testing without maude.
+    This is a convenience function that splits get_aca_packets for testing without MAUDE.
     Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.
 
     NOTE: This function has a side effect. It adds decom_packets to the input aca_packets.
