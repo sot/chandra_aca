@@ -154,7 +154,7 @@ def test_vcdu_vs_level0():
              'TEMPCCD', 'TEMPHOUS', 'TEMPPRIM', 'TEMPSEC', 'BGDSTAT']
     for slot in range(8):
         l0_test_data = Table.read(os.path.join(os.path.dirname(__file__), 'data',
-                                               f'acaf686111014N001_{slot}_img0.fits.gz'))
+                                               f'test_level0_{slot}.fits.gz'))
         td = l0_test_data[(l0_test_data['TIME'] <= stop) * (l0_test_data['TIME'] >= start)]
 
         tt = table[table['IMGNUM'] == slot]
