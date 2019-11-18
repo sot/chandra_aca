@@ -446,16 +446,15 @@ def get_raw_aca_packets(start, stop):
 
     # get the frames and unpack front matter
     frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad)['data']
-    rf, flags, nblobs = _unpack('<bHI', frames[:7])
-    assert nblobs == len(sub)  # this should never fail.
+    flags = frames['f']
+    frames = frames['frames']
 
     # assemble the 56 bit ACA minor records and times (time is not unpacked)
     aca = []
     aca_times = []
-    for i in range(7, len(frames), 1033):
-        aca_times.append(frames[i:i + 8])
-        aca.append(b''.join([frames[i + j + 8:i + j + 8 + 14] for j in [18, 274, 530, 780]]))
-    assert len(aca) == nblobs  # this should never fail.
+    for frame in frames:
+        aca_times.append(frame['t'])
+        aca.append(b''.join([frame['bytes'][j:j + 14] for j in [18, 274, 530, 780]]))
 
     # combine them into 224 byte frames (it currently ensures all 224 bytes are there)
     aca_packets = [b''.join([aca[i] for i in entry]) for entry in aca_frame_entries[select]]
