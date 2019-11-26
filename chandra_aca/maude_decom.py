@@ -263,17 +263,13 @@ class _AcaImageHeaderDecom:
     types, and the packets are known, it will return the header 3 data.
     """
     def __init__(self):
-        self._imgtypes = [None, None, None, None, None, None, None, None]
-        self._bytes = [None, None, None, None, None, None, None, None]
         self._header = [
             self._aca_header_1, self._aca_header_1, self._aca_header_2, lambda b: {},
             self._aca_header_1, self._aca_header_2, self._aca_header_3, self._aca_header_3,
         ]
 
-    def __call__(self, imgnum, imgtype, bytes):
-        self._imgtypes[imgnum] = imgtype
-        self._bytes[imgnum] = bytes
-        return self._header[imgtype](bytes)
+    def __call__(self, imgnum, imgtype, byte_array):
+        return self._header[imgtype](byte_array)
 
     @staticmethod
     def _aca_header_1(bits):
