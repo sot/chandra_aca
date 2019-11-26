@@ -254,70 +254,95 @@ def _packbits(a, unsigned=True):
     return np.sum(a * _bits[-n:])
 
 
-def _aca_header_1(bits):
+class _AcaImageHeaderDecom:
     """
-    Unpack ACA header 1 (ACA User Manual 5.3.2.2.1).
+    Class to decommute ACA image telemtry headers.
 
-    :param bits: bytes-like object of length 7
-    :return: dict
+    These methods are grouped into a class because header 3 packet is split into up to 8 parts.
+    The __call__ method in this class accumulates the partial packets. Once all images are of known
+    types, and the packets are known, it will return the header 3 data.
     """
-    bits = np.unpackbits(np.array(_unpack('BBBbbBB', bits), dtype=np.uint8))
-    return {
-        'fid': bool(bits[0]),
-        'IMGNUM': _packbits(bits[1:4]),
-        'IMGFUNC': _packbits(bits[4:6]),
-        'sat_pixel': bool(bits[6]),
-        'def_pixel': bool(bits[7]),
-        'IMGROW0': _packbits(bits[12:22], unsigned=False),
-        'IMGCOL0': _packbits(bits[22:32], unsigned=False),
-        'IMGSCALE': _packbits(bits[32:46]),
-        'BGDAVG': _packbits(bits[46:56])
-    }
+    def __init__(self):
+        self._imgtypes = [None, None, None, None, None, None, None, None]
+        self._bytes = [None, None, None, None, None, None, None, None]
+        self._header = [
+            self._aca_header_1, self._aca_header_1, self._aca_header_2, lambda b: {},
+            self._aca_header_1, self._aca_header_2, self._aca_header_3, self._aca_header_3,
+        ]
+    
+    def __call__(self, imgnum, imgtype, bytes):
+        self._imgtypes[imgnum] = imgtype
+        self._bytes[imgnum] = bytes
+        return self._header[imgtype](bytes)
 
+    @staticmethod
+    def _aca_header_1(bits):
+        """
+        Unpack ACA header 1 (ACA User Manual 5.3.2.2.1).
 
-def _aca_header_2(bits):
-    """
-    Unpack ACA header 2 (ACA User Manual 5.3.2.2.2).
+        :param bits: bytes-like object of length 7
+        :return: dict
+        """
+        bits = np.unpackbits(np.array(_unpack('BBBbbBB', bits), dtype=np.uint8))
+        return {
+            'FID': bool(bits[0]),
+            'IMGNUM': _packbits(bits[1:4]),
+            'IMGFUNC': _packbits(bits[4:6]),
+            'IMGSTAT': _packbits(bits[6:12], unsigned=False),
+            'SAT_PIXEL': bool(bits[6]),
+            'DEF_PIXEL': bool(bits[7]),
+            'QUAD_BOUND': bool(bits[8]),
+            'COMMON_COL': bool(bits[9]),
+            'MULTI_STAR': bool(bits[10]),
+            'ION_RAD': bool(bits[11]),
+            'IMGROW0': _packbits(bits[12:22], unsigned=False),
+            'IMGCOL0': _packbits(bits[22:32], unsigned=False),
+            'IMGSCALE': _packbits(bits[32:46]),
+            'BGDAVG': _packbits(bits[46:56])
+        }
 
-    :param bits: bytes-like object of length 7
-    :return: dict
-    """
-    bits = _unpack('BbbbbBB', bits)
-    c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
-    return {
-        'BGDRMS': _packbits(c[6:16]),
-        'TEMPCCD': bits[2],
-        'TEMPHOUS': bits[3],
-        'TEMPPRIM': bits[4],
-        'TEMPSEC': bits[5],
-        'BGDSTAT': bits[6],
-        'bkg_pixel_status': np.unpackbits(np.array(bits[:2], dtype=np.uint8)[-1:])
-    }
+    @staticmethod
+    def _aca_header_2(bits):
+        """
+        Unpack ACA header 2 (ACA User Manual 5.3.2.2.2).
 
+        :param bits: bytes-like object of length 7
+        :return: dict
+        """
+        bits = _unpack('BbbbbBB', bits)
+        c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
+        bgd_bits = np.unpackbits(np.array(bits[-1:], dtype=np.uint8))
+        return {
+            # do we want these? 
+            #'FID2': bool(bits[0]),
+            #'IMGNUM2': _packbits(bits[1:4]),
+            #'IMGFUNC2': _packbits(bits[4:6]),
+            'BGDRMS': _packbits(c[6:16]),
+            'TEMPCCD': bits[2],
+            'TEMPHOUS': bits[3],
+            'TEMPPRIM': bits[4],
+            'TEMPSEC': bits[5],
+            'BGDSTAT': bits[6],
+            'BGDSTAT_PIXELS': np.unpackbits(np.array(bits[-1:], dtype=np.uint8)[-1:]),
+            'BGDSTAT_A1': bool(bgd_bits[0]),
+            'BGDSTAT_B1': bool(bgd_bits[1]),
+            'BGDSTAT_G1': bool(bgd_bits[2]),
+            'BGDSTAT_H1': bool(bgd_bits[3]),
+            'BGDSTAT_I1': bool(bgd_bits[4]),
+            'BGDSTAT_J1': bool(bgd_bits[5]),
+            'BGDSTAT_O1': bool(bgd_bits[6]),
+            'BGDSTAT_P1': bool(bgd_bits[7])
+        }
 
-def _aca_header_3(bits):
-    """
-    Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).
+    @staticmethod
+    def _aca_header_3(bits):
+        """
+        Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).
 
-    :param bits: bytes-like object of length 7
-    :return: dict
-    """
-    return {
-        f'DIAGNOSTIC': _unpack('BBBBBB', bits[1:])
-    }
-
-
-# all headers for each kind of image
-ACA_HEADER = [
-    _aca_header_1,
-    _aca_header_1,
-    _aca_header_2,
-    None,
-    _aca_header_1,
-    _aca_header_2,
-    _aca_header_3,
-    _aca_header_3
-]
+        :param bits: bytes-like object of length 7
+        :return: dict
+        """
+        return {'DIAGNOSTIC': _unpack('BBBBBB', bits[1:])}
 
 
 def unpack_aca_telemetry(packet):
@@ -329,20 +354,39 @@ def unpack_aca_telemetry(packet):
 
     A list of length 8, one entry per slot, where each entry is a dictionary.
     """
-    integ, glbstat, commcnt, commprog, s1, s2, s3 = _aca_front_fmt.unpack(packet[:8])
+    s1, s2, s3 = _unpack('BBB', packet[5:8])
     _size_bits[:, -3:] = np.unpackbits(np.array([[s1, s2, s3]], dtype=np.uint8).T, axis=1).reshape(
         (8, -1))
     img_types = np.packbits(_size_bits, axis=1).T[0]
     slots = []
+    header_decom = _AcaImageHeaderDecom()
     for img_num, i in enumerate(range(8, len(packet), 27)):
-        img_header = ACA_HEADER[img_types[img_num]](packet[i:i + 7])
+        img_header = header_decom(img_num, img_types[img_num], packet[i:i + 7])
         img_pixels = _unpack('B' * 20, packet[i + 7:i + 27])
         _pixel_bits[:, -10:] = np.unpackbits(np.array([img_pixels], dtype=np.uint8).T,
                                              axis=1).reshape((-1, 10))
         img_pixels = np.sum(np.packbits(_pixel_bits, axis=1) * [[2 ** 8, 1]], axis=1)
         img_header['pixels'] = img_pixels
         slots.append(img_header)
-    res = {'INTEG': integ, 'GLBSTAT': glbstat, 'COMMCNT': commcnt, 'COMMPROG': commprog}
+    integ, glbstat = _unpack('>HB', packet[:3])
+    bits = np.unpackbits(np.array(_unpack('BBB', packet[2:5]), dtype=np.uint8))
+    res = {
+        'INTEG': integ,
+        'GLBSTAT': glbstat,
+        'HIGH_BGD': bool(bits[0]),
+        'RAM_FAIL': bool(bits[1]),
+        'ROM_FAIL': bool(bits[2]),
+        'POWER_FAIL': bool(bits[3]),
+        'CAL_FAIL': bool(bits[4]),
+        'COMM_CHECKSUM_FAIL': bool(bits[5]),
+        'RESET': bool(bits[6]),
+        'SYNTAX_ERROR': bool(bits[7]),
+        'COMMCNT': _packbits(bits[8:14], unsigned=False),
+        'COMMCNT_SYNTAX_ERROR': bool(bits[14]),
+        'COMMCNT_CHECKSUM_FAIL': bool(bits[15]),
+        'COMMPROG': _packbits(bits[16:22], unsigned=False),
+        'COMMPROG_REPEAT': _packbits(bits[22:24], unsigned=False),
+    }
     for i, s in enumerate(slots):
         s.update(res)
         s['IMGTYPE'] = img_types[i]
