@@ -269,7 +269,7 @@ class _AcaImageHeaderDecom:
             self._aca_header_1, self._aca_header_1, self._aca_header_2, lambda b: {},
             self._aca_header_1, self._aca_header_2, self._aca_header_3, self._aca_header_3,
         ]
-    
+
     def __call__(self, imgnum, imgtype, bytes):
         self._imgtypes[imgnum] = imgtype
         self._bytes[imgnum] = bytes
@@ -313,10 +313,10 @@ class _AcaImageHeaderDecom:
         c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
         bgd_bits = np.unpackbits(np.array(bits[-1:], dtype=np.uint8))
         return {
-            # do we want these? 
-            #'FID2': bool(bits[0]),
-            #'IMGNUM2': _packbits(bits[1:4]),
-            #'IMGFUNC2': _packbits(bits[4:6]),
+            # do we want these?
+            # 'FID2': bool(bits[0]),
+            # 'IMGNUM2': _packbits(bits[1:4]),
+            # 'IMGFUNC2': _packbits(bits[4:6]),
             'BGDRMS': _packbits(c[6:16]),
             'TEMPCCD': bits[2],
             'TEMPHOUS': bits[3],
