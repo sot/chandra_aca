@@ -363,11 +363,22 @@ class _AcaImageHeaderDecom:
     Class to decommute ACA image telemtry headers.
 
     These methods are grouped into a class because header 3 packet is split into up to 8 parts.
-    The __call__ method in this class accumulates the partial packets. Once all images are of known
-    types, and the packets are known, it will return the header 3 data.
+    The __call__ method in this class accumulates the partial packets. At any given time, it
+    contains the latest header 3 packets from a slot, if any. When an image passed to this class
+    is of type other than 6 or 7, the header 3 packets for that slot are cleared.
+
+    A question that remains is when to update the header 3 values.
+    The current behavior of this class is to do it once all images are of known
+    types (i.e. when all slots are passed through it). This still has issues, which is why this
+    class is still not complete.
     """
 
     def __init__(self):
+        # these flags can take three values (None, True, False) and tell whether to include
+        # a set of header 3 telemetry values
+        # header 3 will be produced only if none of them are None
+        self._include = {(imgnum, imgtype): None for imgnum in range(7) for imgtype in [6, 7]}
+        self._bytes = {(imgnum, imgtype): b'\x00' * 8 for imgnum in range(7) for imgtype in [6, 7]}
         self._header = [
             self._aca_header_1,
             self._aca_header_1,
@@ -380,6 +391,14 @@ class _AcaImageHeaderDecom:
         ]
 
     def __call__(self, imgnum, imgtype, byte_array):
+        if imgnum in [6, 7]:
+            self._include[(imgnum, imgtype)] = True
+            self._bytes[(imgnum, imgtype)] = byte_array
+        else:
+            self._include[(imgnum, 6)] = False
+            self._bytes[(imgnum, 6)] = b'\x00' * 8
+            self._include[(imgnum, 7)] = False
+            self._bytes[(imgnum, 7)] = b'\x00' * 8
         return self._header[imgtype](byte_array)
 
     @staticmethod
@@ -444,8 +463,7 @@ class _AcaImageHeaderDecom:
             "BGDSTAT_PIXELS": np.unpackbits(np.array(values[-1:], dtype=np.uint8)[-1:]),
         }
 
-    @staticmethod
-    def _aca_header_3(bits):
+    def _aca_header_3(self, _):
         """
         Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).
 
@@ -458,7 +476,138 @@ class _AcaImageHeaderDecom:
         -------
         dict
         """
-        return {"DIAGNOSTIC": _unpack("BBBBBB", bits[1:])}
+        if sum([v is None for v in self._include.values()]):
+            # this happens when not all images have been passed to this class
+            return {}
+
+        # at this point this assumes that self.bytes
+        zero = b'\x00' * 8
+        header3_bytes = sum([self._bytes[(imgnum, imgtype)]
+                             for imgnum in range(7) for imgtype in [6, 7]])
+        result = {}
+
+        def byte_array(i, length):
+            return header3_bytes[i:i+length]
+
+        if self._include[(0, 6)]:
+            bits = np.array(_unpack('BBBBBBBBBBBBBBBB', byte_array(2, 2)))
+            result.update({
+                'AC_STATUS': _unpack('>H', byte_array(0, 2)),
+                'AcSendTimeOut': np.unpackbits(bits[16:17]),
+                'AcIdleTimeOut': np.unpackbits(bits[17:18]),
+                'TecActive': np.unpackbits(bits[18]),
+                'TecHeat': np.unpackbits(bits[19]),
+                'DefAcTable': np.unpackbits(bits[20]),
+                'AcTableCkSumOk': np.unpackbits(bits[21]),
+                'StackError': np.unpackbits(bits[22]),
+                'WarmBoot': np.unpackbits(bits[23]),
+                'IdleCode': np.unpackbits(bits[24]),
+                'CalMode': np.unpackbits(bits[25]),
+                'CalModePending': np.unpackbits(bits[26]),
+                'IuData': np.unpackbits(bits[27]),
+                'IuDataPending': np.unpackbits(bits[28]),
+                'DsnFixed': np.unpackbits(bits[29]),
+                'InitialCalFillOk': np.unpackbits(bits[30]),
+                'IoUpdTimeout': np.unpackbits(bits[31]),
+                'CCD_MolyBaseThermistor_1': _unpack('>H', byte_array(4, 2))
+            })
+        if self._include[(0, 7)]:
+            result.update({
+                'CCD_MolyBaseThermistor_2': _unpack('>H', byte_array(6, 2)),
+                'CCD_DetectorThermistor': _unpack('>H', byte_array(8, 2)),
+                'Power_5V': _unpack('>H', byte_array(10, 2)),
+            })
+        if self._include[(1, 6)]:
+            result.update({
+                'Power_15Vp': _unpack('>H', byte_array(12, 2)),
+                'Power_15Vm': _unpack('>H', byte_array(14, 2)),
+                'Power_27V': _unpack('>H', byte_array(16, 2)),
+            })
+        if self._include[(1, 7)]:
+            result.update({
+                'AnalogGround': _unpack('>H', byte_array(18, 2)),
+                'ADConvertorThermistor': _unpack('>H', byte_array(20, 2)),
+                'SecondaryMirror_HRMA': _unpack('>H', byte_array(22, 2)),
+            })
+        if self._include[(2, 6)]:
+            result.update({
+                'SecondaryMirror_opposite_HRMA': _unpack('>H', byte_array(24, 2)),
+                'PrimaryMirror_HRMA': _unpack('>H', byte_array(26, 2)),
+                'PrimaryMirror_opposite_HRMA': _unpack('>H', byte_array(28, 2)),
+            })
+        if self._include[(2, 7)]:
+            result.update({
+                'AC_Housing_HRMA': _unpack('>H', byte_array(30, 2)),
+                'AC_Housing_opposite_HRMA': _unpack('>H', byte_array(32, 2)),
+                'LensCell': _unpack('>H', byte_array(34, 2)),
+            })
+        if self._include[(3, 6)]:
+            result.update({
+                # next two migh be switched, check
+                'ProcessorDataStackPtr': _unpack('B', byte_array(36, 1)),
+                'TelemetryUpdateCounter': _unpack('B', byte_array(37, 1)),
+                'ScienceHeaderPulsePeriod': _unpack('>I', byte_array(38, 4))
+            })
+        if self._include[(3, 7)]:
+            result.update({
+                'PixelOffset_16bit_A': _unpack('>H', byte_array(42, 2)),
+                'PixelOffset_16bit_B': _unpack('>H', byte_array(44, 2)),
+                'PixelOffset_16bit_C': _unpack('>H', byte_array(46, 2)),
+            })
+        if self._include[(4, 6)]:
+            result.update({
+                'PixelOffset_16bit_D': _unpack('>H', byte_array(48, 2)),
+                'PixelOffset_32bit_A': _unpack('>I', byte_array(50, 4)),
+            })
+        if self._include[(4, 7)]:
+            result.update({
+                'PixelOffset_32bit_B': _unpack('>I', byte_array(54, 4))
+            })
+        if self._include[(4, 7)] and self._include[(5, 6)]:
+            # cross-packet boundary
+            result.update({
+                'PixelOffset_32bit_C': _unpack('>I', byte_array(58, 4)),
+            })
+        if self._include[(5, 6)]:
+            result.update({
+                'PixelOffset_32bit_D': _unpack('>I', byte_array(62, 4)),
+            })
+        if self._include[(5, 7)]:
+            result.update({
+                'CCD_FlushTime': _unpack('>H', byte_array(66, 2)),
+                'CCD_RowShiftPeriod': _unpack('>H', byte_array(68, 2)),
+                'BGDAVG_OVERALL': _unpack('>H', byte_array(70, 2)),
+            })
+        if self._include[(6, 6)]:
+            result.update({
+                'DSN_Header_1': _unpack('>I', byte_array(72, 4)),
+            })
+        if self._include[(6, 6)] and self._include[(6, 7)]:
+            # cross-packet boundary
+            result.update({
+                'DSN_RecordCount': _unpack('>I', zero + byte_array(78, 3))
+            })
+        if self._include[(6, 7)]:
+            result.update({
+                'DSN_Header_2': _unpack('B', byte_array(81, 1)),
+                'CCD_Temperature': _unpack('H', byte_array(82, 2)),
+            })
+        if self._include[(7, 6)]:
+            # pseudo cross-packet boundary
+            result.update({
+                'CCD_Temperature': _unpack('H', byte_array(84, 2)),
+                'CCD_TemperatureControl': _unpack('>H', byte_array(86, 4))
+            })
+        if self._include[(7, 6)] and self._include[(7, 7)]:
+            # cross-packet boundary
+            result.update({
+                'AngleCalibration_Temperature': _unpack('>I', byte_array(88, 4))
+            })
+        if self._include[(7, 7)]:
+            result.update({
+                'RAM_FailAddress': _unpack('>H', byte_array(92, 2)),
+                'TEC_Power': _unpack('>H', byte_array(94, 2))
+            })
 
 
 def unpack_aca_telemetry(packet):
