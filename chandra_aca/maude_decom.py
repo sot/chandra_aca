@@ -524,7 +524,18 @@ def _aca_packets_to_table(aca_packets):
          ('IMGROW0', np.int16), ('IMGCOL0', np.int16), ('INTEG', np.uint16),
          ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
          ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
-         ('BGDSTAT', np.uint8)
+         ('BGDSTAT', np.uint8), ('HIGH_BGD', np.bool), ('RAM_FAIL', np.bool),
+         ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
+         ('COMM_CHECKSUM_FAIL', np.bool), ('RESET', np.bool), ('SYNTAX_ERROR', np.bool),
+         ('COMMCNT_SYNTAX_ERROR', np.bool), ('COMMCNT_CHECKSUM_FAIL', np.bool),
+         ('COMMPROG_REPEAT', np.uint8), ('BGDSTAT_PIXELS', np.bool, (8,)),
+         ('BGDSTAT_A1', np.bool), ('BGDSTAT_B1', np.bool), ('BGDSTAT_G1', np.bool),
+         ('BGDSTAT_H1', np.bool), ('BGDSTAT_I1', np.bool), ('BGDSTAT_J1', np.bool),
+         ('BGDSTAT_O1', np.bool), ('BGDSTAT_P1', np.bool), ('FID', np.bool),
+         ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
+         ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
+         ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
+         ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64)
          ])
 
     array = np.ma.masked_all(len(aca_packets), dtype=dtype)
