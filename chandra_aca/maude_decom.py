@@ -307,7 +307,6 @@ class _AcaImageHeaderDecom:
         """
         bits = _unpack('BbbbbBB', bits)
         c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
-        bgd_bits = np.unpackbits(np.array(bits[-1:], dtype=np.uint8))
         return {
             # do we want these?
             # 'FID2': bool(bits[0]),
@@ -319,15 +318,7 @@ class _AcaImageHeaderDecom:
             'TEMPPRIM': bits[4],
             'TEMPSEC': bits[5],
             'BGDSTAT': bits[6],
-            'BGDSTAT_PIXELS': np.unpackbits(np.array(bits[-1:], dtype=np.uint8)[-1:]),
-            'BGDSTAT_A1': bool(bgd_bits[0]),
-            'BGDSTAT_B1': bool(bgd_bits[1]),
-            'BGDSTAT_G1': bool(bgd_bits[2]),
-            'BGDSTAT_H1': bool(bgd_bits[3]),
-            'BGDSTAT_I1': bool(bgd_bits[4]),
-            'BGDSTAT_J1': bool(bgd_bits[5]),
-            'BGDSTAT_O1': bool(bgd_bits[6]),
-            'BGDSTAT_P1': bool(bgd_bits[7])
+            'BGDSTAT_PIXELS': np.unpackbits(np.array(bits[-1:], dtype=np.uint8)[-1:])
         }
 
     @staticmethod
@@ -528,10 +519,7 @@ def _aca_packets_to_table(aca_packets):
          ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
          ('COMM_CHECKSUM_FAIL', np.bool), ('RESET', np.bool), ('SYNTAX_ERROR', np.bool),
          ('COMMCNT_SYNTAX_ERROR', np.bool), ('COMMCNT_CHECKSUM_FAIL', np.bool),
-         ('COMMPROG_REPEAT', np.uint8), ('BGDSTAT_PIXELS', np.bool, (8,)),
-         ('BGDSTAT_A1', np.bool), ('BGDSTAT_B1', np.bool), ('BGDSTAT_G1', np.bool),
-         ('BGDSTAT_H1', np.bool), ('BGDSTAT_I1', np.bool), ('BGDSTAT_J1', np.bool),
-         ('BGDSTAT_O1', np.bool), ('BGDSTAT_P1', np.bool), ('FID', np.bool),
+         ('COMMPROG_REPEAT', np.uint8), ('FID', np.bool),
          ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
          ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
          ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
