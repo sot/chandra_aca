@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from .transform import *  # noqa
 
-__version__ = '4.27'
+__version__ = '4.28'
 
 
 def test(*args, **kwargs):
