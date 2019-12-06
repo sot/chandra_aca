@@ -287,3 +287,11 @@ as object attributes instead of going through the ``meta`` dict::
   >>> a.fail
   Traceback (most recent call last):
   AttributeError: 'ACAImage' object has no attribute 'fail'
+
+
+
+MAUDE Decom
+-----------
+
+.. automodule:: chandra_aca.maude_decom
+   :members:
