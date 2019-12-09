@@ -190,8 +190,8 @@ def _aca_image_msid_list(pea):
                          f'{msid_prefix}CA01392',   # Scale factor of image 6
                          f'{msid_prefix}CA01608'],  # Scale factor of image 7
 
-        'image_status': [f'AOIMAGE{i}' for i in range(8)],    # IMAGE 0 STATUS FLAG
-        'fiducial_flag': [f'AOACFID0{i}' for i in range(8)],  # FIDUCIAL LIGHT FLAG (OBC)
+        'image_status': [f'AOIMAGE{i}' for i in range(8)],    # IMAGE STATUS FLAG
+        'fiducial_flag': [f'AOACFID{i}' for i in range(8)],  # FIDUCIAL LIGHT FLAG (OBC)
         'image_function': [f'AOACFCT{i}' for i in range(8)],  # IMAGE FUNCTION (OBC)
         # this one exists also as FUNCTION2/3/4
         # 'image_function_pea':
@@ -281,7 +281,7 @@ class _AcaImageHeaderDecom:
         """
         bits = np.unpackbits(np.array(_unpack('BBBbbBB', bits), dtype=np.uint8))
         return {
-            'FID': bool(bits[0]),
+            'IMGFID': bool(bits[0]),
             'IMGNUM': _packbits(bits[1:4]),
             'IMGFUNC': _packbits(bits[4:6]),
             'IMGSTAT': _packbits(bits[6:12], unsigned=False),
@@ -519,7 +519,7 @@ def _aca_packets_to_table(aca_packets):
          ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
          ('COMM_CHECKSUM_FAIL', np.bool), ('RESET', np.bool), ('SYNTAX_ERROR', np.bool),
          ('COMMCNT_SYNTAX_ERROR', np.bool), ('COMMCNT_CHECKSUM_FAIL', np.bool),
-         ('COMMPROG_REPEAT', np.uint8), ('FID', np.bool),
+         ('COMMPROG_REPEAT', np.uint8), ('IMGFID', np.bool),
          ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
          ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
          ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
