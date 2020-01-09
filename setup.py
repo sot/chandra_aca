@@ -1,6 +1,4 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from chandra_aca import __version__
-
 from setuptools import setup
 
 try:
@@ -12,7 +10,8 @@ setup(name='chandra_aca',
       author='Jean Connelly, Tom Aldcroft',
       description='Chandra Aspect Camera Tools',
       author_email='jconnelly@cfa.harvard.edu',
-      version=__version__,
+      use_scm_version=True,
+      setup_requires=['setuptools_scm', 'setuptools_scm_git_archive'],
       zip_safe=False,
       packages=['chandra_aca', 'chandra_aca.tests'],
       package_data={'chandra_aca.tests': ['data/*.txt', 'data/*.dat',
