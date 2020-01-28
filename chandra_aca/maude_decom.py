@@ -433,7 +433,7 @@ def _group_packets(packets, discard=True):
         yield res
 
 
-def get_raw_aca_packets(start, stop):
+def get_raw_aca_packets(start, stop, **maude_kwargs):
     """
     Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.
 
@@ -446,6 +446,7 @@ def get_raw_aca_packets(start, stop):
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :param **maude_kwargs: keyword args passed to maude.get_frames()
     :return: dict
         {'flags': int, 'packets': [],
          'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
@@ -476,7 +477,7 @@ def get_raw_aca_packets(start, stop):
               (aca_frame_times[:, 0] <= date_stop.secs))
 
     # get the frames and unpack front matter
-    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad)['data']
+    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad, **maude_kwargs)['data']
     flags = frames['f']
     frames = frames['frames']
 
@@ -545,7 +546,8 @@ def _aca_packets_to_table(aca_packets):
 
 
 def get_aca_packets(start, stop, level0=False,
-                    combine=False, adjust_time=False, calibrate=False):
+                    combine=False, adjust_time=False, calibrate=False,
+                    **maude_kwargs):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
 
@@ -693,6 +695,7 @@ def get_aca_packets(start, stop, level0=False,
     :param calibrate: bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
+    :param **maude_kwargs: keyword args passed to maude
     :return: astropy.table.Table
     """
     if level0:
@@ -716,7 +719,7 @@ def get_aca_packets(start, stop, level0=False,
     batches = [(start + i * dt, start + (i + 1) * dt) for i in range(n)]  # 0.0001????
     aca_packets = []
     for t1, t2 in batches:
-        raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad)
+        raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad, **maude_kwargs)
         packets = _get_aca_packets(
             raw_aca_packets, t1, t2,
             combine=combine, adjust_time=adjust_time, calibrate=calibrate
@@ -785,12 +788,13 @@ def _get_aca_packets(aca_packets, start, stop,
     return table
 
 
-def get_aca_images(start, stop):
+def get_aca_images(start, stop, **maude_kwargs):
     """
     Fetch ACA image telemetry
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :param **maude_kwargs: keyword args passed to maude
     :return: astropy.table.Table
     """
-    return get_aca_packets(start, stop, level0=True)
+    return get_aca_packets(start, stop, level0=True, **maude_kwargs)
