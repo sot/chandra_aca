@@ -355,9 +355,18 @@ def unpack_aca_telemetry(packet):
         img_pixels = np.sum(np.packbits(_pixel_bits, axis=1) * [[2 ** 8, 1]], axis=1)
         img_header['pixels'] = img_pixels
         slots.append(img_header)
-    integ, glbstat = _unpack('>HB', packet[:3])
+
+    # The first two bytes that were integration time will have first two bits for
+    # PIXTLM, next bit for BGDTYP, 3 spares, and use 10 for INTEG
+    integbits = np.unpackbits(np.array(_unpack('BB', packet[0:2]), dtype=np.uint8))
+    pixtlm = _packbits(integbits[0:2])
+    bgdtyp = integbits[3]
+    integ = _packbits(integbits[6:])
+    glbstat = _unpack('B', packet[2:3])[0]
     bits = np.unpackbits(np.array(_unpack('BBB', packet[2:5]), dtype=np.uint8))
     res = {
+        'PIXTLM': pixtlm,
+        'BGDTYP': bgdtyp,
         'INTEG': integ,
         'GLBSTAT': glbstat,
         'HIGH_BGD': bool(bits[0]),
@@ -524,7 +533,8 @@ def _aca_packets_to_table(aca_packets):
          ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
          ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
          ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
-         ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64)
+         ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64),
+         ('PIXTLM', np.uint8), ('BGDTYP', np.uint8),
          ])
 
     array = np.ma.masked_all(len(aca_packets), dtype=dtype)
