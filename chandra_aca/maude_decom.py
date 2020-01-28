@@ -457,7 +457,7 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
     # also getting major and minor frames to figure out which is the first ACA packet in a group
     vcdu_counter = maude.get_msids(['CVCMNCTR', 'CVCMJCTR'],
                                    start=date_start,
-                                   stop=date_stop + stop_pad)
+                                   stop=date_stop + stop_pad, **maude_kwargs)
 
     sub = vcdu_counter['data'][0]['values'] % 4  # the minor frame index within each ACA update
     vcdu_times = vcdu_counter['data'][0]['times']
