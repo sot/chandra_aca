@@ -360,7 +360,7 @@ def unpack_aca_telemetry(packet):
     # PIXTLM, next bit for BGDTYP, 3 spares, and use 10 for INTEG
     integbits = np.unpackbits(np.array(_unpack('BB', packet[0:2]), dtype=np.uint8))
     pixtlm = _packbits(integbits[0:2])
-    bgdtyp = integbits[3]
+    bgdtyp = integbits[2]
     integ = _packbits(integbits[6:])
     glbstat = _unpack('B', packet[2:3])[0]
     bits = np.unpackbits(np.array(_unpack('BBB', packet[2:5]), dtype=np.uint8))
