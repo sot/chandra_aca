@@ -464,7 +464,7 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 
     # also getting major and minor frames to figure out which is the first ACA packet in a group
-    vcdu_counter = maude.get_msids(['CVCMNCTR', 'CVCMJCTR'],
+    vcdu_counter = maude.get_msids(['CVCMNCTR', 'CVCMJCTR', 'CVCDUCTR'],
                                    start=date_start,
                                    stop=date_stop + stop_pad, **maude_kwargs)
 
@@ -502,12 +502,14 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
     for a in aca_packets:
         assert (len(a) == 224)
 
+    times = vcdu_counter['data'][0]['times'][aca_frame_entries[select, 0]]
     minor_counter = vcdu_counter['data'][0]['values'][aca_frame_entries[select, 0]]
     major_counter = vcdu_counter['data'][1]['values'][aca_frame_entries[select, 0]]
-    times = vcdu_counter['data'][0]['times'][aca_frame_entries[select, 0]]
+    vcdu_counter = vcdu_counter['data'][2]['values'][aca_frame_entries[select, 0]]
 
     return {'flags': flags, 'packets': aca_packets,
-            'TIME': times, 'MNF': minor_counter, 'MJF': major_counter}
+            'TIME': times, 'MNF': minor_counter, 'MJF': major_counter, 'VCDUCTR': vcdu_counter
+            }
 
 
 def _aca_packets_to_table(aca_packets):
@@ -519,11 +521,11 @@ def _aca_packets_to_table(aca_packets):
     """
     import copy
     dtype = np.dtype(
-        [('TIME', np.float64), ('MJF', np.uint32), ('MNF', np.uint32), ('IMGNUM', np.uint32),
-         ('COMMCNT', np.uint8), ('COMMPROG', np.uint8), ('GLBSTAT', np.uint8),
-         ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8), ('IMGSCALE', np.uint16),
-         ('IMGROW0', np.int16), ('IMGCOL0', np.int16), ('INTEG', np.uint16),
-         ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
+        [('TIME', np.float64), ('VCDUCTR', np.uint32), ('MJF', np.uint32), ('MNF', np.uint32),
+         ('IMGNUM', np.uint32), ('COMMCNT', np.uint8), ('COMMPROG', np.uint8),
+         ('GLBSTAT', np.uint8), ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8),
+         ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
+         ('INTEG', np.uint16), ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
          ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
          ('BGDSTAT', np.uint8), ('HIGH_BGD', np.bool), ('RAM_FAIL', np.bool),
          ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
@@ -755,6 +757,8 @@ def _get_aca_packets(aca_packets, start, stop,
             aca_packets['decom_packets'][i][j]['TIME'] = aca_packets['TIME'][i]
             aca_packets['decom_packets'][i][j]['MJF'] = aca_packets['MJF'][i]
             aca_packets['decom_packets'][i][j]['MNF'] = aca_packets['MNF'][i]
+            if 'VCDUCTR' in aca_packets:
+                aca_packets['decom_packets'][i][j]['VCDUCTR'] = aca_packets['VCDUCTR'][i]
             aca_packets['decom_packets'][i][j]['IMGNUM'] = j
 
     aca_packets = [[f[i] for f in aca_packets['decom_packets']] for i in range(8)]
