@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from __future__ import print_function, division
+import hashlib
+from pathlib import Path
 
 import itertools
 import os
@@ -10,7 +11,7 @@ from astropy.table import Table
 from chandra_aca.star_probs import (t_ccd_warm_limit, mag_for_p_acq, acq_success_prob,
                                     guide_count, t_ccd_warm_limit_for_guide,
                                     grid_model_acq_prob, snr_mag_for_t_ccd,
-                                    binom_ppf)
+                                    binom_ppf, DEFAULT_MODEL, STAR_PROBS_DATA_DIR)
 
 # Acquisition probabilities regression test data
 ACQ_PROBS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'acq_probs.dat')
@@ -296,6 +297,66 @@ def test_grid_floor_2018_11():
                      -0.875, -0.695, -0.382, -0.204, 0.386, 0.758, 0.938, 1.133,
                      1.476, 1.639])
     assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.001)
+
+
+def test_grid_floor_2020_02():
+    """
+    Test grid-floor-2020-02 model against values computed directly in the
+    source notebook aca_stats/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
+    with the analytical (not-gridded) model.
+    """
+
+    mags = [9, 9.5, 10.5]
+    t_ccds = [-10, -5]
+    halfws = [60, 120, 160]
+    mag, t_ccd, halfw = np.meshgrid(mags, t_ccds, halfws, indexing='ij')
+
+    # color not 1.5
+    probs = grid_model_acq_prob(mag, t_ccd, halfwidth=halfw, probit=True, color=1.0,
+                                model='grid-floor-2020-02')
+    exp = -np.array([-2.076, -2.076, -2.076, -2.076, -1.955, -1.668, -1.637, -1.637,
+                     -1.637, -1.566, -1.011, -0.724, -0.02, 0.535, 0.822, 0.995,
+                     1.55, 1.837])
+    assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.08)
+
+    # color 1.5
+    probs = grid_model_acq_prob(mag, t_ccd, halfwidth=halfw, probit=True, color=1.5,
+                                model='grid-floor-2020-02')
+    exp = -np.array([-1.662, -1.569, -1.519, -1.357, -1.121, -0.957, -1.244, -1.089,
+                     -0.986, -0.806, -0.475, -0.289, 0.067, 0.475, 0.676, 0.814,
+                     1.22, 1.418])
+    assert np.allclose(probs.flatten(), exp, rtol=0, atol=0.001)
+
+
+def test_default_acq_prob_model():
+    """Ensure that the default model matches expectation.  This test needs to be
+    updated whenever a new (default) flight model is released.
+    """
+    # UPDATE with the expectation for the current flight default model
+    assert DEFAULT_MODEL == 'grid-floor-2020-02'
+
+    mags = [9, 9.5, 10.5]
+    t_ccds = [-10, -5]
+    halfws = [60, 120, 160]
+    mag, t_ccd, halfw = np.meshgrid(mags, t_ccds, halfws, indexing='ij')
+
+    # Specifically call out the default model name
+    probs1 = grid_model_acq_prob(mag, t_ccd, halfwidth=halfw, color=1.0,
+                                 model=DEFAULT_MODEL)
+    # Use the high-level (model-independent) API with defaults
+    probs2 = acq_success_prob(t_ccd=t_ccd, mag=mag, halfwidth=halfw)
+
+    # Should be identical to the bit because the same code is called.
+    assert np.all(probs1 == probs2)
+
+
+def test_md5_2020_02():
+    """Test that model data file has expected MD5 sum.  See cell 29 of
+    aca_stats/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
+    """
+    filename = Path(STAR_PROBS_DATA_DIR, 'grid-floor-2020-02.fits.gz')
+    md5 = hashlib.md5(open(filename, 'rb').read()).hexdigest()
+    assert md5 == '39960b6254acc4a7500397aac9908412'
 
 
 def test_binom_ppf():

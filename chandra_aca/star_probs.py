@@ -2,17 +2,12 @@
 """
 Functions related to probabilities for star acquisition and guide tracking.
 
-Current default model: grid-floor-2018-11
+Current default acquisition probability model: grid-floor-2020-02
 
-The grid-floor-2018-11 model definition and fit values based on:
-  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2018-11-binned-poly-binom-floor.ipynb
+The grid-floor-2020-02 model definition and fit values based on:
+  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
 
-See also development models:
-  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2018-11-dev
-
-SSAWG initial reviews: 2018-11-07, 2018-11-14
-Final review and approval: 2018-11-28
-
+SSAWG review: 2020-01-29
 """
 
 import os
@@ -30,7 +25,7 @@ from chandra_aca.transform import (snr_mag_for_t_ccd, broadcast_arrays,
 STAR_PROBS_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'star_probs')
 
 # Default acquisition probability model
-DEFAULT_MODEL = 'grid-floor-2018-11'
+DEFAULT_MODEL = 'grid-floor-2020-02'
 
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
