@@ -369,3 +369,46 @@ def test_start_stop():
     with pytest.raises(ValueError, match='Maximum allowed'):
         start, stop = (686111020, 686219020)
         _ = maude_decom.get_aca_packets(start, stop)
+
+
+def test_dynbgd_decom():
+    # This test looks at telemetry data around times when either BGDTYP or PIXTLM change.
+    # It checks two things: that the values are properly decommuted and that the proper values of
+    # BGDTYP and PIXTLM are set when packets are combined.
+    #
+    # BGDTYP and PIXTLM are the same for all slots within an ACA packet, but they might not
+    # correspond to actual pixel data. The values that correspond to the pixel data being sent are
+    # the values in the first packet of the image (image types 0, 1 and 4).
+    #
+    # For example, this series of ACA packets shows a change in PIXTLM and BGDTYP at frame 39736:
+    #      TIME     VCDUCTR IMGTYPE BGDTYP PIXTLM
+    # ------------- ------- ------- ------ ------
+    # 694916092.438   39732       4      1      2
+    # 694916093.464   39736       5      0      0
+    # 694916094.483   39740       6      0      0
+    # 694916095.509   39744       7      0      0
+    #
+    # however, frames 39732 to 39744 form an 8x8 image, and the value of PIXTLM in the first packet
+    # of the image is 2. Therefore, the packets must be combined to give
+    #      TIME     VCDUCTR BGDTYP PIXTLM
+    # ------------- ------- ------ ------
+    # 694916092.438   39732      1      2
+
+    with open(os.path.join(os.path.dirname(__file__), 'data', 'dynbgd.pkl'), 'rb') as out:
+        raw_frames, partial_packets, grouped_packets = pickle.load(out)
+        for i, key in enumerate(raw_frames):
+            start, stop = key
+            partial_packets_2 = maude_decom._get_aca_packets(raw_frames[key],
+                                                             start=start, stop=stop)
+            grouped_packets_2 = maude_decom._get_aca_packets(raw_frames[key], combine=True,
+                                                             start=start, stop=stop)
+            for slot in range(8):
+
+                assert np.all(
+                    partial_packets[key]['TIME', 'VCDUCTR', 'IMGTYPE', 'BGDTYP', 'PIXTLM'] ==
+                    partial_packets_2['TIME', 'VCDUCTR', 'IMGTYPE', 'BGDTYP', 'PIXTLM']
+                )
+                assert np.all(
+                    grouped_packets[key]['TIME', 'VCDUCTR', 'IMGTYPE', 'BGDTYP', 'PIXTLM'] ==
+                    grouped_packets_2['TIME', 'VCDUCTR', 'IMGTYPE', 'BGDTYP', 'PIXTLM']
+                )
