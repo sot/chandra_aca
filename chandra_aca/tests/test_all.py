@@ -231,8 +231,9 @@ def test_get_aimpoint():
                (7606.0, 7941.0, 0),
                (970.0, 975.0, 3)]
     try:
-        r = requests.head("https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt",
-                          timeout=5)
+        r = requests.head(
+            "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt",
+            timeout=5)
         assert r.status_code == 200
         zot = None
     except Exception:
