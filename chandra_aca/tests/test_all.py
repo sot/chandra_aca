@@ -4,6 +4,7 @@ from __future__ import print_function, division
 import os
 
 import pytest
+import requests
 import numpy as np
 from astropy.io import ascii
 from astropy.table import Table
@@ -24,6 +25,45 @@ TOLERANCE = 0.05
 SI_ALIGN_CLASSIC = np.array([[1.0, 3.3742E-4, 2.7344E-4],
                              [-3.3742E-4, 1.0, 0.0],
                              [-2.7344E-4, 0.0, 1.0]]).transpose()
+
+# Use this for testing in case the icxc version is not available.
+ZERO_OFFSET_TABLE = """
+# Table of zero-offset aimpoints
+# Last updated: 15 November 2018
+date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
+2012-12-15      15               ACIS-I    941.0   988.0   3        1.6
+2012-12-15      15               ACIS-S    224.0   490.0   7        1.6
+2012-12-15      15               HRC-I     7615.0  7862.0  0        1.6
+2012-12-15      15               HRC-S     2075.0  8984.0  2        1.6
+2013-12-15      16               ACIS-I    932.0   1009.0  3        1.7
+2013-12-15      16               ACIS-S    205.0   480.0   7        1.7
+2013-12-15      16               HRC-I     7606.0  7941.0  0        1.7
+2013-12-15      16               HRC-S     2050.0  9023.0  2        1.7
+2014-12-15      17               ACIS-I    930.2   1009.6  3        1.8a
+2014-12-15      17               ACIS-S    200.7   476.9   7        1.8a
+2014-12-15      17               HRC-I     7591.0  7936.1  0        1.8a
+2014-12-15      17               HRC-S     2041.0  9062.7  2        1.8a
+2015-12-15      18               ACIS-I    970.0   975.0   3        1.9
+2015-12-15      18               ACIS-S    210.0   520.0   7        1.9
+2015-12-15      18               HRC-I     7590.0  7745.0  0        1.9
+2015-12-15      18               HRC-S     2195.0  8915.0  2        1.9
+2016-12-15      19               ACIS-I    970.0   975.0   3        1.10
+2016-12-15      19               ACIS-S    210.0   520.0   7        1.10
+2016-12-15      19               HRC-I     7590.0  7745.0  0        1.10
+2016-12-15      19               HRC-S     2195.0  8915.0  2        1.10
+2017-12-15      20               ACIS-I    970.0   975.0   3        1.11
+2017-12-15      20               ACIS-S    210.0   520.0   7        1.11
+2017-12-15      20               HRC-I     7590.0  7745.0  0        1.11
+2017-12-15      20               HRC-S     2195.0  8915.0  2        1.11
+2018-11-07      17               ACIS-S    182.3   468.1   7        1.8a
+2018-11-07      18               ACIS-S    191.6   511.2   7        1.9
+2018-11-07      19               ACIS-S    191.6   511.2   7        1.10
+2018-11-07      20               ACIS-S    191.6   511.2   7        1.11
+2018-11-16      17               ACIS-S    200.7   476.9   7        1.8a
+2018-11-16      18               ACIS-S    210.0   520.0   7        1.9
+2018-11-16      19               ACIS-S    210.0   520.0   7        1.10
+2018-11-16      20               ACIS-S    210.0   520.0   7        1.11
+"""
 
 
 def test_edge_checking():
@@ -190,8 +230,17 @@ def test_get_aimpoint():
     answers = [(224.0, 490.0, 7),
                (7606.0, 7941.0, 0),
                (970.0, 975.0, 3)]
+    try:
+        r = requests.head(
+            "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt",
+            timeout=5)
+        assert r.status_code == 200
+        zot = None
+    except Exception:
+        zot = Table.read(ZERO_OFFSET_TABLE, format='ascii')
+
     for obstest, answer in zip(obstests, answers):
-        chipx, chipy, chip_id = drift.get_target_aimpoint(*obstest)
+        chipx, chipy, chip_id = drift.get_target_aimpoint(*obstest, zero_offset_table=zot)
         assert chipx == answer[0]
         assert chipy == answer[1]
         assert chip_id == answer[2]
