@@ -284,7 +284,7 @@ class _AcaImageHeaderDecom:
             'IMGFID': bool(bits[0]),
             'IMGNUM': _packbits(bits[1:4]),
             'IMGFUNC': _packbits(bits[4:6]),
-            'IMGSTAT': _packbits(bits[6:12], unsigned=False),
+            'IMGSTAT': _packbits(bits[6:12]),
             'SAT_PIXEL': bool(bits[6]),
             'DEF_PIXEL': bool(bits[7]),
             'QUAD_BOUND': bool(bits[8]),
