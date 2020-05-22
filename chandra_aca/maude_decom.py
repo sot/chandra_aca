@@ -356,8 +356,11 @@ def unpack_aca_telemetry(packet):
         img_header['pixels'] = img_pixels
         slots.append(img_header)
 
-    # The first two bytes that were integration time will have first two bits for
-    # PIXTLM, next bit for BGDTYP, 3 spares, and use 10 for INTEG
+    # Before the dynamic background patch, the first two bytes contained INTEG in those
+    # 16 bits (named integbits).  After the dynamic background patch, the first 6 bits of
+    # integbits will be repurposed: two bits for PIXTLM, next bit for BGDTYP, 3 spares,
+    # and 10 bits for INTEG.  This telem/decom change is back-compatible and can be promoted
+    # before the dynamic background patch is in use onboard.
     integbits = np.unpackbits(np.array(_unpack('BB', packet[0:2]), dtype=np.uint8))
     pixtlm = _packbits(integbits[0:2])
     bgdtyp = integbits[2]
