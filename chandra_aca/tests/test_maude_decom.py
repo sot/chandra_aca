@@ -144,7 +144,7 @@ def test_vcdu_vs_level0():
     table2 = maude_decom.get_aca_images(start, stop)
     assert np.all(table == table2)
 
-    raw = test_data[f'686111010-686111040']['raw']
+    raw = test_data['686111010-686111040']['raw']
     table2 = maude_decom._get_aca_packets(raw, start, stop,
                                           combine=True, adjust_time=True, calibrate=True)
     assert np.all(table == table2)
@@ -348,7 +348,7 @@ def test_start_stop():
     # check some conventions on start/stop times
     start, stop = (686111020, 686111028.893)
 
-    raw = test_data[f'686111010-686111040']['raw']
+    raw = test_data['686111010-686111040']['raw']
     table = maude_decom._get_aca_packets(raw, start, stop,
                                          combine=True, adjust_time=True, calibrate=True)
     n1 = len(table)
