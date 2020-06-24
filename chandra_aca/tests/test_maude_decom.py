@@ -142,12 +142,14 @@ def test_vcdu_vs_level0():
     table = maude_decom.get_aca_packets(start, stop, level0=True)
 
     table2 = maude_decom.get_aca_images(start, stop)
-    assert np.all(table == table2)
+    for col, col2 in zip(table.itercols(), table2.itercols()):
+        assert np.all(col == col2)
 
     raw = test_data[f'686111010-686111040']['raw']
     table2 = maude_decom._get_aca_packets(raw, start, stop,
                                           combine=True, adjust_time=True, calibrate=True)
-    assert np.all(table == table2)
+    for col, col2 in zip(table.itercols(), table2.itercols()):
+        assert np.all(col == col2)
 
     names = ['TIME', 'MJF', 'MNF', 'END_INTEG_TIME', 'INTEG', 'GLBSTAT', 'COMMCNT',
              'COMMPROG', 'IMGROW0', 'IMGCOL0', 'IMGSCALE', 'BGDAVG', 'BGDRMS',
