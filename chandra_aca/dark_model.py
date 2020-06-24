@@ -223,7 +223,7 @@ def get_sbp_pars(dates):
     return pars_list
 
 
-def get_warm_fracs(warm_threshold, date='2013:001', T_ccd=-19.0):
+def get_warm_fracs(warm_threshold, date='2013:001:12:00:00', T_ccd=-19.0):
     """
     Calculate fraction of pixels in modeled dark current distribution
     above warm threshold(s).
@@ -272,7 +272,7 @@ def synthetic_dark_image(date, t_ccd_ref=None):
     from mica.archive.aca_dark import get_dark_cal_image
 
     if 'dark_1999223' not in CACHE:
-        dark = get_dark_cal_image('1999:223', select='nearest', t_ccd_ref=-14).ravel()
+        dark = get_dark_cal_image('1999:223:12:00:00', select='nearest', t_ccd_ref=-14).ravel()
         CACHE['dark_1999223'] = dark.copy()
     else:
         dark = CACHE['dark_1999223'].copy()

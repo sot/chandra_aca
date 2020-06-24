@@ -20,21 +20,21 @@ import numpy as np
 DRIFT_Y_PARS = dict(scale=2.1467,  # drift per degF (NOT degC as elsewhere in this module)
                     offset=-6.012,
                     trend=-1.108,
-                    jumps=(('2015:006', -4.600),
-                           ('2015:265', -4.669),
-                           ('2016:064', -1.793),
-                           ('2017:066', -1.725),
-                           ('2018:285', -12.505)),
+                    jumps=(('2015:006:12:00:00', -4.600),
+                           ('2015:265:12:00:00', -4.669),
+                           ('2016:064:12:00:00', -1.793),
+                           ('2017:066:12:00:00', -1.725),
+                           ('2018:285:12:00:00', -12.505)),
                     year0=2016.0)
 
 DRIFT_Z_PARS = dict(scale=1.004,
                     offset=-15.963,
                     trend=-0.159,
-                    jumps=(('2015:006', -2.109),
-                           ('2015:265', -0.368),
-                           ('2016:064', -0.902),
-                           ('2017:066', -0.856),
-                           ('2018:285', -6.056)),
+                    jumps=(('2015:006:12:00:00', -2.109),
+                           ('2015:265:12:00:00', -0.368),
+                           ('2016:064:12:00:00', -0.902),
+                           ('2017:066:12:00:00', -0.856),
+                           ('2018:285:12:00:00', -6.056)),
                     year0=2016.0)
 
 # Define transform from aspect solution DY, DZ (mm) to CHIPX, CHIPY for
@@ -119,7 +119,7 @@ class AcaDriftModel(object):
         if np.any(np.diff(times) < 0):
             raise ValueError('times arg must be monotonically increasing')
 
-        if times[0] < DateTime('2012:001').secs:
+        if times[0] < DateTime('2012:001:12:00:00').secs:
             raise ValueError('model is not applicable before 2012')
 
         # Years from model `year0`

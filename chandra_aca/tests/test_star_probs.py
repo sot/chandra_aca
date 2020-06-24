@@ -40,7 +40,7 @@ def make_prob_regress_table():
     rows = []
     for model, mag, t_ccd, color, spoiler, halfwidth in itertools.product(
             models, mags, t_ccds, colors, spoilers, halfwidths):
-        prob = acq_success_prob(date='2018:001', t_ccd=t_ccd, mag=mag, color=color,
+        prob = acq_success_prob(date='2018:001:12:00:00', t_ccd=t_ccd, mag=mag, color=color,
                                 spoiler=spoiler, halfwidth=halfwidth,
                                 model=model)
         rows.append([model, mag, t_ccd, color, spoiler, halfwidth, prob])
@@ -53,7 +53,7 @@ def make_prob_regress_table():
 def test_acq_probs_values():
     dat = Table.read(ACQ_PROBS_FILE, format='ascii.ecsv', guess=False)
     for model, mag, t_ccd, color, spoiler, halfwidth, prob in dat:
-        prob_now = acq_success_prob(date='2018:001', t_ccd=t_ccd, mag=mag, color=color,
+        prob_now = acq_success_prob(date='2018:001:12:00:00', t_ccd=t_ccd, mag=mag, color=color,
                                     spoiler=spoiler, halfwidth=halfwidth,
                                     model=model)
         # Values written to file rounded to 1e-5, so test to 2e-5
@@ -61,32 +61,32 @@ def test_acq_probs_values():
 
 
 def test_t_ccd_warm_limit_1():
-    out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=(2, 8e-3), model='sota')
+    out = t_ccd_warm_limit([10.4] * 6, date='2015:001:12:00:00', min_n_acq=(2, 8e-3), model='sota')
     assert np.allclose(out[0], -14.9924, atol=0.01, rtol=0)
     assert np.allclose(out[1], 0.008, atol=0.0001, rtol=0)
 
 
 def test_t_ccd_warm_limit_1_spline():
-    out = t_ccd_warm_limit([10.0] * 6, date='2018:180', min_n_acq=(2, 8e-3), model='spline')
+    out = t_ccd_warm_limit([10.0] * 6, date='2018:180:12:00:00', min_n_acq=(2, 8e-3), model='spline')
     assert np.allclose(out[0], -10.582, atol=0.01, rtol=0)
     assert np.allclose(out[1], 0.008, atol=0.0001, rtol=0)
 
 
 def test_t_ccd_warm_limit_2():
-    out = t_ccd_warm_limit([10.4] * 6, date='2015:001', min_n_acq=5.0, model='sota')
+    out = t_ccd_warm_limit([10.4] * 6, date='2015:001:12:00:00', min_n_acq=5.0, model='sota')
     assert np.allclose(out[0], -14.851, atol=0.01, rtol=0)
     assert np.allclose(out[1], 5.0, atol=0.01, rtol=0)
 
 
 def test_t_ccd_warm_limit_2_spline():
-    out = t_ccd_warm_limit([10.0] * 6, date='2018:180', min_n_acq=5.0, model='spline')
+    out = t_ccd_warm_limit([10.0] * 6, date='2018:180:12:00:00', min_n_acq=5.0, model='spline')
     assert np.allclose(out[0], -10.491, atol=0.01, rtol=0)
     assert np.allclose(out[1], 5.0, atol=0.01, rtol=0)
 
 
 def test_t_ccd_warm_limit_3():
     halfwidth = [40, 80, 120, 160, 180, 240]
-    box = t_ccd_warm_limit([10.4] * 6, date='2015:001', halfwidths=halfwidth,
+    box = t_ccd_warm_limit([10.4] * 6, date='2015:001:12:00:00', halfwidths=halfwidth,
                            min_n_acq=(2, 8e-3), model='sota')
     assert np.allclose(box[0], -15.6325, atol=0.01, rtol=0)
     assert np.allclose(box[1], 0.008, atol=0.0001, rtol=0)
@@ -94,7 +94,7 @@ def test_t_ccd_warm_limit_3():
 
 def test_t_ccd_warm_limit_3_spline():
     halfwidth = [40, 80, 120, 160, 180, 240]
-    box = t_ccd_warm_limit([10.0] * 6, date='2018:180', halfwidths=halfwidth,
+    box = t_ccd_warm_limit([10.0] * 6, date='2018:180:12:00:00', halfwidths=halfwidth,
                            min_n_acq=(2, 8e-3), model='spline')
     assert np.allclose(box[0], -11.0192, atol=0.01, rtol=0)
     assert np.allclose(box[1], 0.008, atol=0.0001, rtol=0)
@@ -169,21 +169,21 @@ def stepwise_guide_warm_limit(mags, step=0.01, min_guide_count=4.0,
 
 
 def test_mag_for_p_acq():
-    mag = mag_for_p_acq(0.50, date='2015:001', t_ccd=-14.0, model='sota')
+    mag = mag_for_p_acq(0.50, date='2015:001:12:00:00', t_ccd=-14.0, model='sota')
     assert np.allclose(mag, 10.848, rtol=0, atol=0.01)
 
 
 def test_halfwidth_adjustment():
     mag = 10.3
     halfwidth = [40, 80, 120, 180, 240]
-    p120 = acq_success_prob(mag=mag, date='2018:001', t_ccd=-19, halfwidth=120, model='sota')
-    pacq = acq_success_prob(mag=mag, date='2018:001', t_ccd=-19, halfwidth=halfwidth, model='sota')
+    p120 = acq_success_prob(mag=mag, date='2018:001:12:00:00', t_ccd=-19, halfwidth=120, model='sota')
+    pacq = acq_success_prob(mag=mag, date='2018:001:12:00:00', t_ccd=-19, halfwidth=halfwidth, model='sota')
     mults = pacq / p120
     assert np.allclose(mults, [1.07260318, 1.04512285, 1., 0.91312975, 0.83667405])
 
 
 def test_acq_success_prob_date():
-    date = ['2014:001', '2015:001', '2016:001', '2017:001']
+    date = ['2014:001:12:00:00', '2015:001:12:00:00', '2016:001:12:00:00', '2017:001:12:00:00']
     probs = acq_success_prob(date=date, t_ccd=-10, mag=10.3, spoiler=False, color=0.6,
                              model='sota')
     assert np.allclose(probs, [0.76856955, 0.74345895, 0.71609812, 0.68643974])
@@ -191,14 +191,14 @@ def test_acq_success_prob_date():
 
 def test_acq_success_prob_t_ccd():
     t_ccd = [-16, -14, -12, -10]
-    probs = acq_success_prob(date='2017:001', t_ccd=t_ccd, mag=10.3, spoiler=False, color=0.6,
+    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=t_ccd, mag=10.3, spoiler=False, color=0.6,
                              model='sota')
     assert np.allclose(probs, [0.87007558, 0.81918958, 0.75767782, 0.68643974])
 
 
 def test_acq_success_prob_mag():
     mag = [9, 10, 10.3, 10.6]
-    probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=mag, spoiler=False, color=0.6,
+    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=-10, mag=mag, spoiler=False, color=0.6,
                              model='sota')
     assert np.allclose(probs, [0.985, 0.86868674, 0.68643974, 0.3952578])
 
@@ -206,7 +206,7 @@ def test_acq_success_prob_mag():
 def test_acq_success_prob_spoiler():
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
     spoiler = [False, True]
-    probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=10.3, spoiler=spoiler, color=0.6,
+    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=-10, mag=10.3, spoiler=spoiler, color=0.6,
                              model='sota')
     assert np.allclose(p_spoiler, probs[1] / probs[0])
 
@@ -214,7 +214,7 @@ def test_acq_success_prob_spoiler():
 def test_acq_success_prob_color():
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     color = [0.6, 0.699997, 0.69999999, 0.7, 0.700001, 1.5, 1.49999999]
-    probs = acq_success_prob(date='2017:001', t_ccd=-10, mag=10.3, spoiler=False, color=color,
+    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=-10, mag=10.3, spoiler=False, color=color,
                              model='sota')
     assert np.allclose(probs, [0.68643974, 0.68643974, 0.29475723, 0.29475723, 0.68643974,
                                0.29295036, 0.29295036])
@@ -255,13 +255,13 @@ def test_acq_success_prob_from_stars():
     hws = [160, 160, 120, 160, 120, 120, 120, 120]
 
     # SOTA
-    probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors,
+    probs = acq_success_prob(date='2018:059:12:00:00', t_ccd=-11.2, mag=mags, color=colors,
                              halfwidth=hws, model='sota')
     assert np.allclose(probs, [0.977, 0.967, 0.793, 0.775, 0.606, 0.0004, 0.704, 0.651],
                        atol=1e-2, rtol=0)
 
     # Spline
-    probs = acq_success_prob(date='2018:059', t_ccd=-11.2, mag=mags, color=colors,
+    probs = acq_success_prob(date='2018:059:12:00:00', t_ccd=-11.2, mag=mags, color=colors,
                              halfwidth=hws, model='spline')
     assert np.allclose(probs, [0.954, 0.936, 0.696, 0.739, 0.297, 0.000001, 0.491, 0.380],
                        atol=1e-2, rtol=0)
