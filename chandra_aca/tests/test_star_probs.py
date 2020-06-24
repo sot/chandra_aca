@@ -67,7 +67,8 @@ def test_t_ccd_warm_limit_1():
 
 
 def test_t_ccd_warm_limit_1_spline():
-    out = t_ccd_warm_limit([10.0] * 6, date='2018:180:12:00:00', min_n_acq=(2, 8e-3), model='spline')
+    out = t_ccd_warm_limit([10.0] * 6, date='2018:180:12:00:00', min_n_acq=(2, 8e-3),
+                           model='spline')
     assert np.allclose(out[0], -10.582, atol=0.01, rtol=0)
     assert np.allclose(out[1], 0.008, atol=0.0001, rtol=0)
 
@@ -176,8 +177,10 @@ def test_mag_for_p_acq():
 def test_halfwidth_adjustment():
     mag = 10.3
     halfwidth = [40, 80, 120, 180, 240]
-    p120 = acq_success_prob(mag=mag, date='2018:001:12:00:00', t_ccd=-19, halfwidth=120, model='sota')
-    pacq = acq_success_prob(mag=mag, date='2018:001:12:00:00', t_ccd=-19, halfwidth=halfwidth, model='sota')
+    p120 = acq_success_prob(mag=mag, date='2018:001:12:00:00', t_ccd=-19, halfwidth=120,
+                            model='sota')
+    pacq = acq_success_prob(mag=mag, date='2018:001:12:00:00', t_ccd=-19, halfwidth=halfwidth,
+                            model='sota')
     mults = pacq / p120
     assert np.allclose(mults, [1.07260318, 1.04512285, 1., 0.91312975, 0.83667405])
 
@@ -191,7 +194,8 @@ def test_acq_success_prob_date():
 
 def test_acq_success_prob_t_ccd():
     t_ccd = [-16, -14, -12, -10]
-    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=t_ccd, mag=10.3, spoiler=False, color=0.6,
+    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=t_ccd, mag=10.3, spoiler=False,
+                             color=0.6,
                              model='sota')
     assert np.allclose(probs, [0.87007558, 0.81918958, 0.75767782, 0.68643974])
 
@@ -206,16 +210,16 @@ def test_acq_success_prob_mag():
 def test_acq_success_prob_spoiler():
     p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
     spoiler = [False, True]
-    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=-10, mag=10.3, spoiler=spoiler, color=0.6,
-                             model='sota')
+    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=-10, mag=10.3, spoiler=spoiler,
+                             color=0.6, model='sota')
     assert np.allclose(p_spoiler, probs[1] / probs[0])
 
 
 def test_acq_success_prob_color():
     p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
     color = [0.6, 0.699997, 0.69999999, 0.7, 0.700001, 1.5, 1.49999999]
-    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=-10, mag=10.3, spoiler=False, color=color,
-                             model='sota')
+    probs = acq_success_prob(date='2017:001:12:00:00', t_ccd=-10, mag=10.3, spoiler=False,
+                             color=color, model='sota')
     assert np.allclose(probs, [0.68643974, 0.68643974, 0.29475723, 0.29475723, 0.68643974,
                                0.29295036, 0.29295036])
     assert np.allclose(p_0p7color, probs[2] / probs[0])
