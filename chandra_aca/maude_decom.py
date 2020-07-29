@@ -355,9 +355,21 @@ def unpack_aca_telemetry(packet):
         img_pixels = np.sum(np.packbits(_pixel_bits, axis=1) * [[2 ** 8, 1]], axis=1)
         img_header['pixels'] = img_pixels
         slots.append(img_header)
-    integ, glbstat = _unpack('>HB', packet[:3])
+
+    # Before the dynamic background patch, the first two bytes contained INTEG in those
+    # 16 bits (named integbits).  After the dynamic background patch, the first 6 bits of
+    # integbits will be repurposed: two bits for PIXTLM, next bit for BGDTYP, 3 spares,
+    # and 10 bits for INTEG.  This telem/decom change is back-compatible and can be promoted
+    # before the dynamic background patch is in use onboard.
+    integbits = np.unpackbits(np.array(_unpack('BB', packet[0:2]), dtype=np.uint8))
+    pixtlm = _packbits(integbits[0:2])
+    bgdtyp = integbits[2]
+    integ = _packbits(integbits[6:])
+    glbstat = _unpack('B', packet[2:3])[0]
     bits = np.unpackbits(np.array(_unpack('BBB', packet[2:5]), dtype=np.uint8))
     res = {
+        'PIXTLM': pixtlm,
+        'BGDTYP': bgdtyp,
         'INTEG': integ,
         'GLBSTAT': glbstat,
         'HIGH_BGD': bool(bits[0]),
@@ -433,7 +445,7 @@ def _group_packets(packets, discard=True):
         yield res
 
 
-def get_raw_aca_packets(start, stop):
+def get_raw_aca_packets(start, stop, **maude_kwargs):
     """
     Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.
 
@@ -446,6 +458,7 @@ def get_raw_aca_packets(start, stop):
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :param **maude_kwargs: keyword args passed to maude.get_frames()
     :return: dict
         {'flags': int, 'packets': [],
          'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
@@ -454,9 +467,9 @@ def get_raw_aca_packets(start, stop):
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 
     # also getting major and minor frames to figure out which is the first ACA packet in a group
-    vcdu_counter = maude.get_msids(['CVCMNCTR', 'CVCMJCTR'],
+    vcdu_counter = maude.get_msids(['CVCMNCTR', 'CVCMJCTR', 'CVCDUCTR'],
                                    start=date_start,
-                                   stop=date_stop + stop_pad)
+                                   stop=date_stop + stop_pad, **maude_kwargs)
 
     sub = vcdu_counter['data'][0]['values'] % 4  # the minor frame index within each ACA update
     vcdu_times = vcdu_counter['data'][0]['times']
@@ -476,7 +489,7 @@ def get_raw_aca_packets(start, stop):
               (aca_frame_times[:, 0] <= date_stop.secs))
 
     # get the frames and unpack front matter
-    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad)['data']
+    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad, **maude_kwargs)['data']
     flags = frames['f']
     frames = frames['frames']
 
@@ -492,12 +505,14 @@ def get_raw_aca_packets(start, stop):
     for a in aca_packets:
         assert (len(a) == 224)
 
+    times = vcdu_counter['data'][0]['times'][aca_frame_entries[select, 0]]
     minor_counter = vcdu_counter['data'][0]['values'][aca_frame_entries[select, 0]]
     major_counter = vcdu_counter['data'][1]['values'][aca_frame_entries[select, 0]]
-    times = vcdu_counter['data'][0]['times'][aca_frame_entries[select, 0]]
+    vcdu_counter = vcdu_counter['data'][2]['values'][aca_frame_entries[select, 0]]
 
     return {'flags': flags, 'packets': aca_packets,
-            'TIME': times, 'MNF': minor_counter, 'MJF': major_counter}
+            'TIME': times, 'MNF': minor_counter, 'MJF': major_counter, 'VCDUCTR': vcdu_counter
+            }
 
 
 def _aca_packets_to_table(aca_packets):
@@ -509,11 +524,11 @@ def _aca_packets_to_table(aca_packets):
     """
     import copy
     dtype = np.dtype(
-        [('TIME', np.float64), ('MJF', np.uint32), ('MNF', np.uint32), ('IMGNUM', np.uint32),
-         ('COMMCNT', np.uint8), ('COMMPROG', np.uint8), ('GLBSTAT', np.uint8),
-         ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8), ('IMGSCALE', np.uint16),
-         ('IMGROW0', np.int16), ('IMGCOL0', np.int16), ('INTEG', np.uint16),
-         ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
+        [('TIME', np.float64), ('VCDUCTR', np.uint32), ('MJF', np.uint32), ('MNF', np.uint32),
+         ('IMGNUM', np.uint32), ('COMMCNT', np.uint8), ('COMMPROG', np.uint8),
+         ('GLBSTAT', np.uint8), ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8),
+         ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
+         ('INTEG', np.uint16), ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
          ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
          ('BGDSTAT', np.uint8), ('HIGH_BGD', np.bool), ('RAM_FAIL', np.bool),
          ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
@@ -523,7 +538,8 @@ def _aca_packets_to_table(aca_packets):
          ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
          ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
          ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
-         ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64)
+         ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64),
+         ('PIXTLM', np.uint8), ('BGDTYP', np.uint8),
          ])
 
     array = np.ma.masked_all(len(aca_packets), dtype=dtype)
@@ -545,7 +561,8 @@ def _aca_packets_to_table(aca_packets):
 
 
 def get_aca_packets(start, stop, level0=False,
-                    combine=False, adjust_time=False, calibrate=False):
+                    combine=False, adjust_time=False, calibrate=False,
+                    **maude_kwargs):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
 
@@ -693,6 +710,7 @@ def get_aca_packets(start, stop, level0=False,
     :param calibrate: bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
+    :param **maude_kwargs: keyword args passed to maude
     :return: astropy.table.Table
     """
     if level0:
@@ -716,7 +734,7 @@ def get_aca_packets(start, stop, level0=False,
     batches = [(start + i * dt, start + (i + 1) * dt) for i in range(n)]  # 0.0001????
     aca_packets = []
     for t1, t2 in batches:
-        raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad)
+        raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad, **maude_kwargs)
         packets = _get_aca_packets(
             raw_aca_packets, t1, t2,
             combine=combine, adjust_time=adjust_time, calibrate=calibrate
@@ -742,6 +760,8 @@ def _get_aca_packets(aca_packets, start, stop,
             aca_packets['decom_packets'][i][j]['TIME'] = aca_packets['TIME'][i]
             aca_packets['decom_packets'][i][j]['MJF'] = aca_packets['MJF'][i]
             aca_packets['decom_packets'][i][j]['MNF'] = aca_packets['MNF'][i]
+            if 'VCDUCTR' in aca_packets:
+                aca_packets['decom_packets'][i][j]['VCDUCTR'] = aca_packets['VCDUCTR'][i]
             aca_packets['decom_packets'][i][j]['IMGNUM'] = j
 
     aca_packets = [[f[i] for f in aca_packets['decom_packets']] for i in range(8)]
@@ -785,12 +805,13 @@ def _get_aca_packets(aca_packets, start, stop,
     return table
 
 
-def get_aca_images(start, stop):
+def get_aca_images(start, stop, **maude_kwargs):
     """
     Fetch ACA image telemetry
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :param **maude_kwargs: keyword args passed to maude
     :return: astropy.table.Table
     """
-    return get_aca_packets(start, stop, level0=True)
+    return get_aca_packets(start, stop, level0=True, **maude_kwargs)
