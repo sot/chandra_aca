@@ -7,8 +7,6 @@ The transform modules includes:
 - Science target coordinate to ACA frame conversions
 """
 
-from __future__ import division
-
 import numpy as np
 
 from chandra_aca import dark_model
