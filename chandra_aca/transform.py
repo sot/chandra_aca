@@ -240,6 +240,56 @@ def _poly_convert(y, z, coeffs, t_aca=None):
     return newy, newz
 
 
+def radec_to_eci(ra, dec):
+    """
+    Convert from RA,Dec to ECI.  The input ``ra`` and ``dec`` values can be 1-d
+    arrays of length N in which case the output ``ECI`` will be an array with
+    shape (N, 3)
+
+    :param ra: Right Ascension (degrees)
+    :param dec: Declination (degrees)
+    :returns: numpy array ECI (3-vector or N x 3 array)
+    """
+    r = np.radians(ra)
+    d = np.radians(dec)
+    if r.shape != d.shape:
+        raise ValueError('input ra, dec shapes must be the same')
+
+    out = np.empty(r.shape + (3,), dtype=np.float64)
+    out[..., 0] = np.cos(r) * np.cos(d)
+    out[..., 1] = np.sin(r) * np.cos(d)
+    out[..., 2] = np.sin(d)
+    return out
+
+
+def eci_to_radec(eci):
+    """
+    Convert from ECI vector(s) to RA, Dec.  The input ``eci`` value
+    can be an array of 3-vectors having shape (N, 3) in which case
+    the output RA, Dec will be arrays of shape N. The N dimension can
+    actually be any multidimensional shape.
+
+    :param eci: ECI as 3-vector or (N, 3) array
+    :rtype: scalar or array ra, dec (degrees)
+    """
+    eci = np.asanyarray(eci)
+    if eci.shape[-1] != 3:
+        raise ValueError('final dimension of `eci` must be 3')
+
+    ra = np.degrees(np.arctan2(eci[..., 1], eci[..., 0]))
+    dec = np.degrees(np.arctan2(eci[..., 2], np.sqrt(eci[..., 1]**2 + eci[..., 0]**2)))
+    ok = ra < 0
+    if eci.ndim == 1:
+        if ok:
+            ra += 360
+    else:
+        ra[ok] += 360
+
+    # The [()] ensures that a scalar input (one ECI vector) returns np.float64
+    # instead of a scalar array.
+    return ra[()], dec[()]
+
+
 def radec_to_yagzag(ra, dec, q_att):
     """
     Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The

@@ -14,7 +14,8 @@ from Chandra.Time import DateTime
 
 import chandra_aca
 from chandra_aca.transform import (snr_mag_for_t_ccd, radec_to_yagzag,
-                                   yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels)
+                                   yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels,
+                                   eci_to_radec, radec_to_eci)
 from chandra_aca import drift
 
 dirname = os.path.dirname(__file__)
@@ -302,3 +303,49 @@ def test_snr_mag():
     assert np.allclose(arr, [9.0, 8.8112, 8.1818], atol=0.0001, rtol=0)
     arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-9.5, scale_4c=1.59)
     assert np.allclose(arr, [9.2517, 9.0630, 8.4336], atol=0.0001, rtol=0)
+
+
+def test_eci_to_radec():
+    eci = np.array([0.92541658, 0.16317591, 0.34202014])
+    ra, dec = eci_to_radec(eci)
+    assert np.allclose(ra, 9.9999999129952908)
+    assert np.allclose(dec, 19.999999794004037)
+
+
+def test_vectorized_eci_to_radec():
+    eci = np.array([[0.92541658, 0.16317591, 0.34202014],
+                    [0.9248273, -0.16307201, 0.34365969]])
+    ra, dec = eci_to_radec(eci)
+    assert np.allclose(ra[0], 9.9999999129952908)
+    assert np.allclose(ra[1], 349.9999997287627)
+    assert np.allclose(dec[0], 19.999999794004037)
+    assert np.allclose(dec[1], 20.099999743270516)
+
+
+def test_radec_to_eci():
+    eci = radec_to_eci(10, 20)
+    assert np.allclose(eci[0], 0.92541658)
+    assert np.allclose(eci[1], 0.16317591)
+    assert np.allclose(eci[2], 0.34202014)
+
+
+@pytest.mark.parametrize('shape', [(24,), (6, 4), (3, 4, 2)])
+def test_radec_eci_transform_multidim(shape):
+    ras = np.linspace(0., 359., 24)
+    decs = np.linspace(-90., 90., 24)
+    ras_nd = ras.reshape(shape)
+    decs_nd = decs.reshape(shape)
+
+    # First do everything as scalars
+    ecis_list = [radec_to_eci(ra, dec) for ra, dec in zip(ras.tolist(), decs.tolist())]
+    ecis_nd_from_list = np.array(ecis_list).reshape(shape + (3,))
+
+    ecis = radec_to_eci(ras_nd, decs_nd)
+    assert ecis.shape == shape + (3,)
+    assert np.allclose(ecis, ecis_nd_from_list)
+
+    ras_rt, decs_rt = eci_to_radec(ecis)
+    assert ras_rt.shape == shape
+    assert decs_rt.shape == shape
+    assert np.allclose(ras_rt, ras_nd)
+    assert np.allclose(decs_rt, decs_nd)
