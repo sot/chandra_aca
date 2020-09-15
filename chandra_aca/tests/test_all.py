@@ -310,6 +310,8 @@ def test_eci_to_radec():
     ra, dec = eci_to_radec(eci)
     assert np.allclose(ra, 9.9999999129952908)
     assert np.allclose(dec, 19.999999794004037)
+    assert isinstance(ra, np.float64)
+    assert isinstance(dec, np.float64)
 
 
 def test_vectorized_eci_to_radec():
@@ -320,6 +322,8 @@ def test_vectorized_eci_to_radec():
     assert np.allclose(ra[1], 349.9999997287627)
     assert np.allclose(dec[0], 19.999999794004037)
     assert np.allclose(dec[1], 20.099999743270516)
+    assert isinstance(ra, np.ndarray)
+    assert isinstance(dec, np.ndarray)
 
 
 def test_radec_to_eci():
@@ -327,10 +331,12 @@ def test_radec_to_eci():
     assert np.allclose(eci[0], 0.92541658)
     assert np.allclose(eci[1], 0.16317591)
     assert np.allclose(eci[2], 0.34202014)
+    assert isinstance(eci, np.ndarray)
 
 
 @pytest.mark.parametrize('shape', [(24,), (6, 4), (3, 4, 2)])
-def test_radec_eci_transform_multidim(shape):
+def test_radec_eci_multidim(shape):
+    """Test radec_to_eci and eci_to_radec for multidimensional inputs"""
     ras = np.linspace(0., 359., 24)
     decs = np.linspace(-90., 90., 24)
     ras_nd = ras.reshape(shape)
@@ -349,3 +355,32 @@ def test_radec_eci_transform_multidim(shape):
     assert decs_rt.shape == shape
     assert np.allclose(ras_rt, ras_nd)
     assert np.allclose(decs_rt, decs_nd)
+
+
+@pytest.mark.parametrize('shape', [(24,), (6, 4), (3, 4, 2)])
+def test_radec_yagzag_multidim(shape):
+    """Test radec_to_yagzag and yagzag_to_radec for multidimensional inputs"""
+    dec = 0.5
+    ras = np.linspace(0., 1., 24)
+    decs = dec  # Test broadcasting with a scalar input
+    eqs = np.empty(shape=(24, 3))
+    eqs[..., 0] = 0.1
+    eqs[..., 1] = np.linspace(-0.1, 0.1, 24)
+    eqs[..., 2] = np.linspace(-1, 1, 24)
+
+    ras_nd = ras.reshape(shape)
+    qs_nd = Quat(equatorial=eqs.reshape(shape + (3,)))
+
+    # First do everything as scalars
+    yagzags_list = [radec_to_yagzag(ra, dec, Quat(eq)) for ra, eq in zip(ras.tolist(), eqs.tolist())]
+    yagzags_nd_from_list = np.array(yagzags_list).reshape(shape + (2,))
+
+    yagzags = radec_to_eci(ras_nd, decs, qs_nd)
+    assert yagzags.shape == shape + (3,)
+    assert np.allclose(yagzags, yagzags_nd_from_list)
+
+#    ras_rt, decs_rt = eci_to_radec(ecis)
+#    assert ras_rt.shape == shape
+#    assert decs_rt.shape == shape
+#    assert np.allclose(ras_rt, ras_nd)
+#    assert np.allclose(decs_rt, decs_nd)
