@@ -1,0 +1,846 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.29.2.dev22+g7878cb9 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="">
+        <span id="logotext1"></span><span id="logotext2"></span>
+    </a></li>
+    <li><a title="General Index" href="../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../index.html">chandra_aca 4.29.2.dev22+g7878cb9 documentation</a>
+	 &#187;
+      </li>
+      <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for chandra_aca.star_probs</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions related to probabilities for star acquisition and guide tracking.</span>
+
+<span class="sd">Current default acquisition probability model: grid-floor-2020-02</span>
+
+<span class="sd">The grid-floor-2020-02 model definition and fit values based on:</span>
+<span class="sd">  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb</span>
+
+<span class="sd">SSAWG review: 2020-01-29</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
+
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">brentq</span><span class="p">,</span> <span class="n">bisect</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+
+<span class="kn">from</span> <span class="nn">chandra_aca.transform</span> <span class="kn">import</span> <span class="p">(</span><span class="n">snr_mag_for_t_ccd</span><span class="p">,</span> <span class="n">broadcast_arrays</span><span class="p">,</span>
+                                   <span class="n">broadcast_arrays_flatten</span><span class="p">)</span>
+
+<span class="n">STAR_PROBS_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;star_probs&#39;</span><span class="p">)</span>
+
+<span class="c1"># Default acquisition probability model</span>
+<span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="s1">&#39;grid-floor-2020-02&#39;</span>
+
+<span class="c1"># Cache of cubic spline functions.  Eval&#39;d only on the first time.</span>
+<span class="n">SPLINE_FUNCS</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="c1"># Cache of grid model interpolation functions</span>
+<span class="n">GRID_FUNCS</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">WARM_THRESHOLD</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Value (N100) used for fitting</span>
+
+
+<span class="c1"># Min and max star acquisition probabilities, regardless of model predictions</span>
+<span class="n">MIN_ACQ_PROB</span> <span class="o">=</span> <span class="mf">1e-6</span>
+<span class="n">MAX_ACQ_PROB</span> <span class="o">=</span> <span class="mf">0.985</span>
+
+<span class="n">MULT_STARS_ENABLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="get_box_delta"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.get_box_delta">[docs]</a><span class="k">def</span> <span class="nf">get_box_delta</span><span class="p">(</span><span class="n">halfwidth</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transform from halfwidth (arcsec) to the box_delta value which gets added</span>
+<span class="sd">    to failure probability (in probit space).</span>
+
+<span class="sd">    :param halfwidth: scalar or ndarray of box sizes (halfwidth, arcsec)</span>
+<span class="sd">    :returns: box deltas</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Coefficents for dependence of probability on search box size (halfwidth).  From:</span>
+    <span class="c1"># https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb</span>
+    <span class="n">B1</span> <span class="o">=</span> <span class="mf">0.96</span>
+    <span class="n">B2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.30</span>
+
+    <span class="n">box120</span> <span class="o">=</span> <span class="p">(</span><span class="n">halfwidth</span> <span class="o">-</span> <span class="mi">120</span><span class="p">)</span> <span class="o">/</span> <span class="mi">120</span>  <span class="c1"># normalized version of box, equal to 0.0 at nominal default</span>
+    <span class="n">box_delta</span> <span class="o">=</span> <span class="n">B1</span> <span class="o">*</span> <span class="n">box120</span> <span class="o">+</span> <span class="n">B2</span> <span class="o">*</span> <span class="n">box120</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">box_delta</span></div>
+
+
+<span class="c1"># Default global values using NO_MS settings.  Kinda ugly.</span>
+<div class="viewcode-block" id="set_acq_model_ms_filter"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.set_acq_model_ms_filter">[docs]</a><span class="k">def</span> <span class="nf">set_acq_model_ms_filter</span><span class="p">(</span><span class="n">ms_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Choose one of two sets of acquisition model fit parameters based</span>
+<span class="sd">    on ``ms_enabled``.  The default is ``False``:</span>
+
+<span class="sd">    - True: MS filtering enabled (prior to FEB0816 loads), where stars would</span>
+<span class="sd">      be rejected if MS flag was set</span>
+<span class="sd">    - False: MS filtering disabled (including and after FEB0816 loads)</span>
+
+<span class="sd">    The selected fit parameters are global/module-wide.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">MULT_STARS_ENABLED</span>
+    <span class="n">MULT_STARS_ENABLED</span> <span class="o">=</span> <span class="n">ms_enabled</span></div>
+
+
+<div class="viewcode-block" id="t_ccd_warm_limit"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.t_ccd_warm_limit">[docs]</a><span class="k">def</span> <span class="nf">t_ccd_warm_limit</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidths</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">min_n_acq</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+                     <span class="n">cold_t_ccd</span><span class="o">=-</span><span class="mi">16</span><span class="p">,</span> <span class="n">warm_t_ccd</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars</span>
+<span class="sd">    criterion.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the</span>
+<span class="sd">    cold end the result may be below ``min_n_acq``, in which case the star catalog</span>
+<span class="sd">    may be rejected.</span>
+
+<span class="sd">    The ``min_n_acq`` argument can be specified in one of two ways:</span>
+
+<span class="sd">     - Scalar float value: expected number of acquired stars must exceed threshold.</span>
+<span class="sd">         Expected number is the sum of the individual probabilities.</span>
+<span class="sd">     - Tuple (n, prob): computed probability of acquiring ``n`` or fewer stars</span>
+<span class="sd">         must not exceed ``prob``.</span>
+
+<span class="sd">    :param mags: list of star ACA mags</span>
+<span class="sd">    :param date: observation date (any Chandra.Time valid format)</span>
+<span class="sd">    :param colors: list of star B-V colors (optional, default=0.0)</span>
+<span class="sd">    :param halfwidths: list of acq box halfwidths(optional, default=120)</span>
+<span class="sd">    :param min_n_acq: float or tuple (see above)</span>
+<span class="sd">    :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)</span>
+<span class="sd">    :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)</span>
+<span class="sd">    :param model: probability model (see acq_success_prob() for allowed values, default)</span>
+
+<span class="sd">    :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit and:</span>
+<span class="sd">              - number of expected ACQ stars at that temperature (scalar min_n_acq)</span>
+<span class="sd">              - probability of acquiring ``n`` or fewer stars (tuple min_n_acq)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_n_acq</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">n_or_fewer</span><span class="p">,</span> <span class="n">prob_n_or_fewer</span> <span class="o">=</span> <span class="n">min_n_acq</span>
+
+    <span class="k">def</span> <span class="nf">n_acq_above_min</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This will be positive if the expected number of stars is above the</span>
+<span class="sd">        minimum number of stars.  Positive =&gt; more expected stars.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">acq_success_prob</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">mag</span><span class="o">=</span><span class="n">mags</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+                                 <span class="n">halfwidth</span><span class="o">=</span><span class="n">halfwidths</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span> <span class="o">-</span> <span class="n">min_n_acq</span>
+
+    <span class="k">def</span> <span class="nf">prob_n_or_fewer_below_max</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This will be positive if the computed probability of acquiring n_or_fewer</span>
+<span class="sd">        stars is less than the threshold.  Positive =&gt; lower prob. of safing action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">acq_success_prob</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">mag</span><span class="o">=</span><span class="n">mags</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+                                 <span class="n">halfwidth</span><span class="o">=</span><span class="n">halfwidths</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">n_acq_probs</span><span class="p">,</span> <span class="n">n_or_fewer_probs</span> <span class="o">=</span> <span class="n">prob_n_acq</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prob_n_or_fewer</span> <span class="o">-</span> <span class="n">n_or_fewer_probs</span><span class="p">[</span><span class="n">n_or_fewer</span><span class="p">]</span>
+
+    <span class="n">merit_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">prob_n_or_fewer_below_max</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_n_acq</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+                  <span class="k">else</span> <span class="n">n_acq_above_min</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">merit_func</span><span class="p">(</span><span class="n">warm_t_ccd</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># If there are enough ACQ stars at the warmest reasonable CCD temperature</span>
+        <span class="c1"># then use that temperature.</span>
+        <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">warm_t_ccd</span>
+
+    <span class="k">elif</span> <span class="n">merit_func</span><span class="p">(</span><span class="n">cold_t_ccd</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># If there are not enough ACQ stars at the coldest CCD temperature then stop there</span>
+        <span class="c1"># as well.  The ACA thermal model will never predict a temperature below this</span>
+        <span class="c1"># value so this catalog will fail thermal check.</span>
+        <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">cold_t_ccd</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># At this point there must be a zero in the range [cold_t_ccd, warm_t_ccd]</span>
+        <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">brentq</span><span class="p">(</span><span class="n">merit_func</span><span class="p">,</span> <span class="n">cold_t_ccd</span><span class="p">,</span> <span class="n">warm_t_ccd</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">merit_func</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_n_acq</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">prob_n_or_fewer</span> <span class="o">-</span> <span class="n">out</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">+</span> <span class="n">min_n_acq</span>
+
+    <span class="k">return</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">out</span></div>
+
+
+<span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_prob_n_acq</span><span class="p">(</span><span class="n">star_probs</span><span class="p">,</span> <span class="n">n_stars</span><span class="p">,</span> <span class="n">n_acq_probs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Jit-able portion of prob_n_acq</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">n_stars</span><span class="p">):</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">n_acq</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_stars</span><span class="p">):</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="n">cfg</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">slot</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">success</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">prob</span> <span class="o">=</span> <span class="n">prob</span> <span class="o">*</span> <span class="n">star_probs</span><span class="p">[</span><span class="n">slot</span><span class="p">]</span>
+                <span class="n">n_acq</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">prob</span> <span class="o">=</span> <span class="n">prob</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">star_probs</span><span class="p">[</span><span class="n">slot</span><span class="p">])</span>
+        <span class="n">n_acq_probs</span><span class="p">[</span><span class="n">n_acq</span><span class="p">]</span> <span class="o">+=</span> <span class="n">prob</span>
+
+
+<div class="viewcode-block" id="prob_n_acq"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.prob_n_acq">[docs]</a><span class="k">def</span> <span class="nf">prob_n_acq</span><span class="p">(</span><span class="n">star_probs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given an input array of star acquisition probabilities ``star_probs``,</span>
+<span class="sd">    return the probabilities of acquiring exactly n_acq stars, where n_acq</span>
+<span class="sd">    is evaluated at values 0 to n_stars.  This is returned as an array</span>
+<span class="sd">    of length n_stars.  In addition the cumulative sum, which represents</span>
+<span class="sd">    the probability of acquiring n_acq or fewer stars, is returned.</span>
+
+<span class="sd">    :param star_probs: array of star acq probabilities (list or ndarray)</span>
+
+<span class="sd">    :returns n_acq_probs, cum_n_acq_probs: tuple of ndarray, ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">star_probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">star_probs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">n_stars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">star_probs</span><span class="p">)</span>
+    <span class="n">n_acq_probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_stars</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="n">_prob_n_acq</span><span class="p">(</span><span class="n">star_probs</span><span class="p">,</span> <span class="n">n_stars</span><span class="p">,</span> <span class="n">n_acq_probs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">n_acq_probs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">n_acq_probs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="acq_success_prob"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.acq_success_prob">[docs]</a><span class="k">def</span> <span class="nf">acq_success_prob</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">mag</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">spoiler</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+                     <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return probability of acquisition success for given date, temperature, star properties</span>
+<span class="sd">    and search box size.</span>
+
+<span class="sd">    Any of the inputs can be scalars or arrays, with the output being the result of</span>
+<span class="sd">    the broadcasted dimension of the inputs.</span>
+
+<span class="sd">    The default probability model is defined by ``DEFAULT_MODEL`` in this module.</span>
+<span class="sd">    Allowed values for the ``model`` name are &#39;sota&#39;, &#39;spline&#39;, or a grid model</span>
+<span class="sd">    specified by &#39;grid-&lt;name&gt;-&lt;date&gt;&#39; (e.g. &#39;grid-floor-2018-11&#39;).</span>
+
+<span class="sd">    :param date: Date(s) (scalar or np.ndarray, default=NOW)</span>
+<span class="sd">    :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-10C)</span>
+<span class="sd">    :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)</span>
+<span class="sd">    :param color: Star color(s) (scalar or np.ndarray, default=0.6)</span>
+<span class="sd">    :param spoiler: Star spoiled (boolean or np.ndarray, default=False)</span>
+<span class="sd">    :param halfwidth: Search box halfwidth (arcsec, default=120)</span>
+<span class="sd">    :param model: probability model name: &#39;sota&#39; | &#39;spline&#39; | &#39;grid-*&#39;</span>
+
+<span class="sd">    :returns: Acquisition success probability(s)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">DEFAULT_MODEL</span>
+
+    <span class="n">date</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span>
+    <span class="n">is_scalar</span><span class="p">,</span> <span class="n">dates</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">mags</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">spoilers</span><span class="p">,</span> <span class="n">halfwidths</span> <span class="o">=</span> <span class="n">broadcast_arrays</span><span class="p">(</span>
+        <span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">spoiler</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">)</span>
+
+    <span class="n">spoilers</span> <span class="o">=</span> <span class="n">spoilers</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="c1"># Actually evaluate the model</span>
+    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;sota&#39;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">.dark_model</span> <span class="kn">import</span> <span class="n">get_warm_fracs</span>
+
+        <span class="n">warm_fracs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dates</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">t_ccds</span><span class="o">.</span><span class="n">ravel</span><span class="p">()):</span>
+            <span class="n">warm_frac</span> <span class="o">=</span> <span class="n">get_warm_fracs</span><span class="p">(</span><span class="n">WARM_THRESHOLD</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">T_ccd</span><span class="o">=</span><span class="n">t_ccd</span><span class="p">)</span>
+            <span class="n">warm_fracs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warm_frac</span><span class="p">)</span>
+        <span class="n">warm_frac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">warm_fracs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dates</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">sota_model_acq_prob</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">warm_fracs</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">halfwidths</span><span class="p">)</span>
+        <span class="n">probs</span><span class="p">[</span><span class="n">mags</span> <span class="o">&lt;</span> <span class="mf">8.5</span><span class="p">]</span> <span class="o">=</span> <span class="n">MAX_ACQ_PROB</span>
+
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;spline&#39;</span><span class="p">:</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">spline_model_acq_prob</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">halfwidths</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;grid-&#39;</span><span class="p">):</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">grid_model_acq_prob</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">halfwidths</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`model` parameter must be &#39;sota&#39; | &#39;spline&#39; | &#39;grid-*&#39;&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Deal with color=0.7 stars and/or spoiled stars.  The spoiling correction</span>
+    <span class="c1"># is a relic that should never be used once proseco is promoted.</span>
+    <span class="n">p_0p7color</span> <span class="o">=</span> <span class="o">.</span><span class="mi">4294</span>  <span class="c1"># probability multiplier for a B-V = 0.700 star (REF?)</span>
+    <span class="n">p_spoiler</span> <span class="o">=</span> <span class="o">.</span><span class="mi">9241</span>  <span class="c1"># probability multiplier for a search-spoiled star (REF?)</span>
+
+    <span class="n">probs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span> <span class="o">*=</span> <span class="n">p_0p7color</span>
+    <span class="n">probs</span><span class="p">[</span><span class="n">spoilers</span><span class="p">]</span> <span class="o">*=</span> <span class="n">p_spoiler</span>
+
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;sota&#39;</span><span class="p">,</span> <span class="s1">&#39;spline&#39;</span><span class="p">):</span>
+        <span class="c1"># Clip probabilities for older models.  Newer models (grid-* included)</span>
+        <span class="c1"># should do all this internally.</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">probs</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">MIN_ACQ_PROB</span><span class="p">,</span> <span class="n">MAX_ACQ_PROB</span><span class="p">)</span>
+
+    <span class="c1"># Return probabilities.  The [()] getitem at the end will flatten a</span>
+    <span class="c1"># scalar array down to a pure scalar.</span>
+    <span class="k">return</span> <span class="n">probs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">probs</span></div>
+
+
+<div class="viewcode-block" id="clip_and_warn"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.clip_and_warn">[docs]</a><span class="k">def</span> <span class="nf">clip_and_warn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a</span>
+<span class="sd">    warning if clipping occurs.  The ``name`` and ``model`` are just used in</span>
+<span class="sd">    the warning.</span>
+
+<span class="sd">    :param name: Value name</span>
+<span class="sd">    :param val: Value</span>
+<span class="sd">    :param val_lo: Minimum</span>
+<span class="sd">    :param val_hi: Maximum</span>
+<span class="sd">    :param model: Model name</span>
+
+<span class="sd">    :returns: Clipped value</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="n">val</span> <span class="o">&gt;</span> <span class="n">val_hi</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">val_lo</span><span class="p">)):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Model </span><span class="si">{}</span><span class="s1"> computed between </span><span class="si">{}</span><span class="s1"> &lt;= </span><span class="si">{}</span><span class="s1"> &lt;= </span><span class="si">{}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;clipping input </span><span class="si">{}</span><span class="s1">(s) outside that range.&#39;</span>
+                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="grid_model_acq_prob"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.grid_model_acq_prob">[docs]</a><span class="k">def</span> <span class="nf">grid_model_acq_prob</span><span class="p">(</span><span class="n">mag</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">12.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">probit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate a grid model probability of acquisition success for a star with</span>
+<span class="sd">    specified mag, t_ccd, color, and search box halfwidth.</span>
+
+<span class="sd">    This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a</span>
+<span class="sd">    pre-computed gridded model that is stored in a FITS file.</span>
+
+<span class="sd">    :param mag: ACA magnitude (float or np.ndarray)</span>
+<span class="sd">    :param t_ccd: CCD temperature (degC, float or ndarray)</span>
+<span class="sd">    :param color: B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</span>
+<span class="sd">    :param halfwidth: search box halfwidth (arcsec, default=120, float or ndarray)</span>
+<span class="sd">    :param probit: if True then return Probit(p_success). Default=False</span>
+<span class="sd">    :param model: Model name, e.g. &#39;grid-floor-2018-11&#39;</span>
+
+<span class="sd">    :returns: Acquisition success probability(s)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Info about model is cached in GRID_FUNCS</span>
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GRID_FUNCS</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+        <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">RegularGridInterpolator</span>
+
+        <span class="c1"># Read the model file and put into local vars</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">STAR_PROBS_DATA_DIR</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.fits.gz&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;model file </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+        <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">hdu0</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">probit_p_fail_no_1p5</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">probit_p_fail_1p5</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="n">hdr</span> <span class="o">=</span> <span class="n">hdu0</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">grid_mags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;mag_lo&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;mag_hi&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;mag_n&#39;</span><span class="p">])</span>
+        <span class="n">grid_t_ccds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;t_ccd_lo&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;t_ccd_hi&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;t_ccd_n&#39;</span><span class="p">])</span>
+        <span class="n">grid_halfws</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;halfw_lo&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;halfw_hi&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;halfw_n&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Sanity checks on model data</span>
+        <span class="k">assert</span> <span class="n">probit_p_fail_no_1p5</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grid_mags</span><span class="p">),</span>
+                                              <span class="nb">len</span><span class="p">(</span><span class="n">grid_t_ccds</span><span class="p">),</span>
+                                              <span class="nb">len</span><span class="p">(</span><span class="n">grid_halfws</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="n">probit_p_fail_1p5</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">probit_p_fail_no_1p5</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># Generate the 3-d linear interpolation functions</span>
+        <span class="n">func_no_1p5</span> <span class="o">=</span> <span class="n">RegularGridInterpolator</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="p">(</span><span class="n">grid_mags</span><span class="p">,</span> <span class="n">grid_t_ccds</span><span class="p">,</span> <span class="n">grid_halfws</span><span class="p">),</span>
+                                              <span class="n">values</span><span class="o">=</span><span class="n">probit_p_fail_no_1p5</span><span class="p">)</span>
+        <span class="n">func_1p5</span> <span class="o">=</span> <span class="n">RegularGridInterpolator</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="p">(</span><span class="n">grid_mags</span><span class="p">,</span> <span class="n">grid_t_ccds</span><span class="p">,</span> <span class="n">grid_halfws</span><span class="p">),</span>
+                                           <span class="n">values</span><span class="o">=</span><span class="n">probit_p_fail_1p5</span><span class="p">)</span>
+        <span class="n">mag_lo</span> <span class="o">=</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;mag_lo&#39;</span><span class="p">]</span>
+        <span class="n">mag_hi</span> <span class="o">=</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;mag_hi&#39;</span><span class="p">]</span>
+        <span class="n">t_ccd_lo</span> <span class="o">=</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;t_ccd_lo&#39;</span><span class="p">]</span>
+        <span class="n">t_ccd_hi</span> <span class="o">=</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;t_ccd_hi&#39;</span><span class="p">]</span>
+        <span class="n">halfw_lo</span> <span class="o">=</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;halfw_lo&#39;</span><span class="p">]</span>
+        <span class="n">halfw_hi</span> <span class="o">=</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;halfw_hi&#39;</span><span class="p">]</span>
+
+        <span class="n">GRID_FUNCS</span><span class="p">[</span><span class="n">model</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
+                             <span class="s1">&#39;func_no_1p5&#39;</span><span class="p">:</span> <span class="n">func_no_1p5</span><span class="p">,</span>
+                             <span class="s1">&#39;func_1p5&#39;</span><span class="p">:</span> <span class="n">func_1p5</span><span class="p">,</span>
+                             <span class="s1">&#39;mag_lo&#39;</span><span class="p">:</span> <span class="n">mag_lo</span><span class="p">,</span>
+                             <span class="s1">&#39;mag_hi&#39;</span><span class="p">:</span> <span class="n">mag_hi</span><span class="p">,</span>
+                             <span class="s1">&#39;t_ccd_lo&#39;</span><span class="p">:</span> <span class="n">t_ccd_lo</span><span class="p">,</span>
+                             <span class="s1">&#39;t_ccd_hi&#39;</span><span class="p">:</span> <span class="n">t_ccd_hi</span><span class="p">,</span>
+                             <span class="s1">&#39;halfw_lo&#39;</span><span class="p">:</span> <span class="n">halfw_lo</span><span class="p">,</span>
+                             <span class="s1">&#39;halfw_hi&#39;</span><span class="p">:</span> <span class="n">halfw_hi</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gfm</span> <span class="o">=</span> <span class="n">GRID_FUNCS</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+        <span class="n">func_no_1p5</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;func_no_1p5&#39;</span><span class="p">]</span>
+        <span class="n">func_1p5</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;func_1p5&#39;</span><span class="p">]</span>
+        <span class="n">mag_lo</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;mag_lo&#39;</span><span class="p">]</span>
+        <span class="n">mag_hi</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;mag_hi&#39;</span><span class="p">]</span>
+        <span class="n">t_ccd_lo</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;t_ccd_lo&#39;</span><span class="p">]</span>
+        <span class="n">t_ccd_hi</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;t_ccd_hi&#39;</span><span class="p">]</span>
+        <span class="n">halfw_lo</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;halfw_lo&#39;</span><span class="p">]</span>
+        <span class="n">halfw_hi</span> <span class="o">=</span> <span class="n">gfm</span><span class="p">[</span><span class="s1">&#39;halfw_hi&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Make sure inputs are within range of gridded model</span>
+    <span class="n">mag</span> <span class="o">=</span> <span class="n">clip_and_warn</span><span class="p">(</span><span class="s1">&#39;mag&#39;</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="n">mag_lo</span><span class="p">,</span> <span class="n">mag_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+    <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">clip_and_warn</span><span class="p">(</span><span class="s1">&#39;t_ccd&#39;</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">t_ccd_lo</span><span class="p">,</span> <span class="n">t_ccd_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+    <span class="n">halfwidth</span> <span class="o">=</span> <span class="n">clip_and_warn</span><span class="p">(</span><span class="s1">&#39;halfw&#39;</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">,</span> <span class="n">halfw_lo</span><span class="p">,</span> <span class="n">halfw_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Broadcast all inputs to a common shape.  If they are all scalars</span>
+    <span class="c1"># then shape=().  The returns values are flattened, so the final output</span>
+    <span class="c1"># needs to be reshape at the end.</span>
+    <span class="n">shape</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">mags</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">halfwidths</span> <span class="o">=</span> <span class="n">broadcast_arrays_flatten</span><span class="p">(</span>
+        <span class="n">t_ccd</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">shape</span><span class="p">:</span>
+        <span class="c1"># One or more inputs are arrays, output is array with shape</span>
+        <span class="n">is_1p5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+        <span class="n">not_1p5</span> <span class="o">=</span> <span class="o">~</span><span class="n">is_1p5</span>
+        <span class="n">p_fail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mags</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">halfwidths</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">is_1p5</span><span class="p">):</span>
+            <span class="n">p_fail</span><span class="p">[</span><span class="n">is_1p5</span><span class="p">]</span> <span class="o">=</span> <span class="n">func_1p5</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">is_1p5</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">not_1p5</span><span class="p">):</span>
+            <span class="n">p_fail</span><span class="p">[</span><span class="n">not_1p5</span><span class="p">]</span> <span class="o">=</span> <span class="n">func_no_1p5</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">not_1p5</span><span class="p">])</span>
+        <span class="n">p_fail</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Scalar case</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">func_1p5</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span> <span class="k">else</span> <span class="n">func_no_1p5</span>
+        <span class="n">p_fail</span> <span class="o">=</span> <span class="n">func</span><span class="p">([[</span><span class="n">mag</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">]])</span>
+
+    <span class="c1"># Convert p_fail to p_success (remembering at this point p_fail is probit)</span>
+    <span class="n">p_success</span> <span class="o">=</span> <span class="o">-</span><span class="n">p_fail</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">probit</span><span class="p">:</span>
+        <span class="n">p_success</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">p_success</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">p_success</span></div>
+
+
+<div class="viewcode-block" id="spline_model_acq_prob"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.spline_model_acq_prob">[docs]</a><span class="k">def</span> <span class="nf">spline_model_acq_prob</span><span class="p">(</span><span class="n">mag</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">12.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">probit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate poly-spline-tccd model (aka &#39;spline&#39; model) probability of acquisition</span>
+<span class="sd">    success for a star with specified mag, t_ccd, color, and search box halfwidth.</span>
+
+<span class="sd">    The model definition and fit values based on:</span>
+<span class="sd">    - https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb</span>
+
+<span class="sd">    See also:</span>
+<span class="sd">    - Description of the motivation and initial model development.</span>
+<span class="sd">       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11</span>
+<span class="sd">    - Final review and approval.</span>
+<span class="sd">       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18</span>
+
+<span class="sd">    :param mag: ACA magnitude (float or np.ndarray)</span>
+<span class="sd">    :param t_ccd: CCD temperature (degC, float or ndarray)</span>
+<span class="sd">    :param color: B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</span>
+<span class="sd">    :param halfwidth: search box halfwidth (arcsec, default=120, float or ndarray)</span>
+<span class="sd">    :param probit: if True then return Probit(p_success). Default=False</span>
+
+<span class="sd">    :returns: Acquisition success probability(s)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">CubicSpline</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">.cubic_spline</span> <span class="kn">import</span> <span class="n">CubicSpline</span>
+
+    <span class="n">is_scalar</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">mags</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">halfwidths</span> <span class="o">=</span> <span class="n">broadcast_arrays</span><span class="p">(</span>
+        <span class="n">t_ccd</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">t_ccds</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">16.0</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Spline model is not calibrated below -16 C, &#39;</span>
+                      <span class="s1">&#39;so take results with skepticism!</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;For cold temperatures use the SOTA model.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Cubic spline functions are computed on the first call and cached</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">SPLINE_FUNCS</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">fit_no_1p5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.69826</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.96063</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.20245</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01713</span><span class="p">,</span> <span class="mf">1.23724</span><span class="p">,</span>  <span class="c1"># P0 values</span>
+                               <span class="mf">0.07135</span><span class="p">,</span> <span class="mf">0.12711</span><span class="p">,</span> <span class="mf">0.14508</span><span class="p">,</span> <span class="mf">0.59646</span><span class="p">,</span> <span class="mf">0.64262</span><span class="p">,</span>  <span class="c1"># P1 values</span>
+                               <span class="mf">0.02341</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.00704</span><span class="p">,</span> <span class="mf">0.06926</span><span class="p">,</span> <span class="mf">0.05629</span><span class="p">])</span>  <span class="c1"># P2 values</span>
+        <span class="n">fit_1p5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.56169</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.65157</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.26794</span><span class="p">,</span> <span class="mf">1.00488</span><span class="p">,</span> <span class="mf">3.52181</span><span class="p">,</span>  <span class="c1"># P0 values</span>
+                            <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.09193</span><span class="p">,</span> <span class="mf">0.23026</span><span class="p">,</span> <span class="mf">0.61243</span><span class="p">,</span> <span class="mf">0.94157</span><span class="p">,</span>  <span class="c1"># P1 values</span>
+                            <span class="mf">0.00471</span><span class="p">,</span> <span class="mf">0.00637</span><span class="p">,</span> <span class="mf">0.01118</span><span class="p">,</span> <span class="mf">0.07461</span><span class="p">,</span> <span class="mf">0.09556</span><span class="p">])</span>  <span class="c1"># P2 values</span>
+        <span class="n">spline_mags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">8.5</span><span class="p">,</span> <span class="mf">9.25</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.4</span><span class="p">,</span> <span class="mf">10.7</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">vals</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">((</span><span class="n">fit_no_1p5</span><span class="p">,</span> <span class="s1">&#39;no_1p5&#39;</span><span class="p">),</span> <span class="p">(</span><span class="n">fit_1p5</span><span class="p">,</span> <span class="s1">&#39;1p5&#39;</span><span class="p">)):</span>
+            <span class="n">SPLINE_FUNCS</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">spline_mags</span><span class="p">,</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">],</span>
+                                                 <span class="n">bc_type</span><span class="o">=</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)))</span>
+            <span class="n">SPLINE_FUNCS</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">spline_mags</span><span class="p">,</span> <span class="n">vals</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">10</span><span class="p">],</span>
+                                                 <span class="n">bc_type</span><span class="o">=</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)))</span>
+            <span class="n">SPLINE_FUNCS</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">spline_mags</span><span class="p">,</span> <span class="n">vals</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">15</span><span class="p">],</span>
+                                                 <span class="n">bc_type</span><span class="o">=</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)))</span>
+
+    <span class="c1"># Model is calibrated using t_ccd - (-12) for numerical stability.</span>
+    <span class="n">tc12</span> <span class="o">=</span> <span class="n">t_ccds</span> <span class="o">-</span> <span class="p">(</span><span class="o">-</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">box_deltas</span> <span class="o">=</span> <span class="n">get_box_delta</span><span class="p">(</span><span class="n">halfwidths</span><span class="p">)</span>
+
+    <span class="n">probit_p_fail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">t_ccds</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">is_1p5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+
+    <span class="c1"># Process the color != 1.5 stars, then the color == 1.5 stars</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;no_1p5&#39;</span><span class="p">,</span> <span class="s1">&#39;1p5&#39;</span><span class="p">):</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">is_1p5</span> <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="s1">&#39;1p5&#39;</span> <span class="k">else</span> <span class="o">~</span><span class="n">is_1p5</span>
+
+        <span class="c1"># If no stars in this category then continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">magm</span> <span class="o">=</span> <span class="n">mags</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">tcm</span> <span class="o">=</span> <span class="n">tc12</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">boxm</span> <span class="o">=</span> <span class="n">box_deltas</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="c1"># The model is only calibrated betweeen 8.5 and 10.7.  First, clip mags going into</span>
+        <span class="c1"># the spline to be larger than 8.5.  (Extrapolating slightly above 10.7 is OK).</span>
+        <span class="c1"># Second, subtract a linearly varying term from probit_p_fail from stars brighter</span>
+        <span class="c1"># than 8.5 mag ==&gt; from 0.0 for mag=8.5 to 0.25 for mag=6.0.  This is to allow</span>
+        <span class="c1"># star selection to favor a 6.0 mag star over 8.5 mag.</span>
+        <span class="n">magmc</span> <span class="o">=</span> <span class="n">magm</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mf">8.5</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">bright</span> <span class="o">=</span> <span class="p">(</span><span class="mf">8.5</span> <span class="o">-</span> <span class="n">magm</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">))</span> <span class="o">/</span> <span class="mf">10.0</span>
+
+        <span class="n">p0</span> <span class="o">=</span> <span class="n">SPLINE_FUNCS</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="p">](</span><span class="n">magmc</span><span class="p">)</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">SPLINE_FUNCS</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="p">](</span><span class="n">magmc</span><span class="p">)</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">SPLINE_FUNCS</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="p">](</span><span class="n">magmc</span><span class="p">)</span>
+
+        <span class="n">probit_p_fail</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">p0</span> <span class="o">+</span> <span class="n">p1</span> <span class="o">*</span> <span class="n">tcm</span> <span class="o">+</span> <span class="n">p2</span> <span class="o">*</span> <span class="n">tcm</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">boxm</span> <span class="o">-</span> <span class="n">bright</span>
+
+    <span class="c1"># Return probability of success (not failure, as in the raw model)</span>
+    <span class="n">p_out</span> <span class="o">=</span> <span class="o">-</span><span class="n">probit_p_fail</span>
+
+    <span class="c1"># Return raw probit value?</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">probit</span><span class="p">:</span>
+        <span class="n">p_out</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">p_out</span><span class="p">)</span>  <span class="c1"># transform from probit to linear probability</span>
+
+    <span class="k">return</span> <span class="n">p_out</span></div>
+
+
+<div class="viewcode-block" id="model_acq_success_prob"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.model_acq_success_prob">[docs]</a><span class="k">def</span> <span class="nf">model_acq_success_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call sota_model_acq_prob() with same params.  This is retained purely</span>
+<span class="sd">    for back-compatibility but use is deprecated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sota_model_acq_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sota_model_acq_prob"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.sota_model_acq_prob">[docs]</a><span class="k">def</span> <span class="nf">sota_model_acq_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate raw SOTA model probability of acquisition success for a star with ``mag``</span>
+<span class="sd">    magnitude and a CCD warm fraction ``warm_frac``.  This is not typically used directly</span>
+<span class="sd">    since it does not account for star properties like spoiled or color=0.7.</span>
+
+<span class="sd">    Uses the empirical relation::</span>
+
+<span class="sd">       P_fail_probit = offset(mag) + scale(mag) * warm_frac + box_delta(halfwidth)</span>
+<span class="sd">       P_acq_fail = Normal_CDF()</span>
+<span class="sd">       P_acq_success = 1 - P_acq_fail</span>
+
+<span class="sd">    This is based on the dark model and acquisition success model presented in the State</span>
+<span class="sd">    of the ACA 2013, and subsequently updated to use a Probit transform and separately fit</span>
+<span class="sd">    B-V=1.5 stars.  It was updated in 2017 to include a fitted dependence on the search</span>
+<span class="sd">    box halfwidth.  See:</span>
+
+<span class="sd">    https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb</span>
+<span class="sd">    https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb</span>
+
+<span class="sd">    :param mag: ACA magnitude (float or np.ndarray)</span>
+<span class="sd">    :param warm_frac: N100 warm fraction (float or np.ndarray)</span>
+<span class="sd">    :param color: B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</span>
+<span class="sd">    :param halfwidth: search box halfwidth (arcsec, default=120)</span>
+
+<span class="sd">    :returns: Acquisition success probability(s)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1"># NOTE: the &quot;WITH_MS&quot; are historical and no longer used in flight</span>
+    <span class="c1">#       and do not reflect ACA behavior beyond 2016-Feb-08.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Scale and offset fit of polynomial to acq failures in log space.</span>
+    <span class="c1"># Derived in the fit_sota_model_probit.ipynb IPython notebook for data</span>
+    <span class="c1"># covering 2007-Jan-01 - 2015-July-01.  This is in the aca_stats repo.</span>
+    <span class="c1"># (Previously in state_of_aca but moved 2016-Feb-2).</span>
+    <span class="c1">#</span>
+    <span class="c1"># scale = scl2 * m10**2 + scl1 * m10 + scl0, where m10 = mag - 10,</span>
+    <span class="c1"># and likewise for offset.</span>
+
+    <span class="n">SOTA_FIT_NO_1P5_WITH_MS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">9.6887121605441173</span><span class="p">,</span>  <span class="c1"># scl0</span>
+                               <span class="mf">9.1613040261776177</span><span class="p">,</span>  <span class="c1"># scl1</span>
+                               <span class="o">-</span><span class="mf">0.41919343599067715</span><span class="p">,</span>  <span class="c1"># scl2</span>
+                               <span class="o">-</span><span class="mf">2.3829996965532048</span><span class="p">,</span>  <span class="c1"># off0</span>
+                               <span class="mf">0.54998934814773903</span><span class="p">,</span>  <span class="c1"># off1</span>
+                               <span class="mf">0.47839260691599156</span><span class="p">]</span>  <span class="c1"># off2</span>
+
+    <span class="n">SOTA_FIT_ONLY_1P5_WITH_MS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">8.541709287866361</span><span class="p">,</span>
+                                 <span class="mf">0.44482688155644085</span><span class="p">,</span>
+                                 <span class="o">-</span><span class="mf">3.5137852251178465</span><span class="p">,</span>
+                                 <span class="o">-</span><span class="mf">1.3505424393223699</span><span class="p">,</span>
+                                 <span class="mf">1.5278061271148755</span><span class="p">,</span>
+                                 <span class="mf">0.30973569068842272</span><span class="p">]</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># FLIGHT model coefficients.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Multiple stars flag disabled (starting operationally with FEB0816).  Fit</span>
+    <span class="c1"># with fit_flight_acq_prob_model.ipynb in the aca_stats repo.</span>
+
+    <span class="n">SOTA_FIT_NO_1P5_NO_MS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">4.38145</span><span class="p">,</span>  <span class="c1"># scl0</span>
+                             <span class="mf">6.22480</span><span class="p">,</span>  <span class="c1"># scl1</span>
+                             <span class="mf">2.20862</span><span class="p">,</span>  <span class="c1"># scl2</span>
+                             <span class="o">-</span><span class="mf">2.24494</span><span class="p">,</span>  <span class="c1"># off0</span>
+                             <span class="mf">0.32180</span><span class="p">,</span>  <span class="c1"># off1</span>
+                             <span class="mf">0.08306</span><span class="p">,</span>  <span class="c1"># off2</span>
+                             <span class="p">]</span>
+
+    <span class="n">SOTA_FIT_ONLY_1P5_NO_MS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">4.73283</span><span class="p">,</span>  <span class="c1"># scl0</span>
+                               <span class="mf">7.63540</span><span class="p">,</span>  <span class="c1"># scl1</span>
+                               <span class="mf">4.56612</span><span class="p">,</span>  <span class="c1"># scl2</span>
+                               <span class="o">-</span><span class="mf">1.49046</span><span class="p">,</span>  <span class="c1"># off0</span>
+                               <span class="mf">0.53391</span><span class="p">,</span>  <span class="c1"># off1</span>
+                               <span class="o">-</span><span class="mf">0.37074</span><span class="p">,</span>  <span class="c1"># off2</span>
+                               <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">MULT_STARS_ENABLED</span><span class="p">:</span>
+        <span class="n">SOTA_FIT_NO_1P5</span> <span class="o">=</span> <span class="n">SOTA_FIT_NO_1P5_WITH_MS</span>
+        <span class="n">SOTA_FIT_ONLY_1P5</span> <span class="o">=</span> <span class="n">SOTA_FIT_ONLY_1P5_WITH_MS</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">SOTA_FIT_NO_1P5</span> <span class="o">=</span> <span class="n">SOTA_FIT_NO_1P5_NO_MS</span>
+        <span class="n">SOTA_FIT_ONLY_1P5</span> <span class="o">=</span> <span class="n">SOTA_FIT_ONLY_1P5_NO_MS</span>
+
+    <span class="n">is_scalar</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+
+    <span class="n">m10</span> <span class="o">=</span> <span class="n">mag</span> <span class="o">-</span> <span class="mf">10.0</span>
+
+    <span class="n">p_fail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span>
+    <span class="n">color1p5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">mask</span><span class="p">,</span> <span class="n">fit_pars</span> <span class="ow">in</span> <span class="p">((</span><span class="n">color1p5</span><span class="p">,</span> <span class="n">SOTA_FIT_ONLY_1P5</span><span class="p">),</span>
+                           <span class="p">(</span><span class="o">~</span><span class="n">color1p5</span><span class="p">,</span> <span class="n">SOTA_FIT_NO_1P5</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">fit_pars</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">m10</span><span class="p">)</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">fit_pars</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">m10</span><span class="p">)</span>
+            <span class="n">box_delta</span> <span class="o">=</span> <span class="n">get_box_delta</span><span class="p">(</span><span class="n">halfwidth</span><span class="p">)</span>
+
+            <span class="n">p_fail</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">warm_frac</span> <span class="o">+</span> <span class="n">box_delta</span><span class="p">)[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="n">p_fail</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">p_fail</span><span class="p">)</span>  <span class="c1"># probit transform</span>
+    <span class="n">p_fail</span><span class="p">[</span><span class="n">mag</span> <span class="o">&lt;</span> <span class="mf">8.5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.015</span>  <span class="c1"># actual best fit is ~0.006, but put in some conservatism</span>
+    <span class="n">p_success</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p_fail</span><span class="p">)</span>
+
+    <span class="c1"># Clip values to reasonable range regardless of model prediction</span>
+    <span class="n">p_success</span> <span class="o">=</span> <span class="n">p_success</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">MIN_ACQ_PROB</span><span class="p">,</span> <span class="n">MAX_ACQ_PROB</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">p_success</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">p_success</span>  <span class="c1"># Return scalar if ndim=0</span></div>
+
+
+<div class="viewcode-block" id="mag_for_p_acq"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.mag_for_p_acq">[docs]</a><span class="k">def</span> <span class="nf">mag_for_p_acq</span><span class="p">(</span><span class="n">p_acq</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For a given ``date`` and ``t_ccd``, find the star magnitude that has an</span>
+<span class="sd">    acquisition probability of ``p_acq``.  Star magnitude is defined/limited</span>
+<span class="sd">    to the range 5.0 - 12.0 mag.</span>
+
+<span class="sd">    :param p_acq: acquisition probability (0 to 1.0)</span>
+<span class="sd">    :param date: observation date (any Chandra.Time valid format)</span>
+<span class="sd">    :param t_ccd: ACA CCD temperature (deg C)</span>
+<span class="sd">    :param halfwidth: search box halfwidth (arcsec, default=120)</span>
+<span class="sd">    :param model: probability model (see acq_success_prob() for allowed values, default)</span>
+<span class="sd">    :returns mag: star magnitude</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">prob_minus_p_acq</span><span class="p">(</span><span class="n">mag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function that gets zeroed in brentq call later&quot;&quot;&quot;</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="n">acq_success_prob</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">mag</span><span class="o">=</span><span class="n">mag</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="n">halfwidth</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prob</span> <span class="o">-</span> <span class="n">p_acq</span>
+
+    <span class="c1"># prob_minus_p_acq is monotonically decreasing from the (minimum)</span>
+    <span class="c1"># bright mag to the (maximum) faint_mag.</span>
+    <span class="n">bright_mag</span> <span class="o">=</span> <span class="mf">5.0</span>
+    <span class="n">faint_mag</span> <span class="o">=</span> <span class="mf">12.0</span>
+    <span class="k">if</span> <span class="n">prob_minus_p_acq</span><span class="p">(</span><span class="n">bright_mag</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Below zero already at bright mag limit so return the bright limit.</span>
+        <span class="n">mag</span> <span class="o">=</span> <span class="n">bright_mag</span>
+
+    <span class="k">elif</span> <span class="n">prob_minus_p_acq</span><span class="p">(</span><span class="n">faint_mag</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Above zero still at the faint mag limit so return the faint limit.</span>
+        <span class="n">mag</span> <span class="o">=</span> <span class="n">faint_mag</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># At this point there must be a zero in the range [bright_mag, faint_mag]</span>
+        <span class="n">mag</span> <span class="o">=</span> <span class="n">brentq</span><span class="p">(</span><span class="n">prob_minus_p_acq</span><span class="p">,</span> <span class="n">bright_mag</span><span class="p">,</span> <span class="n">faint_mag</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+        <span class="n">mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mag</span></div>
+
+
+<div class="viewcode-block" id="guide_count"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.guide_count">[docs]</a><span class="k">def</span> <span class="nf">guide_count</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">count_9th</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate a guide star fractional count/metric using signal-to-noise scaled</span>
+<span class="sd">    mag thresholds.</span>
+<span class="sd">    This uses a modification of the guide star fractional counts that were</span>
+<span class="sd">    suggested at the 7-Mar-2018 SSAWG and agreed upon at the 21-Mar-2018</span>
+<span class="sd">    SSAWG.  The implementation here does a piecewise linear interpolation</span>
+<span class="sd">    between the reference mag - fractional count points instead of the</span>
+<span class="sd">    original &quot;threshold interpolation&quot; (nearest neighbor mag &lt;= reference</span>
+<span class="sd">    mag).  Approved at 16-Jan-2019 SSAWG.</span>
+<span class="sd">    One feature is the slight incline in the guide_count curve from 1.0005 at</span>
+<span class="sd">    mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs</span>
+<span class="sd">    of guide_counts to two decimal places (8 * 0.0005 = 0.004), but helps with</span>
+<span class="sd">    minimization.</span>
+<span class="sd">    :param mags: magnitude(s)</span>
+<span class="sd">    :param t_ccds: CCD temperature(s)</span>
+<span class="sd">    :param count_9th: return fractional count of 9th mag or brighter stars</span>
+<span class="sd">    :returns: fractional count</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Generate interpolation curve for the specified input ``t_ccd``</span>
+    <span class="n">ref_t_ccd</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.9</span>
+    <span class="n">ref_mags0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">9.0</span> <span class="k">if</span> <span class="n">count_9th</span> <span class="k">else</span> <span class="mf">9.95</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
+    <span class="n">ref_mags_t_ccd</span> <span class="o">=</span> <span class="p">[</span><span class="n">snr_mag_for_t_ccd</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mag</span><span class="p">,</span> <span class="n">ref_t_ccd</span><span class="p">)</span> <span class="k">for</span> <span class="n">ref_mag</span> <span class="ow">in</span> <span class="n">ref_mags0</span><span class="p">]</span>
+
+    <span class="c1"># The 5.85 and 5.95 limits are not temperature dependent, these reflect the</span>
+    <span class="c1"># possibility that the star will be brighter than 5.8 mag and the OBC will</span>
+    <span class="c1"># reject it.  Note that around 6th mag mean observed catalog error is</span>
+    <span class="c1"># around 0.1 mag.</span>
+    <span class="n">ref_mags</span> <span class="o">=</span> <span class="p">([</span><span class="mf">5.85</span><span class="p">,</span> <span class="mf">5.95</span><span class="p">]</span> <span class="o">+</span> <span class="n">ref_mags_t_ccd</span><span class="p">)</span>
+    <span class="n">ref_counts</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0005</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+
+    <span class="c1"># Do the interpolation, noting that np.interp will use the end ``counts``</span>
+    <span class="c1"># values for any ``mag`` &lt; ref_mags[0] or &gt; ref_mags[-1].</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">ref_mags</span><span class="p">,</span> <span class="n">ref_counts</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">count</span></div>
+
+
+<div class="viewcode-block" id="t_ccd_warm_limit_for_guide"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.t_ccd_warm_limit_for_guide">[docs]</a><span class="k">def</span> <span class="nf">t_ccd_warm_limit_for_guide</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">min_guide_count</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">warm_t_ccd</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">cold_t_ccd</span><span class="o">=-</span><span class="mf">16.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve for the warmest temperature that still gets the min_guide_count.</span>
+<span class="sd">    This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the</span>
+<span class="sd">    cold end the result may be below ``min_n_acq``, in which case the star catalog</span>
+<span class="sd">    may be rejected.</span>
+
+<span class="sd">    :param mags: list of star ACA mags</span>
+<span class="sd">    :param min_guide_count: float minimum fractional guide count</span>
+<span class="sd">    :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)</span>
+<span class="sd">    :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)</span>
+
+<span class="sd">    :returns: t_ccd</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">guide_count</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">warm_t_ccd</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_guide_count</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">warm_t_ccd</span>
+    <span class="k">if</span> <span class="n">guide_count</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">cold_t_ccd</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">min_guide_count</span><span class="p">:</span>
+        <span class="c1"># Note that this relies on a slight incline in the guide_count curve</span>
+        <span class="c1"># from 1.0005 at mag=6.0 to 1.0 at mag=10.0.</span>
+        <span class="k">return</span> <span class="n">cold_t_ccd</span>
+
+    <span class="k">def</span> <span class="nf">merit_func</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">):</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">guide_count</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">count</span> <span class="o">-</span> <span class="n">min_guide_count</span>
+
+    <span class="k">return</span> <span class="n">bisect</span><span class="p">(</span><span class="n">merit_func</span><span class="p">,</span> <span class="n">cold_t_ccd</span><span class="p">,</span> <span class="n">warm_t_ccd</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="binom_ppf"><a class="viewcode-back" href="../../index.html#chandra_aca.star_probs.binom_ppf">[docs]</a><span class="k">def</span> <span class="nf">binom_ppf</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">n_sample</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute percent point function (inverse of CDF) for binomial, where</span>
+<span class="sd">    the percentage is with respect to the &quot;p&quot; (binomial probability) parameter</span>
+<span class="sd">    not the &quot;k&quot; parameter.  The latter is what one gets with scipy.stats.binom.ppf().</span>
+
+<span class="sd">    This function internally generates ``n_sample`` samples of the binomal PMF in</span>
+<span class="sd">    order to compute the CDF and finally interpolate to get the PPF.</span>
+
+<span class="sd">    The following example returns the 1-sigma (0.17 - 0.84) confidence interval</span>
+<span class="sd">    on the true binomial probability for an experiment with 4 successes in 5 trials.</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">      &gt;&gt;&gt; binom_ppf(4, 5, [0.17, 0.84])</span>
+<span class="sd">      array([ 0.55463945,  0.87748177])</span>
+
+<span class="sd">    :param k: int, number of successes (0 &lt; k &lt;= n)</span>
+<span class="sd">    :param n: int, number of trials</span>
+<span class="sd">    :param conf: float or array of floats, percent point values</span>
+<span class="sd">    :param n_sample: number of PMF samples for interpolation</span>
+
+<span class="sd">    :return: percent point function values corresponding to ``conf``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_sample</span><span class="p">)</span>  <span class="c1"># Probability values</span>
+    <span class="n">pmfs</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">binom</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">ps</span><span class="p">)</span>
+    <span class="n">cdf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">pmfs</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pmfs</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">cdf</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">ps</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 3.1.2. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>

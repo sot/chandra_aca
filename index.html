@@ -1,0 +1,1727 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chandra_aca &#8212; chandra_aca 4.29.2.dev22+g7878cb9 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
+    <script type="text/javascript" src="_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="#"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="">
+        <span id="logotext1"></span><span id="logotext2"></span>
+    </a></li>
+    <li><a title="General Index" href="genindex.html">Index</a></li>
+    <li><a title="Module Index" href="py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="#">chandra_aca 4.29.2.dev22+g7878cb9 documentation</a>
+	 &#187;
+      </li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="chandra-aca">
+<h1>chandra_aca<a class="headerlink" href="#chandra-aca" title="Permalink to this headline">¶</a></h1>
+<p>The chandra_aca package provides functionality related to the Chandra Aspect
+Camera Assembly and associated aspect functionality.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="module-chandra_aca.plot">
+<span id="plotting"></span><h2>Plotting<a class="headerlink" href="#module-chandra_aca.plot" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="chandra_aca.plot.bad_acq_stars">
+<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">bad_acq_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#bad_acq_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.bad_acq_stars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return mask of ‘bad’ stars, by evaluating AGASC star parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>stars</strong> – astropy table-compatible set of agasc records of stars. Required fields
+are [‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>boolean mask true for ‘bad’ stars</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.plot.custom_plt_rcparams">
+<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">custom_plt_rcparams</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#custom_plt_rcparams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.custom_plt_rcparams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to make a function use the custom rcParams plt params
+temporarily.  This uses a context manage to ensure original
+params always get restored.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.plot.plot_compass">
+<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_compass</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roll</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_compass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_compass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a compass plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>roll</strong> – Attitude roll for compass plot.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>matplotlib figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.plot.plot_stars">
+<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attitude</span></em>, <em class="sig-param"><span class="n">catalog</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">starcat_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">red_mag_lim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quad_bound</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">grid</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">bad_stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">plot_keepout</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_stars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a catalog, a star field, or both in a matplotlib figure.
+If supplying a star field, an attitude must also be supplied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attitude</strong> – A Quaternion compatible attitude for the pointing</p></li>
+<li><p><strong>catalog</strong> – Records describing catalog.  Must be astropy table compatible.
+Required fields are [‘idx’, ‘type’, ‘yang’, ‘zang’, ‘halfw’]</p></li>
+<li><p><strong>stars</strong> – astropy table compatible set of agasc records of stars
+Required fields are [‘RA_PMCORR’, ‘DEC_PMCORR’, ‘MAG_ACA’, ‘MAG_ACA_ERR’].
+If bad_acq_stars will be called (bad_stars is None), additional required fields
+[‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]
+If stars is None, stars will be fetched from the AGASC for the
+supplied attitude.</p></li>
+<li><p><strong>title</strong> – string to be used as suptitle for the figure</p></li>
+<li><p><strong>starcat_time</strong> – DateTime-compatible time.  Used in ACASC fetch for proper
+motion correction.  Not used if stars is not None.</p></li>
+<li><p><strong>red_mag_lim</strong> – faint limit for field star plotting.</p></li>
+<li><p><strong>quad_bound</strong> – boolean, plot inner quadrant boundaries</p></li>
+<li><p><strong>grid</strong> – boolean, plot axis grid</p></li>
+<li><p><strong>bad_stars</strong> – boolean mask on ‘stars’ of those that don’t meet minimum requirements
+to be selected as acq stars.  If None, bad_stars will be set by a call
+to bad_acq_stars().</p></li>
+<li><p><strong>plot_keepout</strong> – plot CCD area to be avoided in star selection (default=False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>matplotlib figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-chandra_aca.star_probs">
+<span id="star-probabilities"></span><h2>Star probabilities<a class="headerlink" href="#module-chandra_aca.star_probs" title="Permalink to this headline">¶</a></h2>
+<p>Functions related to probabilities for star acquisition and guide tracking.</p>
+<p>Current default acquisition probability model: grid-floor-2020-02</p>
+<dl class="simple">
+<dt>The grid-floor-2020-02 model definition and fit values based on:</dt><dd><p><a class="reference external" href="https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb">https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb</a></p>
+</dd>
+</dl>
+<p>SSAWG review: 2020-01-29</p>
+<dl class="py function">
+<dt id="chandra_aca.star_probs.acq_success_prob">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">acq_success_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 10.0</span></em>, <em class="sig-param"><span class="n">mag</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0.6</span></em>, <em class="sig-param"><span class="n">spoiler</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#acq_success_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.acq_success_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return probability of acquisition success for given date, temperature, star properties
+and search box size.</p>
+<p>Any of the inputs can be scalars or arrays, with the output being the result of
+the broadcasted dimension of the inputs.</p>
+<p>The default probability model is defined by <code class="docutils literal notranslate"><span class="pre">DEFAULT_MODEL</span></code> in this module.
+Allowed values for the <code class="docutils literal notranslate"><span class="pre">model</span></code> name are ‘sota’, ‘spline’, or a grid model
+specified by ‘grid-&lt;name&gt;-&lt;date&gt;’ (e.g. ‘grid-floor-2018-11’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> – Date(s) (scalar or np.ndarray, default=NOW)</p></li>
+<li><p><strong>t_ccd</strong> – CD temperature(s) (degC, scalar or np.ndarray, default=-10C)</p></li>
+<li><p><strong>mag</strong> – Star magnitude(s) (scalar or np.ndarray, default=10.0)</p></li>
+<li><p><strong>color</strong> – Star color(s) (scalar or np.ndarray, default=0.6)</p></li>
+<li><p><strong>spoiler</strong> – Star spoiled (boolean or np.ndarray, default=False)</p></li>
+<li><p><strong>halfwidth</strong> – Search box halfwidth (arcsec, default=120)</p></li>
+<li><p><strong>model</strong> – probability model name: ‘sota’ | ‘spline’ | ‘grid-<a href="#id1"><span class="problematic" id="id2">*</span></a>’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Acquisition success probability(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.binom_ppf">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">binom_ppf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">conf</span></em>, <em class="sig-param"><span class="n">n_sample</span><span class="o">=</span><span class="default_value">1000</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#binom_ppf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.binom_ppf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute percent point function (inverse of CDF) for binomial, where
+the percentage is with respect to the “p” (binomial probability) parameter
+not the “k” parameter.  The latter is what one gets with scipy.stats.binom.ppf().</p>
+<p>This function internally generates <code class="docutils literal notranslate"><span class="pre">n_sample</span></code> samples of the binomal PMF in
+order to compute the CDF and finally interpolate to get the PPF.</p>
+<p>The following example returns the 1-sigma (0.17 - 0.84) confidence interval
+on the true binomial probability for an experiment with 4 successes in 5 trials.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binom_ppf</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">])</span>
+<span class="go">array([ 0.55463945,  0.87748177])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> – int, number of successes (0 &lt; k &lt;= n)</p></li>
+<li><p><strong>n</strong> – int, number of trials</p></li>
+<li><p><strong>conf</strong> – float or array of floats, percent point values</p></li>
+<li><p><strong>n_sample</strong> – number of PMF samples for interpolation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>percent point function values corresponding to <code class="docutils literal notranslate"><span class="pre">conf</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.clip_and_warn">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">clip_and_warn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">val</span></em>, <em class="sig-param"><span class="n">val_lo</span></em>, <em class="sig-param"><span class="n">val_hi</span></em>, <em class="sig-param"><span class="n">model</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#clip_and_warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.clip_and_warn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clip <code class="docutils literal notranslate"><span class="pre">val</span></code> to be in the range <code class="docutils literal notranslate"><span class="pre">val_lo</span></code> to <code class="docutils literal notranslate"><span class="pre">val_hi</span></code> and issue a
+warning if clipping occurs.  The <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">model</span></code> are just used in
+the warning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Value name</p></li>
+<li><p><strong>val</strong> – Value</p></li>
+<li><p><strong>val_lo</strong> – Minimum</p></li>
+<li><p><strong>val_hi</strong> – Maximum</p></li>
+<li><p><strong>model</strong> – Model name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Clipped value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.get_box_delta">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">get_box_delta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">halfwidth</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#get_box_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.get_box_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform from halfwidth (arcsec) to the box_delta value which gets added
+to failure probability (in probit space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>halfwidth</strong> – scalar or ndarray of box sizes (halfwidth, arcsec)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>box deltas</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.grid_model_acq_prob">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">grid_model_acq_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 12.0</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0.6</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">probit</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#grid_model_acq_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.grid_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a grid model probability of acquisition success for a star with
+specified mag, t_ccd, color, and search box halfwidth.</p>
+<p>This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a
+pre-computed gridded model that is stored in a FITS file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag</strong> – ACA magnitude (float or np.ndarray)</p></li>
+<li><p><strong>t_ccd</strong> – CCD temperature (degC, float or ndarray)</p></li>
+<li><p><strong>color</strong> – B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</p></li>
+<li><p><strong>halfwidth</strong> – search box halfwidth (arcsec, default=120, float or ndarray)</p></li>
+<li><p><strong>probit</strong> – if True then return Probit(p_success). Default=False</p></li>
+<li><p><strong>model</strong> – Model name, e.g. ‘grid-floor-2018-11’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Acquisition success probability(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.guide_count">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">guide_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mags</span></em>, <em class="sig-param"><span class="n">t_ccd</span></em>, <em class="sig-param"><span class="n">count_9th</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#guide_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.guide_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a guide star fractional count/metric using signal-to-noise scaled
+mag thresholds.
+This uses a modification of the guide star fractional counts that were
+suggested at the 7-Mar-2018 SSAWG and agreed upon at the 21-Mar-2018
+SSAWG.  The implementation here does a piecewise linear interpolation
+between the reference mag - fractional count points instead of the
+original “threshold interpolation” (nearest neighbor mag &lt;= reference
+mag).  Approved at 16-Jan-2019 SSAWG.
+One feature is the slight incline in the guide_count curve from 1.0005 at
+mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs
+of guide_counts to two decimal places (8 * 0.0005 = 0.004), but helps with
+minimization.
+:param mags: magnitude(s)
+:param t_ccds: CCD temperature(s)
+:param count_9th: return fractional count of 9th mag or brighter stars
+:returns: fractional count</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.mag_for_p_acq">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">mag_for_p_acq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p_acq</span></em>, <em class="sig-param"><span class="n">date</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 10.0</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#mag_for_p_acq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.mag_for_p_acq" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given <code class="docutils literal notranslate"><span class="pre">date</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>, find the star magnitude that has an
+acquisition probability of <code class="docutils literal notranslate"><span class="pre">p_acq</span></code>.  Star magnitude is defined/limited
+to the range 5.0 - 12.0 mag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p_acq</strong> – acquisition probability (0 to 1.0)</p></li>
+<li><p><strong>date</strong> – observation date (any Chandra.Time valid format)</p></li>
+<li><p><strong>t_ccd</strong> – ACA CCD temperature (deg C)</p></li>
+<li><p><strong>halfwidth</strong> – search box halfwidth (arcsec, default=120)</p></li>
+<li><p><strong>model</strong> – probability model (see acq_success_prob() for allowed values, default)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns mag</dt>
+<dd class="field-even"><p>star magnitude</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.model_acq_success_prob">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">model_acq_success_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span></em>, <em class="sig-param"><span class="n">warm_frac</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#model_acq_success_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.model_acq_success_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call sota_model_acq_prob() with same params.  This is retained purely
+for back-compatibility but use is deprecated.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.prob_n_acq">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">prob_n_acq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">star_probs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#prob_n_acq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.prob_n_acq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an input array of star acquisition probabilities <code class="docutils literal notranslate"><span class="pre">star_probs</span></code>,
+return the probabilities of acquiring exactly n_acq stars, where n_acq
+is evaluated at values 0 to n_stars.  This is returned as an array
+of length n_stars.  In addition the cumulative sum, which represents
+the probability of acquiring n_acq or fewer stars, is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>star_probs</strong> – array of star acq probabilities (list or ndarray)</p>
+</dd>
+<dt class="field-even">Returns n_acq_probs, cum_n_acq_probs</dt>
+<dd class="field-even"><p>tuple of ndarray, ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.set_acq_model_ms_filter">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">set_acq_model_ms_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ms_enabled</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#set_acq_model_ms_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.set_acq_model_ms_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choose one of two sets of acquisition model fit parameters based
+on <code class="docutils literal notranslate"><span class="pre">ms_enabled</span></code>.  The default is <code class="docutils literal notranslate"><span class="pre">False</span></code>:</p>
+<ul class="simple">
+<li><p>True: MS filtering enabled (prior to FEB0816 loads), where stars would
+be rejected if MS flag was set</p></li>
+<li><p>False: MS filtering disabled (including and after FEB0816 loads)</p></li>
+</ul>
+<p>The selected fit parameters are global/module-wide.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.sota_model_acq_prob">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">sota_model_acq_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span></em>, <em class="sig-param"><span class="n">warm_frac</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#sota_model_acq_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.sota_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate raw SOTA model probability of acquisition success for a star with <code class="docutils literal notranslate"><span class="pre">mag</span></code>
+magnitude and a CCD warm fraction <code class="docutils literal notranslate"><span class="pre">warm_frac</span></code>.  This is not typically used directly
+since it does not account for star properties like spoiled or color=0.7.</p>
+<p>Uses the empirical relation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">P_fail_probit</span> <span class="o">=</span> <span class="n">offset</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span> <span class="o">+</span> <span class="n">scale</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span> <span class="o">*</span> <span class="n">warm_frac</span> <span class="o">+</span> <span class="n">box_delta</span><span class="p">(</span><span class="n">halfwidth</span><span class="p">)</span>
+<span class="n">P_acq_fail</span> <span class="o">=</span> <span class="n">Normal_CDF</span><span class="p">()</span>
+<span class="n">P_acq_success</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">P_acq_fail</span>
+</pre></div>
+</div>
+<p>This is based on the dark model and acquisition success model presented in the State
+of the ACA 2013, and subsequently updated to use a Probit transform and separately fit
+B-V=1.5 stars.  It was updated in 2017 to include a fitted dependence on the search
+box halfwidth.  See:</p>
+<p><a class="reference external" href="https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb">https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb</a>
+<a class="reference external" href="https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb">https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag</strong> – ACA magnitude (float or np.ndarray)</p></li>
+<li><p><strong>warm_frac</strong> – N100 warm fraction (float or np.ndarray)</p></li>
+<li><p><strong>color</strong> – B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</p></li>
+<li><p><strong>halfwidth</strong> – search box halfwidth (arcsec, default=120)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Acquisition success probability(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.spline_model_acq_prob">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">spline_model_acq_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 12.0</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0.6</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">probit</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#spline_model_acq_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.spline_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate poly-spline-tccd model (aka ‘spline’ model) probability of acquisition
+success for a star with specified mag, t_ccd, color, and search box halfwidth.</p>
+<p>The model definition and fit values based on:
+- <a class="reference external" href="https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb">https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb</a></p>
+<p>See also:
+- Description of the motivation and initial model development.</p>
+<blockquote>
+<div><p><a class="reference external" href="https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11">https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11</a></p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Final review and approval.</dt><dd><p><a class="reference external" href="https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18">https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18</a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag</strong> – ACA magnitude (float or np.ndarray)</p></li>
+<li><p><strong>t_ccd</strong> – CCD temperature (degC, float or ndarray)</p></li>
+<li><p><strong>color</strong> – B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</p></li>
+<li><p><strong>halfwidth</strong> – search box halfwidth (arcsec, default=120, float or ndarray)</p></li>
+<li><p><strong>probit</strong> – if True then return Probit(p_success). Default=False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Acquisition success probability(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.t_ccd_warm_limit">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">t_ccd_warm_limit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mags</span></em>, <em class="sig-param"><span class="n">date</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">colors</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">halfwidths</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">min_n_acq</span><span class="o">=</span><span class="default_value">5.0</span></em>, <em class="sig-param"><span class="n">cold_t_ccd</span><span class="o">=</span><span class="default_value">- 16</span></em>, <em class="sig-param"><span class="n">warm_t_ccd</span><span class="o">=</span><span class="default_value">- 5</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the warmest CCD temperature which meets the <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code> acquisition stars
+criterion.  This returns a value between <code class="docutils literal notranslate"><span class="pre">cold_t_ccd</span></code> and <code class="docutils literal notranslate"><span class="pre">warm_t_ccd</span></code>.  At the
+cold end the result may be below <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code>, in which case the star catalog
+may be rejected.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code> argument can be specified in one of two ways:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>Scalar float value: expected number of acquired stars must exceed threshold.</dt><dd><p>Expected number is the sum of the individual probabilities.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Tuple (n, prob): computed probability of acquiring <code class="docutils literal notranslate"><span class="pre">n</span></code> or fewer stars</dt><dd><p>must not exceed <code class="docutils literal notranslate"><span class="pre">prob</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mags</strong> – list of star ACA mags</p></li>
+<li><p><strong>date</strong> – observation date (any Chandra.Time valid format)</p></li>
+<li><p><strong>colors</strong> – list of star B-V colors (optional, default=0.0)</p></li>
+<li><p><strong>halfwidths</strong> – list of acq box halfwidths(optional, default=120)</p></li>
+<li><p><strong>min_n_acq</strong> – float or tuple (see above)</p></li>
+<li><p><strong>cold_t_ccd</strong> – coldest CCD temperature to consider (default=-16 C)</p></li>
+<li><p><strong>warm_t_ccd</strong> – warmest CCD temperature to consider (default=-5 C)</p></li>
+<li><p><strong>model</strong> – probability model (see acq_success_prob() for allowed values, default)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit and:
+- number of expected ACQ stars at that temperature (scalar min_n_acq)
+- probability of acquiring <code class="docutils literal notranslate"><span class="pre">n</span></code> or fewer stars (tuple min_n_acq)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.star_probs.t_ccd_warm_limit_for_guide">
+<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">t_ccd_warm_limit_for_guide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mags</span></em>, <em class="sig-param"><span class="n">min_guide_count</span><span class="o">=</span><span class="default_value">4.0</span></em>, <em class="sig-param"><span class="n">warm_t_ccd</span><span class="o">=</span><span class="default_value">- 5.0</span></em>, <em class="sig-param"><span class="n">cold_t_ccd</span><span class="o">=</span><span class="default_value">- 16.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit_for_guide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit_for_guide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve for the warmest temperature that still gets the min_guide_count.
+This returns a value between <code class="docutils literal notranslate"><span class="pre">cold_t_ccd</span></code> and <code class="docutils literal notranslate"><span class="pre">warm_t_ccd</span></code>.  At the
+cold end the result may be below <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code>, in which case the star catalog
+may be rejected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mags</strong> – list of star ACA mags</p></li>
+<li><p><strong>min_guide_count</strong> – float minimum fractional guide count</p></li>
+<li><p><strong>warm_t_ccd</strong> – warmest CCD temperature to consider (default=-5 C)</p></li>
+<li><p><strong>cold_t_ccd</strong> – coldest CCD temperature to consider (default=-16 C)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>t_ccd</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-chandra_aca.transform">
+<span id="transformations"></span><h2>Transformations<a class="headerlink" href="#module-chandra_aca.transform" title="Permalink to this headline">¶</a></h2>
+<p>The transform modules includes:</p>
+<ul class="simple">
+<li><p>Coordinate conversions between ACA Pixels and ACA Y-angle, Z-angle</p></li>
+<li><p>Mag to count conversions</p></li>
+<li><p>Science target coordinate to ACA frame conversions</p></li>
+</ul>
+<dl class="py function">
+<dt id="chandra_aca.transform.broadcast_arrays">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">broadcast_arrays</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast <a href="#id3"><span class="problematic" id="id4">*</span></a>args inputs to same shape and return an <code class="docutils literal notranslate"><span class="pre">is_scalar</span></code> flag and
+the broadcasted version of inputs.  This lets intermediate code work on
+arrays that are guaranteed to be the same shape and at least a 1-d array,
+but reshape the output at the end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> – tuple of scalar / array inputs</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[is_scalar, <a href="#id5"><span class="problematic" id="id6">*</span></a>flat_args]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.broadcast_arrays_flatten">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">broadcast_arrays_flatten</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays_flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays_flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast <a href="#id7"><span class="problematic" id="id8">*</span></a>args inputs to same shape and then return that shape and the
+flattened view of all the inputs.  This lets intermediate code work on all
+scalars or all arrays that are the same-length 1-d array and then reshape
+the output at the end (if necessary).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> – tuple of scalar / array inputs</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[shape, <a href="#id9"><span class="problematic" id="id10">*</span></a>flat_args]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.calc_aca_from_targ">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">calc_aca_from_targ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">targ</span></em>, <em class="sig-param"><span class="n">y_off</span></em>, <em class="sig-param"><span class="n">z_off</span></em>, <em class="sig-param"><span class="n">si_align</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_aca_from_targ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.calc_aca_from_targ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the PCAD (ACA) pointing attitude from target attitude and
+Y,Z offset (per OR-list).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>targ</strong> – science target from OR/Obscat (Quat-compliant object)</p></li>
+<li><p><strong>y_off</strong> – Y offset (deg, sign per OR-list convention)</p></li>
+<li><p><strong>z_off</strong> – Z offset (deg, sign per OR-list convention)</p></li>
+<li><p><strong>si_align</strong> – SI ALIGN matrix (default=ODB_SI_ALIGN)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>q_aca (Quat)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.calc_targ_from_aca">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">calc_targ_from_aca</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">aca</span></em>, <em class="sig-param"><span class="n">y_off</span></em>, <em class="sig-param"><span class="n">z_off</span></em>, <em class="sig-param"><span class="n">si_align</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_targ_from_aca"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.calc_targ_from_aca" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the target attitude from ACA (PCAD) pointing attitude and
+Y,Z offset (per OR-list).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>aca</strong> – ACA (PCAD) pointing attitude (any Quat-compliant object)</p></li>
+<li><p><strong>y_off</strong> – Y offset (deg, sign per OR-list convention)</p></li>
+<li><p><strong>z_off</strong> – Z offset (deg, sign per OR-list convention)</p></li>
+<li><p><strong>si_align</strong> – SI ALIGN matrix</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>q_targ (Quat)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.count_rate_to_mag">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">count_rate_to_mag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">count_rate</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#count_rate_to_mag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.count_rate_to_mag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert count rate in e- / sec to ACA mag</p>
+<p>Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
+columns mag0=10.32 and cnt_rate_mag0=5263.0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>count_rate</strong> – count rate (e-/sec)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>magnitude (ACA mag)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.mag_to_count_rate">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">mag_to_count_rate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#mag_to_count_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.mag_to_count_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert ACA mag to count rate in e- / sec</p>
+<p>Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
+columns mag0=10.32 and cnt_rate_mag0=5263.0.  To convert to raw telemetered
+counts (ADU), divide e- by the gain of 5.0 e-/ADU.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mag</strong> – star magnitude in ACA mag</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>count rate (e-/sec)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.pixels_to_yagzag">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">pixels_to_yagzag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">row</span></em>, <em class="sig-param"><span class="n">col</span></em>, <em class="sig-param"><span class="n">allow_bad</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">flight</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">t_aca</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'edge'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#pixels_to_yagzag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.pixels_to_yagzag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert ACA row/column positions to ACA y-angle, z-angle.
+It is expected that the row and column input arguments have the same length.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pix_zero_loc</span></code> parameter controls whether the input pixel values
+are assumed to have integral values at the pixel center or at the pixel
+lower/left edge.  The PEA flight coefficients assume lower/left edge, and
+that is the default.  However, it is generally more convenient when doing
+centroids and other manipulations to use the center.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> – ACA pixel row (single value, list, or 1-d numpy array)</p></li>
+<li><p><strong>col</strong> – ACA pixel column (single value, list, or 1-d numpy array)</p></li>
+<li><p><strong>allow_bad</strong> – boolean switch.  If true, method will not throw errors
+if the row/col values are nominally off the ACA CCD.</p></li>
+<li><p><strong>flight</strong> – Use flight EEPROM coefficients instead of default ground values.</p></li>
+<li><p><strong>t_aca</strong> – ACA temperature (degC) for use with flight (default=20C)</p></li>
+<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(yang, zang) each vector of the same length as row/col</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.radec_to_yagzag">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">radec_to_yagzag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra</span></em>, <em class="sig-param"><span class="n">dec</span></em>, <em class="sig-param"><span class="n">q_att</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_yagzag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_yagzag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
+input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d arrays in which case the output
+<code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> will be corresponding arrays of the same length.</p>
+<p>This is a wrapper around Ska.quatutil.radec2yagzag but uses arcsec instead
+of deg for yag, zag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ra</strong> – Right Ascension (degrees)</p></li>
+<li><p><strong>dec</strong> – Declination (degrees)</p></li>
+<li><p><strong>q_att</strong> – ACA pointing quaternion</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>yag, zag (arcsec)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.snr_mag_for_t_ccd">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">snr_mag_for_t_ccd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t_ccd</span></em>, <em class="sig-param"><span class="n">ref_mag</span></em>, <em class="sig-param"><span class="n">ref_t_ccd</span></em>, <em class="sig-param"><span class="n">scale_4c</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#snr_mag_for_t_ccd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.snr_mag_for_t_ccd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a t_ccd, solve for the magnitude that has the same expected signal
+to noise as ref_mag / ref_t_ccd.</p>
+<p>If scale_4c is None, the value from dark_model.DARK_SCALE_4C is used.</p>
+<p>To solve for the magnitude that has the expected signal to noise as
+ref_mag / ref_t_ccd, we define this equality:</p>
+<p>counts(mag) / noise(t_ccd) = counts(ref_mag) / noise(ref_t_ccd)</p>
+<p>We then assume (with some handwaving) that:</p>
+<p>noise(t_ccd) = noise(ref_t_ccd) * scale</p>
+<p>where</p>
+<p>scale = scale_4c ** ((t_ccd - ref_t_ccd) / 4.0)</p>
+<p>And we use the definition of counts as:</p>
+<p>counts(mag) = ACA_CNT_RATE_MAG0 * 10.0 ** ((ACA_MAG0 - mag) / 2.5)</p>
+<p>Substituting in, reducing, and solving the original equality for mag gives</p>
+<p>ref_mag - (t_ccd - ref_t_ccd) * np.log10(scale_4c) / 1.6</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.yagzag_to_pixels">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">yagzag_to_pixels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yang</span></em>, <em class="sig-param"><span class="n">zang</span></em>, <em class="sig-param"><span class="n">allow_bad</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'edge'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_pixels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert ACA y-angle/z-angle positions to ACA pixel row, column.
+It is expected that the y-angle/z-angle input arguments have the same length.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pix_zero_loc</span></code> parameter controls whether the input pixel values
+are assumed to have integral values at the pixel center or at the pixel
+lower/left edge.  The PEA flight coefficients assume lower/left edge, and
+that is the default.  However, it is generally more convenient when doing
+centroids and other manipulations to use <code class="docutils literal notranslate"><span class="pre">pix_zero_loc='center'</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yang</strong> – ACA y-angle (single value, list, or 1-d numpy array)</p></li>
+<li><p><strong>zang</strong> – ACA z-angle (single value, list, or 1-d numpy array)</p></li>
+<li><p><strong>allow_bad</strong> – boolean switch.  If true, method will not throw errors
+if the resulting row/col values are nominally off the ACA CCD.</p></li>
+<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(row, col) each vector of the same length as row/col</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.yagzag_to_radec">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">yagzag_to_radec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yag</span></em>, <em class="sig-param"><span class="n">zag</span></em>, <em class="sig-param"><span class="n">q_att</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_radec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
+input <code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> values can be 1-d arrays in which case the output
+<code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> will be corresponding arrays of the same length.</p>
+<p>This is a wrapper around Ska.quatutil.yagzag2radec but uses arcsec instead
+of deg for yag, zag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yag</strong> – ACA Y angle (arcsec)</p></li>
+<li><p><strong>zag</strong> – ACA Z angle (arcsec)</p></li>
+<li><p><strong>q_att</strong> – ACA pointing quaternion</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>ra, dec (arcsec)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-chandra_aca.centroid_resid">
+<span id="centroid-residuals"></span><h2>Centroid residuals<a class="headerlink" href="#module-chandra_aca.centroid_resid" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="chandra_aca.centroid_resid.CentroidResiduals">
+<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.centroid_resid.</code><code class="sig-name descname">CentroidResiduals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to calculate star centroid residuals.</p>
+<p>This class is designed to set up and perform the residual calculations on
+any desired combination of source centroids and source attitudes.  For the common use cases,
+centroids, attitudes, and commanded star positions are retrieved automatically from archived
+sources.</p>
+<p>Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:</p>
+<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</a></p>
+<p>and</p>
+<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</a></p>
+<p>Users should see the class method <code class="docutils literal notranslate"><span class="pre">for_slot</span></code> for a convenient way to get centroid
+residuals on an <code class="docutils literal notranslate"><span class="pre">obsid</span></code> for an ACA <code class="docutils literal notranslate"><span class="pre">slot</span></code> (aka image number).</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.centroid_resid</span> <span class="kn">import</span> <span class="n">CentroidResiduals</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span> <span class="o">=</span> <span class="n">CentroidResiduals</span><span class="o">.</span><span class="n">for_slot</span><span class="p">(</span><span class="n">obsid</span><span class="o">=</span><span class="mi">20001</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dyags</span><span class="p">))</span>
+<span class="go">0.87602233734844503</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dzags</span><span class="p">))</span>
+<span class="go">1.2035827855862777</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">atts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">array([-0.07933254,  0.87065874, -0.47833673,  0.08278696])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">agasc_id</span>
+<span class="go">649201816</span>
+</pre></div>
+</div>
+<p>This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
+and ground centroids.  Here is another example that does the same thing without using the
+<code class="docutils literal notranslate"><span class="pre">for_slot</span></code> convenience.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.centroid_resid</span> <span class="kn">import</span> <span class="n">CentroidResiduals</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span> <span class="o">=</span> <span class="n">CentroidResiduals</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s1">&#39;2017:169:18:54:50.138&#39;</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="s1">&#39;2017:170:05:13:58.190&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">set_atts</span><span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">set_centroids</span><span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">set_star</span><span class="p">(</span><span class="n">agasc_id</span><span class="o">=</span><span class="mi">649201816</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">calc_residuals</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dyags</span><span class="p">))</span>
+<span class="go">0.87602233734844503</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – start time of interval for residuals (DateTime compatible)</p></li>
+<li><p><strong>stop</strong> – stop time of interval for residuals (DateTime compatible)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="chandra_aca.centroid_resid.CentroidResiduals.calc_residuals">
+<code class="sig-name descname">calc_residuals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.calc_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.calc_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate residuals based on attitude and ra/dec of star.  Note that the sampling and times
+of yags may be different from zags so these should be done independently.</p>
+<p>Residuals are available in self.dyags and self.dzags.
+Predicted values from attitude and star position in self.pred_yags and self.pred_zags</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_atts">
+<code class="sig-name descname">set_atts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">source</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_atts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_atts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get attitude solution quaternions from <code class="docutils literal notranslate"><span class="pre">source</span></code>.</p>
+<p>One could also just set atts and att_times attributes directly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_centroids">
+<code class="sig-name descname">set_centroids</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">source</span></em>, <em class="sig-param"><span class="n">slot</span></em>, <em class="sig-param"><span class="n">alg</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">apply_dt</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_centroids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_centroids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign centroids from <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">slot</span></code> to the objects centroid attributes
+(yag, zag, yag_times, zag_times)</p>
+<p>For the supported sources (ground, obc) the centroids are fetched from the mica L1
+archive or telemetry.</p>
+<p>yag, zag, yag_times an zag_times can also be set directly without use of this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – ‘ground’ | ‘obc’</p></li>
+<li><p><strong>slot</strong> – ACA slot</p></li>
+<li><p><strong>alg</strong> – for ground processing, use centroids from this algorithm.</p></li>
+<li><p><strong>apply_dt</strong> – apply centroid time offsets via ‘set_offsets’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_offsets">
+<code class="sig-name descname">set_offsets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_offsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_offsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply time offsets to centroids based on type and source of centroid, obsid
+(suggesting 8x8 or 6x6 data), telemetry source (‘maude’ or ‘cxc’) and aspect solution
+source. These time offsets were fit.  See fit notebooks at:</p>
+<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</a></p>
+<p>and</p>
+<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_star">
+<code class="sig-name descname">set_star</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">agasc_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">slot</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set self.ra and dec from either agasc_id <em>or</em> slot.</p>
+<p>This assumes use of star in default agasc miniagasc (no 1.4 or 1.5 or very faint stars)
+Lookup by “slot” relies on database of starcheck catalogs.</p>
+<p>This also sets self.agasc_id.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.centroid_resid.quat_vtransform">
+<code class="sig-prename descclassname">chandra_aca.centroid_resid.</code><code class="sig-name descname">quat_vtransform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">qs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#quat_vtransform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.quat_vtransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform a Nx4 matrix of quaternions into a Nx3x3 transform matrix
+:returns: Nx3x3 transform matrix
+:rtype: numpy array</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-chandra_aca.drift">
+<span id="aca-alignment-drift"></span><h2>ACA alignment drift<a class="headerlink" href="#module-chandra_aca.drift" title="Permalink to this headline">¶</a></h2>
+<p>Function(s) related to ACA alignment.</p>
+<p>In particular compute the dynamical pointing offset required to achieve
+a desired zero-offset target aimpoint.</p>
+<p>A key element of this module is the fitting analysis here:
+<a class="reference external" href="https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb">https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb</a></p>
+<dl class="py class">
+<dt id="chandra_aca.drift.AcaDriftModel">
+<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">AcaDriftModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scale</span></em>, <em class="sig-param"><span class="n">offset</span></em>, <em class="sig-param"><span class="n">trend</span></em>, <em class="sig-param"><span class="n">jumps</span></em>, <em class="sig-param"><span class="n">year0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define a drift model for aspect solution SIM DY/DZ values as a function of
+time and ACA CCD temperature.  This expresses the model which is defined
+and fitted in the fit_aimpoint_drift notebook in this repo.</p>
+<dl class="py method">
+<dt id="chandra_aca.drift.AcaDriftModel.calc">
+<code class="sig-name descname">calc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">times</span></em>, <em class="sig-param"><span class="n">t_ccd</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel.calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the drift model for aspect solution SIM DY/DZ values for input <code class="docutils literal notranslate"><span class="pre">times</span></code>
+and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>.  The two arrays are broadcasted to match.</p>
+<p>The returned drifts are in arcsec and provide the expected aspect solution
+SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via
+the scale factor 20.493 arcsec/mm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>times</strong> – array of times (CXC secs)</p></li>
+<li><p><strong>t_ccd</strong> – CCD temperatures (degC)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>array of ASOL SIM DY/DZ (mm)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.drift.get_aca_offsets">
+<code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">get_aca_offsets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">detector</span></em>, <em class="sig-param"><span class="n">chip_id</span></em>, <em class="sig-param"><span class="n">chipx</span></em>, <em class="sig-param"><span class="n">chipy</span></em>, <em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">t_ccd</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_aca_offsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.get_aca_offsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the dynamical ACA offset values for the provided inputs.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">time</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code> inputs can be either scalars or arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detector</strong> – one of ACIS-I, ACIS-S, HRC-I, HRC-S</p></li>
+<li><p><strong>chipx</strong> – zero-offset aimpoint CHIPX</p></li>
+<li><p><strong>chipy</strong> – zero-offset aimpoint CHIPY</p></li>
+<li><p><strong>chip_id</strong> – zero-offset aimpoint CHIP ID</p></li>
+<li><p><strong>time</strong> – time(s) of observation (any Chandra.Time compatible format)</p></li>
+<li><p><strong>t_ccd</strong> – ACA CCD temperature(s) (degC)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>aca_offset_y, aca_offset_z (arcsec)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.drift.get_default_zero_offset_table">
+<code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">get_default_zero_offset_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_default_zero_offset_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.get_default_zero_offset_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get official SOT MP zero offset aimpoint table:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>zero offset aimpoint table as astropy.Table</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.drift.get_target_aimpoint">
+<code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">get_target_aimpoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">cycle</span></em>, <em class="sig-param"><span class="n">detector</span></em>, <em class="sig-param"><span class="n">too</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">zero_offset_table</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_target_aimpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.get_target_aimpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> – observation date</p></li>
+<li><p><strong>cycle</strong> – proposal cycle of observation</p></li>
+<li><p><strong>detector</strong> – target detector</p></li>
+<li><p><strong>too</strong> – boolean. If target is TOO use current cycle not proposal cycle.</p></li>
+<li><p><strong>zero_offset_able</strong> – table (astropy or numpy) of zero offset aimpoint table
+defaults to official SOT MP version if not supplied.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of chipx, chipy, chip_id</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="aca-images">
+<h2>ACA images<a class="headerlink" href="#aca-images" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>aca_image</cite> module contains classes and utilities related to ACA readout
+images.  This includes the <a class="reference internal" href="#acaimage-class">ACAImage class</a> for manipulating images in
+ACA coordinates, a first moment centroiding routine, and a library for
+generating synthetic ACA images that have a high-fidelity point spread function
+(PSF).</p>
+<span class="target" id="module-chandra_aca.aca_image"></span><dl class="py class">
+<dt id="chandra_aca.aca_image.ACAImage">
+<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">ACAImage</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>ACAImage is an ndarray subclass that supports functionality for the Chandra
+ACA. Most importantly it allows image indexing and slicing in absolute
+“aca” coordinates, where the image lower left coordinate is specified
+by object <code class="docutils literal notranslate"><span class="pre">row0</span></code> and <code class="docutils literal notranslate"><span class="pre">col0</span></code> attributes.</p>
+<p>It also provides a <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict that can be used to store additional useful
+information.  Any keys which are all upper-case will be exposed as object
+attributes, e.g. <code class="docutils literal notranslate"><span class="pre">img.BGDAVG</span></code> &lt;=&gt; <code class="docutils literal notranslate"><span class="pre">img.meta['BGDAVG']</span></code>.  The <code class="docutils literal notranslate"><span class="pre">row0</span></code>
+attribute  is a proxy for <code class="docutils literal notranslate"><span class="pre">img.meta['IMGROW0']</span></code>, and likewise for <code class="docutils literal notranslate"><span class="pre">col0</span></code>.</p>
+<p>When initializing an <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code>, additional <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> are
+used to try initializing via <code class="docutils literal notranslate"><span class="pre">np.array(*args,</span> <span class="pre">**kwargs)</span></code>.  If this fails
+then <code class="docutils literal notranslate"><span class="pre">np.zeros(*args,</span> <span class="pre">**kwargs)</span></code> is tried.  In this way one can either
+initialize from array data or create a new array of zeros.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.aca_image</span> <span class="kn">import</span> <span class="n">ACAImage</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">row0</span><span class="o">=-</span><span class="mi">512</span><span class="p">,</span> <span class="n">col0</span><span class="o">=-</span><span class="mi">512</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]],</span> <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;BGDAVG&#39;</span><span class="p">:</span> <span class="mf">5.2</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">row0</span><span class="o">=-</span><span class="mi">512</span><span class="p">,</span> <span class="n">col0</span><span class="o">=-</span><span class="mi">512</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row0</strong> – row coordinate of lower left image pixel (int, default=0)</p></li>
+<li><p><strong>col0</strong> – col coordinate of lower left image pixel (int, default=0)</p></li>
+<li><p><strong>meta</strong> – dict of object attributes</p></li>
+<li><p><strong>*args</strong> – additional args passed to np.array() or np.zeros()</p></li>
+<li><p><strong>**kwargs</strong> – additional kwargs passed to np.array() or np.zeros()</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="chandra_aca.aca_image.ACAImage.aca">
+<em class="property">property </em><code class="sig-name descname">aca</code><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.aca" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a light copy (same data) of self but with the _aca_coords
+attribute switched on so that indexing is absolute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="chandra_aca.aca_image.ACAImage.centroid_fm">
+<code class="sig-name descname">centroid_fm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bgd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'center'</span></em>, <em class="sig-param"><span class="n">norm_clip</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.centroid_fm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.centroid_fm" title="Permalink to this definition">¶</a></dt>
+<dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">self</span></code> using 6x6 mousebitten image for input
+6x6 or 8x8 images.</p>
+<p>Note that the returned <code class="docutils literal notranslate"><span class="pre">norm</span></code> is the sum of the background-subtracted 6x6
+mousebitten image, not the entire image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bgd</strong> – background to subtract, scalar or NxN ndarray (float)</p></li>
+<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
+<li><p><strong>norm_clip</strong> – clip image norm at this min value (default is None and
+implies Exception for non-positive norm)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>row, col, norm float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="chandra_aca.aca_image.ACAImage.flicker_init">
+<code class="sig-name descname">flicker_init</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flicker_mean_time</span><span class="o">=</span><span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">flicker_scale</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize instance variables to allow for flickering pixel updates.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">flicker_scale</span></code> can be interpreted as follows: if the pixel
+was going to flicker by a multiplicative factor of (1 + x), now
+make it flicker by (1 + x * flicker_scale).  This applies for flickers
+that increase the amplitude.  For flickers that make the value smaller,
+then it would be 1 / (1 + x) =&gt; 1 / (1 + x * flicker_scale).</p>
+<p>The flicker_cdf file here was created using:
+/proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb</p>
+<p>Examples and performance details at:
+/proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-implementation.ipynb</p>
+<p>The model was reviewed and approved at SS&amp;AWG on 2019-05-22.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>flicker_mean_time</strong> – mean flickering time (sec, default=10000)</p></li>
+<li><p><strong>flicker_scale</strong> – multiplicative factor beyond model default for
+flickering amplitude (default=1.0)</p></li>
+<li><p><strong>seed</strong> – random seed for reproducibility (default=None =&gt; no seed)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="chandra_aca.aca_image.ACAImage.flicker_update">
+<code class="sig-name descname">flicker_update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dt</span></em>, <em class="sig-param"><span class="n">use_numba</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Propagate the image forward by <code class="docutils literal notranslate"><span class="pre">dt</span></code> seconds and update any pixels
+that have flickered during that interval.</p>
+<p>This has the option to use one of two implementations.  The default is
+to use the numba-based version which is about 6 times faster.  The
+vectorized version is left in for reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> – time (secs) to propagate image</p></li>
+<li><p><strong>use_numba</strong> – use the numba version of updating (default=True)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="chandra_aca.aca_image.AcaPsfLibrary">
+<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">AcaPsfLibrary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
+(pixelated) ACA PSF over a grid of subpixel locations.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.aca_image</span> <span class="kn">import</span> <span class="n">AcaPsfLibrary</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">apl</span> <span class="o">=</span> <span class="n">AcaPsfLibrary</span><span class="p">()</span>  <span class="c1"># Reads in PSF library data file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">apl</span><span class="o">.</span><span class="n">get_psf_image</span><span class="p">(</span><span class="n">row</span><span class="o">=-</span><span class="mf">10.456</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mf">250.123</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span>
+<span class="go">&lt;ACAImage row0=-14 col0=247</span>
+<span class="go">array([[   39,    54,    56,    52,    37,    33,    30,    21],</span>
+<span class="go">       [   79,   144,   260,   252,   156,    86,    67,    36],</span>
+<span class="go">       [  162,   544,  2474,  5269,  2012,   443,   163,    57],</span>
+<span class="go">       [  255,  1420, 10083, 12688, 11273,  1627,   302,    78],</span>
+<span class="go">       [  186,  1423,  8926,  8480, 12292,  2142,   231,    64],</span>
+<span class="go">       [   80,   344,  1384,  6509,  4187,   665,   111,    43],</span>
+<span class="go">       [   40,    78,   241,   828,   616,   188,    65,    29],</span>
+<span class="go">       [   24,    39,    86,   157,   139,    69,    48,    32]])&gt;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> – file name of ACA PSF library (default=built-in file)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>AcaPsfLibrary object</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="chandra_aca.aca_image.AcaPsfLibrary.get_psf_image">
+<code class="sig-name descname">get_psf_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">row</span></em>, <em class="sig-param"><span class="n">col</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'center'</span></em>, <em class="sig-param"><span class="n">interpolation</span><span class="o">=</span><span class="default_value">'bilinear'</span></em>, <em class="sig-param"><span class="n">aca_image</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary.get_psf_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get interpolated ACA PSF image that corresponds to pixel location
+<code class="docutils literal notranslate"><span class="pre">row</span></code>, <code class="docutils literal notranslate"><span class="pre">col</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> – (float) row value of PSF centroid</p></li>
+<li><p><strong>col</strong> – (float) col value of PSF centroid</p></li>
+<li><p><strong>norm</strong> – (float) summed intensity of PSF image</p></li>
+<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
+<li><p><strong>interpolation</strong> – ‘nearest’ | ‘bilinear’ (default)</p></li>
+<li><p><strong>aca_image</strong> – return ACAImage if True, else return ndarray</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>ACAImage if (aca_image is True) else (ndarray image, row0, col0)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt id="chandra_aca.aca_image.EIGHT_LABELS">
+<code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">EIGHT_LABELS</code><em class="property"> = array([['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'],        ['I1', 'J1', 'K1', 'L1', 'M1', 'N1', 'O1', 'P1'],        ['A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'],        ['I2', 'J2', 'K2', 'L2', 'M2', 'N2', 'O2', 'P2'],        ['A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'],        ['I3', 'J3', 'K3', 'L3', 'M3', 'N3', 'O3', 'P3'],        ['A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'],        ['I4', 'J4', 'K4', 'L4', 'M4', 'N4', 'O4', 'P4']], dtype='&lt;U2')</em><a class="headerlink" href="#chandra_aca.aca_image.EIGHT_LABELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for labeling ACA image pixels using the EQ-278 spec format.
+Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
+row and highest col; pixel I4 has the highest row and lowest column.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.aca_image.centroid_fm">
+<code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">centroid_fm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">bgd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'center'</span></em>, <em class="sig-param"><span class="n">norm_clip</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#centroid_fm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.centroid_fm" title="Permalink to this definition">¶</a></dt>
+<dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">img</span></code>.</p>
+<p>Return FM centroid in coords where lower left pixel of image has value
+(0.0, 0.0) at the center (for pix_zero_loc=’center’) or the lower-left edge
+(for pix_zero_loc=’edge’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – NxN ndarray</p></li>
+<li><p><strong>bgd</strong> – background to subtract, float of NXN ndarray</p></li>
+<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
+<li><p><strong>norm_clip</strong> – clip image norm at this min value (default is None and
+implies Exception for non-positive norm)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>row, col, norm float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="section" id="acaimage-class">
+<h3>ACAImage class<a class="headerlink" href="#acaimage-class" title="Permalink to this headline">¶</a></h3>
+<p>ACAImage is an ndarray subclass that supports functionality for the Chandra
+ACA. Most importantly it allows image indexing and slicing in absolute
+“aca” coordinates, where the image lower left coordinate is specified
+by object <code class="docutils literal notranslate"><span class="pre">row0</span></code> and <code class="docutils literal notranslate"><span class="pre">col0</span></code> attributes.</p>
+<p>It also provides a <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict that can be used to store additional useful
+information.  Any keys which are all upper-case will be exposed as object
+attributes, e.g. <code class="docutils literal notranslate"><span class="pre">img.BGDAVG</span></code> &lt;=&gt; <code class="docutils literal notranslate"><span class="pre">img.meta['BGDAVG']</span></code>.  The <code class="docutils literal notranslate"><span class="pre">row0</span></code>
+attribute  is a proxy for <code class="docutils literal notranslate"><span class="pre">img.meta['IMGROW0']</span></code>, and likewise for <code class="docutils literal notranslate"><span class="pre">col0</span></code>.</p>
+<div class="section" id="creation">
+<h4>Creation<a class="headerlink" href="#creation" title="Permalink to this headline">¶</a></h4>
+<p>When initializing an <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code>, additional <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> are
+used to try initializing via <code class="docutils literal notranslate"><span class="pre">np.array(*args,</span> <span class="pre">**kwargs)</span></code>.  If this fails
+then <code class="docutils literal notranslate"><span class="pre">np.zeros(*args,</span> <span class="pre">**kwargs)</span></code> is tried.  In this way one can either
+initialize from array data or create a new array of zeros.</p>
+<p>One can easily create a new <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code> as shown below.  Note that it must
+always be 2-dimensional.  The initial <code class="docutils literal notranslate"><span class="pre">row0</span></code> and <code class="docutils literal notranslate"><span class="pre">col0</span></code> values default
+to zero.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.aca_image</span> <span class="kn">import</span> <span class="n">ACAImage</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">im4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">im4</span><span class="p">,</span> <span class="n">row0</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">col0</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">&lt;ACAImage row0=10 col0=20</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15]])&gt;</span>
+</pre></div>
+</div>
+<p>One could also initialize by providing a <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">im4</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;IMGROW0&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;BGDAVG&#39;</span><span class="p">:</span> <span class="mf">5.2</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">&lt;ACAImage row0=10 col0=20</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15]])&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The printed representation of an <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code> is always shown as the
+rounded integer version of the values, but the full float value
+is stored internally.  If you <code class="docutils literal notranslate"><span class="pre">print()</span></code> the image then the floating
+point values are shown.</p>
+</div>
+</div>
+<div class="section" id="image-access-and-setting">
+<h4>Image access and setting<a class="headerlink" href="#image-access-and-setting" title="Permalink to this headline">¶</a></h4>
+<p>You can access array elements as usual, and in fact do any normal numpy array operations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="go">15</span>
+</pre></div>
+</div>
+<p>The special nature of <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code> comes by doing array access via the <code class="docutils literal notranslate"><span class="pre">aca</span></code> attribute.
+In this case all index values are in absolute coordinates, which might be negative.  In
+this case we can access the pixel at ACA coordinates row=13, col=23, which is equal to
+<code class="docutils literal notranslate"><span class="pre">a[3,</span> <span class="pre">3]</span></code> for the given <code class="docutils literal notranslate"><span class="pre">row0</span></code> and <code class="docutils literal notranslate"><span class="pre">col0</span></code> offset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">aca</span><span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">23</span><span class="p">]</span>
+<span class="go">15</span>
+</pre></div>
+</div>
+<p>Creating a new array by slicing adjusts the <code class="docutils literal notranslate"><span class="pre">row0</span></code> and <code class="docutils literal notranslate"><span class="pre">col0</span></code> values
+like you would expect:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a2</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">aca</span><span class="p">[</span><span class="mi">12</span><span class="p">:,</span> <span class="mi">22</span><span class="p">:]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a2</span>
+<span class="go">&lt;ACAImage row0=12 col0=22</span>
+<span class="go">array([[500,  11],</span>
+<span class="go">       [ 14,  15]])&gt;</span>
+</pre></div>
+</div>
+<p>You can set values in absolute coordinates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">aca</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="mi">13</span><span class="p">,</span> <span class="mi">21</span><span class="p">:</span><span class="mi">23</span><span class="p">]</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">&lt;ACAImage row0=10 col0=20</span>
+<span class="go">array([[  0,   1,   2,   3],</span>
+<span class="go">       [  4, 500, 500,   7],</span>
+<span class="go">       [  8, 500, 500,  11],</span>
+<span class="go">       [ 12,  13,  14,  15]])&gt;</span>
+</pre></div>
+</div>
+<p>Now let’s make an image that represents the full ACA CCD and set a
+sub-image from our 4x4 image <code class="docutils literal notranslate"><span class="pre">a</span></code>.  This uses the absolute location
+of <code class="docutils literal notranslate"><span class="pre">a</span></code> to define a slice into <code class="docutils literal notranslate"><span class="pre">b</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span> <span class="n">row0</span><span class="o">=-</span><span class="mi">512</span><span class="p">,</span> <span class="n">col0</span><span class="o">=-</span><span class="mi">512</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">aca</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="mi">18</span><span class="p">:</span><span class="mi">26</span><span class="p">]</span>
+<span class="go">&lt;ACAImage row0=8 col0=18</span>
+<span class="go">array([[  0,   0,   0,   0,   0,   0,   0,   0],</span>
+<span class="go">       [  0,   0,   0,   0,   0,   0,   0,   0],</span>
+<span class="go">       [  0,   0,   0,   1,   2,   3,   0,   0],</span>
+<span class="go">       [  0,   0,   4, 500, 500,   7,   0,   0],</span>
+<span class="go">       [  0,   0,   8, 500, 500,  11,   0,   0],</span>
+<span class="go">       [  0,   0,  12,  13,  14,  15,   0,   0],</span>
+<span class="go">       [  0,   0,   0,   0,   0,   0,   0,   0],</span>
+<span class="go">       [  0,   0,   0,   0,   0,   0,   0,   0]])&gt;</span>
+</pre></div>
+</div>
+<p>You can also do things like adding 100 to every pixel in <code class="docutils literal notranslate"><span class="pre">b</span></code>
+within the area of <code class="docutils literal notranslate"><span class="pre">a</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">aca</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="mi">18</span><span class="p">:</span><span class="mi">26</span><span class="p">]</span>
+<span class="go">&lt;ACAImage row0=8 col0=18</span>
+<span class="go">array([[  0,   0,   0,   0,   0,   0,   0,   0],</span>
+<span class="go">       [  0,   0,   0,   0,   0,   0,   0,   0],</span>
+<span class="go">       [  0,   0, 100, 101, 102, 103,   0,   0],</span>
+<span class="go">       [  0,   0, 104, 600, 600, 107,   0,   0],</span>
+<span class="go">       [  0,   0, 108, 600, 600, 111,   0,   0],</span>
+<span class="go">       [  0,   0, 112, 113, 114, 115,   0,   0],</span>
+<span class="go">       [  0,   0,   0,   0,   0,   0,   0,   0],</span>
+<span class="go">       [  0,   0,   0,   0,   0,   0,   0,   0]])&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="image-arithmetic-operations">
+<h4>Image arithmetic operations<a class="headerlink" href="#image-arithmetic-operations" title="Permalink to this headline">¶</a></h4>
+<p>In addition to doing image arithmetic operations using explicit slices
+as shown previously, one can also use normal arithmetic operators like
+<code class="docutils literal notranslate"><span class="pre">+</span></code> (for addition) or <code class="docutils literal notranslate"><span class="pre">+=</span></code> for in-place addition.</p>
+<p><strong>When the right-side operand is included via its ``.aca`` attribute, then the operation is
+done in ACA coordinates.</strong></p>
+<p>This means that the operation is only done on overlapping pixels.  This is
+shown in the examples below.  The supported operations for this are:</p>
+<ul class="simple">
+<li><p>Addition (<code class="docutils literal notranslate"><span class="pre">+</span></code> and <code class="docutils literal notranslate"><span class="pre">+=</span></code>)</p></li>
+<li><p>Subtraction (<code class="docutils literal notranslate"><span class="pre">-</span></code> and <code class="docutils literal notranslate"><span class="pre">-=</span></code>)</p></li>
+<li><p>Multiplication (<code class="docutils literal notranslate"><span class="pre">*</span></code> and <code class="docutils literal notranslate"><span class="pre">*=</span></code>)</p></li>
+<li><p>Division (<code class="docutils literal notranslate"><span class="pre">/</span></code> and <code class="docutils literal notranslate"><span class="pre">/=</span></code>)</p></li>
+<li><p>True division (<code class="docutils literal notranslate"><span class="pre">/</span></code> and <code class="docutils literal notranslate"><span class="pre">/=</span></code> in Py3+ and with __future__ division)</p></li>
+<li><p>Floor division (<code class="docutils literal notranslate"><span class="pre">//</span></code> and <code class="docutils literal notranslate"><span class="pre">//=</span></code>)</p></li>
+<li><p>Modulus (<code class="docutils literal notranslate"><span class="pre">%</span></code> and <code class="docutils literal notranslate"><span class="pre">%=</span></code>)</p></li>
+<li><p>Power (<code class="docutils literal notranslate"><span class="pre">**</span></code> and <code class="docutils literal notranslate"><span class="pre">**=</span></code>)</p></li>
+</ul>
+<p><strong>Initialize images (different shape and offset)</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">row0</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">col0</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">&lt;ACAImage row0=10 col0=20</span>
+<span class="go">array([[1, 1, 1, 1, 1, 1],</span>
+<span class="go">       [1, 1, 1, 1, 1, 1],</span>
+<span class="go">       [1, 1, 1, 1, 1, 1],</span>
+<span class="go">       [1, 1, 1, 1, 1, 1],</span>
+<span class="go">       [1, 1, 1, 1, 1, 1],</span>
+<span class="go">       [1, 1, 1, 1, 1, 1]])&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">17</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">row0</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">col0</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>
+<span class="go">&lt;ACAImage row0=8 col0=18</span>
+<span class="go">array([[ 10,  20,  30,  40],</span>
+<span class="go">       [ 50,  60,  70,  80],</span>
+<span class="go">       [ 90, 100, 110, 120],</span>
+<span class="go">       [130, 140, 150, 160]])&gt;</span>
+</pre></div>
+</div>
+<p><strong>Add images (output has shape and row0/col0 of left side input)</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">aca</span>
+<span class="go">&lt;ACAImage row0=10 col0=20</span>
+<span class="go">array([[111, 121,   1,   1,   1,   1],</span>
+<span class="go">       [151, 161,   1,   1,   1,   1],</span>
+<span class="go">       [  1,   1,   1,   1,   1,   1],</span>
+<span class="go">       [  1,   1,   1,   1,   1,   1],</span>
+<span class="go">       [  1,   1,   1,   1,   1,   1],</span>
+<span class="go">       [  1,   1,   1,   1,   1,   1]])&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">+</span> <span class="n">a</span><span class="o">.</span><span class="n">aca</span>
+<span class="go">&lt;ACAImage row0=8 col0=18</span>
+<span class="go">array([[ 10,  20,  30,  40],</span>
+<span class="go">       [ 50,  60,  70,  80],</span>
+<span class="go">       [ 90, 100, 111, 121],</span>
+<span class="go">       [130, 140, 151, 161]])&gt;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">+=</span> <span class="n">a</span><span class="o">.</span><span class="n">aca</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>
+<span class="go">&lt;ACAImage row0=8 col0=18</span>
+<span class="go">array([[ 10,  20,  30,  40],</span>
+<span class="go">       [ 50,  60,  70,  80],</span>
+<span class="go">       [ 90, 100, 111, 121],</span>
+<span class="go">       [130, 140, 151, 161]])&gt;</span>
+</pre></div>
+</div>
+<p><strong>Make ``b`` image be fully contained in ``a``</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">row0</span> <span class="o">=</span> <span class="mi">11</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">col0</span> <span class="o">=</span> <span class="mi">21</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+=</span> <span class="n">b</span><span class="o">.</span><span class="n">aca</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">&lt;ACAImage row0=10 col0=20</span>
+<span class="go">array([[  1,   1,   1,   1,   1,   1],</span>
+<span class="go">       [  1,  11,  21,  31,  41,   1],</span>
+<span class="go">       [  1,  51,  61,  71,  81,   1],</span>
+<span class="go">       [  1,  91, 101, 112, 122,   1],</span>
+<span class="go">       [  1, 131, 141, 152, 162,   1],</span>
+<span class="go">       [  1,   1,   1,   1,   1,   1]])&gt;</span>
+</pre></div>
+</div>
+<p><strong>Normal image addition fails if shape is mismatched</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;ipython-input-19-f96fb8f649b6&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+    <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+  File <span class="nb">&quot;chandra_aca/aca_image.py&quot;</span>, line <span class="m">68</span>, in <span class="n">_operator</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>  <span class="c1"># returns self for inplace ops</span>
+<span class="gr">ValueError</span>: <span class="n">operands could not be broadcast together with shapes (6,6) (4,4)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="meta-data">
+<h4>Meta-data<a class="headerlink" href="#meta-data" title="Permalink to this headline">¶</a></h4>
+<p>Finally, the <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code> object can store arbitrary metadata in the
+<code class="docutils literal notranslate"><span class="pre">meta</span></code> dict attribute.  However, in order to make this convenient and
+distinct from native numpy attributes, the <code class="docutils literal notranslate"><span class="pre">meta</span></code> attributes should
+have UPPER CASE names.  In this case they can be directly accessed
+as object attributes instead of going through the <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">IMGROW0</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">meta</span>
+<span class="go">{&#39;IMGCOL0&#39;: 20, &#39;IMGROW0&#39;: 10}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">NEWATTR</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">meta</span>
+<span class="go">{&#39;IMGCOL0&#39;: 20, &#39;NEWATTR&#39;: &#39;hello&#39;, &#39;IMGROW0&#39;: 10}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">NEWATTR</span>
+<span class="go">&#39;hello&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;fail&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">fail</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="gr">AttributeError</span>: <span class="n">&#39;ACAImage&#39; object has no attribute &#39;fail&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="module-chandra_aca.maude_decom">
+<span id="maude-decom"></span><h2>MAUDE Decom<a class="headerlink" href="#module-chandra_aca.maude_decom" title="Permalink to this headline">¶</a></h2>
+<p>Classes and functions to help fetching ACA telemetry data using MAUDE.
+These include the following global variables</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID</p></li>
+<li><p>PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.</p></li>
+<li><p>PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes</p></li>
+<li><p>ACA_MSID_LIST: dictionary of commonly-used ACA telemetry MSIDs.</p></li>
+<li><p>ACA_SLOT_MSID_LIST: dictionary of ACA image telemetry MSIDs.</p></li>
+</ul>
+</div></blockquote>
+<p>PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the image size.
+In the following tables, column index increases to the right and row index increases to the top
+(c.f. ACA User Manual Figs 1.8 and 1.9 ):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">Size</span> <span class="mi">4</span><span class="n">X41</span><span class="p">:</span>
+
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">D1</span> <span class="o">|</span> <span class="n">H1</span> <span class="o">|</span> <span class="n">L1</span> <span class="o">|</span> <span class="n">P1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">C1</span> <span class="o">|</span> <span class="n">G1</span> <span class="o">|</span> <span class="n">K1</span> <span class="o">|</span> <span class="n">O1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">B1</span> <span class="o">|</span> <span class="n">F1</span> <span class="o">|</span> <span class="n">J1</span> <span class="o">|</span> <span class="n">N1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">A1</span> <span class="o">|</span> <span class="n">E1</span> <span class="o">|</span> <span class="n">I1</span> <span class="o">|</span> <span class="n">M1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+
+<span class="o">-</span> <span class="n">Size</span> <span class="mi">6</span><span class="n">X61</span> <span class="ow">or</span> <span class="mi">6</span><span class="n">X62</span><span class="p">:</span>
+
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">E2</span> <span class="o">|</span> <span class="n">F2</span> <span class="o">|</span> <span class="n">G2</span> <span class="o">|</span> <span class="n">H2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">D2</span> <span class="o">|</span> <span class="n">D1</span> <span class="o">|</span> <span class="n">H1</span> <span class="o">|</span> <span class="n">L1</span> <span class="o">|</span> <span class="n">P1</span> <span class="o">|</span> <span class="n">I2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">C2</span> <span class="o">|</span> <span class="n">C1</span> <span class="o">|</span> <span class="n">G1</span> <span class="o">|</span> <span class="n">K1</span> <span class="o">|</span> <span class="n">O1</span> <span class="o">|</span> <span class="n">J2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">B2</span> <span class="o">|</span> <span class="n">B1</span> <span class="o">|</span> <span class="n">F1</span> <span class="o">|</span> <span class="n">J1</span> <span class="o">|</span> <span class="n">N1</span> <span class="o">|</span> <span class="n">K2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">A2</span> <span class="o">|</span> <span class="n">A1</span> <span class="o">|</span> <span class="n">E1</span> <span class="o">|</span> <span class="n">I1</span> <span class="o">|</span> <span class="n">M1</span> <span class="o">|</span> <span class="n">L2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">P2</span> <span class="o">|</span> <span class="n">O2</span> <span class="o">|</span> <span class="n">N2</span> <span class="o">|</span> <span class="n">M2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+
+
+<span class="o">-</span> <span class="n">Size</span> <span class="mi">8</span><span class="n">X81</span><span class="p">,</span> <span class="mi">8</span><span class="n">X82</span><span class="p">,</span> <span class="mi">8</span><span class="n">X83</span> <span class="ow">or</span> <span class="mi">8</span><span class="n">X84</span><span class="p">:</span>
+
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">H1</span> <span class="o">|</span> <span class="n">P1</span> <span class="o">|</span> <span class="n">H2</span> <span class="o">|</span> <span class="n">P2</span> <span class="o">|</span> <span class="n">H3</span> <span class="o">|</span> <span class="n">P3</span> <span class="o">|</span> <span class="n">H4</span> <span class="o">|</span> <span class="n">P4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">G1</span> <span class="o">|</span> <span class="n">O1</span> <span class="o">|</span> <span class="n">G2</span> <span class="o">|</span> <span class="n">O2</span> <span class="o">|</span> <span class="n">G3</span> <span class="o">|</span> <span class="n">O3</span> <span class="o">|</span> <span class="n">G4</span> <span class="o">|</span> <span class="n">O4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">F1</span> <span class="o">|</span> <span class="n">N1</span> <span class="o">|</span> <span class="n">F2</span> <span class="o">|</span> <span class="n">N2</span> <span class="o">|</span> <span class="n">F3</span> <span class="o">|</span> <span class="n">N3</span> <span class="o">|</span> <span class="n">F4</span> <span class="o">|</span> <span class="n">N4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">E1</span> <span class="o">|</span> <span class="n">M1</span> <span class="o">|</span> <span class="n">E2</span> <span class="o">|</span> <span class="n">M2</span> <span class="o">|</span> <span class="n">E3</span> <span class="o">|</span> <span class="n">M3</span> <span class="o">|</span> <span class="n">E4</span> <span class="o">|</span> <span class="n">M4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">D1</span> <span class="o">|</span> <span class="n">L1</span> <span class="o">|</span> <span class="n">D2</span> <span class="o">|</span> <span class="n">L2</span> <span class="o">|</span> <span class="n">D3</span> <span class="o">|</span> <span class="n">L3</span> <span class="o">|</span> <span class="n">D4</span> <span class="o">|</span> <span class="n">L4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">C1</span> <span class="o">|</span> <span class="n">K1</span> <span class="o">|</span> <span class="n">C2</span> <span class="o">|</span> <span class="n">K2</span> <span class="o">|</span> <span class="n">C3</span> <span class="o">|</span> <span class="n">K3</span> <span class="o">|</span> <span class="n">C4</span> <span class="o">|</span> <span class="n">K4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">B1</span> <span class="o">|</span> <span class="n">J1</span> <span class="o">|</span> <span class="n">B2</span> <span class="o">|</span> <span class="n">J2</span> <span class="o">|</span> <span class="n">B3</span> <span class="o">|</span> <span class="n">J3</span> <span class="o">|</span> <span class="n">B4</span> <span class="o">|</span> <span class="n">J4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">A1</span> <span class="o">|</span> <span class="n">I1</span> <span class="o">|</span> <span class="n">A2</span> <span class="o">|</span> <span class="n">I2</span> <span class="o">|</span> <span class="n">A3</span> <span class="o">|</span> <span class="n">I3</span> <span class="o">|</span> <span class="n">A4</span> <span class="o">|</span> <span class="n">I4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt id="chandra_aca.maude_decom.get_aca_images">
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_aca_images</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch ACA image telemetry</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>**maude_kwargs</strong> – <p>keyword args passed to maude</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>astropy.table.Table</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.maude_decom.get_aca_packets">
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">level0</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">combine</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">adjust_time</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">calibrate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_packets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</p>
+<p>Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
+with complete ACA telemetry. Compare these to calls to the function:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;TEMPCCD&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMPHOUS&#39;</span><span class="p">]</span>
+<span class="go">&lt;Table masked=True length=4&gt;</span>
+<span class="go">     TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS</span>
+<span class="go">   float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16</span>
+<span class="go">------------- ------ ------ ------- ------- ------- ------- ------- ------- --------</span>
+<span class="go">684089001.869  78006     32       0       0       4     469    -332     -20       83</span>
+<span class="go">684089005.969  78006     48       0       0       4     469    -332     -20       83</span>
+<span class="go">684089010.069  78006     64       0       0       4     469    -332     -20       83</span>
+<span class="go">684089014.169  78006     80       0       0       4     469    -332     -20       83</span>
+</pre></div>
+</div>
+<p>Using combined=False, results in records with incomplete images. In this case, data can be
+missing from some records. For example, with 8X8 images, IMGROW0 and IMGCOL0 are present in the
+first ACA packet (image type 4) while the temperature is present in the second (image type 5):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;TEMPCCD&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMPHOUS&#39;</span><span class="p">]</span>
+<span class="go">    &lt;Table masked=True length=15&gt;</span>
+<span class="go">         TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS</span>
+<span class="go">       float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16</span>
+<span class="go">    ------------- ------ ------ ------- ------- ------- ------- ------- ------- --------</span>
+<span class="go">    684089000.844  78006     28       0       0       7      --      --      --       --</span>
+<span class="go">    684089001.869  78006     32       0       0       4     469    -332      --       --</span>
+<span class="go">    684089002.894  78006     36       0       0       5      --      --     -20       83</span>
+<span class="go">    684089003.919  78006     40       0       0       6      --      --      --       --</span>
+<span class="go">    684089004.944  78006     44       0       0       7      --      --      --       --</span>
+<span class="go">    684089005.969  78006     48       0       0       4     469    -332      --       --</span>
+<span class="go">    684089006.994  78006     52       0       0       5      --      --     -20       83</span>
+<span class="go">    684089008.019  78006     56       0       0       6      --      --      --       --</span>
+<span class="go">    684089009.044  78006     60       0       0       7      --      --      --       --</span>
+<span class="go">    684089010.069  78006     64       0       0       4     469    -332      --       --</span>
+<span class="go">    684089011.094  78006     68       0       0       5      --      --     -20       83</span>
+<span class="go">    684089012.119  78006     72       0       0       6      --      --      --       --</span>
+<span class="go">    684089013.144  78006     76       0       0       7      --      --      --       --</span>
+<span class="go">    684089014.169  78006     80       0       0       4     469    -332      --       --</span>
+<span class="go">    684089015.194  78006     84       0       0       5      --      --     -20       83</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[60.0 97.0 70.0 120.0 74.0 111.0 103.0 108.0]</span>
+<span class="go"> [67.0 90.0 144.0 96.0 88.0 306.0 82.0 67.0]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [76.0 81.0 160.0 486.0 449.0 215.0 88.0 156.0]</span>
+<span class="go"> [68.0 91.0 539.0 483.0 619.0 412.0 105.0 77.0]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [86.0 101.0 408.0 344.0 556.0 343.0 122.0 67.0]</span>
+<span class="go"> [196.0 195.0 114.0 321.0 386.0 115.0 69.0 189.0]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+<span class="go">Out[10]:</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [67.0 61.0 67.0 176.0 99.0 72.0 79.0 88.0]</span>
+<span class="go"> [70.0 62.0 101.0 149.0 163.0 89.0 60.0 76.0]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>level0</strong> – bool.
+Implies combine=True, adjust_time=True, calibrate=True</p></li>
+<li><p><strong>combine</strong> – bool.
+If True, multiple ACA packets are combined to form an image (depending on size),
+If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.</p></li>
+<li><p><strong>adjust_time</strong> – bool
+If True, half the integration time is subtracted</p></li>
+<li><p><strong>calibrate</strong> – bool
+If True, pixel values will be ‘value * imgscale / 32 - 50’ and temperature values will
+be: 0.4 * value + 273.15</p></li>
+<li><p><strong>**maude_kwargs</strong> – <p>keyword args passed to maude</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>astropy.table.Table</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.maude_decom.get_raw_aca_packets">
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_raw_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_packets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</p>
+<p>If the first minor frame in a group of four ACA packets is within (start, stop),
+the three following minor frames are included if present.</p>
+<p>returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
+These correspond to the minor frame time, minor frame count, major frame count,
+the list of packets, and flags returned by MAUDE respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>**maude_kwargs</strong> – <p>keyword args passed to maude.get_frames()</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>dict
+{‘flags’: int, ‘packets’: [],</p>
+<blockquote>
+<div><p>’TIME’: np.array([]), ‘MNF’: np.array([]), ‘MJF’: np.array([])}</p>
+</div></blockquote>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.maude_decom.unpack_aca_telemetry">
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">unpack_aca_telemetry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">packet</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#unpack_aca_telemetry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.unpack_aca_telemetry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpack ACA telemetry encoded in 225-byte packets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>packet</strong> – bytes</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of dict</p>
+</dd>
+</dl>
+<p>A list of length 8, one entry per slot, where each entry is a dictionary.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">chandra_aca</a><ul>
+<li><a class="reference internal" href="#module-chandra_aca.plot">Plotting</a></li>
+<li><a class="reference internal" href="#module-chandra_aca.star_probs">Star probabilities</a></li>
+<li><a class="reference internal" href="#module-chandra_aca.transform">Transformations</a></li>
+<li><a class="reference internal" href="#module-chandra_aca.centroid_resid">Centroid residuals</a></li>
+<li><a class="reference internal" href="#module-chandra_aca.drift">ACA alignment drift</a></li>
+<li><a class="reference internal" href="#aca-images">ACA images</a><ul>
+<li><a class="reference internal" href="#acaimage-class">ACAImage class</a><ul>
+<li><a class="reference internal" href="#creation">Creation</a></li>
+<li><a class="reference internal" href="#image-access-and-setting">Image access and setting</a></li>
+<li><a class="reference internal" href="#image-arithmetic-operations">Image arithmetic operations</a></li>
+<li><a class="reference internal" href="#meta-data">Meta-data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-chandra_aca.maude_decom">MAUDE Decom</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<form action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="_sources/index.rst.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 3.1.2. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>

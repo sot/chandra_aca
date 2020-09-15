@@ -1,0 +1,480 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chandra_aca.centroid_resid &#8212; chandra_aca 4.29.2.dev22+g7878cb9 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="">
+        <span id="logotext1"></span><span id="logotext2"></span>
+    </a></li>
+    <li><a title="General Index" href="../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../index.html">chandra_aca 4.29.2.dev22+g7878cb9 documentation</a>
+	 &#187;
+      </li>
+      <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for chandra_aca.centroid_resid</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
+<span class="kn">from</span> <span class="nn">kadi</span> <span class="kn">import</span> <span class="n">events</span>
+<span class="kn">from</span> <span class="nn">Ska.Numpy</span> <span class="kn">import</span> <span class="n">interpolate</span>
+<span class="kn">import</span> <span class="nn">Ska.quatutil</span>
+<span class="kn">from</span> <span class="nn">mica.archive</span> <span class="kn">import</span> <span class="n">asp_l1</span>
+<span class="kn">import</span> <span class="nn">mica.starcheck</span>
+<span class="kn">from</span> <span class="nn">Ska.engarchive</span> <span class="kn">import</span> <span class="n">fetch</span>
+<span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+<span class="kn">import</span> <span class="nn">agasc</span>
+
+
+<span class="n">R2A</span> <span class="o">=</span> <span class="mf">206264.81</span>  <span class="c1"># Convert from radians to arcsec</span>
+
+
+<div class="viewcode-block" id="quat_vtransform"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.quat_vtransform">[docs]</a><span class="k">def</span> <span class="nf">quat_vtransform</span><span class="p">(</span><span class="n">qs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transform a Nx4 matrix of quaternions into a Nx3x3 transform matrix</span>
+<span class="sd">    :returns: Nx3x3 transform matrix</span>
+<span class="sd">    :rtype: numpy array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">xx2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">yy2</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">zz2</span> <span class="o">=</span> <span class="n">z</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">xy2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">wz2</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">zx2</span> <span class="o">=</span> <span class="n">z</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">wy2</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">yz2</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="mf">2.</span>
+    <span class="n">wx2</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">2.</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">qs</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">float</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yy2</span> <span class="o">-</span> <span class="n">zz2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy2</span> <span class="o">-</span> <span class="n">wz2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">zx2</span> <span class="o">+</span> <span class="n">wy2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy2</span> <span class="o">+</span> <span class="n">wz2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">xx2</span> <span class="o">-</span> <span class="n">zz2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">yz2</span> <span class="o">-</span> <span class="n">wx2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">zx2</span> <span class="o">-</span> <span class="n">wy2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">yz2</span> <span class="o">+</span> <span class="n">wx2</span>
+    <span class="n">t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">xx2</span> <span class="o">-</span> <span class="n">yy2</span>
+
+    <span class="k">return</span> <span class="n">t</span></div>
+
+
+<div class="viewcode-block" id="CentroidResiduals"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.CentroidResiduals">[docs]</a><span class="k">class</span> <span class="nc">CentroidResiduals</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to calculate star centroid residuals.</span>
+
+<span class="sd">    This class is designed to set up and perform the residual calculations on</span>
+<span class="sd">    any desired combination of source centroids and source attitudes.  For the common use cases,</span>
+<span class="sd">    centroids, attitudes, and commanded star positions are retrieved automatically from archived</span>
+<span class="sd">    sources.</span>
+
+<span class="sd">    Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:</span>
+
+<span class="sd">    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</span>
+
+<span class="sd">    and</span>
+
+<span class="sd">    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</span>
+
+<span class="sd">    Users should see the class method ``for_slot`` for a convenient way to get centroid</span>
+<span class="sd">    residuals on an ``obsid`` for an ACA ``slot`` (aka image number).</span>
+
+<span class="sd">    Example usage::</span>
+
+<span class="sd">     &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">     &gt;&gt;&gt; from chandra_aca.centroid_resid import CentroidResiduals</span>
+<span class="sd">     &gt;&gt;&gt; cr = CentroidResiduals.for_slot(obsid=20001, slot=5)</span>
+<span class="sd">     &gt;&gt;&gt; np.max(np.abs(cr.dyags))</span>
+<span class="sd">     0.87602233734844503</span>
+<span class="sd">     &gt;&gt;&gt; np.max(np.abs(cr.dzags))</span>
+<span class="sd">     1.2035827855862777</span>
+<span class="sd">     &gt;&gt;&gt; cr.atts[0]</span>
+<span class="sd">     array([-0.07933254,  0.87065874, -0.47833673,  0.08278696])</span>
+<span class="sd">     &gt;&gt;&gt; cr.agasc_id</span>
+<span class="sd">     649201816</span>
+
+<span class="sd">    This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution</span>
+<span class="sd">    and ground centroids.  Here is another example that does the same thing without using the</span>
+<span class="sd">    ``for_slot`` convenience.</span>
+
+<span class="sd">    Example usage::</span>
+
+<span class="sd">     &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">     &gt;&gt;&gt; from chandra_aca.centroid_resid import CentroidResiduals</span>
+<span class="sd">     &gt;&gt;&gt; cr = CentroidResiduals(start=&#39;2017:169:18:54:50.138&#39;, stop=&#39;2017:170:05:13:58.190&#39;)</span>
+<span class="sd">     &gt;&gt;&gt; cr.set_atts(&#39;ground&#39;)</span>
+<span class="sd">     &gt;&gt;&gt; cr.set_centroids(&#39;ground&#39;, slot=5)</span>
+<span class="sd">     &gt;&gt;&gt; cr.set_star(agasc_id=649201816)</span>
+<span class="sd">     &gt;&gt;&gt; cr.calc_residuals()</span>
+<span class="sd">     &gt;&gt;&gt; np.max(np.abs(cr.dyags))</span>
+<span class="sd">     0.87602233734844503</span>
+
+
+<span class="sd">    :param start: start time of interval for residuals (DateTime compatible)</span>
+<span class="sd">    :param stop: stop time of interval for residuals (DateTime compatible)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">centroid_source</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">att_source</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ra</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dec</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">centroid_dt</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">obsid</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
+
+<div class="viewcode-block" id="CentroidResiduals.set_centroids"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.CentroidResiduals.set_centroids">[docs]</a>    <span class="k">def</span> <span class="nf">set_centroids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">apply_dt</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assign centroids from ``source`` and ``slot`` to the objects centroid attributes</span>
+<span class="sd">        (yag, zag, yag_times, zag_times)</span>
+
+<span class="sd">        For the supported sources (ground, obc) the centroids are fetched from the mica L1</span>
+<span class="sd">        archive or telemetry.</span>
+
+<span class="sd">        yag, zag, yag_times an zag_times can also be set directly without use of this method.</span>
+
+<span class="sd">        :param source: &#39;ground&#39; | &#39;obc&#39;</span>
+<span class="sd">        :param slot: ACA slot</span>
+<span class="sd">        :param alg: for ground processing, use centroids from this algorithm.</span>
+<span class="sd">        :param apply_dt: apply centroid time offsets via &#39;set_offsets&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+        <span class="c1"># Get centroids from Ska eng archive or mica L1 archive</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;ground&#39;</span><span class="p">:</span>
+            <span class="n">acen_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asp_l1</span><span class="o">.</span><span class="n">get_files</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ACACENT&#39;</span><span class="p">]))</span>
+            <span class="n">acen</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">acen_files</span><span class="p">)],</span> <span class="n">metadata_conflicts</span><span class="o">=</span><span class="s1">&#39;silent&#39;</span><span class="p">)</span>
+            <span class="n">ok</span> <span class="o">=</span> <span class="p">((</span><span class="n">acen</span><span class="p">[</span><span class="s1">&#39;slot&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">slot</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="s1">&#39;alg&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">alg</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
+                  <span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="p">))</span>
+            <span class="n">yags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="n">ok</span><span class="p">][</span><span class="s1">&#39;ang_y&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+            <span class="n">zags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="n">ok</span><span class="p">][</span><span class="s1">&#39;ang_z&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+            <span class="n">yag_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="n">ok</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+            <span class="n">zag_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">acen</span><span class="p">[</span><span class="n">ok</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;obc&#39;</span><span class="p">:</span>
+            <span class="n">telem</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msidset</span><span class="p">([</span><span class="s1">&#39;AOACYAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">),</span> <span class="s1">&#39;AOACZAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">)],</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+            <span class="c1"># Filter centroids for reasonble-ness</span>
+            <span class="n">yok</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;AOACYAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span><span class="o">.</span><span class="n">vals</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">3276</span>
+            <span class="n">zok</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;AOACZAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span><span class="o">.</span><span class="n">vals</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">3276</span>
+            <span class="n">yags</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;AOACYAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="n">yok</span><span class="p">]</span>
+            <span class="n">yag_times</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;AOACYAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="n">yok</span><span class="p">]</span>
+            <span class="n">zags</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;AOACZAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="n">zok</span><span class="p">]</span>
+            <span class="n">zag_times</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;AOACZAN</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="n">zok</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;centroid_source must be &#39;obc&#39; or &#39;ground&#39;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yags</span> <span class="o">=</span> <span class="n">yags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yag_times</span> <span class="o">=</span> <span class="n">yag_times</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zags</span> <span class="o">=</span> <span class="n">zags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zag_times</span> <span class="o">=</span> <span class="n">zag_times</span>
+        <span class="k">if</span> <span class="n">apply_dt</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_offsets</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="CentroidResiduals.set_atts"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.CentroidResiduals.set_atts">[docs]</a>    <span class="k">def</span> <span class="nf">set_atts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get attitude solution quaternions from ``source``.</span>
+
+<span class="sd">        One could also just set atts and att_times attributes directly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">att_source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="n">tstart</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span>
+        <span class="n">tstop</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span>
+        <span class="c1"># Get attitudes and times</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;obc&#39;</span><span class="p">:</span>
+            <span class="n">telem</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msidset</span><span class="p">([</span><span class="s1">&#39;aoattqt*&#39;</span><span class="p">],</span> <span class="n">tstart</span><span class="p">,</span> <span class="n">tstop</span><span class="p">)</span>
+            <span class="n">atts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">telem</span><span class="p">[</span><span class="s1">&#39;aoattqt</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span><span class="o">.</span><span class="n">vals</span>
+                              <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+            <span class="n">att_times</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;aoattqt1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">times</span>
+            <span class="c1"># Fetch COBSQID at beginning and end of interval, check they match, and defined obsid</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obsid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">obsid_start</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s1">&#39;COBSRQID&#39;</span><span class="p">,</span> <span class="n">tstart</span><span class="p">,</span> <span class="n">tstart</span> <span class="o">+</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="n">obsid_stop</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s1">&#39;COBSRQID&#39;</span><span class="p">,</span> <span class="n">tstop</span> <span class="o">-</span> <span class="mi">60</span><span class="p">,</span> <span class="n">tstop</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obsid_start</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">obsid_stop</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Error getting COBSRQID telem for tstart:</span><span class="si">{}</span><span class="s2"> tstop:</span><span class="si">{}</span><span class="s2"> from fetch_source:</span><span class="si">{}</span><span class="s2">&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tstart</span><span class="p">,</span> <span class="n">tstop</span><span class="p">,</span> <span class="n">fetch</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">sources</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="n">obsid_start</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">obsid_stop</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time range covers more than one obsid; Not supported.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obsid</span> <span class="o">=</span> <span class="n">obsid_start</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;ground&#39;</span><span class="p">:</span>
+            <span class="n">atts</span><span class="p">,</span> <span class="n">att_times</span><span class="p">,</span> <span class="n">asol_recs</span> <span class="o">=</span> <span class="n">asp_l1</span><span class="o">.</span><span class="n">get_atts</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">tstart</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">tstop</span><span class="p">)</span>
+            <span class="n">obsids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">&#39;OBS_ID&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">asol_recs</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obsids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time range covers more than one obsid; Not supported.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obsid</span> <span class="o">=</span> <span class="n">obsids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;att_source must be &#39;obc&#39; or &#39;ground&#39;&quot;</span><span class="p">)</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="p">(</span><span class="n">att_times</span> <span class="o">&gt;=</span> <span class="n">tstart</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">att_times</span> <span class="o">&lt;</span> <span class="n">tstop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atts</span> <span class="o">=</span> <span class="n">atts</span><span class="p">[</span><span class="n">ok</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># (N, 4) numpy array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">att_times</span> <span class="o">=</span> <span class="n">att_times</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">set_atts_from_solfiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asol_files</span><span class="p">,</span> <span class="n">acal_files</span><span class="p">,</span> <span class="n">aqual_files</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">atts</span><span class="p">,</span> <span class="n">att_times</span><span class="p">,</span> <span class="n">asol_recs</span> <span class="o">=</span> <span class="n">asp_l1</span><span class="o">.</span><span class="n">get_atts_from_files</span><span class="p">(</span>
+            <span class="n">asol_files</span><span class="p">,</span> <span class="n">acal_files</span><span class="p">,</span> <span class="n">aqual_files</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">)</span>
+        <span class="n">obsids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">&#39;OBS_ID&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">asol_recs</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obsids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time range covers more than one obsid; Not supported.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atts</span> <span class="o">=</span> <span class="n">atts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">att_times</span> <span class="o">=</span> <span class="n">att_times</span>
+
+<div class="viewcode-block" id="CentroidResiduals.set_star"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.CentroidResiduals.set_star">[docs]</a>    <span class="k">def</span> <span class="nf">set_star</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agasc_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set self.ra and dec from either agasc_id *or* slot.</span>
+
+<span class="sd">        This assumes use of star in default agasc miniagasc (no 1.4 or 1.5 or very faint stars)</span>
+<span class="sd">        Lookup by &quot;slot&quot; relies on database of starcheck catalogs.</span>
+
+<span class="sd">        This also sets self.agasc_id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">agasc_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">star</span> <span class="o">=</span> <span class="n">agasc</span><span class="o">.</span><span class="n">get_star</span><span class="p">(</span><span class="n">agasc_id</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">slot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sc</span> <span class="o">=</span> <span class="n">mica</span><span class="o">.</span><span class="n">starcheck</span><span class="o">.</span><span class="n">get_starcheck_catalog_at_date</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">stars</span> <span class="o">=</span> <span class="n">sc</span><span class="p">[</span><span class="s1">&#39;cat&#39;</span><span class="p">][(</span><span class="n">sc</span><span class="p">[</span><span class="s1">&#39;cat&#39;</span><span class="p">][</span><span class="s1">&#39;slot&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">slot</span><span class="p">)</span> <span class="o">&amp;</span>
+                              <span class="p">((</span><span class="n">sc</span><span class="p">[</span><span class="s1">&#39;cat&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;GUI&#39;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">sc</span><span class="p">[</span><span class="s1">&#39;cat&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;BOT&#39;</span><span class="p">))]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">stars</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;No GUI or BOT in slot </span><span class="si">{}</span><span class="s2"> at time </span><span class="si">{}</span><span class="s2"> in dwell&quot;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">))</span>
+            <span class="n">star</span> <span class="o">=</span> <span class="n">agasc</span><span class="o">.</span><span class="n">get_star</span><span class="p">(</span><span class="n">stars</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="n">date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Need to supply agasc_id or slot to look up star&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Could also add logic to infer star from loose position and magnitude</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agasc_id</span> <span class="o">=</span> <span class="n">star</span><span class="p">[</span><span class="s1">&#39;AGASC_ID&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ra</span> <span class="o">=</span> <span class="n">star</span><span class="p">[</span><span class="s1">&#39;RA_PMCORR&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dec</span> <span class="o">=</span> <span class="n">star</span><span class="p">[</span><span class="s1">&#39;DEC_PMCORR&#39;</span><span class="p">]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">yags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yags</span>
+
+    <span class="nd">@yags</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">yags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">fetch</span><span class="o">.</span><span class="n">MSID</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_yags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_yag_times</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">times</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_yags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">yag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yag_times</span>
+
+    <span class="nd">@yag_times</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">yag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_yag_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">zags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zags</span>
+
+    <span class="nd">@zags</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">zags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">fetch</span><span class="o">.</span><span class="n">MSID</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_zags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_zag_times</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">times</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_zags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">zag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zag_times</span>
+
+    <span class="nd">@zag_times</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">zag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zag_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CentroidResiduals.set_offsets"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.CentroidResiduals.set_offsets">[docs]</a>    <span class="k">def</span> <span class="nf">set_offsets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply time offsets to centroids based on type and source of centroid, obsid</span>
+<span class="sd">        (suggesting 8x8 or 6x6 data), telemetry source (&#39;maude&#39; or &#39;cxc&#39;) and aspect solution</span>
+<span class="sd">        source. These time offsets were fit.  See fit notebooks at:</span>
+
+<span class="sd">        http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</span>
+
+<span class="sd">        and</span>
+
+<span class="sd">        http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If already applied, do nothing</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">att_source</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="c1"># Get and check reasonable-ness of fetch data source</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fetch</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">sources</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Can&#39;t set offsets based on fetch data &quot;</span>
+                          <span class="s2">&quot;source if multiple data sources set&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">fetch_source</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">sources</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">fetch_source</span> <span class="o">!=</span> <span class="s1">&#39;cxc&#39;</span> <span class="ow">and</span> <span class="n">fetch_source</span> <span class="o">!=</span> <span class="s1">&#39;maude&#39;</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Only maude and cxc fetch data sources are supported for offsets. &quot;</span>
+                <span class="s2">&quot;Not applying offsets.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">obstype</span> <span class="o">=</span> <span class="s1">&#39;or&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obsid</span> <span class="o">&lt;</span> <span class="mi">38000</span> <span class="k">else</span> <span class="s1">&#39;er&#39;</span>
+        <span class="k">if</span> <span class="n">fetch_source</span> <span class="o">==</span> <span class="s1">&#39;maude&#39;</span> <span class="ow">and</span> <span class="n">obstype</span> <span class="o">==</span> <span class="s1">&#39;er&#39;</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Centroid time offsets not well fit for &#39;maude&#39; telem source on ERs. Use caution.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Offsets calculated using OR and ER notebooks in SKA/analysis/centroid_and_sol_time_offsets</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="c1"># (centroid_source, att_source, fetch_source, obstype):  median offset in time</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">2.45523126997</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">2.46900481785</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">):</span> <span class="mf">0.0366092437236</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">):</span> <span class="mf">0.0553306628318</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;maude&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">2.96746879688</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;maude&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">2.94076404877</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;maude&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">):</span> <span class="mf">0.010515586472</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;er&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">2.53954270068</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;er&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">2.49080106675</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;er&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">0.0322463030744</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;cxc&#39;</span><span class="p">,</span> <span class="s1">&#39;er&#39;</span><span class="p">):</span> <span class="mf">0.0355677462107</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;maude&#39;</span><span class="p">,</span> <span class="s1">&#39;er&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">2.90454699136</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;maude&#39;</span><span class="p">,</span> <span class="s1">&#39;er&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mf">3.00151559564</span><span class="p">,</span>
+            <span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;obc&#39;</span><span class="p">,</span> <span class="s1">&#39;maude&#39;</span><span class="p">,</span> <span class="s1">&#39;er&#39;</span><span class="p">):</span> <span class="mf">0.116096583881</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_source</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">att_source</span><span class="p">,</span>
+                                    <span class="n">fetch_source</span><span class="p">,</span>
+                                    <span class="n">obstype</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">yag_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yag_times</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zag_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zag_times</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span></div>
+
+<div class="viewcode-block" id="CentroidResiduals.calc_residuals"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.CentroidResiduals.calc_residuals">[docs]</a>    <span class="k">def</span> <span class="nf">calc_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate residuals based on attitude and ra/dec of star.  Note that the sampling and times</span>
+<span class="sd">        of yags may be different from zags so these should be done independently.</span>
+
+<span class="sd">        Residuals are available in self.dyags and self.dzags.</span>
+<span class="sd">        Predicted values from attitude and star position in self.pred_yags and self.pred_zags</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If time offsets weren&#39;t applied because centroids were initialized before atts, try again</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_offsets</span><span class="p">()</span>
+        <span class="c1"># If still not set, warn</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Residuals calculated on centroids without time offsets applied&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">att_times</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot attempt to calculate residuals with fewer than 2 attitude samples&quot;</span><span class="p">)</span>
+        <span class="n">eci</span> <span class="o">=</span> <span class="n">Ska</span><span class="o">.</span><span class="n">quatutil</span><span class="o">.</span><span class="n">radec2eci</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="p">)</span>
+        <span class="c1"># Transform the 3x3 to get the axes to align to have the dot product make sense</span>
+        <span class="n">d_aca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">quat_vtransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atts</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eci</span><span class="p">)</span>
+        <span class="n">p_yags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">R2A</span>
+        <span class="n">p_zags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">R2A</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pred_yags</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">p_yags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">att_times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yag_times</span><span class="p">,</span> <span class="nb">sorted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pred_zags</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">p_zags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">att_times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zag_times</span><span class="p">,</span> <span class="nb">sorted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dyags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yags</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_yags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dzags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zags</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_zags</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">for_slot</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">obsid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">slot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">att_source</span><span class="o">=</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="n">centroid_source</span><span class="o">=</span><span class="s1">&#39;ground&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obsid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot specify both obsid and start / stop&#39;</span><span class="p">)</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">dwells</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">obsid</span><span class="o">=</span><span class="n">obsid</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stop</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;must specify obsid or start / stop&#39;</span><span class="p">)</span>
+        <span class="n">cr</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">obsid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cr</span><span class="o">.</span><span class="n">obsid</span> <span class="o">=</span> <span class="n">obsid</span>
+        <span class="n">cr</span><span class="o">.</span><span class="n">set_atts</span><span class="p">(</span><span class="n">att_source</span><span class="p">)</span>
+        <span class="n">cr</span><span class="o">.</span><span class="n">set_centroids</span><span class="p">(</span><span class="n">centroid_source</span><span class="p">,</span> <span class="n">slot</span><span class="p">)</span>
+        <span class="n">cr</span><span class="o">.</span><span class="n">set_star</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="n">slot</span><span class="p">)</span>
+        <span class="n">cr</span><span class="o">.</span><span class="n">calc_residuals</span><span class="p">()</span>  <span class="c1"># instead of get_residuals</span>
+        <span class="k">return</span> <span class="n">cr</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 3.1.2. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>
