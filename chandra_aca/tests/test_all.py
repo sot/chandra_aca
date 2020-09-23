@@ -362,7 +362,6 @@ def test_radec_yagzag_multidim(shape):
     """Test radec_to_yagzag and yagzag_to_radec for multidimensional inputs"""
     dec = 0.5
     ras = np.linspace(0., 1., 24)
-    decs = dec  # Test broadcasting with a scalar input
     eqs = np.empty(shape=(24, 3))
     eqs[..., 0] = 0.1
     eqs[..., 1] = np.linspace(-0.1, 0.1, 24)
@@ -372,15 +371,19 @@ def test_radec_yagzag_multidim(shape):
     qs_nd = Quat(equatorial=eqs.reshape(shape + (3,)))
 
     # First do everything as scalars
-    yagzags_list = [radec_to_yagzag(ra, dec, Quat(eq)) for ra, eq in zip(ras.tolist(), eqs.tolist())]
+    yagzags_list = [radec_to_yagzag(ra, dec, Quat(equatorial=eq))
+                    for ra, eq in zip(ras.tolist(), eqs.tolist())]
     yagzags_nd_from_list = np.array(yagzags_list).reshape(shape + (2,))
 
-    yagzags = radec_to_eci(ras_nd, decs, qs_nd)
-    assert yagzags.shape == shape + (3,)
-    assert np.allclose(yagzags, yagzags_nd_from_list)
+    # Test broadcasting by providing a scalar for `dec`
+    yags, zags = radec_to_yagzag(ras_nd, dec, qs_nd)
+    assert yags.shape == shape
+    assert zags.shape == shape
+    assert np.allclose(yags, yagzags_nd_from_list[..., 0])
+    assert np.allclose(zags, yagzags_nd_from_list[..., 1])
 
-#    ras_rt, decs_rt = eci_to_radec(ecis)
-#    assert ras_rt.shape == shape
-#    assert decs_rt.shape == shape
-#    assert np.allclose(ras_rt, ras_nd)
-#    assert np.allclose(decs_rt, decs_nd)
+    ras_rt, decs_rt = yagzag_to_radec(yags, zags, qs_nd)
+    assert ras_rt.shape == shape
+    assert decs_rt.shape == shape
+    assert np.allclose(ras_rt, ras_nd)
+    assert np.allclose(decs_rt, dec)
