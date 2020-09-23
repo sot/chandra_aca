@@ -461,5 +461,3 @@ def normalize_vector(vec, ord=None):
     """
     norms = np.linalg.norm(vec, axis=-1, keepdims=True, ord=ord)
     return vec / norms
-
-
