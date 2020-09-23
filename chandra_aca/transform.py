@@ -275,11 +275,20 @@ def eci_to_radec(eci):
 
     ra = np.degrees(np.arctan2(eci[..., 1], eci[..., 0]))
     dec = np.degrees(np.arctan2(eci[..., 2], np.sqrt(eci[..., 1]**2 + eci[..., 0]**2)))
-    ok = ra < 0
+    # Enforce strictly 0 <= RA < 360. Note weird corner case that one can get
+    # ra being negative and very small, e.g. -7.7e-18, which then has 360 added
+    # and turns into exactly 360.0 because of floating point precision.
+    bad = ra < 0
     if eci.ndim > 1:
-        ra[ok] += 360
-    elif ok:
+        ra[bad] += 360
+    elif bad:
         ra += 360
+
+    bad = ra >= 360
+    if eci.ndim > 1:
+        ra[bad] -= 360
+    elif bad:
+        ra -= 360
 
     return ra, dec
 
