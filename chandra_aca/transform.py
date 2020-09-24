@@ -7,8 +7,6 @@ The transform modules includes:
 - Science target coordinate to ACA frame conversions
 """
 
-from __future__ import division
-
 import numpy as np
 
 from chandra_aca import dark_model
@@ -138,8 +136,8 @@ def pixels_to_yagzag(row, col, allow_bad=False, flight=False, t_aca=20,
     :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
     :rtype: (yang, zang) each vector of the same length as row/col
     """
-    row = np.array(row)
-    col = np.array(col)
+    row = np.asarray(row)
+    col = np.asarray(col)
 
     if pix_zero_loc == 'center':
         # Transform row/col values from 'center' convention to 'edge'
@@ -180,8 +178,8 @@ def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc='edge'):
     :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
     :rtype: (row, col) each vector of the same length as row/col
     """
-    yang = np.array(yang)
-    zang = np.array(zang)
+    yang = np.asarray(yang)
+    zang = np.asarray(zang)
     row, col = _poly_convert(yang, zang, ACA2PIX_coeff)
 
     # Row/col are in edge coordinates at this point, check if they are on
@@ -240,46 +238,57 @@ def _poly_convert(y, z, coeffs, t_aca=None):
     return newy, newz
 
 
-def radec_to_yagzag(ra, dec, q_att):
+def radec_to_eci(ra, dec):
     """
-    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
-    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
-    ``yag`` and ``zag`` will be corresponding arrays of the same length.
-
-    This is a wrapper around Ska.quatutil.radec2yagzag but uses arcsec instead
-    of deg for yag, zag.
+    Convert from RA,Dec to ECI.  The input ``ra`` and ``dec`` values can be 1-d
+    arrays of length N in which case the output ``ECI`` will be an array with
+    shape (N, 3). The N dimension can actually be any multidimensional shape.
 
     :param ra: Right Ascension (degrees)
     :param dec: Declination (degrees)
-    :param q_att: ACA pointing quaternion
-
-    :returns:  yag, zag (arcsec)
+    :returns: numpy array ECI (3-vector or N x 3 array)
     """
-    from Ska.quatutil import radec2yagzag
-    yag, zag = radec2yagzag(ra, dec, q_att)
-    yag *= 3600
-    zag *= 3600
+    r = np.deg2rad(ra)
+    d = np.deg2rad(dec)
+    out = np.broadcast(r, d)
 
-    return yag, zag
+    out = np.empty(out.shape + (3,), dtype=np.float64)
+    out[..., 0] = np.cos(r) * np.cos(d)
+    out[..., 1] = np.sin(r) * np.cos(d)
+    out[..., 2] = np.sin(d)
+    return out
 
 
-def yagzag_to_radec(yag, zag, q_att):
+def eci_to_radec(eci):
     """
-    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
-    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output
-    ``ra`` and ``dec`` will be corresponding arrays of the same length.
+    Convert from ECI vector(s) to RA, Dec.  The input ``eci`` value
+    can be an array of 3-vectors having shape (N, 3) in which case
+    the output RA, Dec will be arrays of shape N. The N dimension can
+    actually be any multidimensional shape.
 
-    This is a wrapper around Ska.quatutil.yagzag2radec but uses arcsec instead
-    of deg for yag, zag.
-
-    :param yag: ACA Y angle (arcsec)
-    :param zag: ACA Z angle (arcsec)
-    :param q_att: ACA pointing quaternion
-
-    :returns: ra, dec (arcsec)
+    :param eci: ECI as 3-vector or (N, 3) array
+    :rtype: scalar or array ra, dec (degrees)
     """
-    from Ska.quatutil import yagzag2radec
-    ra, dec = yagzag2radec(yag / 3600, zag / 3600, q_att)
+    eci = np.asarray(eci)
+    if eci.shape[-1] != 3:
+        raise ValueError('final dimension of `eci` must be 3')
+
+    ra = np.degrees(np.arctan2(eci[..., 1], eci[..., 0]))
+    dec = np.degrees(np.arctan2(eci[..., 2], np.sqrt(eci[..., 1]**2 + eci[..., 0]**2)))
+    # Enforce strictly 0 <= RA < 360. Note weird corner case that one can get
+    # ra being negative and very small, e.g. -7.7e-18, which then has 360 added
+    # and turns into exactly 360.0 because of floating point precision.
+    bad = ra < 0
+    if eci.ndim > 1:
+        ra[bad] += 360
+    elif bad:
+        ra += 360
+
+    bad = ra >= 360
+    if eci.ndim > 1:
+        ra[bad] -= 360
+    elif bad:
+        ra -= 360
 
     return ra, dec
 
@@ -392,3 +401,65 @@ def calc_targ_from_aca(aca, y_off, z_off, si_align=None):
     q_targ = q_aca * q_si_align * q_off
 
     return q_targ
+
+
+def radec_to_yagzag(ra, dec, q_att):
+    """
+    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
+    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
+    ``yag`` and ``zag`` will be corresponding arrays of the same length.
+
+    :param ra: Right Ascension (degrees)
+    :param dec: Declination (degrees)
+    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)
+
+    :returns:  yag, zag (arcsec)
+    """
+    if not isinstance(q_att, Quat):
+        q_att = Quat(q_att)
+    eci = radec_to_eci(ra, dec)  # N x 3
+    qt = q_att.transform.swapaxes(-2, -1)  # Transpose, allowing for leading dimensions
+    d_aca = np.einsum('...jk,...k->...j', qt, eci)
+    yag = np.rad2deg(np.arctan2(d_aca[..., 1], d_aca[..., 0]))
+    zag = np.rad2deg(np.arctan2(d_aca[..., 2], d_aca[..., 0]))
+    return yag * 3600, zag * 3600
+
+
+def yagzag_to_radec(yag, zag, q_att):
+    """
+    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
+    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output
+    ``ra`` and ``dec`` will be corresponding arrays of the same length.
+
+    :param yag: ACA Y angle (arcsec)
+    :param zag: ACA Z angle (arcsec)
+    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)
+
+    :returns: ra, dec (degrees)
+    """
+    if not isinstance(q_att, Quat):
+        q_att = Quat(q_att)
+    yag = np.asarray(yag)
+    zag = np.asarray(zag)
+    out = np.broadcast(yag, zag)  # Object with the right broadcasted shape
+    d_aca = np.empty(out.shape + (3,), dtype=np.float64)
+    d_aca[..., 0] = np.ones(out.shape)
+    d_aca[..., 1] = np.tan(np.deg2rad(yag / 3600))
+    d_aca[..., 2] = np.tan(np.deg2rad(zag / 3600))
+    d_aca = normalize_vector(d_aca)
+    eci = np.einsum('...jk,...k->...j', q_att.transform, d_aca)
+    return eci_to_radec(eci)
+
+
+def normalize_vector(vec, ord=None):
+    """Normalize ``vec`` over the last dimension.
+
+    For an L x M x N input array, this normalizes over the N dimension
+    using ``np.linalg.norm``.
+
+    :param vec: input vector or array of vectors
+    :param ord: ord parameter for np.linalg.norm (default=None => 2-norm)
+    :returns: normed array of vectors
+    """
+    norms = np.linalg.norm(vec, axis=-1, keepdims=True, ord=ord)
+    return vec / norms

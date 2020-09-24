@@ -14,7 +14,8 @@ from Chandra.Time import DateTime
 
 import chandra_aca
 from chandra_aca.transform import (snr_mag_for_t_ccd, radec_to_yagzag,
-                                   yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels)
+                                   yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels,
+                                   eci_to_radec, radec_to_eci)
 from chandra_aca import drift
 
 dirname = os.path.dirname(__file__)
@@ -302,3 +303,102 @@ def test_snr_mag():
     assert np.allclose(arr, [9.0, 8.8112, 8.1818], atol=0.0001, rtol=0)
     arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-9.5, scale_4c=1.59)
     assert np.allclose(arr, [9.2517, 9.0630, 8.4336], atol=0.0001, rtol=0)
+
+
+def test_eci_to_radec():
+    eci = np.array([0.92541658, 0.16317591, 0.34202014])
+    ra, dec = eci_to_radec(eci)
+    assert np.allclose(ra, 9.9999999129952908)
+    assert np.allclose(dec, 19.999999794004037)
+    assert isinstance(ra, np.float64)
+    assert isinstance(dec, np.float64)
+
+
+def test_vectorized_eci_to_radec():
+    eci = np.array([[0.92541658, 0.16317591, 0.34202014],
+                    [0.9248273, -0.16307201, 0.34365969]])
+    ra, dec = eci_to_radec(eci)
+    assert np.allclose(ra[0], 9.9999999129952908)
+    assert np.allclose(ra[1], 349.9999997287627)
+    assert np.allclose(dec[0], 19.999999794004037)
+    assert np.allclose(dec[1], 20.099999743270516)
+    assert isinstance(ra, np.ndarray)
+    assert isinstance(dec, np.ndarray)
+
+
+def test_radec_to_eci():
+    eci = radec_to_eci(10, 20)
+    assert np.allclose(eci[0], 0.92541658)
+    assert np.allclose(eci[1], 0.16317591)
+    assert np.allclose(eci[2], 0.34202014)
+    assert isinstance(eci, np.ndarray)
+
+
+@pytest.mark.parametrize('shape', [(24,), (6, 4), (3, 4, 2)])
+def test_radec_eci_multidim(shape):
+    """Test radec_to_eci and eci_to_radec for multidimensional inputs"""
+    ras = np.linspace(0., 359., 24)
+    decs = np.linspace(-90., 90., 24)
+    ras_nd = ras.reshape(shape)
+    decs_nd = decs.reshape(shape)
+
+    # First do everything as scalars
+    ecis_list = [radec_to_eci(ra, dec) for ra, dec in zip(ras.tolist(), decs.tolist())]
+    ecis_nd_from_list = np.array(ecis_list).reshape(shape + (3,))
+
+    ecis = radec_to_eci(ras_nd, decs_nd)
+    assert ecis.shape == shape + (3,)
+    assert np.allclose(ecis, ecis_nd_from_list)
+
+    ras_rt, decs_rt = eci_to_radec(ecis)
+    assert ras_rt.shape == shape
+    assert decs_rt.shape == shape
+    assert np.allclose(ras_rt, ras_nd)
+    assert np.allclose(decs_rt, decs_nd)
+
+
+@pytest.mark.parametrize('shape', [(24,), (6, 4), (3, 4, 2)])
+def test_radec_yagzag_multidim(shape):
+    """Test radec_to_yagzag and yagzag_to_radec for multidimensional inputs"""
+    dec = 0.5
+    ras = np.linspace(0., 1., 24)
+    eqs = np.empty(shape=(24, 3))
+    eqs[..., 0] = 0.1
+    eqs[..., 1] = np.linspace(-0.1, 0.1, 24)
+    eqs[..., 2] = np.linspace(-1, 1, 24)
+
+    ras_nd = ras.reshape(shape)
+    qs_nd = Quat(equatorial=eqs.reshape(shape + (3,)))
+
+    # First do everything as scalars
+    yagzags_list = [radec_to_yagzag(ra, dec, Quat(equatorial=eq))
+                    for ra, eq in zip(ras.tolist(), eqs.tolist())]
+    yagzags_nd_from_list = np.array(yagzags_list).reshape(shape + (2,))
+
+    # Test broadcasting by providing a scalar for `dec`
+    yags, zags = radec_to_yagzag(ras_nd, dec, qs_nd)
+    assert yags.shape == shape
+    assert zags.shape == shape
+    assert np.allclose(yags, yagzags_nd_from_list[..., 0])
+    assert np.allclose(zags, yagzags_nd_from_list[..., 1])
+
+    ras_rt, decs_rt = yagzag_to_radec(yags, zags, qs_nd)
+    assert ras_rt.shape == shape
+    assert decs_rt.shape == shape
+    assert np.allclose(ras_rt, ras_nd)
+    assert np.allclose(decs_rt, dec)
+
+
+def test_radec_yagzag_quat_init():
+    att = [1.0, 2.0, 3.0]
+    q_att = Quat(att)
+
+    yag0, zag0 = radec_to_yagzag(1.1, 2.1, q_att)
+    yag1, zag1 = radec_to_yagzag(1.1, 2.1, att)
+    assert yag0 == yag1
+    assert zag0 == zag1
+
+    ra0, dec0 = yagzag_to_radec(100.1, 200.1, q_att)
+    ra1, dec1 = yagzag_to_radec(100.1, 200.1, att)
+    assert dec0 == dec1
+    assert ra0 == ra1
