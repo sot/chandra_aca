@@ -387,3 +387,18 @@ def test_radec_yagzag_multidim(shape):
     assert decs_rt.shape == shape
     assert np.allclose(ras_rt, ras_nd)
     assert np.allclose(decs_rt, dec)
+
+
+def test_radec_yagzag_quat_init():
+    att = [1.0, 2.0, 3.0]
+    q_att = Quat(att)
+
+    yag0, zag0 = radec_to_yagzag(1.1, 2.1, q_att)
+    yag1, zag1 = radec_to_yagzag(1.1, 2.1, att)
+    assert yag0 == yag1
+    assert zag0 == zag1
+
+    ra0, dec0 = yagzag_to_radec(100.1, 200.1, q_att)
+    ra1, dec1 = yagzag_to_radec(100.1, 200.1, att)
+    assert dec0 == dec1
+    assert ra0 == ra1

@@ -409,15 +409,14 @@ def radec_to_yagzag(ra, dec, q_att):
     input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
     ``yag`` and ``zag`` will be corresponding arrays of the same length.
 
-    This is a wrapper around Ska.quatutil.radec2yagzag but uses arcsec instead
-    of deg for yag, zag.
-
     :param ra: Right Ascension (degrees)
     :param dec: Declination (degrees)
-    :param q_att: ACA pointing quaternion (Quat)
+    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)
 
     :returns:  yag, zag (arcsec)
     """
+    if not isinstance(q_att, Quat):
+        q_att = Quat(q_att)
     eci = radec_to_eci(ra, dec)  # N x 3
     qt = q_att.transform.swapaxes(-2, -1)  # Transpose, allowing for leading dimensions
     d_aca = np.einsum('...jk,...k->...j', qt, eci)
@@ -434,9 +433,12 @@ def yagzag_to_radec(yag, zag, q_att):
 
     :param yag: ACA Y angle (arcsec)
     :param zag: ACA Z angle (arcsec)
-    :param q: Quaternion
-    :rtype: list ra, dec (degrees)
+    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)
+
+    :returns: ra, dec (degrees)
     """
+    if not isinstance(q_att, Quat):
+        q_att = Quat(q_att)
     yag = np.asarray(yag)
     zag = np.asarray(zag)
     out = np.broadcast(yag, zag)  # Object with the right broadcasted shape
