@@ -458,8 +458,9 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param **maude_kwargs: keyword args passed to maude.get_frames()
+    :param ``**maude_kwargs``: keyword args passed to maude.get_frames()
     :return: dict
+
         {'flags': int, 'packets': [],
          'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
     """
@@ -710,7 +711,7 @@ def get_aca_packets(start, stop, level0=False,
     :param calibrate: bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
-    :param **maude_kwargs: keyword args passed to maude
+    :param ``**maude_kwargs``: keyword args passed to maude
     :return: astropy.table.Table
     """
     if level0:
@@ -811,7 +812,7 @@ def get_aca_images(start, stop, **maude_kwargs):
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param **maude_kwargs: keyword args passed to maude
+    :param ``**maude_kwargs``: keyword args passed to maude
     :return: astropy.table.Table
     """
     return get_aca_packets(start, stop, level0=True, **maude_kwargs)
