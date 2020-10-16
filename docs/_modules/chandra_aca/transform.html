@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.transform &#8212; chandra_aca 4.29.2.dev23+gac11754 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.30.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.29.2.dev23+gac11754 documentation</a>
+	<a href="../../index.html">chandra_aca 4.30.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -71,8 +71,6 @@
 <span class="sd">- Mag to count conversions</span>
 <span class="sd">- Science target coordinate to ACA frame conversions</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -203,8 +201,8 @@
 <span class="sd">    :param pix_zero_loc: row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
 <span class="sd">    :rtype: (yang, zang) each vector of the same length as row/col</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-    <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
         <span class="c1"># Transform row/col values from &#39;center&#39; convention to &#39;edge&#39;</span>
@@ -245,8 +243,8 @@
 <span class="sd">    :param pix_zero_loc: row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
 <span class="sd">    :rtype: (row, col) each vector of the same length as row/col</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">yang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">yang</span><span class="p">)</span>
-    <span class="n">zang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">zang</span><span class="p">)</span>
+    <span class="n">yang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">yang</span><span class="p">)</span>
+    <span class="n">zang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">zang</span><span class="p">)</span>
     <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">_poly_convert</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">ACA2PIX_coeff</span><span class="p">)</span>
 
     <span class="c1"># Row/col are in edge coordinates at this point, check if they are on</span>
@@ -305,46 +303,57 @@
     <span class="k">return</span> <span class="n">newy</span><span class="p">,</span> <span class="n">newz</span>
 
 
-<div class="viewcode-block" id="radec_to_yagzag"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.radec_to_yagzag">[docs]</a><span class="k">def</span> <span class="nf">radec_to_yagzag</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">q_att</span><span class="p">):</span>
+<div class="viewcode-block" id="radec_to_eci"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.radec_to_eci">[docs]</a><span class="k">def</span> <span class="nf">radec_to_eci</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The</span>
-<span class="sd">    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output</span>
-<span class="sd">    ``yag`` and ``zag`` will be corresponding arrays of the same length.</span>
-
-<span class="sd">    This is a wrapper around Ska.quatutil.radec2yagzag but uses arcsec instead</span>
-<span class="sd">    of deg for yag, zag.</span>
+<span class="sd">    Convert from RA,Dec to ECI.  The input ``ra`` and ``dec`` values can be 1-d</span>
+<span class="sd">    arrays of length N in which case the output ``ECI`` will be an array with</span>
+<span class="sd">    shape (N, 3). The N dimension can actually be any multidimensional shape.</span>
 
 <span class="sd">    :param ra: Right Ascension (degrees)</span>
 <span class="sd">    :param dec: Declination (degrees)</span>
-<span class="sd">    :param q_att: ACA pointing quaternion</span>
-
-<span class="sd">    :returns:  yag, zag (arcsec)</span>
+<span class="sd">    :returns: numpy array ECI (3-vector or N x 3 array)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">Ska.quatutil</span> <span class="kn">import</span> <span class="n">radec2yagzag</span>
-    <span class="n">yag</span><span class="p">,</span> <span class="n">zag</span> <span class="o">=</span> <span class="n">radec2yagzag</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">q_att</span><span class="p">)</span>
-    <span class="n">yag</span> <span class="o">*=</span> <span class="mi">3600</span>
-    <span class="n">zag</span> <span class="o">*=</span> <span class="mi">3600</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">ra</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">yag</span><span class="p">,</span> <span class="n">zag</span></div>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
 
 
-<div class="viewcode-block" id="yagzag_to_radec"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.yagzag_to_radec">[docs]</a><span class="k">def</span> <span class="nf">yagzag_to_radec</span><span class="p">(</span><span class="n">yag</span><span class="p">,</span> <span class="n">zag</span><span class="p">,</span> <span class="n">q_att</span><span class="p">):</span>
+<div class="viewcode-block" id="eci_to_radec"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.eci_to_radec">[docs]</a><span class="k">def</span> <span class="nf">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The</span>
-<span class="sd">    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output</span>
-<span class="sd">    ``ra`` and ``dec`` will be corresponding arrays of the same length.</span>
+<span class="sd">    Convert from ECI vector(s) to RA, Dec.  The input ``eci`` value</span>
+<span class="sd">    can be an array of 3-vectors having shape (N, 3) in which case</span>
+<span class="sd">    the output RA, Dec will be arrays of shape N. The N dimension can</span>
+<span class="sd">    actually be any multidimensional shape.</span>
 
-<span class="sd">    This is a wrapper around Ska.quatutil.yagzag2radec but uses arcsec instead</span>
-<span class="sd">    of deg for yag, zag.</span>
-
-<span class="sd">    :param yag: ACA Y angle (arcsec)</span>
-<span class="sd">    :param zag: ACA Z angle (arcsec)</span>
-<span class="sd">    :param q_att: ACA pointing quaternion</span>
-
-<span class="sd">    :returns: ra, dec (arcsec)</span>
+<span class="sd">    :param eci: ECI as 3-vector or (N, 3) array</span>
+<span class="sd">    :rtype: scalar or array ra, dec (degrees)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">Ska.quatutil</span> <span class="kn">import</span> <span class="n">yagzag2radec</span>
-    <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span> <span class="o">=</span> <span class="n">yagzag2radec</span><span class="p">(</span><span class="n">yag</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">zag</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">q_att</span><span class="p">)</span>
+    <span class="n">eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">eci</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;final dimension of `eci` must be 3&#39;</span><span class="p">)</span>
+
+    <span class="n">ra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="n">dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="c1"># Enforce strictly 0 &lt;= RA &lt; 360. Note weird corner case that one can get</span>
+    <span class="c1"># ra being negative and very small, e.g. -7.7e-18, which then has 360 added</span>
+    <span class="c1"># and turns into exactly 360.0 because of floating point precision.</span>
+    <span class="n">bad</span> <span class="o">=</span> <span class="n">ra</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">eci</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ra</span><span class="p">[</span><span class="n">bad</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">360</span>
+    <span class="k">elif</span> <span class="n">bad</span><span class="p">:</span>
+        <span class="n">ra</span> <span class="o">+=</span> <span class="mi">360</span>
+
+    <span class="n">bad</span> <span class="o">=</span> <span class="n">ra</span> <span class="o">&gt;=</span> <span class="mi">360</span>
+    <span class="k">if</span> <span class="n">eci</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ra</span><span class="p">[</span><span class="n">bad</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">360</span>
+    <span class="k">elif</span> <span class="n">bad</span><span class="p">:</span>
+        <span class="n">ra</span> <span class="o">-=</span> <span class="mi">360</span>
 
     <span class="k">return</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span></div>
 
@@ -457,6 +466,68 @@
     <span class="n">q_targ</span> <span class="o">=</span> <span class="n">q_aca</span> <span class="o">*</span> <span class="n">q_si_align</span> <span class="o">*</span> <span class="n">q_off</span>
 
     <span class="k">return</span> <span class="n">q_targ</span></div>
+
+
+<div class="viewcode-block" id="radec_to_yagzag"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.radec_to_yagzag">[docs]</a><span class="k">def</span> <span class="nf">radec_to_yagzag</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">q_att</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The</span>
+<span class="sd">    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output</span>
+<span class="sd">    ``yag`` and ``zag`` will be corresponding arrays of the same length.</span>
+
+<span class="sd">    :param ra: Right Ascension (degrees)</span>
+<span class="sd">    :param dec: Declination (degrees)</span>
+<span class="sd">    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)</span>
+
+<span class="sd">    :returns:  yag, zag (arcsec)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q_att</span><span class="p">,</span> <span class="n">Quat</span><span class="p">):</span>
+        <span class="n">q_att</span> <span class="o">=</span> <span class="n">Quat</span><span class="p">(</span><span class="n">q_att</span><span class="p">)</span>
+    <span class="n">eci</span> <span class="o">=</span> <span class="n">radec_to_eci</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">)</span>  <span class="c1"># N x 3</span>
+    <span class="n">qt</span> <span class="o">=</span> <span class="n">q_att</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Transpose, allowing for leading dimensions</span>
+    <span class="n">d_aca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;...jk,...k-&gt;...j&#39;</span><span class="p">,</span> <span class="n">qt</span><span class="p">,</span> <span class="n">eci</span><span class="p">)</span>
+    <span class="n">yag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="n">zag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">yag</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">zag</span> <span class="o">*</span> <span class="mi">3600</span></div>
+
+
+<div class="viewcode-block" id="yagzag_to_radec"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.yagzag_to_radec">[docs]</a><span class="k">def</span> <span class="nf">yagzag_to_radec</span><span class="p">(</span><span class="n">yag</span><span class="p">,</span> <span class="n">zag</span><span class="p">,</span> <span class="n">q_att</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The</span>
+<span class="sd">    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output</span>
+<span class="sd">    ``ra`` and ``dec`` will be corresponding arrays of the same length.</span>
+
+<span class="sd">    :param yag: ACA Y angle (arcsec)</span>
+<span class="sd">    :param zag: ACA Z angle (arcsec)</span>
+<span class="sd">    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)</span>
+
+<span class="sd">    :returns: ra, dec (degrees)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q_att</span><span class="p">,</span> <span class="n">Quat</span><span class="p">):</span>
+        <span class="n">q_att</span> <span class="o">=</span> <span class="n">Quat</span><span class="p">(</span><span class="n">q_att</span><span class="p">)</span>
+    <span class="n">yag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">yag</span><span class="p">)</span>
+    <span class="n">zag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">zag</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">yag</span><span class="p">,</span> <span class="n">zag</span><span class="p">)</span>  <span class="c1"># Object with the right broadcasted shape</span>
+    <span class="n">d_aca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">yag</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">))</span>
+    <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">zag</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">))</span>
+    <span class="n">d_aca</span> <span class="o">=</span> <span class="n">normalize_vector</span><span class="p">(</span><span class="n">d_aca</span><span class="p">)</span>
+    <span class="n">eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;...jk,...k-&gt;...j&#39;</span><span class="p">,</span> <span class="n">q_att</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="n">d_aca</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normalize_vector"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.normalize_vector">[docs]</a><span class="k">def</span> <span class="nf">normalize_vector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Normalize ``vec`` over the last dimension.</span>
+
+<span class="sd">    For an L x M x N input array, this normalizes over the N dimension</span>
+<span class="sd">    using ``np.linalg.norm``.</span>
+
+<span class="sd">    :param vec: input vector or array of vectors</span>
+<span class="sd">    :param ord: ord parameter for np.linalg.norm (default=None =&gt; 2-norm)</span>
+<span class="sd">    :returns: normed array of vectors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="nb">ord</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">vec</span> <span class="o">/</span> <span class="n">norms</span></div>
 </pre></div>
 
             <div class="clearer"></div>

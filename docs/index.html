@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca &#8212; chandra_aca 4.29.2.dev23+gac11754 documentation</title>
+    <title>chandra_aca &#8212; chandra_aca 4.30.0 documentation</title>
     <link rel="stylesheet" href="_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="#">chandra_aca 4.29.2.dev23+gac11754 documentation</a>
+	<a href="#">chandra_aca 4.30.0 documentation</a>
 	 &#187;
       </li>
       
@@ -67,80 +67,8 @@
 Camera Assembly and associated aspect functionality.</p>
 <div class="toctree-wrapper compound">
 </div>
-<div class="section" id="module-chandra_aca.plot">
-<span id="plotting"></span><h2>Plotting<a class="headerlink" href="#module-chandra_aca.plot" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="chandra_aca.plot.bad_acq_stars">
-<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">bad_acq_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#bad_acq_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.bad_acq_stars" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return mask of ‘bad’ stars, by evaluating AGASC star parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>stars</strong> – astropy table-compatible set of agasc records of stars. Required fields
-are [‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>boolean mask true for ‘bad’ stars</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="chandra_aca.plot.custom_plt_rcparams">
-<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">custom_plt_rcparams</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#custom_plt_rcparams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.custom_plt_rcparams" title="Permalink to this definition">¶</a></dt>
-<dd><p>Decorator to make a function use the custom rcParams plt params
-temporarily.  This uses a context manage to ensure original
-params always get restored.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="chandra_aca.plot.plot_compass">
-<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_compass</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roll</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_compass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_compass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a compass plot.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>roll</strong> – Attitude roll for compass plot.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>matplotlib figure</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="chandra_aca.plot.plot_stars">
-<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attitude</span></em>, <em class="sig-param"><span class="n">catalog</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">starcat_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">red_mag_lim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quad_bound</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">grid</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">bad_stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">plot_keepout</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_stars" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot a catalog, a star field, or both in a matplotlib figure.
-If supplying a star field, an attitude must also be supplied.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attitude</strong> – A Quaternion compatible attitude for the pointing</p></li>
-<li><p><strong>catalog</strong> – Records describing catalog.  Must be astropy table compatible.
-Required fields are [‘idx’, ‘type’, ‘yang’, ‘zang’, ‘halfw’]</p></li>
-<li><p><strong>stars</strong> – astropy table compatible set of agasc records of stars
-Required fields are [‘RA_PMCORR’, ‘DEC_PMCORR’, ‘MAG_ACA’, ‘MAG_ACA_ERR’].
-If bad_acq_stars will be called (bad_stars is None), additional required fields
-[‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]
-If stars is None, stars will be fetched from the AGASC for the
-supplied attitude.</p></li>
-<li><p><strong>title</strong> – string to be used as suptitle for the figure</p></li>
-<li><p><strong>starcat_time</strong> – DateTime-compatible time.  Used in ACASC fetch for proper
-motion correction.  Not used if stars is not None.</p></li>
-<li><p><strong>red_mag_lim</strong> – faint limit for field star plotting.</p></li>
-<li><p><strong>quad_bound</strong> – boolean, plot inner quadrant boundaries</p></li>
-<li><p><strong>grid</strong> – boolean, plot axis grid</p></li>
-<li><p><strong>bad_stars</strong> – boolean mask on ‘stars’ of those that don’t meet minimum requirements
-to be selected as acq stars.  If None, bad_stars will be set by a call
-to bad_acq_stars().</p></li>
-<li><p><strong>plot_keepout</strong> – plot CCD area to be avoided in star selection (default=False)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>matplotlib figure</p>
-</dd>
-</dl>
-</dd></dl>
-
+<div class="section" id="plotting">
+<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-chandra_aca.star_probs">
 <span id="star-probabilities"></span><h2>Star probabilities<a class="headerlink" href="#module-chandra_aca.star_probs" title="Permalink to this headline">¶</a></h2>
@@ -584,6 +512,23 @@ columns mag0=10.32 and cnt_rate_mag0=5263.0.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="chandra_aca.transform.eci_to_radec">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">eci_to_radec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eci</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#eci_to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.eci_to_radec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert from ECI vector(s) to RA, Dec.  The input <code class="docutils literal notranslate"><span class="pre">eci</span></code> value
+can be an array of 3-vectors having shape (N, 3) in which case
+the output RA, Dec will be arrays of shape N. The N dimension can
+actually be any multidimensional shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>eci</strong> – ECI as 3-vector or (N, 3) array</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>scalar or array ra, dec (degrees)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="chandra_aca.transform.mag_to_count_rate">
 <code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">mag_to_count_rate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#mag_to_count_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.mag_to_count_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert ACA mag to count rate in e- / sec</p>
@@ -596,6 +541,25 @@ counts (ADU), divide e- by the gain of 5.0 e-/ADU.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>count rate (e-/sec)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.normalize_vector">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">normalize_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vec</span></em>, <em class="sig-param"><span class="n">ord</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#normalize_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.normalize_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize <code class="docutils literal notranslate"><span class="pre">vec</span></code> over the last dimension.</p>
+<p>For an L x M x N input array, this normalizes over the N dimension
+using <code class="docutils literal notranslate"><span class="pre">np.linalg.norm</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vec</strong> – input vector or array of vectors</p></li>
+<li><p><strong>ord</strong> – ord parameter for np.linalg.norm (default=None =&gt; 2-norm)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>normed array of vectors</p>
 </dd>
 </dl>
 </dd></dl>
@@ -629,19 +593,36 @@ if the row/col values are nominally off the ACA CCD.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.radec_to_yagzag">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">radec_to_yagzag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra</span></em>, <em class="sig-param"><span class="n">dec</span></em>, <em class="sig-param"><span class="n">q_att</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_yagzag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_yagzag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
-input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d arrays in which case the output
-<code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> will be corresponding arrays of the same length.</p>
-<p>This is a wrapper around Ska.quatutil.radec2yagzag but uses arcsec instead
-of deg for yag, zag.</p>
+<dt id="chandra_aca.transform.radec_to_eci">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">radec_to_eci</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra</span></em>, <em class="sig-param"><span class="n">dec</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_eci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_eci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert from RA,Dec to ECI.  The input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d
+arrays of length N in which case the output <code class="docutils literal notranslate"><span class="pre">ECI</span></code> will be an array with
+shape (N, 3). The N dimension can actually be any multidimensional shape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ra</strong> – Right Ascension (degrees)</p></li>
 <li><p><strong>dec</strong> – Declination (degrees)</p></li>
-<li><p><strong>q_att</strong> – ACA pointing quaternion</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>numpy array ECI (3-vector or N x 3 array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.radec_to_yagzag">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">radec_to_yagzag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra</span></em>, <em class="sig-param"><span class="n">dec</span></em>, <em class="sig-param"><span class="n">q_att</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_yagzag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_yagzag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
+input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d arrays in which case the output
+<code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> will be corresponding arrays of the same length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ra</strong> – Right Ascension (degrees)</p></li>
+<li><p><strong>dec</strong> – Declination (degrees)</p></li>
+<li><p><strong>q_att</strong> – ACA pointing quaternion (Quat or Quat-compatible input)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -701,18 +682,16 @@ if the resulting row/col values are nominally off the ACA CCD.</p></li>
 <dd><p>Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
 input <code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> values can be 1-d arrays in which case the output
 <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> will be corresponding arrays of the same length.</p>
-<p>This is a wrapper around Ska.quatutil.yagzag2radec but uses arcsec instead
-of deg for yag, zag.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>yag</strong> – ACA Y angle (arcsec)</p></li>
 <li><p><strong>zag</strong> – ACA Z angle (arcsec)</p></li>
-<li><p><strong>q_att</strong> – ACA pointing quaternion</p></li>
+<li><p><strong>q_att</strong> – ACA pointing quaternion (Quat or Quat-compatible input)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>ra, dec (arcsec)</p>
+<dd class="field-even"><p>ra, dec (degrees)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1446,8 +1425,7 @@ In the following tables, column index increases to the right and row index incre
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
 <li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>**maude_kwargs</strong> – <p>keyword args passed to maude</p>
-</p></li>
+<li><p><strong>**maude_kwargs</strong> – keyword args passed to maude</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1610,8 +1588,7 @@ If True, half the integration time is subtracted</p></li>
 <li><p><strong>calibrate</strong> – bool
 If True, pixel values will be ‘value * imgscale / 32 - 50’ and temperature values will
 be: 0.4 * value + 273.15</p></li>
-<li><p><strong>**maude_kwargs</strong> – <p>keyword args passed to maude</p>
-</p></li>
+<li><p><strong>**maude_kwargs</strong> – keyword args passed to maude</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1634,16 +1611,15 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
 <li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>**maude_kwargs</strong> – <p>keyword args passed to maude.get_frames()</p>
-</p></li>
+<li><p><strong>**maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>dict
-{‘flags’: int, ‘packets’: [],</p>
-<blockquote>
-<div><p>’TIME’: np.array([]), ‘MNF’: np.array([]), ‘MJF’: np.array([])}</p>
-</div></blockquote>
+<dd class="field-even"><p><p>dict</p>
+<dl class="simple">
+<dt>{‘flags’: int, ‘packets’: [],</dt><dd><p>’TIME’: np.array([]), ‘MNF’: np.array([]), ‘MJF’: np.array([])}</p>
+</dd>
+</dl>
 </p>
 </dd>
 </dl>
@@ -1676,7 +1652,7 @@ the list of packets, and flags returned by MAUDE respectively.</p>
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
 <li><a class="reference internal" href="#">chandra_aca</a><ul>
-<li><a class="reference internal" href="#module-chandra_aca.plot">Plotting</a></li>
+<li><a class="reference internal" href="#plotting">Plotting</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.star_probs">Star probabilities</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.transform">Transformations</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.centroid_resid">Centroid residuals</a></li>

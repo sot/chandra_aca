@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.29.2.dev23+gac11754 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.30.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.29.2.dev23+gac11754 documentation</a>
+	<a href="../../index.html">chandra_aca 4.30.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -523,8 +523,9 @@
 
 <span class="sd">    :param start: timestamp interpreted as a Chandra.Time.DateTime</span>
 <span class="sd">    :param stop: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param **maude_kwargs: keyword args passed to maude.get_frames()</span>
+<span class="sd">    :param ``**maude_kwargs``: keyword args passed to maude.get_frames()</span>
 <span class="sd">    :return: dict</span>
+
 <span class="sd">        {&#39;flags&#39;: int, &#39;packets&#39;: [],</span>
 <span class="sd">         &#39;TIME&#39;: np.array([]), &#39;MNF&#39;: np.array([]), &#39;MJF&#39;: np.array([])}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -775,7 +776,7 @@
 <span class="sd">    :param calibrate: bool</span>
 <span class="sd">        If True, pixel values will be &#39;value * imgscale / 32 - 50&#39; and temperature values will</span>
 <span class="sd">        be: 0.4 * value + 273.15</span>
-<span class="sd">    :param **maude_kwargs: keyword args passed to maude</span>
+<span class="sd">    :param ``**maude_kwargs``: keyword args passed to maude</span>
 <span class="sd">    :return: astropy.table.Table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">level0</span><span class="p">:</span>
@@ -876,7 +877,7 @@
 
 <span class="sd">    :param start: timestamp interpreted as a Chandra.Time.DateTime</span>
 <span class="sd">    :param stop: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param **maude_kwargs: keyword args passed to maude</span>
+<span class="sd">    :param ``**maude_kwargs``: keyword args passed to maude</span>
 <span class="sd">    :return: astropy.table.Table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">get_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">level0</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">)</span></div>
