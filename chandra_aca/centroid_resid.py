@@ -5,46 +5,15 @@ import warnings
 from astropy.table import Table, vstack
 from kadi import events
 from Ska.Numpy import interpolate
-import Ska.quatutil
 from mica.archive import asp_l1
 import mica.starcheck
 from Ska.engarchive import fetch
 from Chandra.Time import DateTime
 import agasc
-
+from Quaternion import Quat
+from chandra_aca import transform
 
 R2A = 206264.81  # Convert from radians to arcsec
-
-
-def quat_vtransform(qs):
-    """
-    Transform a Nx4 matrix of quaternions into a Nx3x3 transform matrix
-    :returns: Nx3x3 transform matrix
-    :rtype: numpy array
-    """
-    x, y, z, w = qs[:, 0], qs[:, 1], qs[:, 2], qs[:, 3]
-    xx2 = x * x * 2.
-    yy2 = y * y * 2.
-    zz2 = z * z * 2.
-    xy2 = x * y * 2.
-    wz2 = w * z * 2.
-    zx2 = z * x * 2.
-    wy2 = w * y * 2.
-    yz2 = y * z * 2.
-    wx2 = w * x * 2.
-
-    t = np.empty((len(qs), 3, 3), float)
-    t[:, 0, 0] = 1. - yy2 - zz2
-    t[:, 0, 1] = xy2 - wz2
-    t[:, 0, 2] = zx2 + wy2
-    t[:, 1, 0] = xy2 + wz2
-    t[:, 1, 1] = 1. - xx2 - zz2
-    t[:, 1, 2] = yz2 - wx2
-    t[:, 2, 0] = zx2 - wy2
-    t[:, 2, 1] = yz2 + wx2
-    t[:, 2, 2] = 1. - xx2 - yy2
-
-    return t
 
 
 class CentroidResiduals(object):
@@ -353,9 +322,9 @@ class CentroidResiduals(object):
         if len(self.att_times) < 2:
             raise ValueError(
                 "Cannot attempt to calculate residuals with fewer than 2 attitude samples")
-        eci = Ska.quatutil.radec2eci(self.ra, self.dec)
+        eci = transform.radec_to_eci(self.ra, self.dec)
         # Transform the 3x3 to get the axes to align to have the dot product make sense
-        d_aca = np.dot(quat_vtransform(self.atts).transpose(0, 2, 1), eci)
+        d_aca = np.dot(Quat(q=self.atts).transform.transpose(0, 2, 1), eci)
         p_yags = np.arctan2(d_aca[:, 1], d_aca[:, 0]) * R2A
         p_zags = np.arctan2(d_aca[:, 2], d_aca[:, 0]) * R2A
         self.pred_yags = interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
