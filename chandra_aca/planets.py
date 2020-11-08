@@ -5,12 +5,12 @@ Provide functions related to planet positions relative to Chandra.
 - Low-resolution check if planet is within a radius (e.g. 2 degrees)
 - Position of planet relative to Chandra
 """
+from pathlib import Path
 
 import numpy as np
 
 
 from jplephem.spk import SPK
-from astropy.utils.data import download_file
 import astropy.units as u
 
 from ska_helpers.utils import LazyVal
@@ -18,14 +18,15 @@ from cxotime import CxoTime
 
 
 def load_kernel():
-    url = 'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de432s.bsp'
-    file = download_file(url, cache=True)
-    kernel = SPK.open(file)
+    kernel_path = Path(__file__).parent / 'data' / 'de432s.bsp'
+    if not kernel_path.exists():
+        raise FileNotFoundError(f'kernel data file {kernel_path} not found, '
+                                'run "python setup.py --version" to install it locally')
+    kernel = SPK.open(kernel_path)
     return kernel
 
 
 KERNEL = LazyVal(load_kernel)
-
 BODY_NAME_TO_KERNEL_SPEC = dict([
     ('sun', [(0, 10)]),
     ('mercury', [(0, 1), (1, 199)]),
@@ -78,7 +79,6 @@ def get_planet_eci(body, time=None):
     dist = np.sqrt(np.sum((pos_planet - pos_earth) ** 2, axis=0)) * u.km
     import astropy.constants as const
     light_travel_time = (dist / const.c).to(u.s)
-    print(light_travel_time)
 
     pos_planet = get_planet_barycentric(body, time - light_travel_time)
 
