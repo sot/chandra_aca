@@ -16,6 +16,8 @@ import astropy.units as u
 from ska_helpers.utils import LazyVal
 from cxotime import CxoTime
 
+__all__ = ['get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci']
+
 
 def load_kernel():
     kernel_path = Path(__file__).parent / 'data' / 'de432s.bsp'
@@ -61,7 +63,7 @@ def get_planet_barycentric(body, time=None):
     for spk_pair in spk_pairs[1:]:
         pos += kernel[spk_pair].compute(time_jd)
 
-    return pos.transpose()  # SPK returns 3xN
+    return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
 
 
 def get_planet_eci(body, time=None):
@@ -76,7 +78,7 @@ def get_planet_eci(body, time=None):
     pos_planet = get_planet_barycentric(body, time)
     pos_earth = get_planet_barycentric('earth', time)
 
-    dist = np.sqrt(np.sum((pos_planet - pos_earth) ** 2, axis=0)) * u.km
+    dist = np.sqrt(np.sum((pos_planet - pos_earth) ** 2, axis=-1)) * u.km
     import astropy.constants as const
     light_travel_time = (dist / const.c).to(u.s)
 
@@ -112,8 +114,8 @@ def get_planet_chandra(body, time=None):
     # Planet position relative to Chandra:
     #   Planet relative to Earth - Chandra relative to Earth
     planet_chandra = planet_eci
-    planet_chandra[0, ...] -= x
-    planet_chandra[1, ...] -= y
-    planet_chandra[2, ...] -= z
+    planet_chandra[..., 0] -= x
+    planet_chandra[..., 1] -= y
+    planet_chandra[..., 2] -= z
 
     return planet_chandra
