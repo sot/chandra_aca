@@ -1,20 +1,14 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Provide functions related to planet positions relative to Chandra.
-
-- Low-resolution check if planet is within a radius (e.g. 2 degrees)
-- Position of planet relative to Chandra
+Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
 """
 from pathlib import Path
 
-import numpy as np
-
-
-from jplephem.spk import SPK
 import astropy.units as u
-
-from ska_helpers.utils import LazyVal
+import numpy as np
 from cxotime import CxoTime
+from jplephem.spk import SPK
+from ska_helpers.utils import LazyVal
 
 __all__ = ['get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci']
 
@@ -57,7 +51,7 @@ def get_planet_barycentric(body, time=None):
         raise ValueError(f'{body} is not an allowed value of solar system body')
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
-    time = CxoTime.now() if time is None else CxoTime(time)
+    time = CxoTime(time)
     time_jd = time.jd
     pos = kernel[spk_pairs[0]].compute(time_jd)
     for spk_pair in spk_pairs[1:]:
@@ -73,7 +67,7 @@ def get_planet_eci(body, time=None):
     :param time: Time or times for returned position (default=NOW)
     :returns: Earth-Centered Inertial (ECI) position (km)
     """
-    time = CxoTime.now() if time is None else CxoTime(time)
+    time = CxoTime(time)
 
     pos_planet = get_planet_barycentric(body, time)
     pos_earth = get_planet_barycentric('earth', time)
@@ -96,7 +90,7 @@ def get_planet_chandra(body, time=None):
     """
     from cheta import fetch
 
-    time = CxoTime.now() if time is None else CxoTime(time)
+    time = CxoTime(time)
 
     planet_eci = get_planet_eci(body, time)
 
