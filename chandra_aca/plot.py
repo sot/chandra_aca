@@ -1,18 +1,21 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import division
+from chandra_aca.planets import get_planet_eci, get_planet_chandra
 
 from functools import wraps
 from contextlib import contextmanager
 
 import numpy as np
 import matplotlib.pyplot as plt
+import astropy.units as u
 
 from astropy.table import Table
 import agasc
 import Quaternion
 from Ska.quatutil import radec2yagzag
+from cxotime import CxoTime
 
-from .transform import yagzag_to_pixels
+from .transform import eci_to_radec, radec_to_yagzag, yagzag_to_pixels
 
 # rc definitions
 frontcolor = 'black'
@@ -206,30 +209,33 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
 @custom_plt_rcparams
 def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
                red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None,
-               plot_keepout=False, ax=None):
+               plot_keepout=False, ax=None, duration=0):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
     If supplying a star field, an attitude must also be supplied.
 
     :param attitude: A Quaternion compatible attitude for the pointing
     :param catalog: Records describing catalog.  Must be astropy table compatible.
-                    Required fields are ['idx', 'type', 'yang', 'zang', 'halfw']
+        Required fields are ['idx', 'type', 'yang', 'zang', 'halfw']
     :param stars: astropy table compatible set of agasc records of stars
-          Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
-          If bad_acq_stars will be called (bad_stars is None), additional required fields
-          ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
-          If stars is None, stars will be fetched from the AGASC for the
-          supplied attitude.
+        Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
+        If bad_acq_stars will be called (bad_stars is None), additional required fields
+        ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
+        If stars is None, stars will be fetched from the AGASC for the
+        supplied attitude.
     :param title: string to be used as suptitle for the figure
     :param starcat_time: DateTime-compatible time.  Used in ACASC fetch for proper
-                         motion correction.  Not used if stars is not None.
+        motion correction.  Not used if stars is not None.
     :param red_mag_lim: faint limit for field star plotting.
     :param quad_bound: boolean, plot inner quadrant boundaries
     :param grid: boolean, plot axis grid
     :param bad_stars: boolean mask on 'stars' of those that don't meet minimum requirements
-                      to be selected as acq stars.  If None, bad_stars will be set by a call
-                      to bad_acq_stars().
+        to be selected as acq stars.  If None, bad_stars will be set by a call
+        to bad_acq_stars().
     :param plot_keepout: plot CCD area to be avoided in star selection (default=False)
+    :param ax: matplotlib axes object to use (optional)
+    :param duration: duration (starting at ``starcat_time``) for plotting planets
+        (secs, default=0 => no planet checks)
     :returns: matplotlib figure
     """
     if stars is None:
@@ -304,13 +310,46 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     # Plot stars
     _plot_field_stars(ax, stars, attitude=attitude,
                       bad_stars=bad_stars, red_mag_lim=red_mag_lim)
+
     # plot starcheck catalog
     if catalog is not None:
         _plot_catalog_items(ax, catalog)
+
+    # Planets
+    if duration > 0:
+        _plot_planets(ax, attitude, starcat_time, duration)
+
     if title is not None:
         ax.set_title(title, fontsize='small')
 
     return fig
+
+
+def _plot_planets(ax, att, date0, duration):
+    date0 = CxoTime(date0)
+
+    planets = ('venus', 'mars', 'jupiter', 'saturn')
+    for planet in planets:
+        # First check if planet is within 3 deg of aimpoint using Earth as the
+        # reference point (without fetching Chandra ephemeris).
+        eci = get_planet_eci(planet, date0)
+        ra, dec = eci_to_radec(eci)
+        yag, zag = radec_to_yagzag(ra, dec, att)
+        if np.sqrt(yag**2 + zag**2) > 3600 * 3:
+            continue
+
+        # Compute ACA row, col for planet each ksec (approx) over the duration
+        n_times = int(duration / 1000) + 1
+        dates = date0 + np.linspace(0, duration, n_times) * u.s
+        eci = get_planet_chandra(planet, dates)
+        ra, dec = eci_to_radec(eci)
+        yag, zag = radec_to_yagzag(ra, dec, att)
+        row, col = yagzag_to_pixels(yag, zag)
+
+        # Plot with green at beginning, red at ending
+        ax.plot(row, col, '.', color='m', alpha=0.5)
+        ax.plot(row[0], col[0], '.', color='g')
+        ax.plot(row[-1], col[-1], '.', color='r')
 
 
 def bad_acq_stars(stars):
