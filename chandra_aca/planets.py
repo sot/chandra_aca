@@ -5,12 +5,14 @@ Functions for planet position relative to Chandra, Earth, or Solar System Baryce
 from pathlib import Path
 
 import astropy.units as u
+from astropy.io import ascii
 import numpy as np
 from cxotime import CxoTime
 from jplephem.spk import SPK
 from ska_helpers.utils import LazyVal
 
-__all__ = ['get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci']
+__all__ = ('get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci',
+           'get_planet_chandra_horizons')
 
 
 def load_kernel():
@@ -113,3 +115,116 @@ def get_planet_chandra(body, time=None):
     planet_chandra[..., 2] -= z
 
     return planet_chandra
+
+
+def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=10):
+    """Get body position, rate, mag, surface brightness, diameter from Horizons.
+
+    This function queries the JPL Horizons site using the CGI batch interface
+    (See https://ssd.jpl.nasa.gov/horizons_batch.cgi for docs).
+
+    The return value is an astropy Table with columns: date, ra, dec, rate_ra,
+    rate_dec, mag, surf_brt, ang_diam. The units are included in the table
+    columns. The ``date`` column is a ``CxoTime`` object.
+
+    The returned Table has a meta key value ``response_text`` with the full text
+    of the Horizons response.
+
+    Example::
+
+      >>> from chandra_aca.planets import get_planet_chandra_horizons
+      >>> dat = get_planet_chandra_horizons('jupiter', '2020:001', '2020:002', n_dates=4)
+      >>> dat
+      <Table length=5>
+               date             ra       dec     rate_ra    rate_dec    mag      surf_brt   ang_diam
+                               deg       deg    arcsec / h arcsec / h   mag   mag / arcsec2  arcsec
+              object         float64   float64   float64    float64   float64    float64    float64
+      --------------------- --------- --------- ---------- ---------- ------- ------------- --------
+      2020:001:00:00:00.000 276.96494 -23.20087      34.22       0.98  -1.839         5.408    31.75
+      2020:001:06:00:00.000 277.02707 -23.19897      34.30       1.30  -1.839         5.408    31.76
+      2020:001:12:00:00.000 277.08934 -23.19652      34.39       1.64  -1.839         5.408    31.76
+      2020:001:18:00:00.000 277.15181 -23.19347      34.51       2.03  -1.839         5.408    31.76
+      2020:002:00:00:00.000 277.21454 -23.18970      34.69       2.51  -1.839         5.408    31.76
+
+    :param body: one of 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
+        'uranus', 'neptune'
+    :param datestart: start date (any CxoTime-compatible date)
+    :param datetstop: stop date (any CxoTime-compatible date)
+    :param n_dates: number of date samples (inclusive, default=10)
+    :param timeout: timeout for query to Horizons (secs)
+
+    :returns: Table of information
+
+    """
+    datestart = CxoTime(datestart)
+    datestop = CxoTime(datestop)
+    import requests
+    url = 'https://ssd.jpl.nasa.gov/horizons_batch.cgi?'
+    planet_ids = {'mercury': '199',
+                  'venus': '299',
+                  'mars': '499',
+                  'jupiter': '599',
+                  'saturn': '699',
+                  'uranus': '799',
+                  'neptune': '899'}
+    if body not in planet_ids:
+        raise ValueError(f'body must be one of {tuple(planet_ids)}')
+
+    params = dict(
+        COMMAND=planet_ids[body],
+        MAKE_EPHEM='YES',
+        CENTER='@-151',
+        TABLE_TYPE='OBSERVER',
+        ANG_FORMAT='DEG',
+        START_TIME=datestart.datetime.strftime('%Y-%b-%d %H:%M'),
+        STOP_TIME=datestop.datetime.strftime('%Y-%b-%d %H:%M'),
+        STEP_SIZE=str(n_dates),
+        QUANTITIES='1,3,9,13',
+        CSV_FORMAT='YES')
+
+    # The HORIZONS web API seems to require all params to be quoted strings.
+    # See: https://ssd.jpl.nasa.gov/horizons_batch.cgi
+    for key, val in params.items():
+        params[key] = repr(val)
+    params['batch'] = 1
+    resp = requests.get(url, params=params, timeout=timeout)
+
+    if resp.status_code != requests.codes['ok']:
+        raise ValueError('request {resp.url} failed: {resp.reason} ({resp.status_code})')
+
+    lines = resp.text.splitlines()
+    idx0 = lines.index('$$SOE') + 1
+    idx1 = lines.index('$$EOE')
+    lines = lines[idx0: idx1]
+    dat = ascii.read(lines, format='no_header', delimiter=',',
+                     names=['date', 'null1', 'null2', 'ra', 'dec', 'rate_ra', 'rate_dec',
+                            'mag', 'surf_brt', 'ang_diam', 'null3']
+                     )
+
+    import datetime
+    datetimes = [datetime.datetime.strptime(val[:20], '%Y-%b-%d %H:%M:%S') for val in dat['date']]
+    dat['date'] = CxoTime(datetimes, format='datetime')
+    dat['date'].format = 'date'
+    dat['ra'].info.unit = u.deg
+    dat['dec'].info.unit = u.deg
+    dat['rate_ra'].info.unit = u.arcsec / u.hr
+    dat['rate_dec'].info.unit = u.arcsec / u.hr
+    dat['mag'].info.unit = u.mag
+    dat['surf_brt'].info.unit = u.mag / (u.arcsec**2)
+    dat['ang_diam'].info.unit = u.arcsec
+
+    dat['ra'].info.format = '.5f'
+    dat['dec'].info.format = '.5f'
+    dat['rate_ra'].info.format = '.2f'
+    dat['rate_dec'].info.format = '.2f'
+    dat['mag'].info.format = '.3f'
+    dat['surf_brt'].info.format = '.3f'
+    dat['ang_diam'].info.format = '.2f'
+
+    dat.meta['response_text'] = resp.text
+
+    del dat['null1']
+    del dat['null2']
+    del dat['null3']
+
+    return dat

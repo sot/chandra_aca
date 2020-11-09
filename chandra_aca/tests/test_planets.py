@@ -6,7 +6,7 @@ import astropy.units as u
 
 from cxotime import CxoTime
 from chandra_aca.planets import (get_planet_chandra, get_planet_barycentric,
-                                 get_planet_eci)
+                                 get_planet_chandra_horizons, get_planet_eci)
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 from agasc import sphere_dist
 
@@ -101,3 +101,37 @@ def test_planet_positions_array():
     ra2, dec2 = 299.27358333, -21.07644444
 
     assert np.all(sphere_dist(ra, dec, ra2, dec2) * 3600 < 1.0)
+
+
+def test_get_chandra_planet_horizons():
+    dat = get_planet_chandra_horizons('jupiter', '2020:001', '2020:002')
+    exp = ['         date             ra       dec     rate_ra    rate_dec   mag  '
+           '    surf_brt   ang_diam',
+           '                         deg       deg    arcsec / h arcsec / h  mag  '
+           ' mag / arcsec2  arcsec ',
+           '--------------------- --------- --------- ---------- ---------- ------'
+           ' ------------- --------',
+           '2020:001:00:00:00.000 276.96494 -23.20087      34.22       0.98 -1.839'
+           '         5.408    31.75',
+           '2020:001:02:24:00.000 276.98978 -23.20017      34.25       1.11 -1.839'
+           '         5.408    31.75',
+           '2020:001:04:48:00.000 277.01463 -23.19939      34.28       1.24 -1.839'
+           '         5.408    31.76',
+           '2020:001:07:12:00.000 277.03951 -23.19852      34.32       1.37 -1.839'
+           '         5.408    31.76',
+           '2020:001:09:36:00.000 277.06441 -23.19757      34.35       1.50 -1.839'
+           '         5.408    31.76',
+           '2020:001:12:00:00.000 277.08934 -23.19652      34.39       1.64 -1.839'
+           '         5.408    31.76',
+           '2020:001:14:24:00.000 277.11430 -23.19537      34.44       1.79 -1.839'
+           '         5.408    31.76',
+           '2020:001:16:48:00.000 277.13930 -23.19413      34.49       1.94 -1.839'
+           '         5.408    31.76',
+           '2020:001:19:12:00.000 277.16433 -23.19278      34.54       2.11 -1.839'
+           '         5.408    31.76',
+           '2020:001:21:36:00.000 277.18941 -23.19131      34.61       2.30 -1.839'
+           '         5.408    31.76',
+           '2020:002:00:00:00.000 277.21454 -23.18970      34.69       2.51 -1.839'
+           '         5.408    31.76']
+
+    assert dat.pformat_all() == exp
