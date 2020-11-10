@@ -46,6 +46,9 @@ FAINT_STAR_COLOR = 'lightseagreen'
 FAINT_STAR_ALPHA = .75
 
 
+__all__ = ['plot_stars', 'plot_compass', 'bad_acq_stars']
+
+
 @contextmanager
 def custom_plt():
     orig = {key: plt.rcParams[key] for key in rcParams}
