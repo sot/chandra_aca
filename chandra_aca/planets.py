@@ -2,13 +2,14 @@
 """
 Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
 """
+import datetime
 from pathlib import Path
 
+import astropy.constants as const
 import astropy.units as u
 from astropy.io import ascii
 import numpy as np
 from cxotime import CxoTime
-from jplephem.spk import SPK
 from ska_helpers.utils import LazyVal
 
 __all__ = ('get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci',
@@ -16,6 +17,7 @@ __all__ = ('get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci',
 
 
 def load_kernel():
+    from jplephem.spk import SPK
     kernel_path = Path(__file__).parent / 'data' / 'de432s.bsp'
     if not kernel_path.exists():
         raise FileNotFoundError(f'kernel data file {kernel_path} not found, '
@@ -39,18 +41,22 @@ BODY_NAME_TO_KERNEL_SPEC = dict([
     ('neptune', [(0, 8)]),
     ('pluto', [(0, 9)])
 ])
+URL_HORIZONS = 'https://ssd.jpl.nasa.gov/horizons_batch.cgi?'
 
 
 def get_planet_barycentric(body, time=None):
     """Get barycentric position for solar system ``body`` at ``time``.
 
-    :param body: Body name
+    This uses the built-in JPL ephemeris file DE432s and jplephem.
+
+    :param body: Body name (lower case planet name)
     :param time: Time or times for returned position (default=NOW)
-    :returns: barycentric position (km)
+    :returns: barycentric position (km) as (x, y, z) or N x (x, y, z)
     """
     kernel = KERNEL.get()
     if body not in BODY_NAME_TO_KERNEL_SPEC:
-        raise ValueError(f'{body} is not an allowed value of solar system body')
+        raise ValueError(f'{body} is not an allowed value '
+                         f'{tuple(BODY_NAME_TO_KERNEL_SPEC)}')
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
     time = CxoTime(time)
@@ -63,11 +69,16 @@ def get_planet_barycentric(body, time=None):
 
 
 def get_planet_eci(body, time=None):
-    """Get ECI position for solar system ``body`` at ``time``.
+    """Get ECI apparent position for solar system ``body`` at ``time``.
 
-    :param body: Body name
+    This uses the built-in JPL ephemeris file DE432s and jplephem. The position
+    is computed at the supplied ``time`` minus the light-travel time from Earth
+    to ``body`` to generate the apparent position on Earth at ``time``.
+
+    :param body: Body name (lower case planet name)
     :param time: Time or times for returned position (default=NOW)
-    :returns: Earth-Centered Inertial (ECI) position (km)
+    :returns: Earth-Centered Inertial (ECI) position (km) as (x, y, z)
+        or N x (x, y, z)
     """
     time = CxoTime(time)
 
@@ -75,7 +86,6 @@ def get_planet_eci(body, time=None):
     pos_earth = get_planet_barycentric('earth', time)
 
     dist = np.sqrt(np.sum((pos_planet - pos_earth) ** 2, axis=-1)) * u.km
-    import astropy.constants as const
     light_travel_time = (dist / const.c).to(u.s)
 
     pos_planet = get_planet_barycentric(body, time - light_travel_time)
@@ -86,9 +96,14 @@ def get_planet_eci(body, time=None):
 def get_planet_chandra(body, time=None):
     """Get position for solar system ``body`` at ``time`` relative to Chandra.
 
+    This uses the built-in JPL ephemeris file DE432s and jplephem, along with
+    the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
+    is computed at the supplied ``time`` minus the light-travel time from Earth
+    to ``body`` to generate the apparent position on Earth at ``time``.
+
     :param body: Body name
     :param time: Time or times for returned position (default=NOW)
-    :returns: position relative to Chandra (km)
+    :returns: position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
     """
     from cheta import fetch
 
@@ -156,10 +171,10 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
     :returns: Table of information
 
     """
+    import requests
+
     datestart = CxoTime(datestart)
     datestop = CxoTime(datestop)
-    import requests
-    url = 'https://ssd.jpl.nasa.gov/horizons_batch.cgi?'
     planet_ids = {'mercury': '199',
                   'venus': '299',
                   'mars': '499',
@@ -187,7 +202,7 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
     for key, val in params.items():
         params[key] = repr(val)
     params['batch'] = 1
-    resp = requests.get(url, params=params, timeout=timeout)
+    resp = requests.get(URL_HORIZONS, params=params, timeout=timeout)
 
     if resp.status_code != requests.codes['ok']:
         raise ValueError('request {resp.url} failed: {resp.reason} ({resp.status_code})')
@@ -201,7 +216,6 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
                             'mag', 'surf_brt', 'ang_diam', 'null3']
                      )
 
-    import datetime
     datetimes = [datetime.datetime.strptime(val[:20], '%Y-%b-%d %H:%M:%S') for val in dat['date']]
     dat['date'] = CxoTime(datetimes, format='datetime')
     dat['date'].format = 'date'
