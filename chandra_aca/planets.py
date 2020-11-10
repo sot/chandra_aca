@@ -2,7 +2,7 @@
 """
 Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
 """
-import datetime
+from datetime import datetime
 from pathlib import Path
 
 import astropy.constants as const
@@ -132,15 +132,15 @@ def get_planet_chandra(body, time=None):
     return planet_chandra
 
 
-def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=10):
+def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=10):
     """Get body position, rate, mag, surface brightness, diameter from Horizons.
 
     This function queries the JPL Horizons site using the CGI batch interface
     (See https://ssd.jpl.nasa.gov/horizons_batch.cgi for docs).
 
-    The return value is an astropy Table with columns: date, ra, dec, rate_ra,
+    The return value is an astropy Table with columns: time, ra, dec, rate_ra,
     rate_dec, mag, surf_brt, ang_diam. The units are included in the table
-    columns. The ``date`` column is a ``CxoTime`` object.
+    columns. The ``time`` column is a ``CxoTime`` object.
 
     The returned Table has a meta key value ``response_text`` with the full text
     of the Horizons response.
@@ -148,10 +148,10 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
     Example::
 
       >>> from chandra_aca.planets import get_planet_chandra_horizons
-      >>> dat = get_planet_chandra_horizons('jupiter', '2020:001', '2020:002', n_dates=4)
+      >>> dat = get_planet_chandra_horizons('jupiter', '2020:001', '2020:002', n_times=4)
       >>> dat
       <Table length=5>
-               date             ra       dec     rate_ra    rate_dec    mag      surf_brt   ang_diam
+               time             ra       dec     rate_ra    rate_dec    mag      surf_brt   ang_diam
                                deg       deg    arcsec / h arcsec / h   mag   mag / arcsec2  arcsec
               object         float64   float64   float64    float64   float64    float64    float64
       --------------------- --------- --------- ---------- ---------- ------- ------------- --------
@@ -163,9 +163,9 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
 
     :param body: one of 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
         'uranus', 'neptune'
-    :param datestart: start date (any CxoTime-compatible date)
-    :param datetstop: stop date (any CxoTime-compatible date)
-    :param n_dates: number of date samples (inclusive, default=10)
+    :param timestart: start time (any CxoTime-compatible time)
+    :param timestop: stop time (any CxoTime-compatible time)
+    :param n_times: number of time samples (inclusive, default=10)
     :param timeout: timeout for query to Horizons (secs)
 
     :returns: Table of information
@@ -173,8 +173,8 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
     """
     import requests
 
-    datestart = CxoTime(datestart)
-    datestop = CxoTime(datestop)
+    timestart = CxoTime(timestart)
+    timestop = CxoTime(timestop)
     planet_ids = {'mercury': '199',
                   'venus': '299',
                   'mars': '499',
@@ -191,9 +191,9 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
         CENTER='@-151',
         TABLE_TYPE='OBSERVER',
         ANG_FORMAT='DEG',
-        START_TIME=datestart.datetime.strftime('%Y-%b-%d %H:%M'),
-        STOP_TIME=datestop.datetime.strftime('%Y-%b-%d %H:%M'),
-        STEP_SIZE=str(n_dates),
+        START_TIME=timestart.datetime.strftime('%Y-%b-%d %H:%M'),
+        STOP_TIME=timestop.datetime.strftime('%Y-%b-%d %H:%M'),
+        STEP_SIZE=str(n_times),
         QUANTITIES='1,3,9,13',
         CSV_FORMAT='YES')
 
@@ -212,13 +212,13 @@ def get_planet_chandra_horizons(body, datestart, datestop, n_dates=10, timeout=1
     idx1 = lines.index('$$EOE')
     lines = lines[idx0: idx1]
     dat = ascii.read(lines, format='no_header', delimiter=',',
-                     names=['date', 'null1', 'null2', 'ra', 'dec', 'rate_ra', 'rate_dec',
+                     names=['time', 'null1', 'null2', 'ra', 'dec', 'rate_ra', 'rate_dec',
                             'mag', 'surf_brt', 'ang_diam', 'null3']
                      )
 
-    datetimes = [datetime.datetime.strptime(val[:20], '%Y-%b-%d %H:%M:%S') for val in dat['date']]
-    dat['date'] = CxoTime(datetimes, format='datetime')
-    dat['date'].format = 'date'
+    times = [datetime.strptime(val[:20], '%Y-%b-%d %H:%M:%S') for val in dat['time']]
+    dat['time'] = CxoTime(times, format='datetime')
+    dat['time'].format = 'date'
     dat['ra'].info.unit = u.deg
     dat['dec'].info.unit = u.deg
     dat['rate_ra'].info.unit = u.arcsec / u.hr

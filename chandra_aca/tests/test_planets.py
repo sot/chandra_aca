@@ -105,7 +105,7 @@ def test_planet_positions_array():
 
 def test_get_chandra_planet_horizons():
     dat = get_planet_chandra_horizons('jupiter', '2020:001', '2020:002')
-    exp = ['         date             ra       dec     rate_ra    rate_dec   mag  '
+    exp = ['         time             ra       dec     rate_ra    rate_dec   mag  '
            '    surf_brt   ang_diam',
            '                         deg       deg    arcsec / h arcsec / h  mag  '
            ' mag / arcsec2  arcsec ',
