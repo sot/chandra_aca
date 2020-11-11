@@ -53,7 +53,7 @@ def get_planet_barycentric(body, time=None):
     :param time: Time or times for returned position (default=NOW)
     :returns: barycentric position (km) as (x, y, z) or N x (x, y, z)
     """
-    kernel = KERNEL.get()
+    kernel = KERNEL.val
     if body not in BODY_NAME_TO_KERNEL_SPEC:
         raise ValueError(f'{body} is not an allowed value '
                          f'{tuple(BODY_NAME_TO_KERNEL_SPEC)}')
