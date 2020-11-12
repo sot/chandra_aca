@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import sys
 from setuptools import setup
 from pathlib import Path
 
@@ -11,13 +12,12 @@ except ImportError:
 # Check for de432s.bsp JPL ephemeris file. This is not kept in the git repo
 # but included in the distribution at chandra_aca/data/de432s.bsp (11 Mb).
 ephem_file = Path('chandra_aca', 'data', 'de432s.bsp')
-if not ephem_file.exists():
-    from astropy.utils.data import download_file
+if '--version' not in sys.argv and not ephem_file.exists():
+    import urllib.request
     import shutil
     url = 'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de432s.bsp'
-    file = download_file(url, cache=True, show_progress=False)
-    shutil.copy(file, ephem_file)
-
+    with urllib.request.urlopen(url, timeout=60) as f_in, open(ephem_file, 'wb') as f_out:
+        shutil.copyfileobj(f_in, f_out)
 
 setup(name='chandra_aca',
       author='Jean Connelly, Tom Aldcroft',

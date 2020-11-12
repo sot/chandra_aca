@@ -21,7 +21,7 @@ def load_kernel():
     kernel_path = Path(__file__).parent / 'data' / 'de432s.bsp'
     if not kernel_path.exists():
         raise FileNotFoundError(f'kernel data file {kernel_path} not found, '
-                                'run "python setup.py --version" to install it locally')
+                                'run "python setup.py build" to install it locally')
     kernel = SPK.open(kernel_path)
     return kernel
 
