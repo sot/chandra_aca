@@ -295,3 +295,10 @@ MAUDE Decom
 
 .. automodule:: chandra_aca.maude_decom
    :members:
+
+
+Planet Positions
+----------------
+
+.. automodule:: chandra_aca.planets
+   :members:
