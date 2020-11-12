@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.centroid_resid &#8212; chandra_aca 4.30.0 documentation</title>
+    <title>chandra_aca.centroid_resid &#8212; chandra_aca 4.31.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.30.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.31.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -70,46 +70,15 @@
 <span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
 <span class="kn">from</span> <span class="nn">kadi</span> <span class="kn">import</span> <span class="n">events</span>
 <span class="kn">from</span> <span class="nn">Ska.Numpy</span> <span class="kn">import</span> <span class="n">interpolate</span>
-<span class="kn">import</span> <span class="nn">Ska.quatutil</span>
 <span class="kn">from</span> <span class="nn">mica.archive</span> <span class="kn">import</span> <span class="n">asp_l1</span>
 <span class="kn">import</span> <span class="nn">mica.starcheck</span>
 <span class="kn">from</span> <span class="nn">Ska.engarchive</span> <span class="kn">import</span> <span class="n">fetch</span>
 <span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
 <span class="kn">import</span> <span class="nn">agasc</span>
-
+<span class="kn">from</span> <span class="nn">Quaternion</span> <span class="kn">import</span> <span class="n">Quat</span>
+<span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">transform</span>
 
 <span class="n">R2A</span> <span class="o">=</span> <span class="mf">206264.81</span>  <span class="c1"># Convert from radians to arcsec</span>
-
-
-<div class="viewcode-block" id="quat_vtransform"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.quat_vtransform">[docs]</a><span class="k">def</span> <span class="nf">quat_vtransform</span><span class="p">(</span><span class="n">qs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Transform a Nx4 matrix of quaternions into a Nx3x3 transform matrix</span>
-<span class="sd">    :returns: Nx3x3 transform matrix</span>
-<span class="sd">    :rtype: numpy array</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">qs</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
-    <span class="n">xx2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">yy2</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">zz2</span> <span class="o">=</span> <span class="n">z</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">xy2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">wz2</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">zx2</span> <span class="o">=</span> <span class="n">z</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">wy2</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">yz2</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="mf">2.</span>
-    <span class="n">wx2</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">2.</span>
-
-    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">qs</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">float</span><span class="p">)</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">yy2</span> <span class="o">-</span> <span class="n">zz2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy2</span> <span class="o">-</span> <span class="n">wz2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">zx2</span> <span class="o">+</span> <span class="n">wy2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy2</span> <span class="o">+</span> <span class="n">wz2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">xx2</span> <span class="o">-</span> <span class="n">zz2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">yz2</span> <span class="o">-</span> <span class="n">wx2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">zx2</span> <span class="o">-</span> <span class="n">wy2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">yz2</span> <span class="o">+</span> <span class="n">wx2</span>
-    <span class="n">t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">xx2</span> <span class="o">-</span> <span class="n">yy2</span>
-
-    <span class="k">return</span> <span class="n">t</span></div>
 
 
 <div class="viewcode-block" id="CentroidResiduals"><a class="viewcode-back" href="../../index.html#chandra_aca.centroid_resid.CentroidResiduals">[docs]</a><span class="k">class</span> <span class="nc">CentroidResiduals</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -241,7 +210,7 @@
             <span class="n">atts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">telem</span><span class="p">[</span><span class="s1">&#39;aoattqt</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span><span class="o">.</span><span class="n">vals</span>
                               <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
             <span class="n">att_times</span> <span class="o">=</span> <span class="n">telem</span><span class="p">[</span><span class="s1">&#39;aoattqt1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">times</span>
-            <span class="c1"># Fetch COBSQID at beginning and end of interval, check they match, and defined obsid</span>
+            <span class="c1"># Fetch COBSQID at beginning and end of interval, check they match, and define obsid</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obsid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">obsid_start</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s1">&#39;COBSRQID&#39;</span><span class="p">,</span> <span class="n">tstart</span><span class="p">,</span> <span class="n">tstart</span> <span class="o">+</span> <span class="mi">60</span><span class="p">)</span>
                 <span class="n">obsid_stop</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s1">&#39;COBSRQID&#39;</span><span class="p">,</span> <span class="n">tstop</span> <span class="o">-</span> <span class="mi">60</span><span class="p">,</span> <span class="n">tstop</span><span class="p">)</span>
@@ -249,8 +218,6 @@
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                         <span class="s2">&quot;Error getting COBSRQID telem for tstart:</span><span class="si">{}</span><span class="s2"> tstop:</span><span class="si">{}</span><span class="s2"> from fetch_source:</span><span class="si">{}</span><span class="s2">&quot;</span>
                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tstart</span><span class="p">,</span> <span class="n">tstop</span><span class="p">,</span> <span class="n">fetch</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">sources</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span>
-                <span class="k">if</span> <span class="n">obsid_start</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">obsid_stop</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time range covers more than one obsid; Not supported.&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">obsid</span> <span class="o">=</span> <span class="n">obsid_start</span><span class="o">.</span><span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;ground&#39;</span><span class="p">:</span>
             <span class="n">atts</span><span class="p">,</span> <span class="n">att_times</span><span class="p">,</span> <span class="n">asol_recs</span> <span class="o">=</span> <span class="n">asp_l1</span><span class="o">.</span><span class="n">get_atts</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">tstart</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">tstop</span><span class="p">)</span>
@@ -420,9 +387,9 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">att_times</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Cannot attempt to calculate residuals with fewer than 2 attitude samples&quot;</span><span class="p">)</span>
-        <span class="n">eci</span> <span class="o">=</span> <span class="n">Ska</span><span class="o">.</span><span class="n">quatutil</span><span class="o">.</span><span class="n">radec2eci</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="p">)</span>
+        <span class="n">eci</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">radec_to_eci</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="p">)</span>
         <span class="c1"># Transform the 3x3 to get the axes to align to have the dot product make sense</span>
-        <span class="n">d_aca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">quat_vtransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atts</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eci</span><span class="p">)</span>
+        <span class="n">d_aca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Quat</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atts</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eci</span><span class="p">)</span>
         <span class="n">p_yags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">R2A</span>
         <span class="n">p_zags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">R2A</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pred_yags</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">p_yags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">att_times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yag_times</span><span class="p">,</span> <span class="nb">sorted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
