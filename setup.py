@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import sys
 from setuptools import setup
 from pathlib import Path
 
@@ -11,7 +12,7 @@ except ImportError:
 # Check for de432s.bsp JPL ephemeris file. This is not kept in the git repo
 # but included in the distribution at chandra_aca/data/de432s.bsp (11 Mb).
 ephem_file = Path('chandra_aca', 'data', 'de432s.bsp')
-if not ephem_file.exists():
+if '--version' not in sys.argv and not ephem_file.exists():
     import urllib.request
     import shutil
     url = 'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de432s.bsp'
