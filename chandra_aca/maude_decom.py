@@ -553,7 +553,7 @@ def _aca_packets_to_table(aca_packets):
             if k in aca_packet:
                 array[i][k] = aca_packet[k]
 
-    table = Table(array)
+    table = Table(array, masked=True)
     if img:
         table['IMG'] = img
         for i, aca_packet in enumerate(aca_packets):
