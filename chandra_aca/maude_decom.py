@@ -549,9 +549,9 @@ def _aca_packets_to_table(aca_packets):
     for i, aca_packet in enumerate(aca_packets):
         if 'IMG' in aca_packet:
             img.append(aca_packet['IMG'])
-        for k in names:
-            if k in aca_packet:
-                array[i][k] = aca_packet[k]
+        for name in names:
+            if name in aca_packet:
+                array[name][i] = aca_packet[name]
 
     table = Table(array)
     if img:
