@@ -347,7 +347,7 @@ def _plot_planets(ax, att, date0, duration):
         eci = get_planet_chandra(planet, dates)
         ra, dec = eci_to_radec(eci)
         yag, zag = radec_to_yagzag(ra, dec, att)
-        row, col = yagzag_to_pixels(yag, zag)
+        row, col = yagzag_to_pixels(yag, zag, allow_bad=True)
 
         # Plot with green at beginning, red at ending
         ax.plot(row, col, '.', color='m', alpha=0.5)
