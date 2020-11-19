@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.31.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.31.1 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.31.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.31.1 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -614,11 +614,11 @@
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">aca_packet</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
         <span class="k">if</span> <span class="s1">&#39;IMG&#39;</span> <span class="ow">in</span> <span class="n">aca_packet</span><span class="p">:</span>
             <span class="n">img</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aca_packet</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">aca_packet</span><span class="p">:</span>
-                <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">aca_packet</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">aca_packet</span><span class="p">:</span>
+                <span class="n">array</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">aca_packet</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
-    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">img</span><span class="p">:</span>
         <span class="n">table</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">aca_packet</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
