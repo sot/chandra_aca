@@ -358,7 +358,8 @@ def unpack_aca_telemetry(packet):
     slots = []
     header_decom = _AcaImageHeaderDecom()
     for img_num, i in enumerate(range(8, len(packet), 27)):
-        img_header = header_decom(img_num, img_types[img_num], packet[i:i + 7])
+        img_header = {'IMGTYPE': img_types[img_num]}
+        img_header.update(header_decom(img_num, img_types[img_num], packet[i:i + 7]))
         img_pixels = _unpack('B' * 20, packet[i + 7:i + 27])
         _pixel_bits[:, -10:] = np.unpackbits(np.array([img_pixels], dtype=np.uint8).T,
                                              axis=1).reshape((-1, 10))
@@ -398,7 +399,6 @@ def unpack_aca_telemetry(packet):
     }
     for i, s in enumerate(slots):
         s.update(res)
-        s['IMGTYPE'] = img_types[i]
     return slots
 
 
@@ -526,32 +526,36 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
             }
 
 
-def _aca_packets_to_table(aca_packets):
+ACA_PACKETS_DTYPE = np.dtype(
+    [('TIME', np.float64), ('VCDUCTR', np.uint32), ('MJF', np.uint32), ('MNF', np.uint32),
+     ('IMGNUM', np.uint32), ('COMMCNT', np.uint8), ('COMMPROG', np.uint8),
+     ('GLBSTAT', np.uint8), ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8),
+     ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
+     ('INTEG', np.uint16), ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
+     ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
+     ('BGDSTAT', np.uint8), ('HIGH_BGD', np.bool), ('RAM_FAIL', np.bool),
+     ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
+     ('COMM_CHECKSUM_FAIL', np.bool), ('RESET', np.bool), ('SYNTAX_ERROR', np.bool),
+     ('COMMCNT_SYNTAX_ERROR', np.bool), ('COMMCNT_CHECKSUM_FAIL', np.bool),
+     ('COMMPROG_REPEAT', np.uint8), ('IMGFID', np.bool),
+     ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
+     ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
+     ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
+     ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64),
+     ('PIXTLM', np.uint8), ('BGDTYP', np.uint8)
+     ]
+)
+
+
+def _aca_packets_to_table(aca_packets, dtype=ACA_PACKETS_DTYPE):
     """
     Store ACA packets in a table.
 
     :param aca_packets: list of dict
+    :param dtype: dtype to use in the resulting table. Optional.
     :return: astropy.table.Table
     """
     import copy
-    dtype = np.dtype(
-        [('TIME', np.float64), ('VCDUCTR', np.uint32), ('MJF', np.uint32), ('MNF', np.uint32),
-         ('IMGNUM', np.uint32), ('COMMCNT', np.uint8), ('COMMPROG', np.uint8),
-         ('GLBSTAT', np.uint8), ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8),
-         ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
-         ('INTEG', np.uint16), ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
-         ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
-         ('BGDSTAT', np.uint8), ('HIGH_BGD', np.bool), ('RAM_FAIL', np.bool),
-         ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
-         ('COMM_CHECKSUM_FAIL', np.bool), ('RESET', np.bool), ('SYNTAX_ERROR', np.bool),
-         ('COMMCNT_SYNTAX_ERROR', np.bool), ('COMMCNT_CHECKSUM_FAIL', np.bool),
-         ('COMMPROG_REPEAT', np.uint8), ('IMGFID', np.bool),
-         ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
-         ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
-         ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
-         ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64),
-         ('PIXTLM', np.uint8), ('BGDTYP', np.uint8),
-         ])
 
     array = np.ma.masked_all(len(aca_packets), dtype=dtype)
     names = copy.deepcopy(dtype.names)
