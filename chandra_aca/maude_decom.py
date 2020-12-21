@@ -130,13 +130,12 @@ def _aca_msid_list(pea):
     # helper method to make a dictionary with all global (non-slot) MSIDs used here
     return {
         'status': 'AOACSTAT',  # ASPECT CAMERA DATA PROCESSING OVERALL STATUS FLAG
-        'command_count': f'{_msid_prefix[pea]}CCMDS',
         'integration_time': f'{_msid_prefix[pea]}ACAINT0',
         'major_frame': 'CVCMJCTR',
         'minor_frame': 'CVCMNCTR',
         'cmd_count': f'{_msid_prefix[pea]}CCMDS',
-        'cmd_progress': f'{_msid_prefix[pea]}AROW2GO'  # NUMBER OF ROWS TO GO COMMAND PROGRESS
-
+        'cmd_progress_to_go': f'{_msid_prefix[pea]}AROW2GO',  # No. of ROWS TO GO COMMAND PROGRESS
+        'cmd_progress': 'AOCMDPG1'  # COMMAND PROGRESS COUNT
     }
 
 
@@ -148,8 +147,8 @@ def _aca_image_msid_list(pea):
     px_nums = [str(n) for n in range(1, 5)]
     px_img_nums = [str(n) for n in range(8)]
 
-    pixels = [[f'{msid_prefix}CIMG{px_img_num}{px_id}{px_num}'
-               for px_num in px_nums for px_id in px_ids]
+    pixels = [sorted([f'{msid_prefix}CIMG{px_img_num}{px_id}{px_num}'
+               for px_num in px_nums for px_id in px_ids])
               for px_img_num in px_img_nums]
 
     res = {
@@ -197,6 +196,13 @@ def _aca_image_msid_list(pea):
         # 'image_function_pea':
         #     [f'{msid_prefix}AIMGF{i}1' for i in range(8)],  # IMAGE FUNCTION1 (PEA)
 
+        'saturated_pixel': [f'{msid_prefix}ASPXF{i}' for i in range(8)], # DEFECTIVE PIXEL FLAG
+        'defective_pixel': [f'{msid_prefix}ADPXF{i}' for i in range(8)], # SATURATED PIXEL FLAG
+        'quad_bound': [f'{msid_prefix}QBNDF{i}' for i in range(8)],  # QUADRANT BOUNDRY FLAG
+        'common_col': [f'{msid_prefix}ACOLF{i}' for i in range(8)],  # COMMON COLUMN FLAG
+        'multi_star': [f'{msid_prefix}AMSTF{i}' for i in range(8)],  # MULTIPLE STAR FLAG
+        'ion_rad': [f'{msid_prefix}AIRDF{i}' for i in range(8)],  # IONIZING RADIATION FLAG
+
         'background_rms': [f'{msid_prefix}CRMSBG{i}' for i in range(8)],
         'background_avg': [f'{msid_prefix}CA00110', f'{msid_prefix}CA00326',
                            f'{msid_prefix}CA00542', f'{msid_prefix}CA00758',
@@ -213,6 +219,10 @@ def _aca_image_msid_list(pea):
         'magnitude': [f'AOACMAG{i}' for i in range(8)],       # STAR OR FIDUCIAL MAGNITUDE (OBC)
         'centroid_ang_y': [f'AOACYAN{i}' for i in range(8)],  # YAG CENTROID Y ANGLE (OBC)
         'centroid_ang_z': [f'AOACZAN{i}' for i in range(8)],  # ZAG CENTROID Z ANGLE (OBC)
+
+        'bgd_stat_pixels': [[f'ACBPX{j}1{i}' for j in 'ABGH'] +
+                            [f'ACBPX{j}4{i}' for j in 'IJOP']
+                            for i in range(8)]
     }
     return [{k: res[k][i] for k in res.keys()} for i in range(8)]
 
