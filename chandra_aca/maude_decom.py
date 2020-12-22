@@ -548,7 +548,7 @@ ACA_PACKETS_DTYPE = np.dtype(
      ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
      ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
      ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64),
-     ('PIXTLM', np.uint8), ('BGDTYP', np.uint8)
+     ('PIXTLM', np.uint8), ('BGDTYP', np.uint8), ('IMG', '<f8', (8, 8))
      ]
 )
 
