@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 import pytest
 
+import maude
 from chandra_aca import maude_decom
 
 
@@ -70,12 +71,12 @@ def test_vcdu_0_raw():
 
 def test_blob_0_raw():
     blobs = maude_decom.get_raw_aca_blobs(176267186, 176267186)
-    t = maude_decom.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
+    t = maude.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
     assert len(t) == 0
 
     ref_data = test_data['686111007-686111017']['raw']
     blobs = maude_decom.get_raw_aca_blobs(686111007, 686111017)
-    t = maude_decom.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
+    t = maude.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
     assert np.all(t['TIME'] == ref_data['TIME'])
     assert np.all(t['CVCMJCTR'] == ref_data['MJF'])
     assert np.all(t['CVCMNCTR'] == ref_data['MNF'])

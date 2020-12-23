@@ -878,6 +878,11 @@ def get_aca_images(start, stop, **maude_kwargs):
     return get_aca_packets(start, stop, level0=True, **maude_kwargs)
 
 
+######################
+# blob-based functions
+######################
+
+
 def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
     """
     Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.
@@ -1048,53 +1053,3 @@ def blob_to_aca_image_dict(blob, imgnum, pea=1):
         result['COBSRQID'] = int(blob['COBSRQID'])
 
     return result
-
-
-def blobs_to_table(blobs, names, types, msid_offsets=None, **_):
-    """
-    Convenience method to convert raw blobs into an astropy.Table.
-
-    Optionally, some MSIDs can be shifted a fixed number of minor frames.
-    NOTE: If any MSID is shifted, the resulting table is not truncated at the end, which causes the
-    table to have missing MSIDs at the end (since they would be in trailing blobs).
-
-    Example usage::
-
-        >>> from chandra_aca import maude_decom
-        >>> blobs = maude_decom.get_raw_aca_blobs(686111007, 686111009)
-        >>> maude_decom.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
-        <Table length=2>
-             TIME     CVCMJCTR CVCMNCTR
-           float64     uint32   uint8
-        ------------- -------- --------
-        686111007.191     8580       96
-        686111008.216     8580      100
-
-    :param blobs:
-    :param names:
-    :param types:
-    :param msid_offsets:
-    :return:
-    """
-    if not msid_offsets:
-        msid_offsets = {}
-    if len(blobs) and 'values' in blobs[0].keys():
-        values = [{c['n']: c['v'] for c in b['values']} for b in blobs]
-    else:
-        values = blobs
-    t = Table()
-    t['TIME'] = np.array([b['time'] for b in blobs], dtype=types[0])
-    n = len(t)
-    for i in range(1, len(names)):
-        name = names[i]
-        offset = msid_offsets[name] if name in msid_offsets else 0
-        t[name] = MaskedColumn(length=n, dtype=types[i], mask=np.ones(n, dtype=bool))
-        ok = [name in v for v in values]
-        v = np.array([v[name] for v in values if name in v], dtype=types[i])
-        a = np.ma.masked_all([n], dtype=types[i])
-        a[ok] = v
-        if offset:
-            t[name][:-offset] = a[offset:]
-        else:
-            t[name] = a
-    return t
