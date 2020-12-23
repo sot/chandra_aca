@@ -1036,13 +1036,16 @@ def blob_to_aca_image_dict(blob, imgnum, pea=1):
         })
 
     if 'AOATTQT1' in blob:
-        result['AOATTQT1'] = blob['AOATTQT1']
+        result['AOATTQT1'] = float(blob['AOATTQT1'])
     if 'AOATTQT2' in blob:
-        result['AOATTQT1'] = blob['AOATTQT2']
+        result['AOATTQT2'] = float(blob['AOATTQT2'])
     if 'AOATTQT3' in blob:
-        result['AOATTQT3'] = blob['AOATTQT3']
+        result['AOATTQT3'] = float(blob['AOATTQT3'])
     if 'AOATTQT4' in blob:
-        result['AOATTQT4'] = blob['AOATTQT4']
+        result['AOATTQT4'] = float(blob['AOATTQT4'])
+
+    if 'COBSRQID' in blob:
+        result['COBSRQID'] = int(blob['COBSRQID'])
 
     return result
 
