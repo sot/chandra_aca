@@ -77,7 +77,7 @@ In the following tables, column index increases to the right and row index incre
 from struct import unpack as _unpack, Struct
 import numpy as np
 
-from astropy.table import Table, vstack, MaskedColumn
+from astropy.table import Table, vstack
 import maude
 
 from Chandra.Time import DateTime
