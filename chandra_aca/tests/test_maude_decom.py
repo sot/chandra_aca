@@ -33,17 +33,17 @@ def _compare_common_columns(t1, t2, keys=None, exclude=()):
         col_1, col_2 = t1[name], t2[name]
         ok = type(col_1) == type(col_2)
         if type(col_1) is table.MaskedColumn and type(col_1) is table.MaskedColumn:
-            ok *= np.all(col_1.mask == col_2.mask)
+            ok &= np.all(col_1.mask == col_2.mask)
         if (np.issubdtype(col_1.dtype, np.inexact) or
                 np.issubdtype(col_1.dtype.base, np.inexact)):
             c = (np.isclose(col_1, col_2) | (np.isnan(col_1) & np.isnan(col_1)))
         else:
             c = (col_1 == col_2)
         if type(col_1) is table.MaskedColumn:
-            if np.sum(~c.mask):
-                ok *= np.all(c[~c.mask])
+            if np.any(~c.mask):
+                ok &= np.all(c[~c.mask])
         else:
-            ok *= np.all(c)
+            ok &= np.all(c)
         if not ok:
             errors.append([name, str(col_1.data), str(col_2.data)])
     if errors:
