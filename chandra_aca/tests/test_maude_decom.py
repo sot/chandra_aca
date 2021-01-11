@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 import pytest
 
+import maude
 from chandra_aca import maude_decom
 
 
@@ -12,6 +13,46 @@ test_data = {}
 
 with open(os.path.join(os.path.dirname(__file__), 'data', 'maude_decom.pkl'), 'rb') as f:
     test_data.update(pickle.load(f))
+
+
+def compare_tables(t1, t2, keys=None, exclude=()):
+    assert len(t1) == len(t2)
+    assert sorted(t1.colnames) == sorted(t2.colnames)
+    _compare_common_columns(t1, t2, keys, exclude)
+
+
+def _compare_common_columns(t1, t2, keys=None, exclude=()):
+    from astropy import table
+
+    if keys is None:
+        keys = [k for k in t1.colnames if k in t2.colnames]
+    for key in exclude:
+        keys.remove(key)
+    errors = []
+    for name in keys:
+        col_1, col_2 = t1[name], t2[name]
+        ok = type(col_1) == type(col_2)
+        if type(col_1) is table.MaskedColumn and type(col_1) is table.MaskedColumn:
+            ok &= np.all(col_1.mask == col_2.mask)
+        if (np.issubdtype(col_1.dtype, np.inexact) or
+                np.issubdtype(col_1.dtype.base, np.inexact)):
+            c = (np.isclose(col_1, col_2) | (np.isnan(col_1) & np.isnan(col_1)))
+        else:
+            c = (col_1 == col_2)
+        if type(col_1) is table.MaskedColumn:
+            if np.any(~c.mask):
+                ok &= np.all(c[~c.mask])
+        else:
+            ok &= np.all(c)
+        if not ok:
+            errors.append([name, str(col_1.data), str(col_2.data)])
+    if errors:
+        msg = 'The following columns do not match:\n\n'
+        for name, e1, e2 in errors:
+            msg += f'  - {name}\n'
+            msg += f'    t1: {e1}\n'
+            msg += f'    t2: {e2}\n\n'
+        raise Exception(msg)
 
 
 def test_vcdu_0_raw():
@@ -26,6 +67,19 @@ def test_vcdu_0_raw():
         assert np.all(data[key] == ref_data[key])
     assert data['packets'] == ref_data['packets']
     assert data['flags'] == ref_data['flags']
+
+
+def test_blob_0_raw():
+    blobs = maude_decom.get_raw_aca_blobs(176267186, 176267186)
+    t = maude.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
+    assert len(t) == 0
+
+    ref_data = test_data['686111007-686111017']['raw']
+    blobs = maude_decom.get_raw_aca_blobs(686111007, 686111017)
+    t = maude.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
+    assert np.all(t['TIME'] == ref_data['TIME'])
+    assert np.all(t['CVCMJCTR'] == ref_data['MJF'])
+    assert np.all(t['CVCMNCTR'] == ref_data['MNF'])
 
 
 def test_scale():
@@ -416,3 +470,9 @@ def test_dynbgd_decom():
                     grouped_packets[key]['TIME', 'VCDUCTR', 'IMGTYPE', 'BGDTYP', 'PIXTLM'] ==
                     grouped_packets_2['TIME', 'VCDUCTR', 'IMGTYPE', 'BGDTYP', 'PIXTLM']
                 )
+
+
+def test_get_aca_blobs():
+    t0 = maude_decom.get_aca_packets(686111007, 686111017, frames=True)
+    t1 = maude_decom.get_aca_packets(686111007, 686111017, blobs=True)
+    compare_tables(t0, t1, exclude=['COMMPROG_REPEAT'])

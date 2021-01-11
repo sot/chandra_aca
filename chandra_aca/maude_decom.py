@@ -130,13 +130,12 @@ def _aca_msid_list(pea):
     # helper method to make a dictionary with all global (non-slot) MSIDs used here
     return {
         'status': 'AOACSTAT',  # ASPECT CAMERA DATA PROCESSING OVERALL STATUS FLAG
-        'command_count': f'{_msid_prefix[pea]}CCMDS',
         'integration_time': f'{_msid_prefix[pea]}ACAINT0',
         'major_frame': 'CVCMJCTR',
         'minor_frame': 'CVCMNCTR',
         'cmd_count': f'{_msid_prefix[pea]}CCMDS',
-        'cmd_progress': f'{_msid_prefix[pea]}AROW2GO'  # NUMBER OF ROWS TO GO COMMAND PROGRESS
-
+        'cmd_progress_to_go': f'{_msid_prefix[pea]}AROW2GO',  # No. of ROWS TO GO COMMAND PROGRESS
+        'cmd_progress': 'AOCMDPG1'  # COMMAND PROGRESS COUNT
     }
 
 
@@ -148,8 +147,8 @@ def _aca_image_msid_list(pea):
     px_nums = [str(n) for n in range(1, 5)]
     px_img_nums = [str(n) for n in range(8)]
 
-    pixels = [[f'{msid_prefix}CIMG{px_img_num}{px_id}{px_num}'
-               for px_num in px_nums for px_id in px_ids]
+    pixels = [sorted([f'{msid_prefix}CIMG{px_img_num}{px_id}{px_num}'
+              for px_num in px_nums for px_id in px_ids])
               for px_img_num in px_img_nums]
 
     res = {
@@ -197,6 +196,13 @@ def _aca_image_msid_list(pea):
         # 'image_function_pea':
         #     [f'{msid_prefix}AIMGF{i}1' for i in range(8)],  # IMAGE FUNCTION1 (PEA)
 
+        'saturated_pixel': [f'{msid_prefix}ASPXF{i}' for i in range(8)],  # DEFECTIVE PIXEL FLAG
+        'defective_pixel': [f'{msid_prefix}ADPXF{i}' for i in range(8)],  # SATURATED PIXEL FLAG
+        'quad_bound': [f'{msid_prefix}QBNDF{i}' for i in range(8)],  # QUADRANT BOUNDRY FLAG
+        'common_col': [f'{msid_prefix}ACOLF{i}' for i in range(8)],  # COMMON COLUMN FLAG
+        'multi_star': [f'{msid_prefix}AMSTF{i}' for i in range(8)],  # MULTIPLE STAR FLAG
+        'ion_rad': [f'{msid_prefix}AIRDF{i}' for i in range(8)],  # IONIZING RADIATION FLAG
+
         'background_rms': [f'{msid_prefix}CRMSBG{i}' for i in range(8)],
         'background_avg': [f'{msid_prefix}CA00110', f'{msid_prefix}CA00326',
                            f'{msid_prefix}CA00542', f'{msid_prefix}CA00758',
@@ -213,6 +219,10 @@ def _aca_image_msid_list(pea):
         'magnitude': [f'AOACMAG{i}' for i in range(8)],       # STAR OR FIDUCIAL MAGNITUDE (OBC)
         'centroid_ang_y': [f'AOACYAN{i}' for i in range(8)],  # YAG CENTROID Y ANGLE (OBC)
         'centroid_ang_z': [f'AOACZAN{i}' for i in range(8)],  # ZAG CENTROID Z ANGLE (OBC)
+
+        'bgd_stat_pixels': [[f'ACBPX{j}1{i}' for j in 'ABGH'] +
+                            [f'ACBPX{j}4{i}' for j in 'IJOP']
+                            for i in range(8)]
     }
     return [{k: res[k][i] for k in res.keys()} for i in range(8)]
 
@@ -348,7 +358,8 @@ def unpack_aca_telemetry(packet):
     slots = []
     header_decom = _AcaImageHeaderDecom()
     for img_num, i in enumerate(range(8, len(packet), 27)):
-        img_header = header_decom(img_num, img_types[img_num], packet[i:i + 7])
+        img_header = {'IMGTYPE': img_types[img_num]}
+        img_header.update(header_decom(img_num, img_types[img_num], packet[i:i + 7]))
         img_pixels = _unpack('B' * 20, packet[i + 7:i + 27])
         _pixel_bits[:, -10:] = np.unpackbits(np.array([img_pixels], dtype=np.uint8).T,
                                              axis=1).reshape((-1, 10))
@@ -388,7 +399,6 @@ def unpack_aca_telemetry(packet):
     }
     for i, s in enumerate(slots):
         s.update(res)
-        s['IMGTYPE'] = img_types[i]
     return slots
 
 
@@ -445,7 +455,7 @@ def _group_packets(packets, discard=True):
         yield res
 
 
-def get_raw_aca_packets(start, stop, **maude_kwargs):
+def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     """
     Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.
 
@@ -458,7 +468,8 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param ``**maude_kwargs``: keyword args passed to maude.get_frames()
+    :param maude_result: the result of calling maude.get_frames. Optional.
+    :param maude_kwargs: keyword args passed to maude.get_frames()
     :return: dict
 
         {'flags': int, 'packets': [],
@@ -490,7 +501,12 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
               (aca_frame_times[:, 0] <= date_stop.secs))
 
     # get the frames and unpack front matter
-    frames = maude.get_frames(start=date_start, stop=date_stop + stop_pad, **maude_kwargs)['data']
+    if maude_result is None:
+        frames = maude.get_frames(start=date_start,
+                                  stop=date_stop + stop_pad,
+                                  **maude_kwargs)['data']
+    else:
+        frames = maude_result['data']
     flags = frames['f']
     frames = frames['frames']
 
@@ -516,34 +532,41 @@ def get_raw_aca_packets(start, stop, **maude_kwargs):
             }
 
 
-def _aca_packets_to_table(aca_packets):
+ACA_PACKETS_DTYPE = np.dtype(
+    [('TIME', np.float64), ('VCDUCTR', np.uint32), ('MJF', np.uint32), ('MNF', np.uint32),
+     ('IMGNUM', np.uint32), ('COMMCNT', np.uint8), ('COMMPROG', np.uint8),
+     ('GLBSTAT', np.uint8), ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8),
+     ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
+     ('INTEG', np.uint16), ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
+     ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
+     ('BGDSTAT', np.uint8), ('HIGH_BGD', np.bool), ('RAM_FAIL', np.bool),
+     ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
+     ('COMM_CHECKSUM_FAIL', np.bool), ('RESET', np.bool), ('SYNTAX_ERROR', np.bool),
+     ('COMMCNT_SYNTAX_ERROR', np.bool), ('COMMCNT_CHECKSUM_FAIL', np.bool),
+     ('COMMPROG_REPEAT', np.uint8), ('IMGFID', np.bool),
+     ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
+     ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
+     ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
+     ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64),
+     ('PIXTLM', np.uint8), ('BGDTYP', np.uint8), ('IMG', '<f8', (8, 8))
+     ]
+)
+
+
+def _aca_packets_to_table(aca_packets, dtype=None):
     """
     Store ACA packets in a table.
 
     :param aca_packets: list of dict
+    :param dtype: dtype to use in the resulting table. Optional.
     :return: astropy.table.Table
     """
     import copy
-    dtype = np.dtype(
-        [('TIME', np.float64), ('VCDUCTR', np.uint32), ('MJF', np.uint32), ('MNF', np.uint32),
-         ('IMGNUM', np.uint32), ('COMMCNT', np.uint8), ('COMMPROG', np.uint8),
-         ('GLBSTAT', np.uint8), ('IMGFUNC', np.uint32), ('IMGTYPE', np.uint8),
-         ('IMGSCALE', np.uint16), ('IMGROW0', np.int16), ('IMGCOL0', np.int16),
-         ('INTEG', np.uint16), ('BGDAVG', np.uint16), ('BGDRMS', np.uint16), ('TEMPCCD', np.int16),
-         ('TEMPHOUS', np.int16), ('TEMPPRIM', np.int16), ('TEMPSEC', np.int16),
-         ('BGDSTAT', np.uint8), ('HIGH_BGD', np.bool), ('RAM_FAIL', np.bool),
-         ('ROM_FAIL', np.bool), ('POWER_FAIL', np.bool), ('CAL_FAIL', np.bool),
-         ('COMM_CHECKSUM_FAIL', np.bool), ('RESET', np.bool), ('SYNTAX_ERROR', np.bool),
-         ('COMMCNT_SYNTAX_ERROR', np.bool), ('COMMCNT_CHECKSUM_FAIL', np.bool),
-         ('COMMPROG_REPEAT', np.uint8), ('IMGFID', np.bool),
-         ('IMGSTAT', np.uint8), ('SAT_PIXEL', np.bool), ('DEF_PIXEL', np.bool),
-         ('QUAD_BOUND', np.bool), ('COMMON_COL', np.bool), ('MULTI_STAR', np.bool),
-         ('ION_RAD', np.bool), ('IMGROW_A1', np.int16), ('IMGCOL_A1', np.int16),
-         ('IMGROW0_8X8', np.int16), ('IMGCOL0_8X8', np.int16), ('END_INTEG_TIME', np.float64),
-         ('PIXTLM', np.uint8), ('BGDTYP', np.uint8),
-         ])
 
-    array = np.ma.masked_all(len(aca_packets), dtype=dtype)
+    if dtype is None:
+        dtype = ACA_PACKETS_DTYPE
+
+    array = np.ma.masked_all([len(aca_packets)], dtype=dtype)
     names = copy.deepcopy(dtype.names)
     img = []
     for i, aca_packet in enumerate(aca_packets):
@@ -563,6 +586,7 @@ def _aca_packets_to_table(aca_packets):
 
 def get_aca_packets(start, stop, level0=False,
                     combine=False, adjust_time=False, calibrate=False,
+                    blobs=None, frames=None, dtype=None,
                     **maude_kwargs):
     """
     Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
@@ -711,17 +735,33 @@ def get_aca_packets(start, stop, level0=False,
     :param calibrate: bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
-    :param ``**maude_kwargs``: keyword args passed to maude
+    :param blobs: bool or dict
+        If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
+        output of maude.get_blobs ({'blobs': ... }).
+    :param frames: bool or dict
+        If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
+        output of maude.get_frames ({'data': ... }).
+    :param dtype: np.dtype. Optional.
+        the dtype to use when creating the resulting table. This is useful to add columns
+        including MSIDs that are present in blobs. If used with frames, most probably you will get
+        and empty column. This option is intended to augment the default dtype. If a more
+        restrictive dtype is used, a KeyError can be raised.
+    :param maude_kwargs: keyword args passed to maude
     :return: astropy.table.Table
     """
+    if not blobs and not frames:
+        frames = True
+
+    assert (blobs and not frames) or (frames and not blobs), "Specify only one of 'frames' or blobs"
+
     if level0:
         adjust_time = True
         combine = True
         calibrate = True
 
-    start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
-    if 24 * (stop - start) > 3:
-        raise ValueError(f'Requested {24 * (stop - start)} hours of telemetry. '
+    date_start, date_stop = DateTime(start), DateTime(stop)  # ensure input is proper date
+    if 24 * (date_stop - date_start) > 3:
+        raise ValueError(f'Requested {24 * (date_stop - date_start)} hours of telemetry. '
                          'Maximum allowed is 3 hours at a time')
 
     stop_pad = 0
@@ -730,23 +770,38 @@ def get_aca_packets(start, stop, level0=False,
     if combine:
         stop_pad += 3.08 / 86400  # there can be trailing frames
 
-    n = int(np.ceil(86400 * (stop - start) / 300))
-    dt = (stop - start) / n
-    batches = [(start + i * dt, start + (i + 1) * dt) for i in range(n)]  # 0.0001????
-    aca_packets = []
-    for t1, t2 in batches:
-        raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad, **maude_kwargs)
-        packets = _get_aca_packets(
-            raw_aca_packets, t1, t2,
-            combine=combine, adjust_time=adjust_time, calibrate=calibrate
-        )
-        aca_packets.append(packets)
-
-    return vstack(aca_packets)
+    if frames:
+        n = int(np.ceil(86400 * (date_stop - date_start) / 300))
+        dt = (date_stop - date_start) / n
+        batches = [(date_start + i * dt, date_start + (i + 1) * dt) for i in range(n)]  # 0.0001????
+        aca_packets = []
+        for t1, t2 in batches:
+            maude_result = frames if type(frames) is dict and 'data' in frames else None
+            raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad,
+                                                  maude_result=maude_result,
+                                                  **maude_kwargs)
+            packets = _get_aca_packets(
+                raw_aca_packets, t1, t2,
+                combine=combine, adjust_time=adjust_time, calibrate=calibrate, dtype=dtype
+            )
+            aca_packets.append(packets)
+        aca_data = vstack(aca_packets)
+    else:
+        maude_result = frames if type(frames) is dict and 'data' in frames else None
+        merged_blobs = get_raw_aca_blobs(date_start, date_stop,
+                                         maude_result=maude_result,
+                                         **maude_kwargs)['blobs']
+        aca_packets = [[blob_to_aca_image_dict(b, i) for b in merged_blobs] for i in range(8)]
+        aca_data = _get_aca_packets(aca_packets, date_start, date_stop + stop_pad,
+                                    combine=combine, adjust_time=adjust_time, calibrate=calibrate,
+                                    blobs=True,
+                                    dtype=dtype)
+    return aca_data
 
 
 def _get_aca_packets(aca_packets, start, stop,
-                     combine=False, adjust_time=False, calibrate=False):
+                     combine=False, adjust_time=False, calibrate=False,
+                     blobs=False, dtype=None):
     """
     This is a convenience function that splits get_aca_packets for testing without MAUDE.
     Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.
@@ -755,23 +810,26 @@ def _get_aca_packets(aca_packets, start, stop,
     """
     start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
 
-    aca_packets['decom_packets'] = [unpack_aca_telemetry(a) for a in aca_packets['packets']]
-    for i in range(len(aca_packets['decom_packets'])):
-        for j in range(8):
-            aca_packets['decom_packets'][i][j]['TIME'] = aca_packets['TIME'][i]
-            aca_packets['decom_packets'][i][j]['MJF'] = aca_packets['MJF'][i]
-            aca_packets['decom_packets'][i][j]['MNF'] = aca_packets['MNF'][i]
-            if 'VCDUCTR' in aca_packets:
-                aca_packets['decom_packets'][i][j]['VCDUCTR'] = aca_packets['VCDUCTR'][i]
-            aca_packets['decom_packets'][i][j]['IMGNUM'] = j
+    if not blobs:
+        # this adds TIME, MJF, MNF and VCDUCTR, which is already there in the blob dictionary
+        aca_packets['decom_packets'] = [unpack_aca_telemetry(a) for a in aca_packets['packets']]
+        for i in range(len(aca_packets['decom_packets'])):
+            for j in range(8):
+                aca_packets['decom_packets'][i][j]['TIME'] = aca_packets['TIME'][i]
+                aca_packets['decom_packets'][i][j]['MJF'] = aca_packets['MJF'][i]
+                aca_packets['decom_packets'][i][j]['MNF'] = aca_packets['MNF'][i]
+                if 'VCDUCTR' in aca_packets:
+                    aca_packets['decom_packets'][i][j]['VCDUCTR'] = aca_packets['VCDUCTR'][i]
+                aca_packets['decom_packets'][i][j]['IMGNUM'] = j
 
-    aca_packets = [[f[i] for f in aca_packets['decom_packets']] for i in range(8)]
+        aca_packets = [[f[i] for f in aca_packets['decom_packets']] for i in range(8)]
+
     if combine:
         aca_packets = sum([[_combine_aca_packets(g) for g in _group_packets(p)]
                            for p in aca_packets], [])
     else:
         aca_packets = [_combine_aca_packets([row]) for slot in aca_packets for row in slot]
-    table = _aca_packets_to_table(aca_packets)
+    table = _aca_packets_to_table(aca_packets, dtype=dtype)
 
     if calibrate:
         for k in ['TEMPCCD', 'TEMPSEC', 'TEMPHOUS', 'TEMPPRIM']:
@@ -803,6 +861,8 @@ def _get_aca_packets(aca_packets, start, stop,
             table['IMG'] = table['IMG'] * table['IMGSCALE'][:, np.newaxis, np.newaxis] / 32 - 50
 
     table = table[(table['TIME'] >= start.secs) * (table['TIME'] < stop.secs)]
+    if dtype:
+        table = table[dtype.names]
     return table
 
 
@@ -812,7 +872,184 @@ def get_aca_images(start, stop, **maude_kwargs):
 
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param ``**maude_kwargs``: keyword args passed to maude
+    :param maude_kwargs: keyword args passed to maude
     :return: astropy.table.Table
     """
     return get_aca_packets(start, stop, level0=True, **maude_kwargs)
+
+
+######################
+# blob-based functions
+######################
+
+
+def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
+    """
+    Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.
+
+    If the first minor frame in a group of four ACA packets is within (start, stop),
+    the three following minor frames are included if present.
+
+    returns a dictionary with keys ['TIME', 'MNF', 'MJF', 'packets', 'flags'].
+    These correspond to the minor frame time, minor frame count, major frame count,
+    the list of packets, and flags returned by MAUDE respectively.
+
+    This is to blobs what `get_raw_aca_packets` is to frames.
+
+    :param start: timestamp interpreted as a Chandra.Time.DateTime
+    :param stop: timestamp interpreted as a Chandra.Time.DateTime
+    :param maude_result: the result of calling maude.get_blobs. Optional.
+    :param maude_kwargs: keyword args passed to maude.get_frames()
+    :return: dict
+        {'blobs': [], 'names': np.array([]), 'types': np.array([])}
+    """
+    date_start, date_stop = DateTime(start), DateTime(stop)  # ensure input is proper date
+    stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
+
+    if maude_result is None:
+        maude_blobs = maude.get_blobs(start=date_start,
+                                      stop=date_stop + stop_pad,
+                                      **maude_kwargs)
+    else:
+        maude_blobs = maude_result
+
+    aca_block_start = [ACA_SLOT_MSID_LIST[1][3]['sizes'] in [c['n']for c in b['values']]
+                       for b in maude_blobs['blobs']]
+    if not np.any(aca_block_start):
+        maude_blobs['blobs'] = []
+        return maude_blobs
+    maude_blobs['blobs'] = maude_blobs['blobs'][np.argwhere(aca_block_start).min():]
+    if len(maude_blobs['blobs']) % 4:
+        maude_blobs['blobs'] = maude_blobs['blobs'][:-(len(maude_blobs['blobs']) % 4)]
+    for b in maude_blobs['blobs']:
+        b['values'] = {v['n']: v['v'] for v in b['values']}
+
+    merged_blobs = []
+    for i in range(0, len(maude_blobs['blobs']), 4):
+        b = {'time': maude_blobs['blobs'][i]['time']}
+        # blobs are merged in reverse order so the frame counters are the one in the first blob.
+        for j in range(4)[::-1]:
+            b.update(maude_blobs['blobs'][i + j]['values'])
+        merged_blobs.append(b)
+
+    result = {
+        'blobs': [b for b in merged_blobs if b['time'] < date_stop.secs],
+        'names': maude_blobs['names'],
+        'types': maude_blobs['types'],
+    }
+    return result
+
+
+def blob_to_aca_image_dict(blob, imgnum, pea=1):
+    """
+    Assemble ACA image MSIDs from a blob into a dictionary.
+
+    This does to blobs what unpack_aca_telemetry does to frames, but for a single image.
+
+    :param blob:
+    :param imgnum:
+    :param pea:
+    :return:
+    """
+    global_msids = ACA_MSID_LIST[pea]
+    slot_msids = ACA_SLOT_MSID_LIST[pea][imgnum]
+    glbstat_bits = np.unpackbits(np.array(blob[global_msids['status']], dtype=np.uint8))
+    comm_count_bits = np.unpackbits(np.array(blob[global_msids['cmd_count']], dtype=np.uint8))
+    comm_prog_bits = np.unpackbits(np.array(blob[global_msids['cmd_progress']], dtype=np.uint8))
+    result = {
+        'TIME': float(blob['time']),
+        'MJF': int(blob['CVCMJCTR']),
+        'MNF': int(blob['CVCMNCTR']),
+        'VCDUCTR': int(blob['CVCDUCTR']),
+        'IMGNUM': imgnum,
+        'IMGTYPE': int(blob[slot_msids['sizes']]),
+        # 'IMGFID': '1' == blob[slot_msids['fiducial_flag']],
+        # 'IMGNUM': imgnum,
+        # 'IMGFUNC': int(blob[slot_msids['image_function']]),
+        # 'IMGSTAT': int(blob[slot_msids['image_status']]),
+        'pixels': np.array([int(blob[pixel]) for pixel in slot_msids['pixels'] if pixel in blob]),
+        'PIXTLM': 0,  # unused
+        'BGDTYP': 0,  # unused
+        'INTEG': int(blob[global_msids['integration_time']]),
+        'GLBSTAT': int(blob[global_msids['status']]),
+        'HIGH_BGD': bool(glbstat_bits[0]),
+        'RAM_FAIL': bool(glbstat_bits[1]),
+        'ROM_FAIL': bool(glbstat_bits[2]),
+        'POWER_FAIL': bool(glbstat_bits[3]),
+        'CAL_FAIL': bool(glbstat_bits[4]),
+        'COMM_CHECKSUM_FAIL': bool(glbstat_bits[5]),
+        'RESET': bool(glbstat_bits[6]),
+        'SYNTAX_ERROR': bool(glbstat_bits[7]),
+        'COMMCNT': _packbits(comm_count_bits[1:6]),
+        'COMMCNT_SYNTAX_ERROR': comm_count_bits[6],
+        'COMMCNT_CHECKSUM_FAIL': comm_count_bits[7],
+        'COMMPROG': int(blob[global_msids['cmd_progress_to_go']]),
+        'COMMPROG_REPEAT': _packbits(comm_prog_bits[6:8]),
+    }
+
+    if result['IMGTYPE'] in [0, 1, 4]:
+        imgstat_bits = np.array([blob[slot_msids['saturated_pixel']],
+                                 blob[slot_msids['defective_pixel']],
+                                 blob[slot_msids['quad_bound']],
+                                 blob[slot_msids['common_col']],
+                                 blob[slot_msids['multi_star']],
+                                 blob[slot_msids['ion_rad']]]).astype(int)
+        imgstat = int(_packbits(imgstat_bits))
+
+        result.update({
+            'IMGFID': '1' == blob[slot_msids['fiducial_flag']],
+            'IMGNUM': imgnum,
+            'IMGFUNC': int(blob[slot_msids['image_function']]),
+            'IMGSTAT': imgstat,
+            'SAT_PIXEL': bool(int(blob[slot_msids['saturated_pixel']])),
+            'DEF_PIXEL': bool(int(blob[slot_msids['defective_pixel']])),
+            'QUAD_BOUND': bool(int(blob[slot_msids['quad_bound']])),
+            'COMMON_COL': bool(int(blob[slot_msids['common_col']])),
+            'MULTI_STAR': bool(int(blob[slot_msids['multi_star']])),
+            'ION_RAD': bool(int(blob[slot_msids['ion_rad']])),
+            'IMGROW0': int(blob[slot_msids['rows']]),
+            'IMGCOL0': int(blob[slot_msids['cols']]),
+            # 'IMGSCALE': float(blob[slot_msids['scale_factor']]),  # this is scale / 32
+            'IMGSCALE': np.round(float(blob[slot_msids['scale_factor']]) * 32).astype(int),
+            'BGDAVG': int(blob[slot_msids['background_avg']]),
+        })
+
+    if result['IMGTYPE'] in [2, 5]:
+        bgd_stat_pixels = [int(blob[pixel]) for pixel in slot_msids['bgd_stat_pixels']]
+        result.update({
+            'BGDRMS': int(blob[slot_msids['background_rms']]),
+            # 'TEMPCCD': float(blob[slot_msids['ccd_temperature']]),  # this is 0.4 * T
+            # 'TEMPHOUS': float(blob[slot_msids['housing_temperature']]),  # this is 0.4 * T
+            # 'TEMPPRIM': float(blob[slot_msids['primary_temperature']]),  # this is 0.4 * T
+            # 'TEMPSEC': float(blob[slot_msids['secondary_temperature']]),  # this is 0.4 * T
+            'TEMPCCD': np.round(float(blob[slot_msids['ccd_temperature']]) / 0.4).astype(int),
+            'TEMPHOUS': np.round(float(blob[slot_msids['housing_temperature']]) / 0.4).astype(int),
+            'TEMPPRIM': np.round(float(blob[slot_msids['primary_temperature']]) / 0.4).astype(int),
+            'TEMPSEC': np.round(float(blob[slot_msids['secondary_temperature']]) / 0.4).astype(int),
+            'BGDSTAT': int(_packbits(bgd_stat_pixels)),
+            'BGDSTAT_PIXELS': bgd_stat_pixels,
+        })
+    if result['IMGTYPE'] in [6, 7]:
+        result.update({
+            'DIAGNOSTIC': (0, 0, 0, 0, 0, 0)  # not set, and is not used downstream yet.
+        })
+
+    if slot_msids['centroid_ang_y'] in blob:
+        result.update({
+            'YAGS': float(blob[slot_msids['centroid_ang_y']]),
+            'ZAGS': float(blob[slot_msids['centroid_ang_z']])
+        })
+
+    if 'AOATTQT1' in blob:
+        result['AOATTQT1'] = float(blob['AOATTQT1'])
+    if 'AOATTQT2' in blob:
+        result['AOATTQT2'] = float(blob['AOATTQT2'])
+    if 'AOATTQT3' in blob:
+        result['AOATTQT3'] = float(blob['AOATTQT3'])
+    if 'AOATTQT4' in blob:
+        result['AOATTQT4'] = float(blob['AOATTQT4'])
+
+    if 'COBSRQID' in blob:
+        result['COBSRQID'] = int(blob['COBSRQID'])
+
+    return result
