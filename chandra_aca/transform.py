@@ -403,6 +403,38 @@ def calc_targ_from_aca(aca, y_off, z_off, si_align=None):
     return q_targ
 
 
+def calc_target_offsets(aca, ra_targ, dec_targ, si_align=None):
+    """
+    Calculates required Y and Z offsets (deg) required from a target RA, Dec to
+    arrive at the desired PCAD pointing ``aca``.
+
+    :param aca: PCAD attitude (any Quat-compliant initializer)
+    :param ra_targ: RA of science target from OR/Obscat
+    :param dec_targ: Dec of science target from OR/Obscat
+    :param si_align: SI ALIGN matrix (default=ODB)
+
+    :rtype: tuple (y_off, z_off) degrees
+    """
+    if si_align is None:
+        si_align = ODB_SI_ALIGN
+
+    # Convert si_align transform matrix into a Quaternion
+    q_si_align = Quat(si_align)
+
+    # Pointing quaternion
+    q_aca = Quat(aca)
+
+    # Pointing quaternion of nominal HRMA frame after adjusting for the alignment offset.
+    # The sense of si_align is that q_hrma = q_pcad * si_align, where si_align is
+    # effectively a delta quaternion.
+    q_hrma = q_aca * q_si_align
+
+    # the y and z offsets of the target in that frame, in degrees
+    y_off, z_off = radec_to_yagzag(ra_targ, dec_targ, q_hrma)
+
+    return y_off / 3600, z_off / 3600
+
+
 def radec_to_yagzag(ra, dec, q_att):
     """
     Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The

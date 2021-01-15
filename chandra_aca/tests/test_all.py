@@ -13,9 +13,9 @@ from Quaternion import Quat
 from Chandra.Time import DateTime
 
 import chandra_aca
-from chandra_aca.transform import (snr_mag_for_t_ccd, radec_to_yagzag,
+from chandra_aca.transform import (calc_aca_from_targ, snr_mag_for_t_ccd, radec_to_yagzag,
                                    yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels,
-                                   eci_to_radec, radec_to_eci)
+                                   eci_to_radec, radec_to_eci, calc_target_offsets)
 from chandra_aca import drift
 
 dirname = os.path.dirname(__file__)
@@ -402,3 +402,15 @@ def test_radec_yagzag_quat_init():
     ra1, dec1 = yagzag_to_radec(100.1, 200.1, att)
     assert dec0 == dec1
     assert ra0 == ra1
+
+
+def test_calc_target_offsets():
+    targ = [10.0, 89.0, 30.0]
+    y_off = 0.5  # deg
+    z_off = -0.5
+    aca = calc_aca_from_targ(targ, y_off, z_off)
+    y_off_out, z_off_out = calc_target_offsets(aca, targ[0], targ[1])
+
+    # Match within 0.1 arcsec at 30 arcmin offset
+    assert np.isclose(y_off, y_off_out, rtol=0, atol=0.1 / 3600)
+    assert np.isclose(z_off, z_off_out, rtol=0, atol=0.1 / 3600)
