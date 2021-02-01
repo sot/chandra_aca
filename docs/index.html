@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca &#8212; chandra_aca 4.31.1 documentation</title>
+    <title>chandra_aca &#8212; chandra_aca 4.32.0 documentation</title>
     <link rel="stylesheet" href="_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="#">chandra_aca 4.31.1 documentation</a>
+	<a href="#">chandra_aca 4.32.0 documentation</a>
 	 &#187;
       </li>
       
@@ -67,8 +67,75 @@
 Camera Assembly and associated aspect functionality.</p>
 <div class="toctree-wrapper compound">
 </div>
-<div class="section" id="plotting">
-<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-chandra_aca.plot">
+<span id="plotting"></span><h2>Plotting<a class="headerlink" href="#module-chandra_aca.plot" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="chandra_aca.plot.bad_acq_stars">
+<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">bad_acq_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#bad_acq_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.bad_acq_stars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return mask of ‘bad’ stars, by evaluating AGASC star parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>stars</strong> – astropy table-compatible set of agasc records of stars. Required fields
+are [‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>boolean mask true for ‘bad’ stars</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.plot.plot_compass">
+<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_compass</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roll</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_compass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_compass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a compass plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>roll</strong> – Attitude roll for compass plot.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>matplotlib figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.plot.plot_stars">
+<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attitude</span></em>, <em class="sig-param"><span class="n">catalog</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">starcat_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">red_mag_lim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quad_bound</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">grid</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">bad_stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">plot_keepout</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_stars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a catalog, a star field, or both in a matplotlib figure.
+If supplying a star field, an attitude must also be supplied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attitude</strong> – A Quaternion compatible attitude for the pointing</p></li>
+<li><p><strong>catalog</strong> – Records describing catalog.  Must be astropy table compatible.
+Required fields are [‘idx’, ‘type’, ‘yang’, ‘zang’, ‘halfw’]</p></li>
+<li><p><strong>stars</strong> – astropy table compatible set of agasc records of stars
+Required fields are [‘RA_PMCORR’, ‘DEC_PMCORR’, ‘MAG_ACA’, ‘MAG_ACA_ERR’].
+If bad_acq_stars will be called (bad_stars is None), additional required fields
+[‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]
+If stars is None, stars will be fetched from the AGASC for the
+supplied attitude.</p></li>
+<li><p><strong>title</strong> – string to be used as suptitle for the figure</p></li>
+<li><p><strong>starcat_time</strong> – DateTime-compatible time.  Used in ACASC fetch for proper
+motion correction.  Not used if stars is not None.</p></li>
+<li><p><strong>red_mag_lim</strong> – faint limit for field star plotting.</p></li>
+<li><p><strong>quad_bound</strong> – boolean, plot inner quadrant boundaries</p></li>
+<li><p><strong>grid</strong> – boolean, plot axis grid</p></li>
+<li><p><strong>bad_stars</strong> – boolean mask on ‘stars’ of those that don’t meet minimum requirements
+to be selected as acq stars.  If None, bad_stars will be set by a call
+to bad_acq_stars().</p></li>
+<li><p><strong>plot_keepout</strong> – plot CCD area to be avoided in star selection (default=False)</p></li>
+<li><p><strong>ax</strong> – matplotlib axes object to use (optional)</p></li>
+<li><p><strong>duration</strong> – duration (starting at <code class="docutils literal notranslate"><span class="pre">starcat_time</span></code>) for plotting planets
+(secs, default=0 =&gt; no planet checks)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>matplotlib figure</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-chandra_aca.star_probs">
 <span id="star-probabilities"></span><h2>Star probabilities<a class="headerlink" href="#module-chandra_aca.star_probs" title="Permalink to this headline">¶</a></h2>
@@ -491,6 +558,26 @@ Y,Z offset (per OR-list).</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>q_targ (Quat)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.transform.calc_target_offsets">
+<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">calc_target_offsets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">aca</span></em>, <em class="sig-param"><span class="n">ra_targ</span></em>, <em class="sig-param"><span class="n">dec_targ</span></em>, <em class="sig-param"><span class="n">si_align</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_target_offsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.calc_target_offsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates required Y and Z offsets (deg) required from a target RA, Dec to
+arrive at the desired PCAD pointing <code class="docutils literal notranslate"><span class="pre">aca</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>aca</strong> – PCAD attitude (any Quat-compliant initializer)</p></li>
+<li><p><strong>ra_targ</strong> – RA of science target from OR/Obscat</p></li>
+<li><p><strong>dec_targ</strong> – Dec of science target from OR/Obscat</p></li>
+<li><p><strong>si_align</strong> – SI ALIGN matrix (default=ODB)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple (y_off, z_off) degrees</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1409,6 +1496,25 @@ In the following tables, column index increases to the right and row index incre
 </pre></div>
 </div>
 <dl class="py function">
+<dt id="chandra_aca.maude_decom.blob_to_aca_image_dict">
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">blob_to_aca_image_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">blob</span></em>, <em class="sig-param"><span class="n">imgnum</span></em>, <em class="sig-param"><span class="n">pea</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#blob_to_aca_image_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.blob_to_aca_image_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assemble ACA image MSIDs from a blob into a dictionary.</p>
+<p>This does to blobs what unpack_aca_telemetry does to frames, but for a single image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blob</strong> – </p></li>
+<li><p><strong>imgnum</strong> – </p></li>
+<li><p><strong>pea</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="chandra_aca.maude_decom.get_aca_images">
 <code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_aca_images</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch ACA image telemetry</p>
@@ -1417,7 +1523,7 @@ In the following tables, column index increases to the right and row index incre
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
 <li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>**maude_kwargs</strong> – keyword args passed to maude</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1428,7 +1534,7 @@ In the following tables, column index increases to the right and row index incre
 
 <dl class="py function">
 <dt id="chandra_aca.maude_decom.get_aca_packets">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">level0</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">combine</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">adjust_time</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">calibrate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_packets" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">level0</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">combine</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">adjust_time</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">calibrate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">blobs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frames</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</p>
 <p>Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
 with complete ACA telemetry. Compare these to calls to the function:</p>
@@ -1580,7 +1686,18 @@ If True, half the integration time is subtracted</p></li>
 <li><p><strong>calibrate</strong> – bool
 If True, pixel values will be ‘value * imgscale / 32 - 50’ and temperature values will
 be: 0.4 * value + 273.15</p></li>
-<li><p><strong>**maude_kwargs</strong> – keyword args passed to maude</p></li>
+<li><p><strong>blobs</strong> – bool or dict
+If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
+output of maude.get_blobs ({‘blobs’: … }).</p></li>
+<li><p><strong>frames</strong> – bool or dict
+If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
+output of maude.get_frames ({‘data’: … }).</p></li>
+<li><p><strong>dtype</strong> – np.dtype. Optional.
+the dtype to use when creating the resulting table. This is useful to add columns
+including MSIDs that are present in blobs. If used with frames, most probably you will get
+and empty column. This option is intended to augment the default dtype. If a more
+restrictive dtype is used, a KeyError can be raised.</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1590,8 +1707,34 @@ be: 0.4 * value + 273.15</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt id="chandra_aca.maude_decom.get_raw_aca_blobs">
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_raw_aca_blobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">maude_result</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_blobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_blobs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</p>
+<p>If the first minor frame in a group of four ACA packets is within (start, stop),
+the three following minor frames are included if present.</p>
+<p>returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
+These correspond to the minor frame time, minor frame count, major frame count,
+the list of packets, and flags returned by MAUDE respectively.</p>
+<p>This is to blobs what <cite>get_raw_aca_packets</cite> is to frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>maude_result</strong> – the result of calling maude.get_blobs. Optional.</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict
+{‘blobs’: [], ‘names’: np.array([]), ‘types’: np.array([])}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="chandra_aca.maude_decom.get_raw_aca_packets">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_raw_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_packets" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_raw_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">maude_result</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</p>
 <p>If the first minor frame in a group of four ACA packets is within (start, stop),
 the three following minor frames are included if present.</p>
@@ -1603,7 +1746,8 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
 <li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>**maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
+<li><p><strong>maude_result</strong> – the result of calling maude.get_frames. Optional.</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1633,8 +1777,113 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="planet-positions">
-<h2>Planet Positions<a class="headerlink" href="#planet-positions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-chandra_aca.planets">
+<span id="planet-positions"></span><h2>Planet Positions<a class="headerlink" href="#module-chandra_aca.planets" title="Permalink to this headline">¶</a></h2>
+<p>Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.</p>
+<dl class="py function">
+<dt id="chandra_aca.planets.get_planet_barycentric">
+<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_barycentric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_barycentric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_barycentric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get barycentric position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<p>This uses the built-in JPL ephemeris file DE432s and jplephem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>body</strong> – Body name (lower case planet name)</p></li>
+<li><p><strong>time</strong> – Time or times for returned position (default=NOW)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>barycentric position (km) as (x, y, z) or N x (x, y, z)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.planets.get_planet_chandra">
+<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_chandra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code> relative to Chandra.</p>
+<p>This uses the built-in JPL ephemeris file DE432s and jplephem, along with
+the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
+is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from Earth
+to <code class="docutils literal notranslate"><span class="pre">body</span></code> to generate the apparent position on Earth at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>body</strong> – Body name</p></li>
+<li><p><strong>time</strong> – Time or times for returned position (default=NOW)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>position relative to Chandra (km) as (x, y, z) or N x (x, y, z)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.planets.get_planet_chandra_horizons">
+<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_chandra_horizons</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">timestart</span></em>, <em class="sig-param"><span class="n">timestop</span></em>, <em class="sig-param"><span class="n">n_times</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra_horizons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra_horizons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get body position, rate, mag, surface brightness, diameter from Horizons.</p>
+<p>This function queries the JPL Horizons site using the CGI batch interface
+(See <a class="reference external" href="https://ssd.jpl.nasa.gov/horizons_batch.cgi">https://ssd.jpl.nasa.gov/horizons_batch.cgi</a> for docs).</p>
+<p>The return value is an astropy Table with columns: time, ra, dec, rate_ra,
+rate_dec, mag, surf_brt, ang_diam. The units are included in the table
+columns. The <code class="docutils literal notranslate"><span class="pre">time</span></code> column is a <code class="docutils literal notranslate"><span class="pre">CxoTime</span></code> object.</p>
+<p>The returned Table has a meta key value <code class="docutils literal notranslate"><span class="pre">response_text</span></code> with the full text
+of the Horizons response.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.planets</span> <span class="kn">import</span> <span class="n">get_planet_chandra_horizons</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">get_planet_chandra_horizons</span><span class="p">(</span><span class="s1">&#39;jupiter&#39;</span><span class="p">,</span> <span class="s1">&#39;2020:001&#39;</span><span class="p">,</span> <span class="s1">&#39;2020:002&#39;</span><span class="p">,</span> <span class="n">n_times</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span>
+<span class="go">&lt;Table length=5&gt;</span>
+<span class="go">         time             ra       dec     rate_ra    rate_dec    mag      surf_brt   ang_diam</span>
+<span class="go">                         deg       deg    arcsec / h arcsec / h   mag   mag / arcsec2  arcsec</span>
+<span class="go">        object         float64   float64   float64    float64   float64    float64    float64</span>
+<span class="go">--------------------- --------- --------- ---------- ---------- ------- ------------- --------</span>
+<span class="go">2020:001:00:00:00.000 276.96494 -23.20087      34.22       0.98  -1.839         5.408    31.75</span>
+<span class="go">2020:001:06:00:00.000 277.02707 -23.19897      34.30       1.30  -1.839         5.408    31.76</span>
+<span class="go">2020:001:12:00:00.000 277.08934 -23.19652      34.39       1.64  -1.839         5.408    31.76</span>
+<span class="go">2020:001:18:00:00.000 277.15181 -23.19347      34.51       2.03  -1.839         5.408    31.76</span>
+<span class="go">2020:002:00:00:00.000 277.21454 -23.18970      34.69       2.51  -1.839         5.408    31.76</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>body</strong> – one of ‘mercury’, ‘venus’, ‘mars’, ‘jupiter’, ‘saturn’,
+‘uranus’, ‘neptune’</p></li>
+<li><p><strong>timestart</strong> – start time (any CxoTime-compatible time)</p></li>
+<li><p><strong>timestop</strong> – stop time (any CxoTime-compatible time)</p></li>
+<li><p><strong>n_times</strong> – number of time samples (inclusive, default=10)</p></li>
+<li><p><strong>timeout</strong> – timeout for query to Horizons (secs)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Table of information</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.planets.get_planet_eci">
+<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_eci</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_eci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_eci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get ECI apparent position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<p>This uses the built-in JPL ephemeris file DE432s and jplephem. The position
+is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from Earth
+to <code class="docutils literal notranslate"><span class="pre">body</span></code> to generate the apparent position on Earth at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>body</strong> – Body name (lower case planet name)</p></li>
+<li><p><strong>time</strong> – Time or times for returned position (default=NOW)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Earth-Centered Inertial (ECI) position (km) as (x, y, z)
+or N x (x, y, z)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 
@@ -1647,7 +1896,7 @@ the list of packets, and flags returned by MAUDE respectively.</p>
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
 <li><a class="reference internal" href="#">chandra_aca</a><ul>
-<li><a class="reference internal" href="#plotting">Plotting</a></li>
+<li><a class="reference internal" href="#module-chandra_aca.plot">Plotting</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.star_probs">Star probabilities</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.transform">Transformations</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.centroid_resid">Centroid residuals</a></li>
@@ -1663,7 +1912,7 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-chandra_aca.maude_decom">MAUDE Decom</a></li>
-<li><a class="reference internal" href="#planet-positions">Planet Positions</a></li>
+<li><a class="reference internal" href="#module-chandra_aca.planets">Planet Positions</a></li>
 </ul>
 </li>
 </ul>

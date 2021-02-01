@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.transform &#8212; chandra_aca 4.31.1 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.32.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.31.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.32.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -466,6 +466,38 @@
     <span class="n">q_targ</span> <span class="o">=</span> <span class="n">q_aca</span> <span class="o">*</span> <span class="n">q_si_align</span> <span class="o">*</span> <span class="n">q_off</span>
 
     <span class="k">return</span> <span class="n">q_targ</span></div>
+
+
+<div class="viewcode-block" id="calc_target_offsets"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.calc_target_offsets">[docs]</a><span class="k">def</span> <span class="nf">calc_target_offsets</span><span class="p">(</span><span class="n">aca</span><span class="p">,</span> <span class="n">ra_targ</span><span class="p">,</span> <span class="n">dec_targ</span><span class="p">,</span> <span class="n">si_align</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates required Y and Z offsets (deg) required from a target RA, Dec to</span>
+<span class="sd">    arrive at the desired PCAD pointing ``aca``.</span>
+
+<span class="sd">    :param aca: PCAD attitude (any Quat-compliant initializer)</span>
+<span class="sd">    :param ra_targ: RA of science target from OR/Obscat</span>
+<span class="sd">    :param dec_targ: Dec of science target from OR/Obscat</span>
+<span class="sd">    :param si_align: SI ALIGN matrix (default=ODB)</span>
+
+<span class="sd">    :rtype: tuple (y_off, z_off) degrees</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">si_align</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">si_align</span> <span class="o">=</span> <span class="n">ODB_SI_ALIGN</span>
+
+    <span class="c1"># Convert si_align transform matrix into a Quaternion</span>
+    <span class="n">q_si_align</span> <span class="o">=</span> <span class="n">Quat</span><span class="p">(</span><span class="n">si_align</span><span class="p">)</span>
+
+    <span class="c1"># Pointing quaternion</span>
+    <span class="n">q_aca</span> <span class="o">=</span> <span class="n">Quat</span><span class="p">(</span><span class="n">aca</span><span class="p">)</span>
+
+    <span class="c1"># Pointing quaternion of nominal HRMA frame after adjusting for the alignment offset.</span>
+    <span class="c1"># The sense of si_align is that q_hrma = q_pcad * si_align, where si_align is</span>
+    <span class="c1"># effectively a delta quaternion.</span>
+    <span class="n">q_hrma</span> <span class="o">=</span> <span class="n">q_aca</span> <span class="o">*</span> <span class="n">q_si_align</span>
+
+    <span class="c1"># the y and z offsets of the target in that frame, in degrees</span>
+    <span class="n">y_off</span><span class="p">,</span> <span class="n">z_off</span> <span class="o">=</span> <span class="n">radec_to_yagzag</span><span class="p">(</span><span class="n">ra_targ</span><span class="p">,</span> <span class="n">dec_targ</span><span class="p">,</span> <span class="n">q_hrma</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y_off</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">z_off</span> <span class="o">/</span> <span class="mi">3600</span></div>
 
 
 <div class="viewcode-block" id="radec_to_yagzag"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.radec_to_yagzag">[docs]</a><span class="k">def</span> <span class="nf">radec_to_yagzag</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">q_att</span><span class="p">):</span>
