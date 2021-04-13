@@ -35,7 +35,7 @@ def test_multi_ai():
                     reason='No for_slot without a starcheck mica archive')
 def test_obc_centroids():
     cr = CentroidResiduals.for_slot(obsid=15175, slot=5, centroid_source='obc')
-    assert np.all(np.abs(cr.dyags) < 6)
+    assert np.all(np.abs(cr.dyags) < 7)
     assert np.all(np.abs(cr.dzags) < 4)
     # check that the right offset was applied from the table in set_offsets
     assert abs(cr.centroid_dt - -2.46900481785) < 1e-8
