@@ -189,7 +189,7 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
         ANG_FORMAT='DEG',
         START_TIME=timestart.datetime.strftime('%Y-%b-%d %H:%M'),
         STOP_TIME=timestop.datetime.strftime('%Y-%b-%d %H:%M'),
-        STEP_SIZE=str(n_times),
+        STEP_SIZE=str(n_times - 1),
         QUANTITIES='1,3,9,13',
         CSV_FORMAT='YES')
 
