@@ -68,7 +68,7 @@ def get_planet_barycentric(body, time=None):
     return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
 
 
-def get_planet_eci(body, time=None):
+def get_planet_eci(body, time=None, pos_observer=None):
     """Get ECI apparent position for solar system ``body`` at ``time``.
 
     This uses the built-in JPL ephemeris file DE432s and jplephem. The position
@@ -83,14 +83,15 @@ def get_planet_eci(body, time=None):
     time = CxoTime(time)
 
     pos_planet = get_planet_barycentric(body, time)
-    pos_earth = get_planet_barycentric('earth', time)
+    if pos_observer is None:
+        pos_observer = get_planet_barycentric('earth', time)
 
-    dist = np.sqrt(np.sum((pos_planet - pos_earth) ** 2, axis=-1)) * u.km
+    dist = np.sqrt(np.sum((pos_planet - pos_observer) ** 2, axis=-1)) * u.km
     light_travel_time = (dist / const.c).to(u.s)
 
     pos_planet = get_planet_barycentric(body, time - light_travel_time)
 
-    return pos_planet - pos_earth
+    return pos_planet - pos_observer
 
 
 def get_planet_chandra(body, time=None):
@@ -109,25 +110,20 @@ def get_planet_chandra(body, time=None):
 
     time = CxoTime(time)
 
-    planet_eci = get_planet_eci(body, time)
-
     # Get position of Chandra relative to Earth
     dat = fetch.MSIDset(['orbitephem0_x', 'orbitephem0_y', 'orbitephem0_z'],
                         np.min(time) - 500 * u.s, np.max(time) + 500 * u.s)
     times = np.atleast_1d(time.secs)
     dat.interpolate(times=times)
 
-    # Chandra position in km
-    x = dat['orbitephem0_x'].vals.reshape(time.shape) / 1000
-    y = dat['orbitephem0_y'].vals.reshape(time.shape) / 1000
-    z = dat['orbitephem0_z'].vals.reshape(time.shape) / 1000
+    pos_earth = get_planet_barycentric('earth', time)
 
-    # Planet position relative to Chandra:
-    #   Planet relative to Earth - Chandra relative to Earth
-    planet_chandra = planet_eci
-    planet_chandra[..., 0] -= x
-    planet_chandra[..., 1] -= y
-    planet_chandra[..., 2] -= z
+    # Chandra position in km
+    chandra_eci = np.zeros_like(pos_earth)
+    chandra_eci[..., 0] = dat['orbitephem0_x'].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 1] = dat['orbitephem0_y'].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 2] = dat['orbitephem0_z'].vals.reshape(time.shape) / 1000
+    planet_chandra = get_planet_eci(body, time, pos_observer=pos_earth + chandra_eci)
 
     return planet_chandra
 
