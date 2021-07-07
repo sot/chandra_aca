@@ -1,6 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import division
-from chandra_aca.planets import get_planet_eci, get_planet_chandra
+
+from Quaternion import Quat
+from chandra_aca.planets import get_planet_chandra
 
 from functools import wraps
 from contextlib import contextmanager
@@ -16,6 +18,7 @@ from Ska.quatutil import radec2yagzag
 from cxotime import CxoTime
 
 from .transform import eci_to_radec, radec_to_yagzag, yagzag_to_pixels
+from .planets import get_planet_angular_sep
 
 # rc definitions
 frontcolor = 'black'
@@ -238,7 +241,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     :param plot_keepout: plot CCD area to be avoided in star selection (default=False)
     :param ax: matplotlib axes object to use (optional)
     :param duration: duration (starting at ``starcat_time``) for plotting planets
-        (secs, default=0 => no planet checks)
+        (secs, default=0)
     :returns: matplotlib figure
     """
     if stars is None:
@@ -260,8 +263,9 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         fig = ax.get_figure()
 
     ax.set_aspect('equal')
-    plt.xlim(-580, 590)  # Matches -2900, 2900 arcsec roughly
-    plt.ylim(-580, 590)
+    lim0, lim1 = -580, 590
+    plt.xlim(lim0, lim1)  # Matches -2900, 2900 arcsec roughly
+    plt.ylim(lim0, lim1)
 
     # plot the box and set the labels
     b1hw = 512
@@ -319,8 +323,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
         _plot_catalog_items(ax, catalog)
 
     # Planets
-    if duration > 0:
-        _plot_planets(ax, attitude, starcat_time, duration)
+    _plot_planets(ax, attitude, starcat_time, duration, lim0, lim1)
 
     if title is not None:
         ax.set_title(title, fontsize='small')
@@ -328,31 +331,66 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     return fig
 
 
-def _plot_planets(ax, att, date0, duration):
+def _plot_planets(ax, att, date0, duration, lim0, lim1):
+    """
+    :param ax: plt.Axes
+        Matplotlib axes object to use
+    :param att: Quat
+        Attitude quaternion
+    :param date0: CxoTime-compatible
+        Date of obs start
+    :param duration: float
+        Duration of plot (secs)
+    :param lim0: float
+        Lower limit on x, y axis (row)
+    :param lim1: float
+        Upper limit on x, y axis (col)
+
+    :returns: boolean
+        True if planets were plotted
+    """
+    if not isinstance(att, Quat):
+        att = Quat(att)
+
     date0 = CxoTime(date0)
+    n_times = int(duration / 1000) + 1
+    dates = date0 + np.linspace(0, duration, n_times) * u.s
 
     planets = ('venus', 'mars', 'jupiter', 'saturn')
+    has_planet = False
+
     for planet in planets:
-        # First check if planet is within 3 deg of aimpoint using Earth as the
-        # reference point (without fetching Chandra ephemeris).
-        eci = get_planet_eci(planet, date0)
-        ra, dec = eci_to_radec(eci)
-        yag, zag = radec_to_yagzag(ra, dec, att)
-        if np.sqrt(yag**2 + zag**2) > 3600 * 3:
+        # First check if planet is within 2 deg of aimpoint using Earth as the
+        # reference point (without fetching Chandra ephemeris). These values are
+        # accurate to better than 0.25 deg.
+        sep = get_planet_angular_sep(planet, ra=att.ra, dec=att.dec,
+                                     time=date0 + ([0, 0.5, 1] * u.s) * duration,
+                                     observer_position='earth')
+        if np.all(sep > 2.0):
             continue
 
-        # Compute ACA row, col for planet each ksec (approx) over the duration
-        n_times = int(duration / 1000) + 1
-        dates = date0 + np.linspace(0, duration, n_times) * u.s
+        # Compute ACA row, col for planet each ksec (approx) over the duration.
+        # This uses get_planet_chandra which is accurate to 4 arcsec for Venus
+        # and < 1 arcsec for Jupiter, Saturn.
         eci = get_planet_chandra(planet, dates)
         ra, dec = eci_to_radec(eci)
         yag, zag = radec_to_yagzag(ra, dec, att)
         row, col = yagzag_to_pixels(yag, zag, allow_bad=True)
 
-        # Plot with green at beginning, red at ending
-        ax.plot(row, col, '.', color='m', alpha=0.5)
-        ax.plot(row[0], col[0], '.', color='g')
-        ax.plot(row[-1], col[-1], '.', color='r')
+        # Only plot planet within the image limits
+        ok = (row >= lim0) & (row <= lim1) & (col >= lim0) & (col <= lim1)
+        if np.any(ok):
+            has_planet = True
+            row = row[ok]
+            col = col[ok]
+            # Plot with green at beginning, red at ending
+            ax.plot(row, col, '.', color='m', alpha=0.5)
+            ax.plot(row[0], col[0], '.', color='g')
+            ax.plot(row[-1], col[-1], '.', color='r', label=planet.capitalize())
+
+    if has_planet:
+        ax.legend(loc='upper left', fontsize='small', facecolor='y',
+                  edgecolor='k')
 
 
 def bad_acq_stars(stars):
