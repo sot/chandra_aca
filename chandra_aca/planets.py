@@ -2,6 +2,7 @@
 """
 Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
 """
+from chandra_aca.transform import eci_to_radec
 from datetime import datetime
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from cxotime import CxoTime
 from ska_helpers.utils import LazyVal
 
 __all__ = ('get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci',
-           'get_planet_chandra_horizons')
+           'get_planet_chandra_horizons', 'get_planet_angular_sep')
 
 
 def load_kernel():
@@ -42,6 +43,57 @@ BODY_NAME_TO_KERNEL_SPEC = dict([
     ('pluto', [(0, 9)])
 ])
 URL_HORIZONS = 'https://ssd.jpl.nasa.gov/horizons_batch.cgi?'
+
+
+def get_planet_angular_sep(body: str, ra: float, dec: float,
+                           time=None, observer_position: str = 'earth') -> float:
+    """Get angular separation between planet ``body`` and target ``ra``, ``dec``.
+
+    :param body: str
+        Body name (lower case planet name)
+    :param ra: float
+        RA in degrees
+    :param dec: float
+        Dec in degrees
+    :param time: CxoTime-compatible object
+        Time or times of observation
+    :param observer_position: str
+        Observer position. Valid values are:
+        - 'earth' (default, approximate, fastest)
+        - 'chandra' (reasonably accurate, reasonably fast, requires fetching
+           ephemeris using cheta)
+        - 'chandra-horizons' (most accurate, slow, requires internet access)
+
+    :returns: angular separation (deg)
+    """
+    from agasc import sphere_dist
+    if not isinstance(time, CxoTime):
+        time = CxoTime(time)
+
+    if observer_position == 'earth':
+        eci = get_planet_eci(body, time)
+        body_ra, body_dec = eci_to_radec(eci)
+    elif observer_position == 'chandra':
+        eci = get_planet_chandra(body, time)
+        body_ra, body_dec = eci_to_radec(eci)
+    elif observer_position == 'chandra-horizons':
+        if time.shape == ():
+            time = CxoTime([time, time + 1000 * u.s])
+            is_scalar = True
+        else:
+            is_scalar = False
+        pos = get_planet_chandra_horizons(body, time[0], time[1], n_times=len(time))
+        body_ra = pos['ra']
+        body_dec = pos['dec']
+        if is_scalar:
+            body_ra = body_ra[0]
+            body_dec = body_dec[0]
+    else:
+        raise ValueError(f'{observer_position} is not an allowed value: '
+                         f'("earth", "chandra", or "chandra-horizons")')
+
+    sep = sphere_dist(ra, dec, body_ra, body_dec)
+    return sep
 
 
 def get_planet_barycentric(body, time=None):

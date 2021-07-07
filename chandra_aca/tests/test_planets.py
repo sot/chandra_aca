@@ -3,10 +3,12 @@ import numpy as np
 from astropy.io import ascii
 from astropy.coordinates import SkyCoord
 import astropy.units as u
+import pytest
 
 from cxotime import CxoTime
 from chandra_aca.planets import (get_planet_chandra, get_planet_barycentric,
-                                 get_planet_chandra_horizons, get_planet_eci)
+                                 get_planet_chandra_horizons, get_planet_eci,
+                                 get_planet_angular_sep)
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 from agasc import sphere_dist
 
@@ -135,3 +137,25 @@ def test_get_chandra_planet_horizons():
            '         5.408    31.76']
 
     assert dat.pformat_all() == exp
+
+
+@pytest.mark.parametrize('obs_pos,exp_sep', [('chandra-horizons', 0.0),
+                                             ('chandra', 0.74),
+                                             ('earth', 23.02)])
+def test_get_planet_ang_separation_scalar(obs_pos, exp_sep):
+    # Position of Jupiter at time0
+    time0 = '2021:001'
+    ra0, dec0 = 304.89116, -20.08328
+    sep = get_planet_angular_sep('jupiter', ra0, dec0, time0, observer_position=obs_pos)
+    assert np.isclose(sep * 3600, exp_sep, atol=1e-2, rtol=0)
+
+
+@pytest.mark.parametrize('obs_pos,exp_sep', [('chandra-horizons', [0.0, 33.98]),
+                                             ('chandra', [0.74, 33.25]),
+                                             ('earth', [23.02, 47.07])])
+def test_get_planet_ang_separation_array(obs_pos, exp_sep):
+    # Position of Jupiter at time0
+    times = ['2021:001:00:00:00', '2021:001:01:00:00']
+    ra0, dec0 = 304.89116, -20.08328
+    sep = get_planet_angular_sep('jupiter', ra0, dec0, times, observer_position=obs_pos)
+    assert np.allclose(sep * 3600, exp_sep, atol=1e-2, rtol=0)
