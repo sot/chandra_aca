@@ -1,6 +1,24 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
+Functions for planet position relative to Chandra, Earth, or Solar System
+Barycenter.
+
+Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
+Horizons positions are used as the "truth".
+
+- `get_planet_chandra` errors:
+    - Venus: < 4 arcsec with a peak around 3.5
+    - Mars: < 3 arcsec with a peak around 2.0
+    - Jupiter: < 0.8 arcsec
+    - Saturn: < 0.5 arcsec
+
+- `get_planet_eci` errors:
+    - Venus: < 12 arcmin with peak around 2 arcmin
+    - Mars: < 8 arcmin with peak around 1.5 arcmin
+    - Jupiter: < 1 arcmin with peak around 0.5 arcmin
+    - Saturn: < 0.5 arcmin with peak around 0.3 arcmin
+
+See the ``validation/planet-accuracy.ipynb`` notebook for details.
 """
 from chandra_aca.transform import eci_to_radec
 from datetime import datetime
@@ -49,6 +67,12 @@ def get_planet_angular_sep(body: str, ra: float, dec: float,
                            time=None, observer_position: str = 'earth') -> float:
     """Get angular separation between planet ``body`` and target ``ra``, ``dec``.
 
+    Valid values for the ``observer_position`` argument are:
+
+    - 'earth' (default, approximate, fastest)
+    - 'chandra' (reasonably accurate fast, requires fetching ephemeris)
+    - 'chandra-horizons' (most accurate, slow, requires internet access)
+
     :param body: str
         Body name (lower case planet name)
     :param ra: float
@@ -58,11 +82,7 @@ def get_planet_angular_sep(body: str, ra: float, dec: float,
     :param time: CxoTime-compatible object
         Time or times of observation
     :param observer_position: str
-        Observer position. Valid values are:
-        - 'earth' (default, approximate, fastest)
-        - 'chandra' (reasonably accurate, reasonably fast, requires fetching
-           ephemeris using cheta)
-        - 'chandra-horizons' (most accurate, slow, requires internet access)
+        Observer position ('earth', 'chandra', or 'chandra-horizons')
 
     :returns: angular separation (deg)
     """
@@ -124,11 +144,21 @@ def get_planet_eci(body, time=None, pos_observer=None):
     """Get ECI apparent position for solar system ``body`` at ``time``.
 
     This uses the built-in JPL ephemeris file DE432s and jplephem. The position
-    is computed at the supplied ``time`` minus the light-travel time from Earth
-    to ``body`` to generate the apparent position on Earth at ``time``.
+    is computed at the supplied ``time`` minus the light-travel time from the
+    observer to ``body`` to generate the apparent position on Earth at ``time``.
+
+    Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the
+    JPL Horizons positions are used as the "truth". This assumes the observer
+    position is Earth (default).
+
+    - Venus: < 12 arcmin with peak around 2 arcmin
+    - Mars: < 8 arcmin with peak around 1.5 arcmin
+    - Jupiter: < 1 arcmin with peak around 0.5 arcmin
+    - Saturn: < 0.5 arcmin with peak around 0.3 arcmin
 
     :param body: Body name (lower case planet name)
     :param time: Time or times for returned position (default=NOW)
+    :param pos_observer: Observer position (default=Earth)
     :returns: Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
@@ -151,8 +181,17 @@ def get_planet_chandra(body, time=None):
 
     This uses the built-in JPL ephemeris file DE432s and jplephem, along with
     the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
-    is computed at the supplied ``time`` minus the light-travel time from Earth
-    to ``body`` to generate the apparent position on Earth at ``time``.
+    is computed at the supplied ``time`` minus the light-travel time from
+    Chandra to ``body`` to generate the apparent position from Chandra at
+    ``time``.
+
+    Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
+    follows, where the JPL Horizons positions are used as the "truth".
+
+    - Venus: < 4 arcsec with a peak around 3.5
+    - Mars: < 3 arcsec with a peak around 2.0
+    - Jupiter: < 0.8 arcsec
+    - Saturn: < 0.5 arcsec
 
     :param body: Body name
     :param time: Time or times for returned position (default=NOW)
