@@ -2,7 +2,7 @@
 from __future__ import division
 
 from Quaternion import Quat
-from chandra_aca.planets import get_planet_chandra
+from chandra_aca.planets import get_planet_chandra, get_planet_eci
 
 from functools import wraps
 from contextlib import contextmanager
@@ -18,7 +18,7 @@ from Ska.quatutil import radec2yagzag
 from cxotime import CxoTime
 
 from .transform import eci_to_radec, radec_to_yagzag, yagzag_to_pixels
-from .planets import get_planet_angular_sep
+from .planets import GET_PLANET_ECI_ERRORS, NoEphemerisError, get_planet_angular_sep
 
 # rc definitions
 frontcolor = 'black'
@@ -372,7 +372,14 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
         # Compute ACA row, col for planet each ksec (approx) over the duration.
         # This uses get_planet_chandra which is accurate to 4 arcsec for Venus
         # and < 1 arcsec for Jupiter, Saturn.
-        eci = get_planet_chandra(planet, dates)
+        try:
+            eci = get_planet_chandra(planet, dates)
+            from_earth = False
+        except NoEphemerisError:
+            # Get the position from Earth using built-in DE432
+            eci = get_planet_eci(planet, dates)
+            from_earth = True
+
         ra, dec = eci_to_radec(eci)
         yag, zag = radec_to_yagzag(ra, dec, att)
         row, col = yagzag_to_pixels(yag, zag, allow_bad=True)
@@ -386,7 +393,12 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
             # Plot with green at beginning, red at ending
             ax.plot(row, col, '.', color='m', alpha=0.5)
             ax.plot(row[0], col[0], '.', color='g')
-            ax.plot(row[-1], col[-1], '.', color='r', label=planet.capitalize())
+            label = planet.capitalize()
+            if from_earth:
+                err = GET_PLANET_ECI_ERRORS[planet].to(u.arcsec)
+                label += f' (from Earth, errors to {err})'
+
+            ax.plot(row[-1], col[-1], '.', color='r', label=label)
 
     if has_planet:
         ax.legend(loc='upper left', fontsize='small', facecolor='y',

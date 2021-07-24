@@ -32,7 +32,27 @@ from cxotime import CxoTime
 from ska_helpers.utils import LazyVal
 
 __all__ = ('get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci',
-           'get_planet_chandra_horizons', 'get_planet_angular_sep')
+           'get_planet_chandra_horizons', 'get_planet_angular_sep',
+           'NoEphemerisError', 'GET_PLANET_ECI_ERRORS',
+           'GET_PLANET_CHANDRA_ERRORS')
+
+GET_PLANET_ECI_ERRORS = {
+    'venus': 12 * u.arcmin,
+    'mars': 8 * u.arcmin,
+    'jupiter': 1 * u.arcmin,
+    'saturn': 0.5 * u.arcmin,
+}
+GET_PLANET_CHANDRA_ERRORS = {
+    'Venus': 4 * u.arcsec,
+    'Mars': 3 * u.arcsec,
+    'Jupiter': 0.8 * u.arcsec,
+    'Saturn': 0.5 * u.arcsec,
+}
+
+
+class NoEphemerisError(Exception):
+    """If there is no Chandra orbital ephemeris available"""
+    pass
 
 
 def load_kernel():
@@ -202,8 +222,15 @@ def get_planet_chandra(body, time=None):
     time = CxoTime(time)
 
     # Get position of Chandra relative to Earth
-    dat = fetch.MSIDset(['orbitephem0_x', 'orbitephem0_y', 'orbitephem0_z'],
-                        np.min(time) - 500 * u.s, np.max(time) + 500 * u.s)
+    try:
+        dat = fetch.MSIDset(['orbitephem0_x', 'orbitephem0_y', 'orbitephem0_z'],
+                            np.min(time) - 500 * u.s, np.max(time) + 500 * u.s)
+    except ValueError:
+        raise NoEphemerisError('Chandra ephemeris not available')
+
+    if len(dat['orbitephem0_x'].vals) == 0:
+        raise NoEphemerisError('Chandra ephemeris not available')
+
     times = np.atleast_1d(time.secs)
     dat.interpolate(times=times)
 
