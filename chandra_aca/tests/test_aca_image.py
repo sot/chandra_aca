@@ -137,20 +137,24 @@ def test_fm_centroid():
     img = np.zeros((6, 6), dtype=float)
     img[0, 0] = 1000  # Should be ignored by mouse-bite
     img[2, 2] = 100
+    img_orig = img.copy()
     row, col, norm = centroid_fm(img)
     assert np.isclose(row, 2.0)
     assert np.isclose(col, 2.0)
     assert np.isclose(norm, 100)
+    assert np.all(img == img_orig)
 
     # 8x8 image with background of 10
     img = np.zeros((8, 8), dtype=float) + 10
     img[0, 0] = 1000  # Should be ignored by mouse-bite
     img[1, 1] = 1000  # Should be ignored by mouse-bite
     img[3, 3] = 100
+    img_orig = img.copy()
     row, col, norm = centroid_fm(img, bgd=10)
     assert np.isclose(row, 3.0)
     assert np.isclose(col, 3.0)
     assert np.isclose(norm, 90)
+    assert np.all(img == img_orig)
 
     # Check 'edge' coordinates
     row, col, norm = centroid_fm(img, bgd=10, pix_zero_loc='edge')
