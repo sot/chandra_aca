@@ -572,8 +572,12 @@ def _prep_6x6(img, bgd=None):
     if isinstance(bgd, np.ndarray):
         bgd = bgd.view(np.ndarray)
 
+    # Subtract background and/or ensure a copy of img is made since downstream
+    # code may modify the image.
     if bgd is not None:
         img = img - bgd
+    else:
+        img = img.copy()
 
     if img.shape == (8, 8):
         img = img[1:7, 1:7]
