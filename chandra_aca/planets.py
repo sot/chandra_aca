@@ -1,7 +1,26 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
+Functions for planet position relative to Chandra, Earth, or Solar System
+Barycenter.
+
+Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
+Horizons positions are used as the "truth".
+
+- `get_planet_chandra` errors:
+    - Venus: < 4 arcsec with a peak around 3.5
+    - Mars: < 3 arcsec with a peak around 2.0
+    - Jupiter: < 0.8 arcsec
+    - Saturn: < 0.5 arcsec
+
+- `get_planet_eci` errors:
+    - Venus: < 12 arcmin with peak around 2 arcmin
+    - Mars: < 8 arcmin with peak around 1.5 arcmin
+    - Jupiter: < 1 arcmin with peak around 0.5 arcmin
+    - Saturn: < 0.5 arcmin with peak around 0.3 arcmin
+
+See the ``validation/planet-accuracy.ipynb`` notebook for details.
 """
+from chandra_aca.transform import eci_to_radec
 from datetime import datetime
 from pathlib import Path
 
@@ -13,7 +32,27 @@ from cxotime import CxoTime
 from ska_helpers.utils import LazyVal
 
 __all__ = ('get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci',
-           'get_planet_chandra_horizons')
+           'get_planet_chandra_horizons', 'get_planet_angular_sep',
+           'NoEphemerisError', 'GET_PLANET_ECI_ERRORS',
+           'GET_PLANET_CHANDRA_ERRORS')
+
+GET_PLANET_ECI_ERRORS = {
+    'venus': 12 * u.arcmin,
+    'mars': 8 * u.arcmin,
+    'jupiter': 1 * u.arcmin,
+    'saturn': 0.5 * u.arcmin,
+}
+GET_PLANET_CHANDRA_ERRORS = {
+    'Venus': 4 * u.arcsec,
+    'Mars': 3 * u.arcsec,
+    'Jupiter': 0.8 * u.arcsec,
+    'Saturn': 0.5 * u.arcsec,
+}
+
+
+class NoEphemerisError(Exception):
+    """If there is no Chandra orbital ephemeris available"""
+    pass
 
 
 def load_kernel():
@@ -44,6 +83,59 @@ BODY_NAME_TO_KERNEL_SPEC = dict([
 URL_HORIZONS = 'https://ssd.jpl.nasa.gov/horizons_batch.cgi?'
 
 
+def get_planet_angular_sep(body: str, ra: float, dec: float,
+                           time=None, observer_position: str = 'earth') -> float:
+    """Get angular separation between planet ``body`` and target ``ra``, ``dec``.
+
+    Valid values for the ``observer_position`` argument are:
+
+    - 'earth' (default, approximate, fastest)
+    - 'chandra' (reasonably accurate fast, requires fetching ephemeris)
+    - 'chandra-horizons' (most accurate, slow, requires internet access)
+
+    :param body: str
+        Body name (lower case planet name)
+    :param ra: float
+        RA in degrees
+    :param dec: float
+        Dec in degrees
+    :param time: CxoTime-compatible object
+        Time or times of observation
+    :param observer_position: str
+        Observer position ('earth', 'chandra', or 'chandra-horizons')
+
+    :returns: angular separation (deg)
+    """
+    from agasc import sphere_dist
+    if not isinstance(time, CxoTime):
+        time = CxoTime(time)
+
+    if observer_position == 'earth':
+        eci = get_planet_eci(body, time)
+        body_ra, body_dec = eci_to_radec(eci)
+    elif observer_position == 'chandra':
+        eci = get_planet_chandra(body, time)
+        body_ra, body_dec = eci_to_radec(eci)
+    elif observer_position == 'chandra-horizons':
+        if time.shape == ():
+            time = CxoTime([time, time + 1000 * u.s])
+            is_scalar = True
+        else:
+            is_scalar = False
+        pos = get_planet_chandra_horizons(body, time[0], time[1], n_times=len(time))
+        body_ra = pos['ra']
+        body_dec = pos['dec']
+        if is_scalar:
+            body_ra = body_ra[0]
+            body_dec = body_dec[0]
+    else:
+        raise ValueError(f'{observer_position} is not an allowed value: '
+                         f'("earth", "chandra", or "chandra-horizons")')
+
+    sep = sphere_dist(ra, dec, body_ra, body_dec)
+    return sep
+
+
 def get_planet_barycentric(body, time=None):
     """Get barycentric position for solar system ``body`` at ``time``.
 
@@ -68,29 +160,40 @@ def get_planet_barycentric(body, time=None):
     return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
 
 
-def get_planet_eci(body, time=None):
+def get_planet_eci(body, time=None, pos_observer=None):
     """Get ECI apparent position for solar system ``body`` at ``time``.
 
     This uses the built-in JPL ephemeris file DE432s and jplephem. The position
-    is computed at the supplied ``time`` minus the light-travel time from Earth
-    to ``body`` to generate the apparent position on Earth at ``time``.
+    is computed at the supplied ``time`` minus the light-travel time from the
+    observer to ``body`` to generate the apparent position on Earth at ``time``.
+
+    Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the
+    JPL Horizons positions are used as the "truth". This assumes the observer
+    position is Earth (default).
+
+    - Venus: < 12 arcmin with peak around 2 arcmin
+    - Mars: < 8 arcmin with peak around 1.5 arcmin
+    - Jupiter: < 1 arcmin with peak around 0.5 arcmin
+    - Saturn: < 0.5 arcmin with peak around 0.3 arcmin
 
     :param body: Body name (lower case planet name)
     :param time: Time or times for returned position (default=NOW)
+    :param pos_observer: Observer position (default=Earth)
     :returns: Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
     time = CxoTime(time)
 
     pos_planet = get_planet_barycentric(body, time)
-    pos_earth = get_planet_barycentric('earth', time)
+    if pos_observer is None:
+        pos_observer = get_planet_barycentric('earth', time)
 
-    dist = np.sqrt(np.sum((pos_planet - pos_earth) ** 2, axis=-1)) * u.km
+    dist = np.sqrt(np.sum((pos_planet - pos_observer) ** 2, axis=-1)) * u.km
     light_travel_time = (dist / const.c).to(u.s)
 
     pos_planet = get_planet_barycentric(body, time - light_travel_time)
 
-    return pos_planet - pos_earth
+    return pos_planet - pos_observer
 
 
 def get_planet_chandra(body, time=None):
@@ -98,8 +201,17 @@ def get_planet_chandra(body, time=None):
 
     This uses the built-in JPL ephemeris file DE432s and jplephem, along with
     the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
-    is computed at the supplied ``time`` minus the light-travel time from Earth
-    to ``body`` to generate the apparent position on Earth at ``time``.
+    is computed at the supplied ``time`` minus the light-travel time from
+    Chandra to ``body`` to generate the apparent position from Chandra at
+    ``time``.
+
+    Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
+    follows, where the JPL Horizons positions are used as the "truth".
+
+    - Venus: < 4 arcsec with a peak around 3.5
+    - Mars: < 3 arcsec with a peak around 2.0
+    - Jupiter: < 0.8 arcsec
+    - Saturn: < 0.5 arcsec
 
     :param body: Body name
     :param time: Time or times for returned position (default=NOW)
@@ -109,25 +221,27 @@ def get_planet_chandra(body, time=None):
 
     time = CxoTime(time)
 
-    planet_eci = get_planet_eci(body, time)
-
     # Get position of Chandra relative to Earth
-    dat = fetch.MSIDset(['orbitephem0_x', 'orbitephem0_y', 'orbitephem0_z'],
-                        np.min(time) - 500 * u.s, np.max(time) + 500 * u.s)
+    try:
+        dat = fetch.MSIDset(['orbitephem0_x', 'orbitephem0_y', 'orbitephem0_z'],
+                            np.min(time) - 500 * u.s, np.max(time) + 500 * u.s)
+    except ValueError:
+        raise NoEphemerisError('Chandra ephemeris not available')
+
+    if len(dat['orbitephem0_x'].vals) == 0:
+        raise NoEphemerisError('Chandra ephemeris not available')
+
     times = np.atleast_1d(time.secs)
     dat.interpolate(times=times)
 
-    # Chandra position in km
-    x = dat['orbitephem0_x'].vals.reshape(time.shape) / 1000
-    y = dat['orbitephem0_y'].vals.reshape(time.shape) / 1000
-    z = dat['orbitephem0_z'].vals.reshape(time.shape) / 1000
+    pos_earth = get_planet_barycentric('earth', time)
 
-    # Planet position relative to Chandra:
-    #   Planet relative to Earth - Chandra relative to Earth
-    planet_chandra = planet_eci
-    planet_chandra[..., 0] -= x
-    planet_chandra[..., 1] -= y
-    planet_chandra[..., 2] -= z
+    # Chandra position in km
+    chandra_eci = np.zeros_like(pos_earth)
+    chandra_eci[..., 0] = dat['orbitephem0_x'].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 1] = dat['orbitephem0_y'].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 2] = dat['orbitephem0_z'].vals.reshape(time.shape) / 1000
+    planet_chandra = get_planet_eci(body, time, pos_observer=pos_earth + chandra_eci)
 
     return planet_chandra
 
@@ -193,7 +307,7 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
         ANG_FORMAT='DEG',
         START_TIME=timestart.datetime.strftime('%Y-%b-%d %H:%M'),
         STOP_TIME=timestop.datetime.strftime('%Y-%b-%d %H:%M'),
-        STEP_SIZE=str(n_times),
+        STEP_SIZE=str(n_times - 1),
         QUANTITIES='1,3,9,13',
         CSV_FORMAT='YES')
 
