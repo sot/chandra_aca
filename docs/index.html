@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca &#8212; chandra_aca 4.32.1 documentation</title>
+    <title>chandra_aca &#8212; chandra_aca 4.33.0 documentation</title>
     <link rel="stylesheet" href="_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="#">chandra_aca 4.32.1 documentation</a>
+	<a href="#">chandra_aca 4.33.0 documentation</a>
 	 &#187;
       </li>
       
@@ -127,7 +127,7 @@ to bad_acq_stars().</p></li>
 <li><p><strong>plot_keepout</strong> – plot CCD area to be avoided in star selection (default=False)</p></li>
 <li><p><strong>ax</strong> – matplotlib axes object to use (optional)</p></li>
 <li><p><strong>duration</strong> – duration (starting at <code class="docutils literal notranslate"><span class="pre">starcat_time</span></code>) for plotting planets
-(secs, default=0 =&gt; no planet checks)</p></li>
+(secs, default=0)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1779,7 +1779,70 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 </div>
 <div class="section" id="module-chandra_aca.planets">
 <span id="planet-positions"></span><h2>Planet Positions<a class="headerlink" href="#module-chandra_aca.planets" title="Permalink to this headline">¶</a></h2>
-<p>Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.</p>
+<p>Functions for planet position relative to Chandra, Earth, or Solar System
+Barycenter.</p>
+<p>Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
+Horizons positions are used as the “truth”.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><cite>get_planet_chandra</cite> errors:</dt><dd><ul>
+<li><p>Venus: &lt; 4 arcsec with a peak around 3.5</p></li>
+<li><p>Mars: &lt; 3 arcsec with a peak around 2.0</p></li>
+<li><p>Jupiter: &lt; 0.8 arcsec</p></li>
+<li><p>Saturn: &lt; 0.5 arcsec</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><cite>get_planet_eci</cite> errors:</dt><dd><ul>
+<li><p>Venus: &lt; 12 arcmin with peak around 2 arcmin</p></li>
+<li><p>Mars: &lt; 8 arcmin with peak around 1.5 arcmin</p></li>
+<li><p>Jupiter: &lt; 1 arcmin with peak around 0.5 arcmin</p></li>
+<li><p>Saturn: &lt; 0.5 arcmin with peak around 0.3 arcmin</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See the <code class="docutils literal notranslate"><span class="pre">validation/planet-accuracy.ipynb</span></code> notebook for details.</p>
+<dl class="py exception">
+<dt id="chandra_aca.planets.NoEphemerisError">
+<em class="property">exception </em><code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">NoEphemerisError</code><a class="reference internal" href="_modules/chandra_aca/planets.html#NoEphemerisError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.NoEphemerisError" title="Permalink to this definition">¶</a></dt>
+<dd><p>If there is no Chandra orbital ephemeris available</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="chandra_aca.planets.get_planet_angular_sep">
+<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_angular_sep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">ra</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">dec</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">observer_position</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'earth'</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_angular_sep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_angular_sep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get angular separation between planet <code class="docutils literal notranslate"><span class="pre">body</span></code> and target <code class="docutils literal notranslate"><span class="pre">ra</span></code>, <code class="docutils literal notranslate"><span class="pre">dec</span></code>.</p>
+<p>Valid values for the <code class="docutils literal notranslate"><span class="pre">observer_position</span></code> argument are:</p>
+<ul class="simple">
+<li><p>‘earth’ (default, approximate, fastest)</p></li>
+<li><p>‘chandra’ (reasonably accurate fast, requires fetching ephemeris)</p></li>
+<li><p>‘chandra-horizons’ (most accurate, slow, requires internet access)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>body</strong> – str
+Body name (lower case planet name)</p></li>
+<li><p><strong>ra</strong> – float
+RA in degrees</p></li>
+<li><p><strong>dec</strong> – float
+Dec in degrees</p></li>
+<li><p><strong>time</strong> – CxoTime-compatible object
+Time or times of observation</p></li>
+<li><p><strong>observer_position</strong> – str
+Observer position (‘earth’, ‘chandra’, or ‘chandra-horizons’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>angular separation (deg)</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt id="chandra_aca.planets.get_planet_barycentric">
 <code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_barycentric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_barycentric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_barycentric" title="Permalink to this definition">¶</a></dt>
@@ -1804,8 +1867,17 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 <dd><p>Get position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code> relative to Chandra.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem, along with
 the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
-is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from Earth
-to <code class="docutils literal notranslate"><span class="pre">body</span></code> to generate the apparent position on Earth at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from
+Chandra to <code class="docutils literal notranslate"><span class="pre">body</span></code> to generate the apparent position from Chandra at
+<code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<p>Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
+follows, where the JPL Horizons positions are used as the “truth”.</p>
+<ul class="simple">
+<li><p>Venus: &lt; 4 arcsec with a peak around 3.5</p></li>
+<li><p>Mars: &lt; 3 arcsec with a peak around 2.0</p></li>
+<li><p>Jupiter: &lt; 0.8 arcsec</p></li>
+<li><p>Saturn: &lt; 0.5 arcsec</p></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1865,16 +1937,26 @@ of the Horizons response.</p>
 
 <dl class="py function">
 <dt id="chandra_aca.planets.get_planet_eci">
-<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_eci</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_eci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_eci" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_eci</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pos_observer</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_eci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_eci" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get ECI apparent position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem. The position
-is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from Earth
-to <code class="docutils literal notranslate"><span class="pre">body</span></code> to generate the apparent position on Earth at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from the
+observer to <code class="docutils literal notranslate"><span class="pre">body</span></code> to generate the apparent position on Earth at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<p>Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the
+JPL Horizons positions are used as the “truth”. This assumes the observer
+position is Earth (default).</p>
+<ul class="simple">
+<li><p>Venus: &lt; 12 arcmin with peak around 2 arcmin</p></li>
+<li><p>Mars: &lt; 8 arcmin with peak around 1.5 arcmin</p></li>
+<li><p>Jupiter: &lt; 1 arcmin with peak around 0.5 arcmin</p></li>
+<li><p>Saturn: &lt; 0.5 arcmin with peak around 0.3 arcmin</p></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>body</strong> – Body name (lower case planet name)</p></li>
 <li><p><strong>time</strong> – Time or times for returned position (default=NOW)</p></li>
+<li><p><strong>pos_observer</strong> – Observer position (default=Earth)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

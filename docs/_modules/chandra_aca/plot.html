@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.plot &#8212; chandra_aca 4.32.1 documentation</title>
+    <title>chandra_aca.plot &#8212; chandra_aca 4.33.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.32.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.33.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -65,7 +65,9 @@
   <h1>Source code for chandra_aca.plot</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
-<span class="kn">from</span> <span class="nn">chandra_aca.planets</span> <span class="kn">import</span> <span class="n">get_planet_eci</span><span class="p">,</span> <span class="n">get_planet_chandra</span>
+
+<span class="kn">from</span> <span class="nn">Quaternion</span> <span class="kn">import</span> <span class="n">Quat</span>
+<span class="kn">from</span> <span class="nn">chandra_aca.planets</span> <span class="kn">import</span> <span class="n">get_planet_chandra</span><span class="p">,</span> <span class="n">get_planet_eci</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
@@ -81,6 +83,7 @@
 <span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span>
 
 <span class="kn">from</span> <span class="nn">.transform</span> <span class="kn">import</span> <span class="n">eci_to_radec</span><span class="p">,</span> <span class="n">radec_to_yagzag</span><span class="p">,</span> <span class="n">yagzag_to_pixels</span>
+<span class="kn">from</span> <span class="nn">.planets</span> <span class="kn">import</span> <span class="n">GET_PLANET_ECI_ERRORS</span><span class="p">,</span> <span class="n">NoEphemerisError</span><span class="p">,</span> <span class="n">get_planet_angular_sep</span>
 
 <span class="c1"># rc definitions</span>
 <span class="n">frontcolor</span> <span class="o">=</span> <span class="s1">&#39;black&#39;</span>
@@ -303,7 +306,7 @@
 <span class="sd">    :param plot_keepout: plot CCD area to be avoided in star selection (default=False)</span>
 <span class="sd">    :param ax: matplotlib axes object to use (optional)</span>
 <span class="sd">    :param duration: duration (starting at ``starcat_time``) for plotting planets</span>
-<span class="sd">        (secs, default=0 =&gt; no planet checks)</span>
+<span class="sd">        (secs, default=0)</span>
 <span class="sd">    :returns: matplotlib figure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">stars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -325,8 +328,9 @@
         <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">580</span><span class="p">,</span> <span class="mi">590</span><span class="p">)</span>  <span class="c1"># Matches -2900, 2900 arcsec roughly</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">580</span><span class="p">,</span> <span class="mi">590</span><span class="p">)</span>
+    <span class="n">lim0</span><span class="p">,</span> <span class="n">lim1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">580</span><span class="p">,</span> <span class="mi">590</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">lim0</span><span class="p">,</span> <span class="n">lim1</span><span class="p">)</span>  <span class="c1"># Matches -2900, 2900 arcsec roughly</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">lim0</span><span class="p">,</span> <span class="n">lim1</span><span class="p">)</span>
 
     <span class="c1"># plot the box and set the labels</span>
     <span class="n">b1hw</span> <span class="o">=</span> <span class="mi">512</span>
@@ -384,8 +388,7 @@
         <span class="n">_plot_catalog_items</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">catalog</span><span class="p">)</span>
 
     <span class="c1"># Planets</span>
-    <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">_plot_planets</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">attitude</span><span class="p">,</span> <span class="n">starcat_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+    <span class="n">_plot_planets</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">attitude</span><span class="p">,</span> <span class="n">starcat_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">lim0</span><span class="p">,</span> <span class="n">lim1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;small&#39;</span><span class="p">)</span>
@@ -393,31 +396,78 @@
     <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<span class="k">def</span> <span class="nf">_plot_planets</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">att</span><span class="p">,</span> <span class="n">date0</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_plot_planets</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">att</span><span class="p">,</span> <span class="n">date0</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">lim0</span><span class="p">,</span> <span class="n">lim1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param ax: plt.Axes</span>
+<span class="sd">        Matplotlib axes object to use</span>
+<span class="sd">    :param att: Quat</span>
+<span class="sd">        Attitude quaternion</span>
+<span class="sd">    :param date0: CxoTime-compatible</span>
+<span class="sd">        Date of obs start</span>
+<span class="sd">    :param duration: float</span>
+<span class="sd">        Duration of plot (secs)</span>
+<span class="sd">    :param lim0: float</span>
+<span class="sd">        Lower limit on x, y axis (row)</span>
+<span class="sd">    :param lim1: float</span>
+<span class="sd">        Upper limit on x, y axis (col)</span>
+
+<span class="sd">    :returns: boolean</span>
+<span class="sd">        True if planets were plotted</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">att</span><span class="p">,</span> <span class="n">Quat</span><span class="p">):</span>
+        <span class="n">att</span> <span class="o">=</span> <span class="n">Quat</span><span class="p">(</span><span class="n">att</span><span class="p">)</span>
+
     <span class="n">date0</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">date0</span><span class="p">)</span>
+    <span class="n">n_times</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">duration</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">dates</span> <span class="o">=</span> <span class="n">date0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">n_times</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
 
     <span class="n">planets</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;venus&#39;</span><span class="p">,</span> <span class="s1">&#39;mars&#39;</span><span class="p">,</span> <span class="s1">&#39;jupiter&#39;</span><span class="p">,</span> <span class="s1">&#39;saturn&#39;</span><span class="p">)</span>
+    <span class="n">has_planet</span> <span class="o">=</span> <span class="kc">False</span>
+
     <span class="k">for</span> <span class="n">planet</span> <span class="ow">in</span> <span class="n">planets</span><span class="p">:</span>
-        <span class="c1"># First check if planet is within 3 deg of aimpoint using Earth as the</span>
-        <span class="c1"># reference point (without fetching Chandra ephemeris).</span>
-        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">planet</span><span class="p">,</span> <span class="n">date0</span><span class="p">)</span>
-        <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
-        <span class="n">yag</span><span class="p">,</span> <span class="n">zag</span> <span class="o">=</span> <span class="n">radec_to_yagzag</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">att</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">yag</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">zag</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="c1"># First check if planet is within 2 deg of aimpoint using Earth as the</span>
+        <span class="c1"># reference point (without fetching Chandra ephemeris). These values are</span>
+        <span class="c1"># accurate to better than 0.25 deg.</span>
+        <span class="n">sep</span> <span class="o">=</span> <span class="n">get_planet_angular_sep</span><span class="p">(</span><span class="n">planet</span><span class="p">,</span> <span class="n">ra</span><span class="o">=</span><span class="n">att</span><span class="o">.</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="o">=</span><span class="n">att</span><span class="o">.</span><span class="n">dec</span><span class="p">,</span>
+                                     <span class="n">time</span><span class="o">=</span><span class="n">date0</span> <span class="o">+</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span> <span class="o">*</span> <span class="n">duration</span><span class="p">,</span>
+                                     <span class="n">observer_position</span><span class="o">=</span><span class="s1">&#39;earth&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">sep</span> <span class="o">&gt;</span> <span class="mf">2.0</span><span class="p">):</span>
             <span class="k">continue</span>
 
-        <span class="c1"># Compute ACA row, col for planet each ksec (approx) over the duration</span>
-        <span class="n">n_times</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">duration</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">dates</span> <span class="o">=</span> <span class="n">date0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">n_times</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
-        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_chandra</span><span class="p">(</span><span class="n">planet</span><span class="p">,</span> <span class="n">dates</span><span class="p">)</span>
+        <span class="c1"># Compute ACA row, col for planet each ksec (approx) over the duration.</span>
+        <span class="c1"># This uses get_planet_chandra which is accurate to 4 arcsec for Venus</span>
+        <span class="c1"># and &lt; 1 arcsec for Jupiter, Saturn.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_chandra</span><span class="p">(</span><span class="n">planet</span><span class="p">,</span> <span class="n">dates</span><span class="p">)</span>
+            <span class="n">from_earth</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="n">NoEphemerisError</span><span class="p">:</span>
+            <span class="c1"># Get the position from Earth using built-in DE432</span>
+            <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">planet</span><span class="p">,</span> <span class="n">dates</span><span class="p">)</span>
+            <span class="n">from_earth</span> <span class="o">=</span> <span class="kc">True</span>
+
         <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
         <span class="n">yag</span><span class="p">,</span> <span class="n">zag</span> <span class="o">=</span> <span class="n">radec_to_yagzag</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">att</span><span class="p">)</span>
         <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">yagzag_to_pixels</span><span class="p">(</span><span class="n">yag</span><span class="p">,</span> <span class="n">zag</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="c1"># Plot with green at beginning, red at ending</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">col</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="c1"># Only plot planet within the image limits</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span> <span class="o">&gt;=</span> <span class="n">lim0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">row</span> <span class="o">&lt;=</span> <span class="n">lim1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;=</span> <span class="n">lim0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span> <span class="o">&lt;=</span> <span class="n">lim1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">ok</span><span class="p">):</span>
+            <span class="n">has_planet</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
+            <span class="c1"># Plot with green at beginning, red at ending</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">planet</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">from_earth</span><span class="p">:</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">GET_PLANET_ECI_ERRORS</span><span class="p">[</span><span class="n">planet</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">arcsec</span><span class="p">)</span>
+                <span class="n">label</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; (from Earth, errors to </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s1">)&#39;</span>
+
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">col</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">has_planet</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;small&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
+                  <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="bad_acq_stars"><a class="viewcode-back" href="../../index.html#chandra_aca.plot.bad_acq_stars">[docs]</a><span class="k">def</span> <span class="nf">bad_acq_stars</span><span class="p">(</span><span class="n">stars</span><span class="p">):</span>

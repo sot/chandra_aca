@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.planets &#8212; chandra_aca 4.32.1 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.33.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.32.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.33.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -65,8 +65,27 @@
   <h1>Source code for chandra_aca.planets</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.</span>
+<span class="sd">Functions for planet position relative to Chandra, Earth, or Solar System</span>
+<span class="sd">Barycenter.</span>
+
+<span class="sd">Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL</span>
+<span class="sd">Horizons positions are used as the &quot;truth&quot;.</span>
+
+<span class="sd">- `get_planet_chandra` errors:</span>
+<span class="sd">    - Venus: &lt; 4 arcsec with a peak around 3.5</span>
+<span class="sd">    - Mars: &lt; 3 arcsec with a peak around 2.0</span>
+<span class="sd">    - Jupiter: &lt; 0.8 arcsec</span>
+<span class="sd">    - Saturn: &lt; 0.5 arcsec</span>
+
+<span class="sd">- `get_planet_eci` errors:</span>
+<span class="sd">    - Venus: &lt; 12 arcmin with peak around 2 arcmin</span>
+<span class="sd">    - Mars: &lt; 8 arcmin with peak around 1.5 arcmin</span>
+<span class="sd">    - Jupiter: &lt; 1 arcmin with peak around 0.5 arcmin</span>
+<span class="sd">    - Saturn: &lt; 0.5 arcmin with peak around 0.3 arcmin</span>
+
+<span class="sd">See the ``validation/planet-accuracy.ipynb`` notebook for details.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">chandra_aca.transform</span> <span class="kn">import</span> <span class="n">eci_to_radec</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
@@ -78,7 +97,27 @@
 <span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyVal</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;get_planet_chandra&#39;</span><span class="p">,</span> <span class="s1">&#39;get_planet_barycentric&#39;</span><span class="p">,</span> <span class="s1">&#39;get_planet_eci&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;get_planet_chandra_horizons&#39;</span><span class="p">)</span>
+           <span class="s1">&#39;get_planet_chandra_horizons&#39;</span><span class="p">,</span> <span class="s1">&#39;get_planet_angular_sep&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;NoEphemerisError&#39;</span><span class="p">,</span> <span class="s1">&#39;GET_PLANET_ECI_ERRORS&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;GET_PLANET_CHANDRA_ERRORS&#39;</span><span class="p">)</span>
+
+<span class="n">GET_PLANET_ECI_ERRORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;venus&#39;</span><span class="p">:</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcmin</span><span class="p">,</span>
+    <span class="s1">&#39;mars&#39;</span><span class="p">:</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcmin</span><span class="p">,</span>
+    <span class="s1">&#39;jupiter&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcmin</span><span class="p">,</span>
+    <span class="s1">&#39;saturn&#39;</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcmin</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">GET_PLANET_CHANDRA_ERRORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Venus&#39;</span><span class="p">:</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcsec</span><span class="p">,</span>
+    <span class="s1">&#39;Mars&#39;</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcsec</span><span class="p">,</span>
+    <span class="s1">&#39;Jupiter&#39;</span><span class="p">:</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcsec</span><span class="p">,</span>
+    <span class="s1">&#39;Saturn&#39;</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">arcsec</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="NoEphemerisError"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.NoEphemerisError">[docs]</a><span class="k">class</span> <span class="nc">NoEphemerisError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;If there is no Chandra orbital ephemeris available&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
 
 
 <span class="k">def</span> <span class="nf">load_kernel</span><span class="p">():</span>
@@ -109,6 +148,59 @@
 <span class="n">URL_HORIZONS</span> <span class="o">=</span> <span class="s1">&#39;https://ssd.jpl.nasa.gov/horizons_batch.cgi?&#39;</span>
 
 
+<div class="viewcode-block" id="get_planet_angular_sep"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_angular_sep">[docs]</a><span class="k">def</span> <span class="nf">get_planet_angular_sep</span><span class="p">(</span><span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ra</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dec</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                           <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">observer_position</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;earth&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get angular separation between planet ``body`` and target ``ra``, ``dec``.</span>
+
+<span class="sd">    Valid values for the ``observer_position`` argument are:</span>
+
+<span class="sd">    - &#39;earth&#39; (default, approximate, fastest)</span>
+<span class="sd">    - &#39;chandra&#39; (reasonably accurate fast, requires fetching ephemeris)</span>
+<span class="sd">    - &#39;chandra-horizons&#39; (most accurate, slow, requires internet access)</span>
+
+<span class="sd">    :param body: str</span>
+<span class="sd">        Body name (lower case planet name)</span>
+<span class="sd">    :param ra: float</span>
+<span class="sd">        RA in degrees</span>
+<span class="sd">    :param dec: float</span>
+<span class="sd">        Dec in degrees</span>
+<span class="sd">    :param time: CxoTime-compatible object</span>
+<span class="sd">        Time or times of observation</span>
+<span class="sd">    :param observer_position: str</span>
+<span class="sd">        Observer position (&#39;earth&#39;, &#39;chandra&#39;, or &#39;chandra-horizons&#39;)</span>
+
+<span class="sd">    :returns: angular separation (deg)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">agasc</span> <span class="kn">import</span> <span class="n">sphere_dist</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">CxoTime</span><span class="p">):</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s1">&#39;earth&#39;</span><span class="p">:</span>
+        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s1">&#39;chandra&#39;</span><span class="p">:</span>
+        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_chandra</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s1">&#39;chandra-horizons&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">time</span> <span class="o">+</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">])</span>
+            <span class="n">is_scalar</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">is_scalar</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">get_planet_chandra_horizons</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_times</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
+        <span class="n">body_ra</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span>
+        <span class="n">body_dec</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="s1">&#39;dec&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+            <span class="n">body_ra</span> <span class="o">=</span> <span class="n">body_ra</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">body_dec</span> <span class="o">=</span> <span class="n">body_dec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">observer_position</span><span class="si">}</span><span class="s1"> is not an allowed value: &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;(&quot;earth&quot;, &quot;chandra&quot;, or &quot;chandra-horizons&quot;)&#39;</span><span class="p">)</span>
+
+    <span class="n">sep</span> <span class="o">=</span> <span class="n">sphere_dist</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sep</span></div>
+
+
 <div class="viewcode-block" id="get_planet_barycentric"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_barycentric">[docs]</a><span class="k">def</span> <span class="nf">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get barycentric position for solar system ``body`` at ``time``.</span>
 
@@ -133,29 +225,40 @@
     <span class="k">return</span> <span class="n">pos</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>  <span class="c1"># SPK returns (3, N) but we need (N, 3)</span></div>
 
 
-<div class="viewcode-block" id="get_planet_eci"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_eci">[docs]</a><span class="k">def</span> <span class="nf">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="get_planet_eci"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_eci">[docs]</a><span class="k">def</span> <span class="nf">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos_observer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get ECI apparent position for solar system ``body`` at ``time``.</span>
 
 <span class="sd">    This uses the built-in JPL ephemeris file DE432s and jplephem. The position</span>
-<span class="sd">    is computed at the supplied ``time`` minus the light-travel time from Earth</span>
-<span class="sd">    to ``body`` to generate the apparent position on Earth at ``time``.</span>
+<span class="sd">    is computed at the supplied ``time`` minus the light-travel time from the</span>
+<span class="sd">    observer to ``body`` to generate the apparent position on Earth at ``time``.</span>
+
+<span class="sd">    Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the</span>
+<span class="sd">    JPL Horizons positions are used as the &quot;truth&quot;. This assumes the observer</span>
+<span class="sd">    position is Earth (default).</span>
+
+<span class="sd">    - Venus: &lt; 12 arcmin with peak around 2 arcmin</span>
+<span class="sd">    - Mars: &lt; 8 arcmin with peak around 1.5 arcmin</span>
+<span class="sd">    - Jupiter: &lt; 1 arcmin with peak around 0.5 arcmin</span>
+<span class="sd">    - Saturn: &lt; 0.5 arcmin with peak around 0.3 arcmin</span>
 
 <span class="sd">    :param body: Body name (lower case planet name)</span>
 <span class="sd">    :param time: Time or times for returned position (default=NOW)</span>
+<span class="sd">    :param pos_observer: Observer position (default=Earth)</span>
 <span class="sd">    :returns: Earth-Centered Inertial (ECI) position (km) as (x, y, z)</span>
 <span class="sd">        or N x (x, y, z)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 
     <span class="n">pos_planet</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
-    <span class="n">pos_earth</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="s1">&#39;earth&#39;</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pos_observer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pos_observer</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="s1">&#39;earth&#39;</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
 
-    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_earth</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_observer</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span>
     <span class="n">light_travel_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">dist</span> <span class="o">/</span> <span class="n">const</span><span class="o">.</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
 
     <span class="n">pos_planet</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span> <span class="o">-</span> <span class="n">light_travel_time</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_earth</span></div>
+    <span class="k">return</span> <span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_observer</span></div>
 
 
 <div class="viewcode-block" id="get_planet_chandra"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_chandra">[docs]</a><span class="k">def</span> <span class="nf">get_planet_chandra</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -163,8 +266,17 @@
 
 <span class="sd">    This uses the built-in JPL ephemeris file DE432s and jplephem, along with</span>
 <span class="sd">    the CXC predictive Chandra orbital ephemeris (from the OFLS). The position</span>
-<span class="sd">    is computed at the supplied ``time`` minus the light-travel time from Earth</span>
-<span class="sd">    to ``body`` to generate the apparent position on Earth at ``time``.</span>
+<span class="sd">    is computed at the supplied ``time`` minus the light-travel time from</span>
+<span class="sd">    Chandra to ``body`` to generate the apparent position from Chandra at</span>
+<span class="sd">    ``time``.</span>
+
+<span class="sd">    Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as</span>
+<span class="sd">    follows, where the JPL Horizons positions are used as the &quot;truth&quot;.</span>
+
+<span class="sd">    - Venus: &lt; 4 arcsec with a peak around 3.5</span>
+<span class="sd">    - Mars: &lt; 3 arcsec with a peak around 2.0</span>
+<span class="sd">    - Jupiter: &lt; 0.8 arcsec</span>
+<span class="sd">    - Saturn: &lt; 0.5 arcsec</span>
 
 <span class="sd">    :param body: Body name</span>
 <span class="sd">    :param time: Time or times for returned position (default=NOW)</span>
@@ -174,25 +286,27 @@
 
     <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 
-    <span class="n">planet_eci</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
-
     <span class="c1"># Get position of Chandra relative to Earth</span>
-    <span class="n">dat</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">MSIDset</span><span class="p">([</span><span class="s1">&#39;orbitephem0_x&#39;</span><span class="p">,</span> <span class="s1">&#39;orbitephem0_y&#39;</span><span class="p">,</span> <span class="s1">&#39;orbitephem0_z&#39;</span><span class="p">],</span>
-                        <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="o">-</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="o">+</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">MSIDset</span><span class="p">([</span><span class="s1">&#39;orbitephem0_x&#39;</span><span class="p">,</span> <span class="s1">&#39;orbitephem0_y&#39;</span><span class="p">,</span> <span class="s1">&#39;orbitephem0_z&#39;</span><span class="p">],</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="o">-</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="o">+</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NoEphemerisError</span><span class="p">(</span><span class="s1">&#39;Chandra ephemeris not available&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s1">&#39;orbitephem0_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NoEphemerisError</span><span class="p">(</span><span class="s1">&#39;Chandra ephemeris not available&#39;</span><span class="p">)</span>
+
     <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">secs</span><span class="p">)</span>
     <span class="n">dat</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
 
-    <span class="c1"># Chandra position in km</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;orbitephem0_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;orbitephem0_y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;orbitephem0_z&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="n">pos_earth</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="s1">&#39;earth&#39;</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
 
-    <span class="c1"># Planet position relative to Chandra:</span>
-    <span class="c1">#   Planet relative to Earth - Chandra relative to Earth</span>
-    <span class="n">planet_chandra</span> <span class="o">=</span> <span class="n">planet_eci</span>
-    <span class="n">planet_chandra</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">x</span>
-    <span class="n">planet_chandra</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">y</span>
-    <span class="n">planet_chandra</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">z</span>
+    <span class="c1"># Chandra position in km</span>
+    <span class="n">chandra_eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pos_earth</span><span class="p">)</span>
+    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;orbitephem0_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;orbitephem0_y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;orbitephem0_z&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="n">planet_chandra</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">pos_observer</span><span class="o">=</span><span class="n">pos_earth</span> <span class="o">+</span> <span class="n">chandra_eci</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">planet_chandra</span></div>
 
@@ -258,7 +372,7 @@
         <span class="n">ANG_FORMAT</span><span class="o">=</span><span class="s1">&#39;DEG&#39;</span><span class="p">,</span>
         <span class="n">START_TIME</span><span class="o">=</span><span class="n">timestart</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%b-</span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span><span class="p">),</span>
         <span class="n">STOP_TIME</span><span class="o">=</span><span class="n">timestop</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%b-</span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span><span class="p">),</span>
-        <span class="n">STEP_SIZE</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n_times</span><span class="p">),</span>
+        <span class="n">STEP_SIZE</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n_times</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
         <span class="n">QUANTITIES</span><span class="o">=</span><span class="s1">&#39;1,3,9,13&#39;</span><span class="p">,</span>
         <span class="n">CSV_FORMAT</span><span class="o">=</span><span class="s1">&#39;YES&#39;</span><span class="p">)</span>
 
