@@ -102,7 +102,7 @@ def test_t_ccd_warm_limit_3_spline():
 
 
 def test_t_ccd_warm_limit_guide():
-    mags = np.array([5.85] * 5)
+    mags = np.array([5.25] * 5)
     t_ccd = t_ccd_warm_limit_for_guide(mags, warm_t_ccd=5.0, cold_t_ccd=-16)
     assert np.isclose(t_ccd, -16, atol=0.1, rtol=0)
     mags = np.array([6.0, 6.0, 6.0, 6.0, 6.0])
@@ -121,8 +121,8 @@ def test_guide_count(count_9th):
     """Test fractional guide count"""
 
     # Evaluate at interpolation curve reference temperature t_ccd = -10.9 C.
-    mags = [5.0, 5.85, 5.9, 5.95, 9.99, 10.0, 10.1, 10.2, 10.25, 10.3, 10.35, 10.4, 10.41, 11.0]
-    exps = [0.0, 0.0, 0.50, 1.0, 1.00, 1.0, 0.875, 0.75, 0.625, 0.50, 0.25, 0.000, 0.00, 0.00]
+    mags = [5.0, 5.25, 5.3, 5.35, 5.95, 9.99, 10.0, 10.1, 10.2, 10.25, 10.3, 10.35, 10.4, 10.41, 11.0]
+    exps = [0.0, 0.0, 0.50, 1.0, 1.0, 1.00, 1.0, 0.875, 0.75, 0.625, 0.50, 0.25, 0.000, 0.00, 0.00]
     mags = np.array(mags)
 
     if count_9th:
