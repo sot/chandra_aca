@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.star_probs &#8212; chandra_aca 4.33.0 documentation</title>
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.34.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.33.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.34.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -743,11 +743,11 @@
     <span class="n">ref_mags0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">9.0</span> <span class="k">if</span> <span class="n">count_9th</span> <span class="k">else</span> <span class="mf">9.95</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
     <span class="n">ref_mags_t_ccd</span> <span class="o">=</span> <span class="p">[</span><span class="n">snr_mag_for_t_ccd</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mag</span><span class="p">,</span> <span class="n">ref_t_ccd</span><span class="p">)</span> <span class="k">for</span> <span class="n">ref_mag</span> <span class="ow">in</span> <span class="n">ref_mags0</span><span class="p">]</span>
 
-    <span class="c1"># The 5.85 and 5.95 limits are not temperature dependent, these reflect the</span>
-    <span class="c1"># possibility that the star will be brighter than 5.8 mag and the OBC will</span>
+    <span class="c1"># The 5.25 and 5.35 limits are not temperature dependent, these reflect the</span>
+    <span class="c1"># possibility that the star will be brighter than 5.2 mag and the OBC will</span>
     <span class="c1"># reject it.  Note that around 6th mag mean observed catalog error is</span>
     <span class="c1"># around 0.1 mag.</span>
-    <span class="n">ref_mags</span> <span class="o">=</span> <span class="p">([</span><span class="mf">5.85</span><span class="p">,</span> <span class="mf">5.95</span><span class="p">]</span> <span class="o">+</span> <span class="n">ref_mags_t_ccd</span><span class="p">)</span>
+    <span class="n">ref_mags</span> <span class="o">=</span> <span class="p">([</span><span class="mf">5.25</span><span class="p">,</span> <span class="mf">5.35</span><span class="p">]</span> <span class="o">+</span> <span class="n">ref_mags_t_ccd</span><span class="p">)</span>
     <span class="n">ref_counts</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0005</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
 
     <span class="c1"># Do the interpolation, noting that np.interp will use the end ``counts``</span>
