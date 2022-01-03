@@ -386,7 +386,7 @@ class ACAImage(np.ndarray):
         # Make a bool ACAImage like self to allow convenient mask/unmask of
         # pixels to flicker.  This is used in annie.  Also make the corresponding
         # 1-d ravelled version.
-        self.flicker_mask = ACAImage(np.ones(self.shape, dtype=np.bool_),
+        self.flicker_mask = ACAImage(np.ones(self.shape, dtype=bool),
                                      row0=self.row0, col0=self.col0)
         self.flicker_mask_vals = self.flicker_mask.view(np.ndarray).ravel()
 
