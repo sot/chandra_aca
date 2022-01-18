@@ -76,6 +76,8 @@ def test_slice():
     assert a2.col0 == a.col0
 
     # Slicing in ACA coordinates
+    i = np.array([1], dtype=int)
+    assert np.all(a.aca[i[0]] == im6[0])
     assert np.all(a.aca[1] == im6[0])
     assert np.all(a.aca[:, 2] == im6[:, 0])
     assert np.all(a.aca[1, 2] == im6[0, 0])
