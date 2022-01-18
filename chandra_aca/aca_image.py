@@ -194,7 +194,7 @@ class ACAImage(np.ndarray):
 
         out_rc = [None, None]  # New [row0, col0]
 
-        if isinstance(item, (int, np.int_)):
+        if isinstance(item, (int, np.integer)):
             item = (item,)
 
         if isinstance(item, tuple):
