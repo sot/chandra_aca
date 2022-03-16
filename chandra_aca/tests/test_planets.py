@@ -5,6 +5,7 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 import pytest
 
+from testr.test_helper import has_internet
 from cxotime import CxoTime
 from chandra_aca.planets import (get_planet_chandra, get_planet_barycentric,
                                  get_planet_chandra_horizons, get_planet_eci,
@@ -13,6 +14,10 @@ from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 from agasc import sphere_dist
 
 
+HAS_INTERNET = has_internet()
+
+
+@pytest.mark.skipif(not HAS_INTERNET, reason='Requires network access')
 def test_planet_positions():
     # Test basic functionality and include regression values (not an independent
     # functional test)
@@ -105,6 +110,7 @@ def test_planet_positions_array():
     assert np.all(sphere_dist(ra, dec, ra2, dec2) * 3600 < 1.0)
 
 
+@pytest.mark.skipif(not HAS_INTERNET, reason='Requires network access')
 def test_get_chandra_planet_horizons():
     dat = get_planet_chandra_horizons('jupiter', '2020:001', '2020:002', n_times=11)
     exp = ['         time             ra       dec     rate_ra    rate_dec   mag  '
@@ -139,6 +145,7 @@ def test_get_chandra_planet_horizons():
     assert dat.pformat_all() == exp
 
 
+@pytest.mark.skipif(not HAS_INTERNET, reason='Requires network access')
 @pytest.mark.parametrize('obs_pos,exp_sep', [('chandra-horizons', 0.0),
                                              ('chandra', 0.74),
                                              ('earth', 23.02)])
@@ -150,6 +157,7 @@ def test_get_planet_ang_separation_scalar(obs_pos, exp_sep):
     assert np.isclose(sep * 3600, exp_sep, atol=1e-2, rtol=0)
 
 
+@pytest.mark.skipif(not HAS_INTERNET, reason='Requires network access')
 @pytest.mark.parametrize('obs_pos,exp_sep', [('chandra-horizons', [0.0, 33.98]),
                                              ('chandra', [0.74, 33.25]),
                                              ('earth', [23.02, 47.07])])
