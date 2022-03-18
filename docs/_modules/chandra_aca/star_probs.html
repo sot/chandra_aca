@@ -4,16 +4,15 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca.star_probs &#8212; chandra_aca 4.34.1 documentation</title>
-    <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.34.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -47,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.34.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.34.2 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -317,8 +316,8 @@
 
     <span class="c1"># Deal with color=0.7 stars and/or spoiled stars.  The spoiling correction</span>
     <span class="c1"># is a relic that should never be used once proseco is promoted.</span>
-    <span class="n">p_0p7color</span> <span class="o">=</span> <span class="o">.</span><span class="mi">4294</span>  <span class="c1"># probability multiplier for a B-V = 0.700 star (REF?)</span>
-    <span class="n">p_spoiler</span> <span class="o">=</span> <span class="o">.</span><span class="mi">9241</span>  <span class="c1"># probability multiplier for a search-spoiled star (REF?)</span>
+    <span class="n">p_0p7color</span> <span class="o">=</span> <span class="mf">.4294</span>  <span class="c1"># probability multiplier for a B-V = 0.700 star (REF?)</span>
+    <span class="n">p_spoiler</span> <span class="o">=</span> <span class="mf">.9241</span>  <span class="c1"># probability multiplier for a search-spoiled star (REF?)</span>
 
     <span class="n">probs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span> <span class="o">*=</span> <span class="n">p_0p7color</span>
     <span class="n">probs</span><span class="p">[</span><span class="n">spoilers</span><span class="p">]</span> <span class="o">*=</span> <span class="n">p_spoiler</span>
@@ -839,7 +838,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 3.1.2. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
   </p>
 </footer>
   </body>

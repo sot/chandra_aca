@@ -4,16 +4,16 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chandra_aca &#8212; chandra_aca 4.34.1 documentation</title>
-    <link rel="stylesheet" href="_static/bootstrap-astropy.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>chandra_aca &#8212; chandra_aca 4.34.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="#">chandra_aca 4.34.1 documentation</a>
+	<a href="#">chandra_aca 4.34.2 documentation</a>
 	 &#187;
       </li>
       
@@ -61,17 +61,17 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="chandra-aca">
+  <section id="chandra-aca">
 <h1>chandra_aca<a class="headerlink" href="#chandra-aca" title="Permalink to this headline">¶</a></h1>
 <p>The chandra_aca package provides functionality related to the Chandra Aspect
 Camera Assembly and associated aspect functionality.</p>
 <div class="toctree-wrapper compound">
 </div>
-<div class="section" id="module-chandra_aca.plot">
+<section id="module-chandra_aca.plot">
 <span id="plotting"></span><h2>Plotting<a class="headerlink" href="#module-chandra_aca.plot" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="chandra_aca.plot.bad_acq_stars">
-<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">bad_acq_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#bad_acq_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.bad_acq_stars" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.plot.bad_acq_stars">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">bad_acq_stars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stars</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#bad_acq_stars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.bad_acq_stars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return mask of ‘bad’ stars, by evaluating AGASC star parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -85,8 +85,8 @@ are [‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR�
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.plot.plot_compass">
-<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_compass</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roll</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_compass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_compass" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.plot.plot_compass">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">plot_compass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roll</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_compass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.plot_compass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a compass plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -99,8 +99,8 @@ are [‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR�
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.plot.plot_stars">
-<code class="sig-prename descclassname">chandra_aca.plot.</code><code class="sig-name descname">plot_stars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attitude</span></em>, <em class="sig-param"><span class="n">catalog</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">starcat_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">red_mag_lim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quad_bound</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">grid</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">bad_stars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">plot_keepout</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.plot.plot_stars" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.plot.plot_stars">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">plot_stars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starcat_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">red_mag_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bad_stars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_keepout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_stars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.plot_stars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot a catalog, a star field, or both in a matplotlib figure.
 If supplying a star field, an attitude must also be supplied.</p>
 <dl class="field-list simple">
@@ -136,8 +136,8 @@ to bad_acq_stars().</p></li>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-chandra_aca.star_probs">
+</section>
+<section id="module-chandra_aca.star_probs">
 <span id="star-probabilities"></span><h2>Star probabilities<a class="headerlink" href="#module-chandra_aca.star_probs" title="Permalink to this headline">¶</a></h2>
 <p>Functions related to probabilities for star acquisition and guide tracking.</p>
 <p>Current default acquisition probability model: grid-floor-2020-02</p>
@@ -147,8 +147,8 @@ to bad_acq_stars().</p></li>
 </dl>
 <p>SSAWG review: 2020-01-29</p>
 <dl class="py function">
-<dt id="chandra_aca.star_probs.acq_success_prob">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">acq_success_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 10.0</span></em>, <em class="sig-param"><span class="n">mag</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0.6</span></em>, <em class="sig-param"><span class="n">spoiler</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#acq_success_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.acq_success_prob" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.acq_success_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">acq_success_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spoiler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#acq_success_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.acq_success_prob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return probability of acquisition success for given date, temperature, star properties
 and search box size.</p>
 <p>Any of the inputs can be scalars or arrays, with the output being the result of
@@ -175,8 +175,8 @@ specified by ‘grid-&lt;name&gt;-&lt;date&gt;’ (e.g. ‘grid-floor-2018-11’
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.binom_ppf">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">binom_ppf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">conf</span></em>, <em class="sig-param"><span class="n">n_sample</span><span class="o">=</span><span class="default_value">1000</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#binom_ppf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.binom_ppf" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.binom_ppf">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">binom_ppf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#binom_ppf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.binom_ppf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute percent point function (inverse of CDF) for binomial, where
 the percentage is with respect to the “p” (binomial probability) parameter
 not the “k” parameter.  The latter is what one gets with scipy.stats.binom.ppf().</p>
@@ -205,8 +205,8 @@ on the true binomial probability for an experiment with 4 successes in 5 trials.
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.clip_and_warn">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">clip_and_warn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">val</span></em>, <em class="sig-param"><span class="n">val_lo</span></em>, <em class="sig-param"><span class="n">val_hi</span></em>, <em class="sig-param"><span class="n">model</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#clip_and_warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.clip_and_warn" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.clip_and_warn">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">clip_and_warn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_lo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_hi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#clip_and_warn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.clip_and_warn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clip <code class="docutils literal notranslate"><span class="pre">val</span></code> to be in the range <code class="docutils literal notranslate"><span class="pre">val_lo</span></code> to <code class="docutils literal notranslate"><span class="pre">val_hi</span></code> and issue a
 warning if clipping occurs.  The <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">model</span></code> are just used in
 the warning.</p>
@@ -227,8 +227,8 @@ the warning.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.get_box_delta">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">get_box_delta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">halfwidth</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#get_box_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.get_box_delta" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.get_box_delta">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">get_box_delta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#get_box_delta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.get_box_delta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform from halfwidth (arcsec) to the box_delta value which gets added
 to failure probability (in probit space).</p>
 <dl class="field-list simple">
@@ -242,8 +242,8 @@ to failure probability (in probit space).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.grid_model_acq_prob">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">grid_model_acq_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 12.0</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0.6</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">probit</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#grid_model_acq_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.grid_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.grid_model_acq_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">grid_model_acq_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#grid_model_acq_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.grid_model_acq_prob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate a grid model probability of acquisition success for a star with
 specified mag, t_ccd, color, and search box halfwidth.</p>
 <p>This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a
@@ -266,8 +266,8 @@ pre-computed gridded model that is stored in a FITS file.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.guide_count">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">guide_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mags</span></em>, <em class="sig-param"><span class="n">t_ccd</span></em>, <em class="sig-param"><span class="n">count_9th</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#guide_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.guide_count" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.guide_count">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">guide_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_9th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#guide_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.guide_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate a guide star fractional count/metric using signal-to-noise scaled
 mag thresholds.
 This uses a modification of the guide star fractional counts that were
@@ -287,8 +287,8 @@ minimization.
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.mag_for_p_acq">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">mag_for_p_acq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p_acq</span></em>, <em class="sig-param"><span class="n">date</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 10.0</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#mag_for_p_acq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.mag_for_p_acq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.mag_for_p_acq">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">mag_for_p_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p_acq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#mag_for_p_acq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.mag_for_p_acq" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given <code class="docutils literal notranslate"><span class="pre">date</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>, find the star magnitude that has an
 acquisition probability of <code class="docutils literal notranslate"><span class="pre">p_acq</span></code>.  Star magnitude is defined/limited
 to the range 5.0 - 12.0 mag.</p>
@@ -309,15 +309,15 @@ to the range 5.0 - 12.0 mag.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.model_acq_success_prob">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">model_acq_success_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span></em>, <em class="sig-param"><span class="n">warm_frac</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#model_acq_success_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.model_acq_success_prob" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.model_acq_success_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">model_acq_success_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#model_acq_success_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.model_acq_success_prob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call sota_model_acq_prob() with same params.  This is retained purely
 for back-compatibility but use is deprecated.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.prob_n_acq">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">prob_n_acq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">star_probs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#prob_n_acq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.prob_n_acq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.prob_n_acq">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">prob_n_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_probs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#prob_n_acq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.prob_n_acq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given an input array of star acquisition probabilities <code class="docutils literal notranslate"><span class="pre">star_probs</span></code>,
 return the probabilities of acquiring exactly n_acq stars, where n_acq
 is evaluated at values 0 to n_stars.  This is returned as an array
@@ -334,8 +334,8 @@ the probability of acquiring n_acq or fewer stars, is returned.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.set_acq_model_ms_filter">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">set_acq_model_ms_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ms_enabled</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#set_acq_model_ms_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.set_acq_model_ms_filter" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.set_acq_model_ms_filter">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">set_acq_model_ms_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ms_enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#set_acq_model_ms_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.set_acq_model_ms_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Choose one of two sets of acquisition model fit parameters based
 on <code class="docutils literal notranslate"><span class="pre">ms_enabled</span></code>.  The default is <code class="docutils literal notranslate"><span class="pre">False</span></code>:</p>
 <ul class="simple">
@@ -347,8 +347,8 @@ be rejected if MS flag was set</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.sota_model_acq_prob">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">sota_model_acq_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span></em>, <em class="sig-param"><span class="n">warm_frac</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#sota_model_acq_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.sota_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.sota_model_acq_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">sota_model_acq_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#sota_model_acq_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.sota_model_acq_prob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate raw SOTA model probability of acquisition success for a star with <code class="docutils literal notranslate"><span class="pre">mag</span></code>
 magnitude and a CCD warm fraction <code class="docutils literal notranslate"><span class="pre">warm_frac</span></code>.  This is not typically used directly
 since it does not account for star properties like spoiled or color=0.7.</p>
@@ -380,8 +380,8 @@ box halfwidth.  See:</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.spline_model_acq_prob">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">spline_model_acq_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">t_ccd</span><span class="o">=</span><span class="default_value">- 12.0</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">0.6</span></em>, <em class="sig-param"><span class="n">halfwidth</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">probit</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#spline_model_acq_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.spline_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.spline_model_acq_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">spline_model_acq_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#spline_model_acq_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.spline_model_acq_prob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate poly-spline-tccd model (aka ‘spline’ model) probability of acquisition
 success for a star with specified mag, t_ccd, color, and search box halfwidth.</p>
 <p>The model definition and fit values based on:
@@ -415,8 +415,8 @@ success for a star with specified mag, t_ccd, color, and search box halfwidth.</
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.t_ccd_warm_limit">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">t_ccd_warm_limit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mags</span></em>, <em class="sig-param"><span class="n">date</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">colors</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">halfwidths</span><span class="o">=</span><span class="default_value">120</span></em>, <em class="sig-param"><span class="n">min_n_acq</span><span class="o">=</span><span class="default_value">5.0</span></em>, <em class="sig-param"><span class="n">cold_t_ccd</span><span class="o">=</span><span class="default_value">- 16</span></em>, <em class="sig-param"><span class="n">warm_t_ccd</span><span class="o">=</span><span class="default_value">- 5</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.t_ccd_warm_limit">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">t_ccd_warm_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_n_acq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cold_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the warmest CCD temperature which meets the <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code> acquisition stars
 criterion.  This returns a value between <code class="docutils literal notranslate"><span class="pre">cold_t_ccd</span></code> and <code class="docutils literal notranslate"><span class="pre">warm_t_ccd</span></code>.  At the
 cold end the result may be below <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code>, in which case the star catalog
@@ -458,8 +458,8 @@ may be rejected.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.star_probs.t_ccd_warm_limit_for_guide">
-<code class="sig-prename descclassname">chandra_aca.star_probs.</code><code class="sig-name descname">t_ccd_warm_limit_for_guide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mags</span></em>, <em class="sig-param"><span class="n">min_guide_count</span><span class="o">=</span><span class="default_value">4.0</span></em>, <em class="sig-param"><span class="n">warm_t_ccd</span><span class="o">=</span><span class="default_value">- 5.0</span></em>, <em class="sig-param"><span class="n">cold_t_ccd</span><span class="o">=</span><span class="default_value">- 16.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit_for_guide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit_for_guide" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.star_probs.t_ccd_warm_limit_for_guide">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">t_ccd_warm_limit_for_guide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_guide_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cold_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">16.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit_for_guide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit_for_guide" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve for the warmest temperature that still gets the min_guide_count.
 This returns a value between <code class="docutils literal notranslate"><span class="pre">cold_t_ccd</span></code> and <code class="docutils literal notranslate"><span class="pre">warm_t_ccd</span></code>.  At the
 cold end the result may be below <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code>, in which case the star catalog
@@ -479,8 +479,8 @@ may be rejected.</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-chandra_aca.transform">
+</section>
+<section id="module-chandra_aca.transform">
 <span id="transformations"></span><h2>Transformations<a class="headerlink" href="#module-chandra_aca.transform" title="Permalink to this headline">¶</a></h2>
 <p>The transform modules includes:</p>
 <ul class="simple">
@@ -489,8 +489,8 @@ may be rejected.</p>
 <li><p>Science target coordinate to ACA frame conversions</p></li>
 </ul>
 <dl class="py function">
-<dt id="chandra_aca.transform.broadcast_arrays">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">broadcast_arrays</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.broadcast_arrays">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">broadcast_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays" title="Permalink to this definition">¶</a></dt>
 <dd><p>Broadcast <a href="#id3"><span class="problematic" id="id4">*</span></a>args inputs to same shape and return an <code class="docutils literal notranslate"><span class="pre">is_scalar</span></code> flag and
 the broadcasted version of inputs.  This lets intermediate code work on
 arrays that are guaranteed to be the same shape and at least a 1-d array,
@@ -506,8 +506,8 @@ but reshape the output at the end.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.broadcast_arrays_flatten">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">broadcast_arrays_flatten</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays_flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays_flatten" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.broadcast_arrays_flatten">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">broadcast_arrays_flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays_flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays_flatten" title="Permalink to this definition">¶</a></dt>
 <dd><p>Broadcast <a href="#id7"><span class="problematic" id="id8">*</span></a>args inputs to same shape and then return that shape and the
 flattened view of all the inputs.  This lets intermediate code work on all
 scalars or all arrays that are the same-length 1-d array and then reshape
@@ -523,8 +523,8 @@ the output at the end (if necessary).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.calc_aca_from_targ">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">calc_aca_from_targ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">targ</span></em>, <em class="sig-param"><span class="n">y_off</span></em>, <em class="sig-param"><span class="n">z_off</span></em>, <em class="sig-param"><span class="n">si_align</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_aca_from_targ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.calc_aca_from_targ" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.calc_aca_from_targ">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">calc_aca_from_targ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si_align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_aca_from_targ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.calc_aca_from_targ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the PCAD (ACA) pointing attitude from target attitude and
 Y,Z offset (per OR-list).</p>
 <dl class="field-list simple">
@@ -543,8 +543,8 @@ Y,Z offset (per OR-list).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.calc_targ_from_aca">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">calc_targ_from_aca</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">aca</span></em>, <em class="sig-param"><span class="n">y_off</span></em>, <em class="sig-param"><span class="n">z_off</span></em>, <em class="sig-param"><span class="n">si_align</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_targ_from_aca"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.calc_targ_from_aca" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.calc_targ_from_aca">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">calc_targ_from_aca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aca</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si_align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_targ_from_aca"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.calc_targ_from_aca" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the target attitude from ACA (PCAD) pointing attitude and
 Y,Z offset (per OR-list).</p>
 <dl class="field-list simple">
@@ -563,8 +563,8 @@ Y,Z offset (per OR-list).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.calc_target_offsets">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">calc_target_offsets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">aca</span></em>, <em class="sig-param"><span class="n">ra_targ</span></em>, <em class="sig-param"><span class="n">dec_targ</span></em>, <em class="sig-param"><span class="n">si_align</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_target_offsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.calc_target_offsets" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.calc_target_offsets">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">calc_target_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aca</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ra_targ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec_targ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si_align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_target_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.calc_target_offsets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates required Y and Z offsets (deg) required from a target RA, Dec to
 arrive at the desired PCAD pointing <code class="docutils literal notranslate"><span class="pre">aca</span></code>.</p>
 <dl class="field-list simple">
@@ -583,8 +583,8 @@ arrive at the desired PCAD pointing <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.count_rate_to_mag">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">count_rate_to_mag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">count_rate</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#count_rate_to_mag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.count_rate_to_mag" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.count_rate_to_mag">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">count_rate_to_mag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count_rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#count_rate_to_mag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.count_rate_to_mag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert count rate in e- / sec to ACA mag</p>
 <p>Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
 columns mag0=10.32 and cnt_rate_mag0=5263.0.</p>
@@ -599,8 +599,8 @@ columns mag0=10.32 and cnt_rate_mag0=5263.0.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.eci_to_radec">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">eci_to_radec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eci</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#eci_to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.eci_to_radec" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.eci_to_radec">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">eci_to_radec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eci</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#eci_to_radec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.eci_to_radec" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert from ECI vector(s) to RA, Dec.  The input <code class="docutils literal notranslate"><span class="pre">eci</span></code> value
 can be an array of 3-vectors having shape (N, 3) in which case
 the output RA, Dec will be arrays of shape N. The N dimension can
@@ -616,8 +616,8 @@ actually be any multidimensional shape.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.mag_to_count_rate">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">mag_to_count_rate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mag</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#mag_to_count_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.mag_to_count_rate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.mag_to_count_rate">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">mag_to_count_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#mag_to_count_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.mag_to_count_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert ACA mag to count rate in e- / sec</p>
 <p>Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
 columns mag0=10.32 and cnt_rate_mag0=5263.0.  To convert to raw telemetered
@@ -633,8 +633,8 @@ counts (ADU), divide e- by the gain of 5.0 e-/ADU.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.normalize_vector">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">normalize_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vec</span></em>, <em class="sig-param"><span class="n">ord</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#normalize_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.normalize_vector" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.normalize_vector">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">normalize_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#normalize_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.normalize_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize <code class="docutils literal notranslate"><span class="pre">vec</span></code> over the last dimension.</p>
 <p>For an L x M x N input array, this normalizes over the N dimension
 using <code class="docutils literal notranslate"><span class="pre">np.linalg.norm</span></code>.</p>
@@ -652,8 +652,8 @@ using <code class="docutils literal notranslate"><span class="pre">np.linalg.nor
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.pixels_to_yagzag">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">pixels_to_yagzag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">row</span></em>, <em class="sig-param"><span class="n">col</span></em>, <em class="sig-param"><span class="n">allow_bad</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">flight</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">t_aca</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'edge'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#pixels_to_yagzag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.pixels_to_yagzag" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.pixels_to_yagzag">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">pixels_to_yagzag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_bad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_aca</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'edge'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#pixels_to_yagzag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.pixels_to_yagzag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert ACA row/column positions to ACA y-angle, z-angle.
 It is expected that the row and column input arguments have the same length.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">pix_zero_loc</span></code> parameter controls whether the input pixel values
@@ -680,8 +680,8 @@ if the row/col values are nominally off the ACA CCD.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.radec_to_eci">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">radec_to_eci</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra</span></em>, <em class="sig-param"><span class="n">dec</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_eci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_eci" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.radec_to_eci">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">radec_to_eci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_eci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_eci" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert from RA,Dec to ECI.  The input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d
 arrays of length N in which case the output <code class="docutils literal notranslate"><span class="pre">ECI</span></code> will be an array with
 shape (N, 3). The N dimension can actually be any multidimensional shape.</p>
@@ -699,8 +699,8 @@ shape (N, 3). The N dimension can actually be any multidimensional shape.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.radec_to_yagzag">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">radec_to_yagzag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra</span></em>, <em class="sig-param"><span class="n">dec</span></em>, <em class="sig-param"><span class="n">q_att</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_yagzag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_yagzag" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.radec_to_yagzag">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">radec_to_yagzag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_att</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_yagzag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_yagzag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
 input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d arrays in which case the output
 <code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> will be corresponding arrays of the same length.</p>
@@ -719,8 +719,8 @@ input <code class="docutils literal notranslate"><span class="pre">ra</span></co
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.snr_mag_for_t_ccd">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">snr_mag_for_t_ccd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t_ccd</span></em>, <em class="sig-param"><span class="n">ref_mag</span></em>, <em class="sig-param"><span class="n">ref_t_ccd</span></em>, <em class="sig-param"><span class="n">scale_4c</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#snr_mag_for_t_ccd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.snr_mag_for_t_ccd" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.snr_mag_for_t_ccd">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">snr_mag_for_t_ccd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_mag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_t_ccd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_4c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#snr_mag_for_t_ccd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.snr_mag_for_t_ccd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a t_ccd, solve for the magnitude that has the same expected signal
 to noise as ref_mag / ref_t_ccd.</p>
 <p>If scale_4c is None, the value from dark_model.DARK_SCALE_4C is used.</p>
@@ -738,8 +738,8 @@ ref_mag / ref_t_ccd, we define this equality:</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.yagzag_to_pixels">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">yagzag_to_pixels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yang</span></em>, <em class="sig-param"><span class="n">zang</span></em>, <em class="sig-param"><span class="n">allow_bad</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'edge'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_pixels" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.yagzag_to_pixels">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">yagzag_to_pixels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_bad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'edge'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_pixels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_pixels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert ACA y-angle/z-angle positions to ACA pixel row, column.
 It is expected that the y-angle/z-angle input arguments have the same length.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">pix_zero_loc</span></code> parameter controls whether the input pixel values
@@ -764,8 +764,8 @@ if the resulting row/col values are nominally off the ACA CCD.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.transform.yagzag_to_radec">
-<code class="sig-prename descclassname">chandra_aca.transform.</code><code class="sig-name descname">yagzag_to_radec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yag</span></em>, <em class="sig-param"><span class="n">zag</span></em>, <em class="sig-param"><span class="n">q_att</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_radec" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.yagzag_to_radec">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">yagzag_to_radec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_att</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_radec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_radec" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
 input <code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> values can be 1-d arrays in which case the output
 <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> will be corresponding arrays of the same length.</p>
@@ -783,12 +783,12 @@ input <code class="docutils literal notranslate"><span class="pre">yag</span></c
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-chandra_aca.centroid_resid">
+</section>
+<section id="module-chandra_aca.centroid_resid">
 <span id="centroid-residuals"></span><h2>Centroid residuals<a class="headerlink" href="#module-chandra_aca.centroid_resid" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="chandra_aca.centroid_resid.CentroidResiduals">
-<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.centroid_resid.</code><code class="sig-name descname">CentroidResiduals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.centroid_resid.</span></span><span class="sig-name descname"><span class="pre">CentroidResiduals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to calculate star centroid residuals.</p>
 <p>This class is designed to set up and perform the residual calculations on
 any desired combination of source centroids and source attitudes.  For the common use cases,
@@ -838,8 +838,8 @@ and ground centroids.  Here is another example that does the same thing without 
 </dd>
 </dl>
 <dl class="py method">
-<dt id="chandra_aca.centroid_resid.CentroidResiduals.calc_residuals">
-<code class="sig-name descname">calc_residuals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.calc_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.calc_residuals" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.calc_residuals">
+<span class="sig-name descname"><span class="pre">calc_residuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.calc_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.calc_residuals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate residuals based on attitude and ra/dec of star.  Note that the sampling and times
 of yags may be different from zags so these should be done independently.</p>
 <p>Residuals are available in self.dyags and self.dzags.
@@ -847,15 +847,15 @@ Predicted values from attitude and star position in self.pred_yags and self.pred
 </dd></dl>
 
 <dl class="py method">
-<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_atts">
-<code class="sig-name descname">set_atts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">source</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_atts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_atts" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_atts">
+<span class="sig-name descname"><span class="pre">set_atts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_atts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_atts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get attitude solution quaternions from <code class="docutils literal notranslate"><span class="pre">source</span></code>.</p>
 <p>One could also just set atts and att_times attributes directly.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_centroids">
-<code class="sig-name descname">set_centroids</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">source</span></em>, <em class="sig-param"><span class="n">slot</span></em>, <em class="sig-param"><span class="n">alg</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">apply_dt</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_centroids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_centroids" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_centroids">
+<span class="sig-name descname"><span class="pre">set_centroids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_centroids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign centroids from <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">slot</span></code> to the objects centroid attributes
 (yag, zag, yag_times, zag_times)</p>
 <p>For the supported sources (ground, obc) the centroids are fetched from the mica L1
@@ -874,8 +874,8 @@ archive or telemetry.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_offsets">
-<code class="sig-name descname">set_offsets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_offsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_offsets" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_offsets">
+<span class="sig-name descname"><span class="pre">set_offsets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_offsets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply time offsets to centroids based on type and source of centroid, obsid
 (suggesting 8x8 or 6x6 data), telemetry source (‘maude’ or ‘cxc’) and aspect solution
 source. These time offsets were fit.  See fit notebooks at:</p>
@@ -885,8 +885,8 @@ source. These time offsets were fit.  See fit notebooks at:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="chandra_aca.centroid_resid.CentroidResiduals.set_star">
-<code class="sig-name descname">set_star</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">agasc_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">slot</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_star" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_star">
+<span class="sig-name descname"><span class="pre">set_star</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agasc_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_star"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_star" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set self.ra and dec from either agasc_id <em>or</em> slot.</p>
 <p>This assumes use of star in default agasc miniagasc (no 1.4 or 1.5 or very faint stars)
 Lookup by “slot” relies on database of starcheck catalogs.</p>
@@ -895,8 +895,8 @@ Lookup by “slot” relies on database of starcheck catalogs.</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-chandra_aca.drift">
+</section>
+<section id="module-chandra_aca.drift">
 <span id="aca-alignment-drift"></span><h2>ACA alignment drift<a class="headerlink" href="#module-chandra_aca.drift" title="Permalink to this headline">¶</a></h2>
 <p>Function(s) related to ACA alignment.</p>
 <p>In particular compute the dynamical pointing offset required to achieve
@@ -904,14 +904,14 @@ a desired zero-offset target aimpoint.</p>
 <p>A key element of this module is the fitting analysis here:
 <a class="reference external" href="https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb">https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb</a></p>
 <dl class="py class">
-<dt id="chandra_aca.drift.AcaDriftModel">
-<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">AcaDriftModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scale</span></em>, <em class="sig-param"><span class="n">offset</span></em>, <em class="sig-param"><span class="n">trend</span></em>, <em class="sig-param"><span class="n">jumps</span></em>, <em class="sig-param"><span class="n">year0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.drift.AcaDriftModel">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">AcaDriftModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jumps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define a drift model for aspect solution SIM DY/DZ values as a function of
 time and ACA CCD temperature.  This expresses the model which is defined
 and fitted in the fit_aimpoint_drift notebook in this repo.</p>
 <dl class="py method">
-<dt id="chandra_aca.drift.AcaDriftModel.calc">
-<code class="sig-name descname">calc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">times</span></em>, <em class="sig-param"><span class="n">t_ccd</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel.calc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.drift.AcaDriftModel.calc">
+<span class="sig-name descname"><span class="pre">calc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel.calc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel.calc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the drift model for aspect solution SIM DY/DZ values for input <code class="docutils literal notranslate"><span class="pre">times</span></code>
 and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>.  The two arrays are broadcasted to match.</p>
 <p>The returned drifts are in arcsec and provide the expected aspect solution
@@ -933,8 +933,8 @@ the scale factor 20.493 arcsec/mm.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.drift.get_aca_offsets">
-<code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">get_aca_offsets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">detector</span></em>, <em class="sig-param"><span class="n">chip_id</span></em>, <em class="sig-param"><span class="n">chipx</span></em>, <em class="sig-param"><span class="n">chipy</span></em>, <em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">t_ccd</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_aca_offsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.get_aca_offsets" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.drift.get_aca_offsets">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_aca_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_aca_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_aca_offsets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the dynamical ACA offset values for the provided inputs.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">time</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code> inputs can be either scalars or arrays.</p>
 <dl class="field-list simple">
@@ -955,8 +955,8 @@ the scale factor 20.493 arcsec/mm.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.drift.get_default_zero_offset_table">
-<code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">get_default_zero_offset_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_default_zero_offset_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.get_default_zero_offset_table" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.drift.get_default_zero_offset_table">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_default_zero_offset_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_default_zero_offset_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_default_zero_offset_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get official SOT MP zero offset aimpoint table:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -966,8 +966,8 @@ the scale factor 20.493 arcsec/mm.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.drift.get_target_aimpoint">
-<code class="sig-prename descclassname">chandra_aca.drift.</code><code class="sig-name descname">get_target_aimpoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">cycle</span></em>, <em class="sig-param"><span class="n">detector</span></em>, <em class="sig-param"><span class="n">too</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">zero_offset_table</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_target_aimpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.drift.get_target_aimpoint" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.drift.get_target_aimpoint">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_target_aimpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">too</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_offset_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_target_aimpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_target_aimpoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -986,8 +986,8 @@ defaults to official SOT MP version if not supplied.</p></li>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="aca-images">
+</section>
+<section id="aca-images">
 <h2>ACA images<a class="headerlink" href="#aca-images" title="Permalink to this headline">¶</a></h2>
 <p>The <cite>aca_image</cite> module contains classes and utilities related to ACA readout
 images.  This includes the <a class="reference internal" href="#acaimage-class">ACAImage class</a> for manipulating images in
@@ -995,8 +995,8 @@ ACA coordinates, a first moment centroiding routine, and a library for
 generating synthetic ACA images that have a high-fidelity point spread function
 (PSF).</p>
 <span class="target" id="module-chandra_aca.aca_image"></span><dl class="py class">
-<dt id="chandra_aca.aca_image.ACAImage">
-<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">ACAImage</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">ACAImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>ACAImage is an ndarray subclass that supports functionality for the Chandra
 ACA. Most importantly it allows image indexing and slicing in absolute
 “aca” coordinates, where the image lower left coordinate is specified
@@ -1029,16 +1029,16 @@ initialize from array data or create a new array of zeros.</p>
 </ul>
 </dd>
 </dl>
-<dl class="py method">
-<dt id="chandra_aca.aca_image.ACAImage.aca">
-<em class="property">property </em><code class="sig-name descname">aca</code><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.aca" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.aca">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">aca</span></span><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.aca" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a light copy (same data) of self but with the _aca_coords
 attribute switched on so that indexing is absolute.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="chandra_aca.aca_image.ACAImage.centroid_fm">
-<code class="sig-name descname">centroid_fm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bgd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'center'</span></em>, <em class="sig-param"><span class="n">norm_clip</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.centroid_fm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.centroid_fm" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.centroid_fm">
+<span class="sig-name descname"><span class="pre">centroid_fm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bgd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.centroid_fm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.centroid_fm" title="Permalink to this definition">¶</a></dt>
 <dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">self</span></code> using 6x6 mousebitten image for input
 6x6 or 8x8 images.</p>
 <p>Note that the returned <code class="docutils literal notranslate"><span class="pre">norm</span></code> is the sum of the background-subtracted 6x6
@@ -1059,8 +1059,8 @@ implies Exception for non-positive norm)</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="chandra_aca.aca_image.ACAImage.flicker_init">
-<code class="sig-name descname">flicker_init</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flicker_mean_time</span><span class="o">=</span><span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">flicker_scale</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_init" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.flicker_init">
+<span class="sig-name descname"><span class="pre">flicker_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flicker_mean_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flicker_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize instance variables to allow for flickering pixel updates.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">flicker_scale</span></code> can be interpreted as follows: if the pixel
 was going to flicker by a multiplicative factor of (1 + x), now
@@ -1085,8 +1085,8 @@ flickering amplitude (default=1.0)</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="chandra_aca.aca_image.ACAImage.flicker_update">
-<code class="sig-name descname">flicker_update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dt</span></em>, <em class="sig-param"><span class="n">use_numba</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.flicker_update">
+<span class="sig-name descname"><span class="pre">flicker_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_numba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Propagate the image forward by <code class="docutils literal notranslate"><span class="pre">dt</span></code> seconds and update any pixels
 that have flickered during that interval.</p>
 <p>This has the option to use one of two implementations.  The default is
@@ -1105,8 +1105,8 @@ vectorized version is left in for reference.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="chandra_aca.aca_image.AcaPsfLibrary">
-<em class="property">class </em><code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">AcaPsfLibrary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.AcaPsfLibrary">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">AcaPsfLibrary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
 (pixelated) ACA PSF over a grid of subpixel locations.</p>
 <p>Example:</p>
@@ -1134,8 +1134,8 @@ vectorized version is left in for reference.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="chandra_aca.aca_image.AcaPsfLibrary.get_psf_image">
-<code class="sig-name descname">get_psf_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">row</span></em>, <em class="sig-param"><span class="n">col</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'center'</span></em>, <em class="sig-param"><span class="n">interpolation</span><span class="o">=</span><span class="default_value">'bilinear'</span></em>, <em class="sig-param"><span class="n">aca_image</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary.get_psf_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.AcaPsfLibrary.get_psf_image">
+<span class="sig-name descname"><span class="pre">get_psf_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aca_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary.get_psf_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get interpolated ACA PSF image that corresponds to pixel location
 <code class="docutils literal notranslate"><span class="pre">row</span></code>, <code class="docutils literal notranslate"><span class="pre">col</span></code>.</p>
 <dl class="field-list simple">
@@ -1158,16 +1158,16 @@ vectorized version is left in for reference.</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="chandra_aca.aca_image.EIGHT_LABELS">
-<code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">EIGHT_LABELS</code><em class="property"> = array([['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'],        ['I1', 'J1', 'K1', 'L1', 'M1', 'N1', 'O1', 'P1'],        ['A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'],        ['I2', 'J2', 'K2', 'L2', 'M2', 'N2', 'O2', 'P2'],        ['A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'],        ['I3', 'J3', 'K3', 'L3', 'M3', 'N3', 'O3', 'P3'],        ['A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'],        ['I4', 'J4', 'K4', 'L4', 'M4', 'N4', 'O4', 'P4']], dtype='&lt;U2')</em><a class="headerlink" href="#chandra_aca.aca_image.EIGHT_LABELS" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.EIGHT_LABELS">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">EIGHT_LABELS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">array([['A1',</span> <span class="pre">'B1',</span> <span class="pre">'C1',</span> <span class="pre">'D1',</span> <span class="pre">'E1',</span> <span class="pre">'F1',</span> <span class="pre">'G1',</span> <span class="pre">'H1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I1',</span> <span class="pre">'J1',</span> <span class="pre">'K1',</span> <span class="pre">'L1',</span> <span class="pre">'M1',</span> <span class="pre">'N1',</span> <span class="pre">'O1',</span> <span class="pre">'P1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A2',</span> <span class="pre">'B2',</span> <span class="pre">'C2',</span> <span class="pre">'D2',</span> <span class="pre">'E2',</span> <span class="pre">'F2',</span> <span class="pre">'G2',</span> <span class="pre">'H2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I2',</span> <span class="pre">'J2',</span> <span class="pre">'K2',</span> <span class="pre">'L2',</span> <span class="pre">'M2',</span> <span class="pre">'N2',</span> <span class="pre">'O2',</span> <span class="pre">'P2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A3',</span> <span class="pre">'B3',</span> <span class="pre">'C3',</span> <span class="pre">'D3',</span> <span class="pre">'E3',</span> <span class="pre">'F3',</span> <span class="pre">'G3',</span> <span class="pre">'H3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I3',</span> <span class="pre">'J3',</span> <span class="pre">'K3',</span> <span class="pre">'L3',</span> <span class="pre">'M3',</span> <span class="pre">'N3',</span> <span class="pre">'O3',</span> <span class="pre">'P3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A4',</span> <span class="pre">'B4',</span> <span class="pre">'C4',</span> <span class="pre">'D4',</span> <span class="pre">'E4',</span> <span class="pre">'F4',</span> <span class="pre">'G4',</span> <span class="pre">'H4'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I4',</span> <span class="pre">'J4',</span> <span class="pre">'K4',</span> <span class="pre">'L4',</span> <span class="pre">'M4',</span> <span class="pre">'N4',</span> <span class="pre">'O4',</span> <span class="pre">'P4']],</span> <span class="pre">dtype='&lt;U2')</span></em><a class="headerlink" href="#chandra_aca.aca_image.EIGHT_LABELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constant for labeling ACA image pixels using the EQ-278 spec format.
 Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
 row and highest col; pixel I4 has the highest row and lowest column.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.aca_image.centroid_fm">
-<code class="sig-prename descclassname">chandra_aca.aca_image.</code><code class="sig-name descname">centroid_fm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">bgd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pix_zero_loc</span><span class="o">=</span><span class="default_value">'center'</span></em>, <em class="sig-param"><span class="n">norm_clip</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#centroid_fm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.aca_image.centroid_fm" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.aca_image.centroid_fm">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">centroid_fm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#centroid_fm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.centroid_fm" title="Permalink to this definition">¶</a></dt>
 <dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">img</span></code>.</p>
 <p>Return FM centroid in coords where lower left pixel of image has value
 (0.0, 0.0) at the center (for pix_zero_loc=’center’) or the lower-left edge
@@ -1188,7 +1188,7 @@ implies Exception for non-positive norm)</p></li>
 </dl>
 </dd></dl>
 
-<div class="section" id="acaimage-class">
+<section id="acaimage-class">
 <h3>ACAImage class<a class="headerlink" href="#acaimage-class" title="Permalink to this headline">¶</a></h3>
 <p>ACAImage is an ndarray subclass that supports functionality for the Chandra
 ACA. Most importantly it allows image indexing and slicing in absolute
@@ -1198,7 +1198,7 @@ by object <code class="docutils literal notranslate"><span class="pre">row0</spa
 information.  Any keys which are all upper-case will be exposed as object
 attributes, e.g. <code class="docutils literal notranslate"><span class="pre">img.BGDAVG</span></code> &lt;=&gt; <code class="docutils literal notranslate"><span class="pre">img.meta['BGDAVG']</span></code>.  The <code class="docutils literal notranslate"><span class="pre">row0</span></code>
 attribute  is a proxy for <code class="docutils literal notranslate"><span class="pre">img.meta['IMGROW0']</span></code>, and likewise for <code class="docutils literal notranslate"><span class="pre">col0</span></code>.</p>
-<div class="section" id="creation">
+<section id="creation">
 <h4>Creation<a class="headerlink" href="#creation" title="Permalink to this headline">¶</a></h4>
 <p>When initializing an <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code>, additional <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> are
 used to try initializing via <code class="docutils literal notranslate"><span class="pre">np.array(*args,</span> <span class="pre">**kwargs)</span></code>.  If this fails
@@ -1235,8 +1235,8 @@ rounded integer version of the values, but the full float value
 is stored internally.  If you <code class="docutils literal notranslate"><span class="pre">print()</span></code> the image then the floating
 point values are shown.</p>
 </div>
-</div>
-<div class="section" id="image-access-and-setting">
+</section>
+<section id="image-access-and-setting">
 <h4>Image access and setting<a class="headerlink" href="#image-access-and-setting" title="Permalink to this headline">¶</a></h4>
 <p>You can access array elements as usual, and in fact do any normal numpy array operations:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
@@ -1302,8 +1302,8 @@ within the area of <code class="docutils literal notranslate"><span class="pre">
 <span class="go">       [  0,   0,   0,   0,   0,   0,   0,   0]])&gt;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="image-arithmetic-operations">
+</section>
+<section id="image-arithmetic-operations">
 <h4>Image arithmetic operations<a class="headerlink" href="#image-arithmetic-operations" title="Permalink to this headline">¶</a></h4>
 <p>In addition to doing image arithmetic operations using explicit slices
 as shown previously, one can also use normal arithmetic operators like
@@ -1391,8 +1391,8 @@ shown in the examples below.  The supported operations for this are:</p>
 <span class="gr">ValueError</span>: <span class="n">operands could not be broadcast together with shapes (6,6) (4,4)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="meta-data">
+</section>
+<section id="meta-data">
 <h4>Meta-data<a class="headerlink" href="#meta-data" title="Permalink to this headline">¶</a></h4>
 <p>Finally, the <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code> object can store arbitrary metadata in the
 <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict attribute.  However, in order to make this convenient and
@@ -1414,10 +1414,10 @@ as object attributes instead of going through the <code class="docutils literal 
 <span class="gr">AttributeError</span>: <span class="n">&#39;ACAImage&#39; object has no attribute &#39;fail&#39;</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
-<div class="section" id="module-chandra_aca.maude_decom">
+</section>
+</section>
+</section>
+<section id="module-chandra_aca.maude_decom">
 <span id="maude-decom"></span><h2>MAUDE Decom<a class="headerlink" href="#module-chandra_aca.maude_decom" title="Permalink to this headline">¶</a></h2>
 <p>Classes and functions to help fetching ACA telemetry data using MAUDE.
 These include the following global variables</p>
@@ -1496,8 +1496,8 @@ In the following tables, column index increases to the right and row index incre
 </pre></div>
 </div>
 <dl class="py function">
-<dt id="chandra_aca.maude_decom.blob_to_aca_image_dict">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">blob_to_aca_image_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">blob</span></em>, <em class="sig-param"><span class="n">imgnum</span></em>, <em class="sig-param"><span class="n">pea</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#blob_to_aca_image_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.blob_to_aca_image_dict" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.blob_to_aca_image_dict">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">blob_to_aca_image_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blob</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgnum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#blob_to_aca_image_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.blob_to_aca_image_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assemble ACA image MSIDs from a blob into a dictionary.</p>
 <p>This does to blobs what unpack_aca_telemetry does to frames, but for a single image.</p>
 <dl class="field-list simple">
@@ -1515,8 +1515,8 @@ In the following tables, column index increases to the right and row index incre
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.maude_decom.get_aca_images">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_aca_images</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_aca_images">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch ACA image telemetry</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1533,8 +1533,8 @@ In the following tables, column index increases to the right and row index incre
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.maude_decom.get_aca_packets">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">level0</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">combine</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">adjust_time</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">calibrate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">blobs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frames</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_packets" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_aca_packets">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_packets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adjust_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_packets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</p>
 <p>Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
 with complete ACA telemetry. Compare these to calls to the function:</p>
@@ -1707,8 +1707,8 @@ restrictive dtype is used, a KeyError can be raised.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.maude_decom.get_raw_aca_blobs">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_raw_aca_blobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">maude_result</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_blobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_blobs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_raw_aca_blobs">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_raw_aca_blobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maude_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_blobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_blobs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</p>
 <p>If the first minor frame in a group of four ACA packets is within (start, stop),
 the three following minor frames are included if present.</p>
@@ -1733,8 +1733,8 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.maude_decom.get_raw_aca_packets">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">get_raw_aca_packets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">maude_result</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">maude_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_packets" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_raw_aca_packets">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_raw_aca_packets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maude_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_packets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</p>
 <p>If the first minor frame in a group of four ACA packets is within (start, stop),
 the three following minor frames are included if present.</p>
@@ -1762,8 +1762,8 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.maude_decom.unpack_aca_telemetry">
-<code class="sig-prename descclassname">chandra_aca.maude_decom.</code><code class="sig-name descname">unpack_aca_telemetry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">packet</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#unpack_aca_telemetry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.maude_decom.unpack_aca_telemetry" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.unpack_aca_telemetry">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">unpack_aca_telemetry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#unpack_aca_telemetry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.unpack_aca_telemetry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unpack ACA telemetry encoded in 225-byte packets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1776,8 +1776,8 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 <p>A list of length 8, one entry per slot, where each entry is a dictionary.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="module-chandra_aca.planets">
+</section>
+<section id="module-chandra_aca.planets">
 <span id="planet-positions"></span><h2>Planet Positions<a class="headerlink" href="#module-chandra_aca.planets" title="Permalink to this headline">¶</a></h2>
 <p>Functions for planet position relative to Chandra, Earth, or Solar System
 Barycenter.</p>
@@ -1807,14 +1807,14 @@ Horizons positions are used as the “truth”.</p>
 </ul>
 <p>See the <code class="docutils literal notranslate"><span class="pre">validation/planet-accuracy.ipynb</span></code> notebook for details.</p>
 <dl class="py exception">
-<dt id="chandra_aca.planets.NoEphemerisError">
-<em class="property">exception </em><code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">NoEphemerisError</code><a class="reference internal" href="_modules/chandra_aca/planets.html#NoEphemerisError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.NoEphemerisError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.planets.NoEphemerisError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">NoEphemerisError</span></span><a class="reference internal" href="_modules/chandra_aca/planets.html#NoEphemerisError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.NoEphemerisError" title="Permalink to this definition">¶</a></dt>
 <dd><p>If there is no Chandra orbital ephemeris available</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.planets.get_planet_angular_sep">
-<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_angular_sep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">ra</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">dec</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">observer_position</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'earth'</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_angular_sep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_angular_sep" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.planets.get_planet_angular_sep">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_angular_sep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ra</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observer_position</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'earth'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_angular_sep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_angular_sep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get angular separation between planet <code class="docutils literal notranslate"><span class="pre">body</span></code> and target <code class="docutils literal notranslate"><span class="pre">ra</span></code>, <code class="docutils literal notranslate"><span class="pre">dec</span></code>.</p>
 <p>Valid values for the <code class="docutils literal notranslate"><span class="pre">observer_position</span></code> argument are:</p>
 <ul class="simple">
@@ -1844,8 +1844,8 @@ Observer position (‘earth’, ‘chandra’, or ‘chandra-horizons’)</p></l
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.planets.get_planet_barycentric">
-<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_barycentric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_barycentric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_barycentric" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.planets.get_planet_barycentric">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_barycentric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_barycentric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_barycentric" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get barycentric position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem.</p>
 <dl class="field-list simple">
@@ -1862,8 +1862,8 @@ Observer position (‘earth’, ‘chandra’, or ‘chandra-horizons’)</p></l
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.planets.get_planet_chandra">
-<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_chandra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.planets.get_planet_chandra">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code> relative to Chandra.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem, along with
 the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
@@ -1892,8 +1892,8 @@ follows, where the JPL Horizons positions are used as the “truth”.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.planets.get_planet_chandra_horizons">
-<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_chandra_horizons</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">timestart</span></em>, <em class="sig-param"><span class="n">timestop</span></em>, <em class="sig-param"><span class="n">n_times</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra_horizons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra_horizons" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.planets.get_planet_chandra_horizons">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra_horizons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestart</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra_horizons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra_horizons" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get body position, rate, mag, surface brightness, diameter from Horizons.</p>
 <p>This function queries the JPL Horizons site using the CGI batch interface
 (See <a class="reference external" href="https://ssd.jpl.nasa.gov/horizons_batch.cgi">https://ssd.jpl.nasa.gov/horizons_batch.cgi</a> for docs).</p>
@@ -1936,8 +1936,8 @@ of the Horizons response.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="chandra_aca.planets.get_planet_eci">
-<code class="sig-prename descclassname">chandra_aca.planets.</code><code class="sig-name descname">get_planet_eci</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">body</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pos_observer</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_eci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_eci" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.planets.get_planet_eci">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_eci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_observer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_eci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_eci" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get ECI apparent position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem. The position
 is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from the
@@ -1966,8 +1966,8 @@ or N x (x, y, z)</p>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -2023,7 +2023,7 @@ or N x (x, y, z)</p>
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 3.1.2. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
   </p>
 </footer>
   </body>
