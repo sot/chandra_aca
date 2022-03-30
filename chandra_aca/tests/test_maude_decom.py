@@ -63,7 +63,8 @@ def test_vcdu_0_raw():
 
     ref_data = test_data['686111007-686111017']['raw']
     data = maude_decom.get_raw_aca_packets(686111007, 686111017)
-    for key in ['TIME', 'MJF', 'MNF']:
+    assert np.all(np.isclose(data['TIME'], ref_data['TIME'], rtol=0, atol=1e-3))
+    for key in ['MJF', 'MNF']:
         assert np.all(data[key] == ref_data[key])
     assert data['packets'] == ref_data['packets']
     assert data['flags'] == ref_data['flags']
@@ -77,7 +78,7 @@ def test_blob_0_raw():
     ref_data = test_data['686111007-686111017']['raw']
     blobs = maude_decom.get_raw_aca_blobs(686111007, 686111017)
     t = maude.blobs_to_table(**blobs)[['TIME', 'CVCMJCTR', 'CVCMNCTR']]
-    assert np.all(t['TIME'] == ref_data['TIME'])
+    assert np.all(np.isclose(t['TIME'], ref_data['TIME'], rtol=0, atol=1e-3))
     assert np.all(t['CVCMJCTR'] == ref_data['MJF'])
     assert np.all(t['CVCMNCTR'] == ref_data['MNF'])
 
@@ -203,7 +204,10 @@ def test_vcdu_vs_level0():
     table2 = maude_decom._get_aca_packets(raw, start, stop,
                                           combine=True, adjust_time=True, calibrate=True)
     for col, col2 in zip(table.itercols(), table2.itercols()):
-        assert np.all(col == col2)
+        if col.name in ['TIME', 'END_INTEG_TIME']:
+            assert np.all(np.isclose(col2, col, rtol=0, atol=1e-3))
+        else:
+            assert np.all(col == col2)
 
     names = ['TIME', 'MJF', 'MNF', 'END_INTEG_TIME', 'INTEG', 'GLBSTAT', 'COMMCNT',
              'COMMPROG', 'IMGROW0', 'IMGCOL0', 'IMGSCALE', 'BGDAVG', 'BGDRMS',
