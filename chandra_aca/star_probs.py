@@ -658,36 +658,49 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
 def guide_count(mags, t_ccd, count_9th=False):
     """Calculate a guide star fractional count/metric using signal-to-noise scaled
     mag thresholds.
+
     This uses a modification of the guide star fractional counts that were
     suggested at the 7-Mar-2018 SSAWG and agreed upon at the 21-Mar-2018
     SSAWG.  The implementation here does a piecewise linear interpolation
     between the reference mag - fractional count points instead of the
     original "threshold interpolation" (nearest neighbor mag <= reference
     mag).  Approved at 16-Jan-2019 SSAWG.
+
     One feature is the slight incline in the guide_count curve from 1.0005 at
     mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs
     of guide_counts to two decimal places (8 * 0.0005 = 0.004), but helps with
     minimization.
-    :param mags: magnitude(s)
-    :param t_ccds: CCD temperature(s)
-    :param count_9th: return fractional count of 9th mag or brighter stars
-    :returns: fractional count
+
+    :param mags: float, array
+        Star magnitude(s)
+    :param t_ccds: float, array
+        CCD temperature(s)
+    :param count_9th: bool
+        Return fractional count of 9th mag or brighter stars
+    :returns: float, fractional count
     """
-    # Generate interpolation curve for the specified input ``t_ccd``
+    mags = np.atleast_1d(mags)
+    mags, t_ccds = np.broadcast_arrays(mags, t_ccd)
+
+    # Generate interpolation curve for each specified input ``t_ccd``
     ref_t_ccd = -10.9
     ref_mags0 = (9.0 if count_9th else 9.95) + np.array([0.0, 0.2, 0.3, 0.4])
-    ref_mags_t_ccd = [snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd) for ref_mag in ref_mags0]
+    ref_mags = {}
+    for t_ccd in np.unique(t_ccds):
+        # The 5.25 and 5.35 limits are not temperature dependent, these reflect the
+        # possibility that the star will be brighter than 5.2 mag and the OBC will
+        # reject it.  Note that around 6th mag mean observed catalog error is
+        # around 0.1 mag.
+        ref_mags[t_ccd] = np.concatenate(
+            [[5.25, 5.35], snr_mag_for_t_ccd(t_ccd, ref_mags0, ref_t_ccd)])
 
-    # The 5.25 and 5.35 limits are not temperature dependent, these reflect the
-    # possibility that the star will be brighter than 5.2 mag and the OBC will
-    # reject it.  Note that around 6th mag mean observed catalog error is
-    # around 0.1 mag.
-    ref_mags = ([5.25, 5.35] + ref_mags_t_ccd)
     ref_counts = [0.0, 1.0005, 1.0, 0.75, 0.5, 0.0]
 
     # Do the interpolation, noting that np.interp will use the end ``counts``
     # values for any ``mag`` < ref_mags[0] or > ref_mags[-1].
-    count = np.sum(np.interp(mags, ref_mags, ref_counts))
+    count = 0.0
+    for mag, t_ccd in zip(mags, t_ccds):
+        count += np.interp(mag, ref_mags[t_ccd], ref_counts)
 
     return count
 
