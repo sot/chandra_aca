@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.transform &#8212; chandra_aca 4.34.2 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.35.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.34.2 documentation</a>
+	<a href="../../index.html">chandra_aca 4.35.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -394,27 +394,32 @@
 <span class="sd">    If scale_4c is None, the value from dark_model.DARK_SCALE_4C is used.</span>
 
 <span class="sd">    To solve for the magnitude that has the expected signal to noise as</span>
-<span class="sd">    ref_mag / ref_t_ccd, we define this equality:</span>
+<span class="sd">    ref_mag / ref_t_ccd, we use the following derivation::</span>
 
-<span class="sd">    counts(mag) / noise(t_ccd) = counts(ref_mag) / noise(ref_t_ccd)</span>
+<span class="sd">      counts(mag) / noise(t_ccd) = counts(ref_mag) / noise(ref_t_ccd)</span>
+<span class="sd">      noise(t_ccd) = noise(ref_t_ccd) * scale</span>
+<span class="sd">      scale = scale_4c ** ((t_ccd - ref_t_ccd) / 4.0)</span>
 
-<span class="sd">    We then assume (with some handwaving) that:</span>
+<span class="sd">    Using the definition of counts as a function of magnitude, substituting in,</span>
+<span class="sd">    reducing, and solving the original equality for mag gives::</span>
 
-<span class="sd">    noise(t_ccd) = noise(ref_t_ccd) * scale</span>
+<span class="sd">      counts(mag) = ACA_CNT_RATE_MAG0 * 10.0 ** ((ACA_MAG0 - mag) / 2.5)</span>
+<span class="sd">      ref_mag = (t_ccd - ref_t_ccd) * np.log10(scale_4c) / 1.6</span>
 
-<span class="sd">    where</span>
-
-<span class="sd">    scale = scale_4c ** ((t_ccd - ref_t_ccd) / 4.0)</span>
-
-<span class="sd">    And we use the definition of counts as:</span>
-
-<span class="sd">    counts(mag) = ACA_CNT_RATE_MAG0 * 10.0 ** ((ACA_MAG0 - mag) / 2.5)</span>
-
-<span class="sd">    Substituting in, reducing, and solving the original equality for mag gives</span>
-
-<span class="sd">    ref_mag - (t_ccd - ref_t_ccd) * np.log10(scale_4c) / 1.6</span>
-
+<span class="sd">    :param t_ccd: float, array</span>
+<span class="sd">        CCD temperature (degC)</span>
+<span class="sd">    :param ref_mag: float, array</span>
+<span class="sd">        Reference magnitude (mag)</span>
+<span class="sd">    :param ref_t_ccd: float, array</span>
+<span class="sd">        Reference CCD temperature (degC)</span>
+<span class="sd">    :param scale_4c: float</span>
+<span class="sd">        Scale factor for a 4 degC change in CCD temperature (defaults to DARK_SCALE_4C)</span>
+<span class="sd">    :returns: float, array</span>
+<span class="sd">        Magnitude(s) with the same expected signal to noise as ref_mag at ref_t_ccd</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Allow array inputs</span>
+    <span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mag</span><span class="p">,</span> <span class="n">ref_t_ccd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mag</span><span class="p">,</span> <span class="n">ref_t_ccd</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">scale_4c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">scale_4c</span> <span class="o">=</span> <span class="n">dark_model</span><span class="o">.</span><span class="n">DARK_SCALE_4C</span>
     <span class="k">return</span> <span class="n">ref_mag</span> <span class="o">-</span> <span class="p">(</span><span class="n">t_ccd</span> <span class="o">-</span> <span class="n">ref_t_ccd</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">scale_4c</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.6</span></div>
