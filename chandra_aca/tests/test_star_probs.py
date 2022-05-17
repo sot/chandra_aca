@@ -117,6 +117,20 @@ def test_t_ccd_warm_limit_guide():
 
 
 @pytest.mark.parametrize('count_9th', [False, True])
+def test_guide_count_t_ccd_array(count_9th):
+    mags0 = np.linspace(8.5, 9.75, 6)
+    mags1 = np.linspace(9.75, 10.0, 2)
+    t_ccd0 = -5.0
+    t_ccd1 = -9.0
+    count0 = guide_count(t_ccd=t_ccd0, mags=mags0, count_9th=count_9th)
+    count1 = guide_count(t_ccd=t_ccd1, mags=mags1, count_9th=count_9th)
+    count = guide_count(t_ccd=np.concatenate([[t_ccd0] * 6, [t_ccd1] * 2]),
+                        mags=np.concatenate([mags0, mags1]),
+                        count_9th=count_9th)
+    assert np.isclose(count0 + count1, count, atol=1e-6, rtol=0)
+
+
+@pytest.mark.parametrize('count_9th', [False, True])
 def test_guide_count(count_9th):
     """Test fractional guide count"""
 
