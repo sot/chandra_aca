@@ -940,6 +940,21 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
     return result
 
 
+def get_state_codes(msid):
+    import Ska.tdb
+    try:
+        states = Ska.tdb.msids[msid].Tsc
+    except Exception:
+        return {}
+    else:
+        if states is None or len(set(states['CALIBRATION_SET_NUM'])) != 1:
+            return {}
+        states = np.sort(states.data, order='LOW_RAW_COUNT')
+        return dict([
+            (state['LOW_RAW_COUNT'], state['STATE_CODE']) for state in states
+        ])
+
+
 def blob_to_aca_image_dict(blob, imgnum, pea=1):
     """
     Assemble ACA image MSIDs from a blob into a dictionary.
@@ -960,6 +975,9 @@ def blob_to_aca_image_dict(blob, imgnum, pea=1):
         'TIME': float(blob['time']),
         'MJF': int(blob['CVCMJCTR']),
         'MNF': int(blob['CVCMNCTR']),
+        'AOKALSTR': int(blob['AOKALSTR']),
+        'AOPCADMD': get_state_codes('AOPCADMD')[int(blob['AOPCADMD'])],
+        'AOACASEQ': get_state_codes('AOACASEQ')[int(blob['AOACASEQ'])],
         'VCDUCTR': int(blob['CVCDUCTR']),
         'IMGNUM': imgnum,
         'IMGTYPE': int(blob[slot_msids['sizes']]),
