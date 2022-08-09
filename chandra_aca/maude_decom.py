@@ -776,7 +776,7 @@ def get_aca_packets(start, stop, level0=False,
         batches = [(date_start + i * dt, date_start + (i + 1) * dt) for i in range(n)]  # 0.0001????
         aca_packets = []
         for t1, t2 in batches:
-            maude_result = frames if type(frames) is dict and 'data' in frames else None
+            maude_result = frames if (type(frames) is dict and 'data' in frames) else None
             raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad,
                                                   maude_result=maude_result,
                                                   **maude_kwargs)
@@ -787,7 +787,7 @@ def get_aca_packets(start, stop, level0=False,
             aca_packets.append(packets)
         aca_data = vstack(aca_packets)
     else:
-        maude_result = frames if type(frames) is dict and 'data' in frames else None
+        maude_result = blobs if (type(blobs) is dict and 'blobs' in blobs) else None
         merged_blobs = get_raw_aca_blobs(date_start, date_stop,
                                          maude_result=maude_result,
                                          **maude_kwargs)['blobs']
