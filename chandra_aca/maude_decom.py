@@ -788,7 +788,7 @@ def get_aca_packets(start, stop, level0=False,
         aca_data = vstack(aca_packets)
     else:
         maude_result = blobs if (type(blobs) is dict and 'blobs' in blobs) else None
-        merged_blobs = get_raw_aca_blobs(date_start, date_stop,
+        merged_blobs = get_raw_aca_blobs(date_start, date_stop + stop_pad,
                                          maude_result=maude_result,
                                          **maude_kwargs)['blobs']
         aca_packets = [[blob_to_aca_image_dict(b, i) for b in merged_blobs] for i in range(8)]
@@ -796,6 +796,7 @@ def get_aca_packets(start, stop, level0=False,
                                     combine=combine, adjust_time=adjust_time, calibrate=calibrate,
                                     blobs=True,
                                     dtype=dtype)
+        aca_data = aca_data[(aca_data['TIME'] >= start) & (aca_data['TIME'] < stop)]
     return aca_data
 
 
