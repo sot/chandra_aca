@@ -480,3 +480,40 @@ def test_get_aca_blobs():
     t0 = maude_decom.get_aca_packets(686111007, 686111017, frames=True)
     t1 = maude_decom.get_aca_packets(686111007, 686111017, blobs=True)
     compare_tables(t0, t1, exclude=['COMMPROG_REPEAT'])
+
+
+def test_blob_frame_consistency():
+    slot = 6
+    start, stop = (686111012., 686111212.)
+    slot_data = maude_decom.get_aca_packets(
+        start, stop, level0=True, blobs=False,
+    )
+    slot_data_2 = maude_decom.get_aca_packets(
+        start, stop, level0=True, blobs=True,
+    )
+    slot_data = slot_data[slot_data['IMGNUM'] == slot]
+    slot_data_2 = slot_data_2[slot_data_2['IMGNUM'] == slot]
+    assert len(slot_data) == len(slot_data_2)
+
+
+def test_get_aca_packets_blobs():
+    # this test indirectly checks that the blobs argument in get_aca_packets is used
+    # because the blobs correspond to a shorter interval and therefore the should match
+    # the result from the shorter interval
+    slot = 6
+    start, stop = (686111012., 686111111.)
+    slot_data = maude_decom.get_aca_packets(
+        start, stop, level0=True, blobs=True,
+    )
+    blobs = maude.get_blobs(
+        start=start,
+        stop=stop + 4,
+        channel='FLIGHT',
+    )
+    start, stop = (686111012., 686111212.)
+    slot_data_2 = maude_decom.get_aca_packets(
+        start, stop, level0=True, blobs=blobs,
+    )
+    slot_data = slot_data[slot_data['IMGNUM'] == slot]
+    slot_data_2 = slot_data_2[slot_data_2['IMGNUM'] == slot]
+    assert len(slot_data) == len(slot_data_2)
