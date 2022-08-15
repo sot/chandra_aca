@@ -852,10 +852,12 @@ def _get_aca_packets(aca_packets, start, stop,
     table['IMGROW0'][table['IMGTYPE'] == 2] -= 1
     table['IMGCOL0'][table['IMGTYPE'] == 2] -= 1
 
+    table['INTEG'] = table['INTEG'] * 0.016
+    table['END_INTEG_TIME'] = table['TIME'] + table['INTEG']
     if adjust_time:
-        table['INTEG'] = table['INTEG'] * 0.016
-        table['TIME'] -= table['INTEG'] / 2 + 1.025
-        table['END_INTEG_TIME'] = table['TIME'] + table['INTEG'] / 2
+        dt = table['INTEG'] / 2 + 1.025
+        table['TIME'] -= dt
+        table['END_INTEG_TIME'] -= dt
 
     if calibrate:
         if 'IMG' in table.colnames:
