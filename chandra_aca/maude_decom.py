@@ -446,9 +446,9 @@ def _group_packets(packets, discard=True):
             res = []
         if not res:
             # the number of minor frames expected within the same ACA packet
-            s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[packet['IMGTYPE']]
+            s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[int(packet['IMGTYPE'])]
             # the number of minor frames within the same ACA packet expected after this minor frame
-            remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[packet['IMGTYPE']]
+            remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[int(packet['IMGTYPE'])]
             n = packet['MJF'] * 128 + packet['MNF'] + 4 * remaining
         res.append(packet)
     if res and (not discard or len(res) == s):
