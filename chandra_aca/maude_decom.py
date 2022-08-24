@@ -446,9 +446,9 @@ def _group_packets(packets, discard=True):
             res = []
         if not res:
             # the number of minor frames expected within the same ACA packet
-            s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[packet['IMGTYPE']]
+            s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[int(packet['IMGTYPE'])]
             # the number of minor frames within the same ACA packet expected after this minor frame
-            remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[packet['IMGTYPE']]
+            remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[int(packet['IMGTYPE'])]
             n = packet['MJF'] * 128 + packet['MNF'] + 4 * remaining
         res.append(packet)
     if res and (not discard or len(res) == s):
@@ -776,7 +776,7 @@ def get_aca_packets(start, stop, level0=False,
         batches = [(date_start + i * dt, date_start + (i + 1) * dt) for i in range(n)]  # 0.0001????
         aca_packets = []
         for t1, t2 in batches:
-            maude_result = frames if type(frames) is dict and 'data' in frames else None
+            maude_result = frames if (type(frames) is dict and 'data' in frames) else None
             raw_aca_packets = get_raw_aca_packets(t1, t2 + stop_pad,
                                                   maude_result=maude_result,
                                                   **maude_kwargs)
@@ -787,8 +787,8 @@ def get_aca_packets(start, stop, level0=False,
             aca_packets.append(packets)
         aca_data = vstack(aca_packets)
     else:
-        maude_result = frames if type(frames) is dict and 'data' in frames else None
-        merged_blobs = get_raw_aca_blobs(date_start, date_stop,
+        maude_result = blobs if (type(blobs) is dict and 'blobs' in blobs) else None
+        merged_blobs = get_raw_aca_blobs(date_start, date_stop + stop_pad,
                                          maude_result=maude_result,
                                          **maude_kwargs)['blobs']
         aca_packets = [[blob_to_aca_image_dict(b, i) for b in merged_blobs] for i in range(8)]
@@ -796,6 +796,7 @@ def get_aca_packets(start, stop, level0=False,
                                     combine=combine, adjust_time=adjust_time, calibrate=calibrate,
                                     blobs=True,
                                     dtype=dtype)
+        aca_data = aca_data[(aca_data['TIME'] >= start) & (aca_data['TIME'] < stop)]
     return aca_data
 
 
@@ -851,10 +852,12 @@ def _get_aca_packets(aca_packets, start, stop,
     table['IMGROW0'][table['IMGTYPE'] == 2] -= 1
     table['IMGCOL0'][table['IMGTYPE'] == 2] -= 1
 
+    table['INTEG'] = table['INTEG'] * 0.016
+    table['END_INTEG_TIME'] = table['TIME'] + table['INTEG']
     if adjust_time:
-        table['INTEG'] = table['INTEG'] * 0.016
-        table['TIME'] -= table['INTEG'] / 2 + 1.025
-        table['END_INTEG_TIME'] = table['TIME'] + table['INTEG'] / 2
+        dt = table['INTEG'] / 2 + 1.025
+        table['TIME'] -= dt
+        table['END_INTEG_TIME'] -= dt
 
     if calibrate:
         if 'IMG' in table.colnames:
