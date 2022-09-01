@@ -74,6 +74,7 @@ In the following tables, column index increases to the right and row index incre
     -----------------------------------------
 """
 
+import copy
 from struct import unpack as _unpack, Struct
 import numpy as np
 
@@ -918,27 +919,34 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
 
     aca_block_start = [ACA_SLOT_MSID_LIST[1][3]['sizes'] in [c['n']for c in b['values']]
                        for b in maude_blobs['blobs']]
+
+    names = maude_blobs['names'].copy()
+    types = maude_blobs['types'].copy()
     if not np.any(aca_block_start):
-        maude_blobs['blobs'] = []
-        return maude_blobs
-    maude_blobs['blobs'] = maude_blobs['blobs'][np.argwhere(aca_block_start).min():]
-    if len(maude_blobs['blobs']) % 4:
-        maude_blobs['blobs'] = maude_blobs['blobs'][:-(len(maude_blobs['blobs']) % 4)]
-    for b in maude_blobs['blobs']:
+        return {
+            'blobs': [],
+            'names': names,
+            'types': types,
+        }
+
+    blobs = copy.deepcopy(maude_blobs['blobs'][np.argwhere(aca_block_start).min():])
+    if len(blobs) % 4:
+        blobs = blobs[:-(len(blobs) % 4)]
+    for b in blobs:
         b['values'] = {v['n']: v['v'] for v in b['values']}
 
     merged_blobs = []
-    for i in range(0, len(maude_blobs['blobs']), 4):
-        b = {'time': maude_blobs['blobs'][i]['time']}
+    for i in range(0, len(blobs), 4):
+        b = {'time': blobs[i]['time']}
         # blobs are merged in reverse order so the frame counters are the one in the first blob.
         for j in range(4)[::-1]:
-            b.update(maude_blobs['blobs'][i + j]['values'])
+            b.update(blobs[i + j]['values'])
         merged_blobs.append(b)
 
     result = {
         'blobs': [b for b in merged_blobs if b['time'] < date_stop.secs],
-        'names': maude_blobs['names'],
-        'types': maude_blobs['types'],
+        'names': names,
+        'types': types,
     }
     return result
 
