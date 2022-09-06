@@ -4,6 +4,7 @@ import os
 import pickle
 import numpy as np
 import pytest
+import copy
 
 import maude
 from chandra_aca import maude_decom
@@ -517,3 +518,10 @@ def test_get_aca_packets_blobs():
     slot_data = slot_data[slot_data['IMGNUM'] == slot]
     slot_data_2 = slot_data_2[slot_data_2['IMGNUM'] == slot]
     assert len(slot_data) == len(slot_data_2)
+
+    # calling the function again with the same blobs (they should not have been modified)
+    ref_blobs = copy.deepcopy(blobs)
+    slot_data_2 = maude_decom.get_aca_packets(
+        start, stop, level0=True, blobs=blobs,
+    )
+    assert blobs == ref_blobs
