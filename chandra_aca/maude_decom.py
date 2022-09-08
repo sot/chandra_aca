@@ -192,9 +192,10 @@ def _aca_image_msid_list(pea):
 
         'image_status': [f'AOIMAGE{i}' for i in range(8)],    # IMAGE STATUS FLAG
         'fiducial_flag': [f'AOACFID{i}' for i in range(8)],  # FIDUCIAL LIGHT FLAG (OBC)
-        'image_function': [f'AOACFCT{i}' for i in range(8)],  # IMAGE FUNCTION (OBC)
+        'image_function_obc': [f'AOACFCT{i}' for i in range(8)],  # IMAGE FUNCTION (OBC)
+        'image_function': [f'{msid_prefix}AIMGF{i}1' for i in range(8)],  # IMAGE FUNCTION (PEA)
         # this one exists also as FUNCTION2/3/4
-        # 'image_function_pea':
+        # 'image_function':
         #     [f'{msid_prefix}AIMGF{i}1' for i in range(8)],  # IMAGE FUNCTION1 (PEA)
 
         'saturated_pixel': [f'{msid_prefix}ASPXF{i}' for i in range(8)],  # DEFECTIVE PIXEL FLAG
