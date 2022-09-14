@@ -495,6 +495,12 @@ def test_blob_frame_consistency():
     slot_data = slot_data[slot_data['IMGNUM'] == slot]
     slot_data_2 = slot_data_2[slot_data_2['IMGNUM'] == slot]
     assert len(slot_data) == len(slot_data_2)
+    compare_tables(slot_data, slot_data_2, exclude=['COMMPROG_REPEAT'])
+
+    start, stop = 686105735.6057751, 686105740.7507753
+    slot_data = maude_decom.get_aca_packets(start, stop, blobs=False)
+    slot_data_blobs = maude_decom.get_aca_packets(start, stop, blobs=True)
+    compare_tables(slot_data, slot_data_blobs, exclude=['COMMPROG_REPEAT'])
 
 
 def test_get_aca_packets_blobs():
