@@ -187,7 +187,12 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
 
 def get_default_zero_offset_table():
     """
-    Get official SOT MP zero offset aimpoint table:
+    Get official SOT MP zero offset aimpoint table.
+
+    If a local copy at '/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt' is not found
+    this uses the version at
+    'https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt' which is updated
+    via a ska cron job.
 
     :returns: zero offset aimpoint table as astropy.Table
     """
@@ -199,7 +204,7 @@ def get_default_zero_offset_table():
             format='ascii')
     except FileNotFoundError:
         CACHE['ZERO_OFFSET_TABLE'] = Table.read(
-            "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt",
+            "https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt",
             format='ascii')
     return CACHE['ZERO_OFFSET_TABLE']
 
