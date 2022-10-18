@@ -77,9 +77,6 @@ ASOL_TO_CHIP = {('ACIS-I', 0): {'c0': [1100.806, 1110.299],
 
 SIM_MM_TO_ARCSEC = 20.493
 
-# Cache for the zero offset table
-CACHE = {}
-
 
 class AcaDriftModel(object):
     """
