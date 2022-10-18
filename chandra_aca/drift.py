@@ -189,10 +189,13 @@ def get_default_zero_offset_table():
     """
     Get official SOT MP zero offset aimpoint table.
 
-    If a local copy at '/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt' is not found
-    this uses the version at
-    'https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt' which is updated
-    via a ska cron job.
+    First try ``/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt``.
+    If that is not available use:
+    https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt.
+    The web version is updated weekly on Sunday via a Ska cron job.
+
+    Note the definitive source of this file is:
+    https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt.
 
     :returns: zero offset aimpoint table as astropy.Table
     """
