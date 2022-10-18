@@ -20,71 +20,85 @@ Horizons positions are used as the "truth".
 
 See the ``validation/planet-accuracy.ipynb`` notebook for details.
 """
-from chandra_aca.transform import eci_to_radec
 from datetime import datetime
 from pathlib import Path
 
 import astropy.constants as const
 import astropy.units as u
-from astropy.io import ascii
 import numpy as np
+from astropy.io import ascii
 from cxotime import CxoTime
 from ska_helpers.utils import LazyVal
 
-__all__ = ('get_planet_chandra', 'get_planet_barycentric', 'get_planet_eci',
-           'get_planet_chandra_horizons', 'get_planet_angular_sep',
-           'NoEphemerisError', 'GET_PLANET_ECI_ERRORS',
-           'GET_PLANET_CHANDRA_ERRORS')
+from chandra_aca.transform import eci_to_radec
+
+__all__ = (
+    "get_planet_chandra",
+    "get_planet_barycentric",
+    "get_planet_eci",
+    "get_planet_chandra_horizons",
+    "get_planet_angular_sep",
+    "NoEphemerisError",
+    "GET_PLANET_ECI_ERRORS",
+    "GET_PLANET_CHANDRA_ERRORS",
+)
 
 GET_PLANET_ECI_ERRORS = {
-    'venus': 12 * u.arcmin,
-    'mars': 8 * u.arcmin,
-    'jupiter': 1 * u.arcmin,
-    'saturn': 0.5 * u.arcmin,
+    "venus": 12 * u.arcmin,
+    "mars": 8 * u.arcmin,
+    "jupiter": 1 * u.arcmin,
+    "saturn": 0.5 * u.arcmin,
 }
 GET_PLANET_CHANDRA_ERRORS = {
-    'Venus': 4 * u.arcsec,
-    'Mars': 3 * u.arcsec,
-    'Jupiter': 0.8 * u.arcsec,
-    'Saturn': 0.5 * u.arcsec,
+    "Venus": 4 * u.arcsec,
+    "Mars": 3 * u.arcsec,
+    "Jupiter": 0.8 * u.arcsec,
+    "Saturn": 0.5 * u.arcsec,
 }
 
 
 class NoEphemerisError(Exception):
     """If there is no Chandra orbital ephemeris available"""
+
     pass
 
 
 def load_kernel():
     from jplephem.spk import SPK
-    kernel_path = Path(__file__).parent / 'data' / 'de432s.bsp'
+
+    kernel_path = Path(__file__).parent / "data" / "de432s.bsp"
     if not kernel_path.exists():
-        raise FileNotFoundError(f'kernel data file {kernel_path} not found, '
-                                'run "python setup.py build" to install it locally')
+        raise FileNotFoundError(
+            f"kernel data file {kernel_path} not found, "
+            'run "python setup.py build" to install it locally'
+        )
     kernel = SPK.open(kernel_path)
     return kernel
 
 
 KERNEL = LazyVal(load_kernel)
-BODY_NAME_TO_KERNEL_SPEC = dict([
-    ('sun', [(0, 10)]),
-    ('mercury', [(0, 1), (1, 199)]),
-    ('venus', [(0, 2), (2, 299)]),
-    ('earth-moon-barycenter', [(0, 3)]),
-    ('earth', [(0, 3), (3, 399)]),
-    ('moon', [(0, 3), (3, 301)]),
-    ('mars', [(0, 4)]),
-    ('jupiter', [(0, 5)]),
-    ('saturn', [(0, 6)]),
-    ('uranus', [(0, 7)]),
-    ('neptune', [(0, 8)]),
-    ('pluto', [(0, 9)])
-])
-URL_HORIZONS = 'https://ssd.jpl.nasa.gov/horizons_batch.cgi?'
+BODY_NAME_TO_KERNEL_SPEC = dict(
+    [
+        ("sun", [(0, 10)]),
+        ("mercury", [(0, 1), (1, 199)]),
+        ("venus", [(0, 2), (2, 299)]),
+        ("earth-moon-barycenter", [(0, 3)]),
+        ("earth", [(0, 3), (3, 399)]),
+        ("moon", [(0, 3), (3, 301)]),
+        ("mars", [(0, 4)]),
+        ("jupiter", [(0, 5)]),
+        ("saturn", [(0, 6)]),
+        ("uranus", [(0, 7)]),
+        ("neptune", [(0, 8)]),
+        ("pluto", [(0, 9)]),
+    ]
+)
+URL_HORIZONS = "https://ssd.jpl.nasa.gov/horizons_batch.cgi?"
 
 
-def get_planet_angular_sep(body: str, ra: float, dec: float,
-                           time=None, observer_position: str = 'earth') -> float:
+def get_planet_angular_sep(
+    body: str, ra: float, dec: float, time=None, observer_position: str = "earth"
+) -> float:
     """Get angular separation between planet ``body`` and target ``ra``, ``dec``.
 
     Valid values for the ``observer_position`` argument are:
@@ -107,30 +121,33 @@ def get_planet_angular_sep(body: str, ra: float, dec: float,
     :returns: angular separation (deg)
     """
     from agasc import sphere_dist
+
     if not isinstance(time, CxoTime):
         time = CxoTime(time)
 
-    if observer_position == 'earth':
+    if observer_position == "earth":
         eci = get_planet_eci(body, time)
         body_ra, body_dec = eci_to_radec(eci)
-    elif observer_position == 'chandra':
+    elif observer_position == "chandra":
         eci = get_planet_chandra(body, time)
         body_ra, body_dec = eci_to_radec(eci)
-    elif observer_position == 'chandra-horizons':
+    elif observer_position == "chandra-horizons":
         if time.shape == ():
             time = CxoTime([time, time + 1000 * u.s])
             is_scalar = True
         else:
             is_scalar = False
         pos = get_planet_chandra_horizons(body, time[0], time[1], n_times=len(time))
-        body_ra = pos['ra']
-        body_dec = pos['dec']
+        body_ra = pos["ra"]
+        body_dec = pos["dec"]
         if is_scalar:
             body_ra = body_ra[0]
             body_dec = body_dec[0]
     else:
-        raise ValueError(f'{observer_position} is not an allowed value: '
-                         f'("earth", "chandra", or "chandra-horizons")')
+        raise ValueError(
+            f"{observer_position} is not an allowed value: "
+            f'("earth", "chandra", or "chandra-horizons")'
+        )
 
     sep = sphere_dist(ra, dec, body_ra, body_dec)
     return sep
@@ -147,8 +164,9 @@ def get_planet_barycentric(body, time=None):
     """
     kernel = KERNEL.val
     if body not in BODY_NAME_TO_KERNEL_SPEC:
-        raise ValueError(f'{body} is not an allowed value '
-                         f'{tuple(BODY_NAME_TO_KERNEL_SPEC)}')
+        raise ValueError(
+            f"{body} is not an allowed value " f"{tuple(BODY_NAME_TO_KERNEL_SPEC)}"
+        )
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
     time = CxoTime(time)
@@ -186,7 +204,7 @@ def get_planet_eci(body, time=None, pos_observer=None):
 
     pos_planet = get_planet_barycentric(body, time)
     if pos_observer is None:
-        pos_observer = get_planet_barycentric('earth', time)
+        pos_observer = get_planet_barycentric("earth", time)
 
     dist = np.sqrt(np.sum((pos_planet - pos_observer) ** 2, axis=-1)) * u.km
     light_travel_time = (dist / const.c).to(u.s)
@@ -223,24 +241,27 @@ def get_planet_chandra(body, time=None):
 
     # Get position of Chandra relative to Earth
     try:
-        dat = fetch.MSIDset(['orbitephem0_x', 'orbitephem0_y', 'orbitephem0_z'],
-                            np.min(time) - 500 * u.s, np.max(time) + 500 * u.s)
+        dat = fetch.MSIDset(
+            ["orbitephem0_x", "orbitephem0_y", "orbitephem0_z"],
+            np.min(time) - 500 * u.s,
+            np.max(time) + 500 * u.s,
+        )
     except ValueError:
-        raise NoEphemerisError('Chandra ephemeris not available')
+        raise NoEphemerisError("Chandra ephemeris not available")
 
-    if len(dat['orbitephem0_x'].vals) == 0:
-        raise NoEphemerisError('Chandra ephemeris not available')
+    if len(dat["orbitephem0_x"].vals) == 0:
+        raise NoEphemerisError("Chandra ephemeris not available")
 
     times = np.atleast_1d(time.secs)
     dat.interpolate(times=times)
 
-    pos_earth = get_planet_barycentric('earth', time)
+    pos_earth = get_planet_barycentric("earth", time)
 
     # Chandra position in km
     chandra_eci = np.zeros_like(pos_earth)
-    chandra_eci[..., 0] = dat['orbitephem0_x'].vals.reshape(time.shape) / 1000
-    chandra_eci[..., 1] = dat['orbitephem0_y'].vals.reshape(time.shape) / 1000
-    chandra_eci[..., 2] = dat['orbitephem0_z'].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 0] = dat["orbitephem0_x"].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 1] = dat["orbitephem0_y"].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 2] = dat["orbitephem0_z"].vals.reshape(time.shape) / 1000
     planet_chandra = get_planet_eci(body, time, pos_observer=pos_earth + chandra_eci)
 
     return planet_chandra
@@ -289,70 +310,89 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
 
     timestart = CxoTime(timestart)
     timestop = CxoTime(timestop)
-    planet_ids = {'mercury': '199',
-                  'venus': '299',
-                  'mars': '499',
-                  'jupiter': '599',
-                  'saturn': '699',
-                  'uranus': '799',
-                  'neptune': '899'}
+    planet_ids = {
+        "mercury": "199",
+        "venus": "299",
+        "mars": "499",
+        "jupiter": "599",
+        "saturn": "699",
+        "uranus": "799",
+        "neptune": "899",
+    }
     if body not in planet_ids:
-        raise ValueError(f'body must be one of {tuple(planet_ids)}')
+        raise ValueError(f"body must be one of {tuple(planet_ids)}")
 
     params = dict(
         COMMAND=planet_ids[body],
-        MAKE_EPHEM='YES',
-        CENTER='@-151',
-        TABLE_TYPE='OBSERVER',
-        ANG_FORMAT='DEG',
-        START_TIME=timestart.datetime.strftime('%Y-%b-%d %H:%M'),
-        STOP_TIME=timestop.datetime.strftime('%Y-%b-%d %H:%M'),
+        MAKE_EPHEM="YES",
+        CENTER="@-151",
+        TABLE_TYPE="OBSERVER",
+        ANG_FORMAT="DEG",
+        START_TIME=timestart.datetime.strftime("%Y-%b-%d %H:%M"),
+        STOP_TIME=timestop.datetime.strftime("%Y-%b-%d %H:%M"),
         STEP_SIZE=str(n_times - 1),
-        QUANTITIES='1,3,9,13',
-        CSV_FORMAT='YES')
+        QUANTITIES="1,3,9,13",
+        CSV_FORMAT="YES",
+    )
 
     # The HORIZONS web API seems to require all params to be quoted strings.
     # See: https://ssd.jpl.nasa.gov/horizons_batch.cgi
     for key, val in params.items():
         params[key] = repr(val)
-    params['batch'] = 1
+    params["batch"] = 1
     resp = requests.get(URL_HORIZONS, params=params, timeout=timeout)
 
-    if resp.status_code != requests.codes['ok']:
-        raise ValueError('request {resp.url} failed: {resp.reason} ({resp.status_code})')
+    if resp.status_code != requests.codes["ok"]:
+        raise ValueError(
+            "request {resp.url} failed: {resp.reason} ({resp.status_code})"
+        )
 
     lines = resp.text.splitlines()
-    idx0 = lines.index('$$SOE') + 1
-    idx1 = lines.index('$$EOE')
-    lines = lines[idx0: idx1]
-    dat = ascii.read(lines, format='no_header', delimiter=',',
-                     names=['time', 'null1', 'null2', 'ra', 'dec', 'rate_ra', 'rate_dec',
-                            'mag', 'surf_brt', 'ang_diam', 'null3']
-                     )
+    idx0 = lines.index("$$SOE") + 1
+    idx1 = lines.index("$$EOE")
+    lines = lines[idx0:idx1]
+    dat = ascii.read(
+        lines,
+        format="no_header",
+        delimiter=",",
+        names=[
+            "time",
+            "null1",
+            "null2",
+            "ra",
+            "dec",
+            "rate_ra",
+            "rate_dec",
+            "mag",
+            "surf_brt",
+            "ang_diam",
+            "null3",
+        ],
+    )
 
-    times = [datetime.strptime(val[:20], '%Y-%b-%d %H:%M:%S') for val in dat['time']]
-    dat['time'] = CxoTime(times, format='datetime')
-    dat['time'].format = 'date'
-    dat['ra'].info.unit = u.deg
-    dat['dec'].info.unit = u.deg
-    dat['rate_ra'].info.unit = u.arcsec / u.hr
-    dat['rate_dec'].info.unit = u.arcsec / u.hr
-    dat['mag'].info.unit = u.mag
-    dat['surf_brt'].info.unit = u.mag / (u.arcsec**2)
-    dat['ang_diam'].info.unit = u.arcsec
+    times = [datetime.strptime(val[:20], "%Y-%b-%d %H:%M:%S") for val in dat["time"]]
+    dat["time"] = CxoTime(times, format="datetime")
+    dat["time"].format = "date"
+    dat["ra"].info.unit = u.deg
+    dat["dec"].info.unit = u.deg
+    dat["rate_ra"].info.unit = u.arcsec / u.hr
+    dat["rate_dec"].info.unit = u.arcsec / u.hr
+    dat["mag"].info.unit = u.mag
+    dat["surf_brt"].info.unit = u.mag / (u.arcsec**2)
+    dat["ang_diam"].info.unit = u.arcsec
 
-    dat['ra'].info.format = '.5f'
-    dat['dec'].info.format = '.5f'
-    dat['rate_ra'].info.format = '.2f'
-    dat['rate_dec'].info.format = '.2f'
-    dat['mag'].info.format = '.3f'
-    dat['surf_brt'].info.format = '.3f'
-    dat['ang_diam'].info.format = '.2f'
+    dat["ra"].info.format = ".5f"
+    dat["dec"].info.format = ".5f"
+    dat["rate_ra"].info.format = ".2f"
+    dat["rate_dec"].info.format = ".2f"
+    dat["mag"].info.format = ".3f"
+    dat["surf_brt"].info.format = ".3f"
+    dat["ang_diam"].info.format = ".2f"
 
-    dat.meta['response_text'] = resp.text
+    dat.meta["response_text"] = resp.text
 
-    del dat['null1']
-    del dat['null2']
-    del dat['null3']
+    del dat["null1"]
+    del dat["null2"]
+    del dat["null3"]
 
     return dat

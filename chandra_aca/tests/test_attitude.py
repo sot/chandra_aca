@@ -3,19 +3,15 @@ from __future__ import division
 
 import numpy as np
 import pytest
-
 from Quaternion import Quat
 from Ska.quatutil import radec2yagzag
 
-from ..attitude import calc_roll, calc_roll_pitch_yaw, calc_att
+from ..attitude import calc_att, calc_roll, calc_roll_pitch_yaw
 
 
-@pytest.mark.parametrize('roll', [-1, -0.1, 50 / 3600, 0.1])
+@pytest.mark.parametrize("roll", [-1, -0.1, 50 / 3600, 0.1])
 def test_calc_roll(roll):
-    stars = [(-1, 1),  # ra, dec in deg
-             (1, 1),
-             (0, 0),
-             (1, -1)]
+    stars = [(-1, 1), (1, 1), (0, 0), (1, -1)]  # ra, dec in deg
 
     q0 = Quat([0, 0, 45])
     dq = Quat([0, 0, roll])
@@ -45,14 +41,13 @@ def test_calc_roll(roll):
 # a weird set with just two stars that are close together
 # but far off axis.  In this case the rotation will
 # manifest as a linear offset.
-stars = [[(-1, 1), (1, 1), (0, 0), (1, -1)],
-         [(-0.1, 1), (0.1, 1)]]
+stars = [[(-1, 1), (1, 1), (0, 0), (1, -1)], [(-0.1, 1), (0.1, 1)]]
 
 
-@pytest.mark.parametrize('stars', stars)
-@pytest.mark.parametrize('roll', [-1000, 10, 100])
-@pytest.mark.parametrize('pitch', [-50, 8, 20])
-@pytest.mark.parametrize('yaw', [-20, -8, 50])
+@pytest.mark.parametrize("stars", stars)
+@pytest.mark.parametrize("roll", [-1000, 10, 100])
+@pytest.mark.parametrize("pitch", [-50, 8, 20])
+@pytest.mark.parametrize("yaw", [-20, -8, 50])
 def test_calc_roll_pitch_yaw(stars, pitch, yaw, roll):
     roll /= 3600
     pitch /= 3600
@@ -81,7 +76,9 @@ def test_calc_roll_pitch_yaw(stars, pitch, yaw, roll):
         zags_obs.append(zag * 3600)
 
     sigma = np.arange(len(yags)) + 1
-    out_roll, out_pitch, out_yaw = calc_roll_pitch_yaw(yags, zags, yags_obs, zags_obs, sigma)
+    out_roll, out_pitch, out_yaw = calc_roll_pitch_yaw(
+        yags, zags, yags_obs, zags_obs, sigma
+    )
     # Computed pitch, yaw, roll within 0.5 arcsec in roll, 0.02 arcsec pitch/yaw
     assert np.isclose(roll, out_roll, atol=0.5 / 3600, rtol=0.0)
     assert np.isclose(pitch, out_pitch, atol=0.02 / 3600, rtol=0.0)
@@ -126,7 +123,17 @@ def get_data_2d():
 
 
 def test_calc_roll_pitch_yaw_2d():
-    q0, rolls, pitches, yaws, qs, yags, zags, yags_obs_list, zags_obs_list = get_data_2d()
+    (
+        q0,
+        rolls,
+        pitches,
+        yaws,
+        qs,
+        yags,
+        zags,
+        yags_obs_list,
+        zags_obs_list,
+    ) = get_data_2d()
     # Test direct roll/pitch/yaw computation
     out = calc_roll_pitch_yaw(yags, zags, yags_obs_list, zags_obs_list)
     out_rolls, out_pitches, out_yaws = out
@@ -139,7 +146,17 @@ def test_calc_roll_pitch_yaw_2d():
 
 def test_calc_att():
     """Test attitude quaternion computation"""
-    q0, rolls, pitches, yaws, qs, yags, zags, yags_obs_list, zags_obs_list = get_data_2d()
+    (
+        q0,
+        rolls,
+        pitches,
+        yaws,
+        qs,
+        yags,
+        zags,
+        yags_obs_list,
+        zags_obs_list,
+    ) = get_data_2d()
     q_outs = calc_att(q0, yags, zags, yags_obs_list, zags_obs_list)
     assert len(qs) == len(q_outs)
     for q, q_out in zip(qs, q_outs):
@@ -158,7 +175,17 @@ def test_calc_att():
 
 
 def test_calc_roll_pitch_yaw_sigma():
-    q0, rolls, pitches, yaws, qs, yags, zags, yags_obs_list, zags_obs_list = get_data_2d()
+    (
+        q0,
+        rolls,
+        pitches,
+        yaws,
+        qs,
+        yags,
+        zags,
+        yags_obs_list,
+        zags_obs_list,
+    ) = get_data_2d()
     yags_obs_list = np.array(yags_obs_list)
     zags_obs_list = np.array(zags_obs_list)
 

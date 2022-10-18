@@ -95,15 +95,18 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None):
     zag_obs = np.array(zag_obs)
 
     if yag.ndim != 1 or zag.ndim != 1 or yag.shape != zag.shape:
-        raise ValueError('yag and zag must be 1-d and equal length')
+        raise ValueError("yag and zag must be 1-d and equal length")
 
-    if (yag_obs.ndim not in (1, 2) or zag.ndim not in (1, 2) or
-            yag_obs.shape != zag_obs.shape):
-        raise ValueError('yag_obs and zag_obs must be 1-d or 2-d and equal shape')
+    if (
+        yag_obs.ndim not in (1, 2)
+        or zag.ndim not in (1, 2)
+        or yag_obs.shape != zag_obs.shape
+    ):
+        raise ValueError("yag_obs and zag_obs must be 1-d or 2-d and equal shape")
 
     n_stars = len(yag)
     if yag_obs.shape[-1] != n_stars or zag.shape[-1] != n_stars:
-        raise ValueError('inconsistent number of stars in yag_obs or zag_obs')
+        raise ValueError("inconsistent number of stars in yag_obs or zag_obs")
 
     one_d = yag_obs.ndim == 1
     if one_d:
@@ -136,16 +139,19 @@ def _calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
     zag_obs_avg = np.average(zag_obs, weights=weights)
 
     # Remove the mean linear offset and find roll
-    roll = calc_roll(yag - yag_avg, zag - zag_avg,
-                     yag_obs - yag_obs_avg, zag_obs - zag_obs_avg,
-                     sigma)
+    roll = calc_roll(
+        yag - yag_avg,
+        zag - zag_avg,
+        yag_obs - yag_obs_avg,
+        zag_obs - zag_obs_avg,
+        sigma,
+    )
 
     # Roll the whole constellation to match the reference
     # When Py2 is no longer supported...
     # yag_obs, zag_obs = _rot(roll) @ np.array([yag_obs,
     #                                           zag_obs])
-    yag_obs, zag_obs = _rot(roll).dot(np.array([yag_obs,
-                                                zag_obs]))
+    yag_obs, zag_obs = _rot(roll).dot(np.array([yag_obs, zag_obs]))
 
     # Now remove the mean linear offset
     yag_obs_avg = np.average(yag_obs, weights=weights)
@@ -173,8 +179,7 @@ def _calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
 
 def _rot(roll):
     theta = np.radians(roll)
-    out = np.array([[np.cos(theta), -np.sin(theta)],
-                    [np.sin(theta), np.cos(theta)]])
+    out = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
     return out
 
 
@@ -214,6 +219,7 @@ def calc_att(att, yag, zag, yag_obs, zag_obs, sigma=None):
 
     """
     from Quaternion import Quat
+
     q_att = Quat(att)
 
     rolls, pitches, yaws = calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma)

@@ -1,27 +1,30 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import os
-from math import floor
-from itertools import count, chain
 from copy import deepcopy
+from itertools import chain, count
+from math import floor
 from pathlib import Path
-
-import six
-from six.moves import zip
 
 import numba
 import numpy as np
+import six
 from astropy.utils.compat.misc import override__dir__
+from six.moves import zip
 
-__all__ = ['ACAImage', 'centroid_fm', 'AcaPsfLibrary', 'EIGHT_LABELS']
+__all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
 
-EIGHT_LABELS = np.array([['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'],
-                         ['I1', 'J1', 'K1', 'L1', 'M1', 'N1', 'O1', 'P1'],
-                         ['A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'],
-                         ['I2', 'J2', 'K2', 'L2', 'M2', 'N2', 'O2', 'P2'],
-                         ['A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'],
-                         ['I3', 'J3', 'K3', 'L3', 'M3', 'N3', 'O3', 'P3'],
-                         ['A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'],
-                         ['I4', 'J4', 'K4', 'L4', 'M4', 'N4', 'O4', 'P4']])
+EIGHT_LABELS = np.array(
+    [
+        ["A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1"],
+        ["I1", "J1", "K1", "L1", "M1", "N1", "O1", "P1"],
+        ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2"],
+        ["I2", "J2", "K2", "L2", "M2", "N2", "O2", "P2"],
+        ["A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+        ["I3", "J3", "K3", "L3", "M3", "N3", "O3", "P3"],
+        ["A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4"],
+        ["I4", "J4", "K4", "L4", "M4", "N4", "O4", "P4"],
+    ]
+)
 """Constant for labeling ACA image pixels using the EQ-278 spec format.
 Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
 row and highest col; pixel I4 has the highest row and lowest column."""
@@ -36,8 +39,8 @@ def _operator_factory(operator, inplace=False):
     """
     # Define the operator and the in-place version (which might be the
     # same if op is already in-place)
-    op = getattr(np.ndarray, '__{}__'.format(operator))
-    inplace_op = op if inplace else getattr(np.ndarray, '__i{}__'.format(operator))
+    op = getattr(np.ndarray, "__{}__".format(operator))
+    inplace_op = op if inplace else getattr(np.ndarray, "__i{}__".format(operator))
 
     def _operator(self, other):
 
@@ -49,10 +52,15 @@ def _operator_factory(operator, inplace=False):
             sz_r1, sz_c1 = other.shape
 
             # If images overlap do this process, else return unmodified ``out``.
-            if all(diff > 0 for diff in [self.row0 + sz_r0 - other.row0,
-                                         self.col0 + sz_c0 - other.col0,
-                                         other.row0 + sz_r1 - self.row0,
-                                         other.col0 + sz_c1 - self.col0]):
+            if all(
+                diff > 0
+                for diff in [
+                    self.row0 + sz_r0 - other.row0,
+                    self.col0 + sz_c0 - other.col0,
+                    other.row0 + sz_r1 - self.row0,
+                    other.col0 + sz_c1 - self.col0,
+                ]
+            ):
 
                 dr = other.row0 - self.row0
                 dc = other.col0 - self.col0
@@ -68,12 +76,15 @@ def _operator_factory(operator, inplace=False):
 
                 # Always use the inplace operator, but remember that ``out`` is a copy of
                 # self for inplace=False (thus mimicking the non-inplace version).
-                inplace_op(out[section], other.view(np.ndarray)[r_min:r_max, c_min:c_max])
+                inplace_op(
+                    out[section], other.view(np.ndarray)[r_min:r_max, c_min:c_max]
+                )
 
         else:
             out = op(self, other)  # returns self for inplace ops
 
         return out
+
     return _operator
 
 
@@ -123,12 +134,12 @@ class ACAImage(np.ndarray):
 
     def __new__(cls, *args, **kwargs):
 
-        meta = kwargs.pop('meta', {})
+        meta = kwargs.pop("meta", {})
 
         # Set default row0 and col0 to 0 (if not already in meta), and
         # then override with like-named kwargs.  row0 attribute => meta['IMGROW0']
-        for ax in ('row0', 'col0'):
-            imgax = 'IMG' + ax.upper()
+        for ax in ("row0", "col0"):
+            imgax = "IMG" + ax.upper()
             meta.setdefault(imgax, 0)
             if ax in kwargs:
                 meta[imgax] = np.int64(kwargs.pop(ax))
@@ -143,7 +154,7 @@ class ACAImage(np.ndarray):
         obj = arr.view(cls)
 
         if obj.ndim != 2:
-            raise ValueError('{} must be 2-d'.format(cls.__name__))
+            raise ValueError("{} must be 2-d".format(cls.__name__))
 
         # add the new attribute to the created instance
         obj.meta = meta
@@ -157,28 +168,28 @@ class ACAImage(np.ndarray):
         if obj is None:
             return
 
-        self.meta = deepcopy(getattr(obj, 'meta', {}))
-        self._aca_coords = getattr(obj, '_aca_coords', False)
+        self.meta = deepcopy(getattr(obj, "meta", {}))
+        self._aca_coords = getattr(obj, "_aca_coords", False)
 
-    __add__ = _operator_factory('add')
-    __sub__ = _operator_factory('sub')
-    __mul__ = _operator_factory('mul')
+    __add__ = _operator_factory("add")
+    __sub__ = _operator_factory("sub")
+    __mul__ = _operator_factory("mul")
     if not six.PY3:
-        __div__ = _operator_factory('div')
-    __truediv__ = _operator_factory('truediv')
-    __floordiv__ = _operator_factory('floordiv')
-    __mod__ = _operator_factory('mod')
-    __pow__ = _operator_factory('pow')
+        __div__ = _operator_factory("div")
+    __truediv__ = _operator_factory("truediv")
+    __floordiv__ = _operator_factory("floordiv")
+    __mod__ = _operator_factory("mod")
+    __pow__ = _operator_factory("pow")
 
-    __iadd__ = _operator_factory('iadd', inplace=True)
-    __isub__ = _operator_factory('isub', inplace=True)
-    __imul__ = _operator_factory('imul', inplace=True)
+    __iadd__ = _operator_factory("iadd", inplace=True)
+    __isub__ = _operator_factory("isub", inplace=True)
+    __imul__ = _operator_factory("imul", inplace=True)
     if not six.PY3:
-        __idiv__ = _operator_factory('idiv', inplace=True)
-    __itruediv__ = _operator_factory('itruediv', inplace=True)
-    __ifloordiv__ = _operator_factory('ifloordiv', inplace=True)
-    __imod__ = _operator_factory('imod', inplace=True)
-    __ipow__ = _operator_factory('ipow', inplace=True)
+        __idiv__ = _operator_factory("idiv", inplace=True)
+    __itruediv__ = _operator_factory("itruediv", inplace=True)
+    __ifloordiv__ = _operator_factory("ifloordiv", inplace=True)
+    __imod__ = _operator_factory("imod", inplace=True)
+    __ipow__ = _operator_factory("ipow", inplace=True)
 
     def _adjust_item(self, item):
         """
@@ -188,8 +199,10 @@ class ACAImage(np.ndarray):
         # Allow slicing via an existing ACAImage object
         aca_coords = self._aca_coords
         if isinstance(item, ACAImage):
-            item = (slice(item.row0, item.row0 + item.shape[0]),
-                    slice(item.col0, item.col0 + item.shape[1]))
+            item = (
+                slice(item.row0, item.row0 + item.shape[0]),
+                slice(item.col0, item.col0 + item.shape[1]),
+            )
             aca_coords = True
 
         out_rc = [None, None]  # New [row0, col0]
@@ -248,9 +261,9 @@ class ACAImage(np.ndarray):
     def __repr__(self):
         # Make an integerized version for viewing more nicely
         outarr = np.asarray(np.round(self)).astype(int)
-        out = '<{} row0={} col0={}\n{}>'.format(self.__class__.__name__,
-                                                self.row0, self.col0,
-                                                outarr.__repr__())
+        out = "<{} row0={} col0={}\n{}>".format(
+            self.__class__.__name__, self.row0, self.col0, outarr.__repr__()
+        )
         return out
 
     def __getattr__(self, attr):
@@ -268,7 +281,7 @@ class ACAImage(np.ndarray):
         else:
             super(ACAImage, self).__setattr__(attr, value)
 
-    def centroid_fm(self, bgd=None, pix_zero_loc='center', norm_clip=None):
+    def centroid_fm(self, bgd=None, pix_zero_loc="center", norm_clip=None):
         """
         First moment centroid of ``self`` using 6x6 mousebitten image for input
         6x6 or 8x8 images.
@@ -283,8 +296,9 @@ class ACAImage(np.ndarray):
 
         :returns: row, col, norm float
         """
-        row, col, norm = centroid_fm(self, bgd=bgd, pix_zero_loc=pix_zero_loc,
-                                     norm_clip=norm_clip)
+        row, col, norm = centroid_fm(
+            self, bgd=bgd, pix_zero_loc=pix_zero_loc, norm_clip=norm_clip
+        )
         if self._aca_coords:
             row += self.row0
             col += self.col0
@@ -297,19 +311,19 @@ class ACAImage(np.ndarray):
 
     @property
     def row0(self):
-        return self.meta['IMGROW0']
+        return self.meta["IMGROW0"]
 
     @row0.setter
     def row0(self, value):
-        self.meta['IMGROW0'] = np.int64(value)
+        self.meta["IMGROW0"] = np.int64(value)
 
     @property
     def col0(self):
-        return self.meta['IMGCOL0']
+        return self.meta["IMGCOL0"]
 
     @col0.setter
     def col0(self, value):
-        self.meta['IMGCOL0'] = np.int64(value)
+        self.meta["IMGCOL0"] = np.int64(value)
 
     @classmethod
     def _read_flicker_cdfs(cls):
@@ -322,7 +336,7 @@ class ACAImage(np.ndarray):
         """
         from astropy.io import fits
 
-        filename = Path(__file__).parent / 'data' / 'flicker_cdf.fits.gz'
+        filename = Path(__file__).parent / "data" / "flicker_cdf.fits.gz"
         with fits.open(filename) as hdus:
             hdu = hdus[0]
             hdr = hdu.header
@@ -334,12 +348,14 @@ class ACAImage(np.ndarray):
 
             # CDF_x is the x-value of the distribution, namely the log-amplitude change
             # in pixel value due to a flicker event.
-            cls.flicker_cdf_x = np.linspace(hdr['cdf_x0'], hdr['cdf_x1'], hdr['n_cdf_x'])
+            cls.flicker_cdf_x = np.linspace(
+                hdr["cdf_x0"], hdr["cdf_x1"], hdr["n_cdf_x"]
+            )
 
             # CDF bin range (e-/sec) for each for in flicker_cdfs.
             cdf_bins = []
-            for ii in range(hdr['n_bin']):
-                cdf_bins.append(hdr[f'cdf_bin{ii}'])
+            for ii in range(hdr["n_bin"]):
+                cdf_bins.append(hdr[f"cdf_bin{ii}"])
             cls.flicker_cdf_bins = np.array(cdf_bins)
 
     def flicker_init(self, flicker_mean_time=10000, flicker_scale=1.0, seed=None):
@@ -364,7 +380,7 @@ class ACAImage(np.ndarray):
                flickering amplitude (default=1.0)
         :param seed: random seed for reproducibility (default=None => no seed)
         """
-        if not hasattr(self, 'flicker_cdf_bins'):
+        if not hasattr(self, "flicker_cdf_bins"):
             self._read_flicker_cdfs()
 
         self.flicker_mean_time = flicker_mean_time
@@ -386,14 +402,16 @@ class ACAImage(np.ndarray):
         # Make a bool ACAImage like self to allow convenient mask/unmask of
         # pixels to flicker.  This is used in annie.  Also make the corresponding
         # 1-d ravelled version.
-        self.flicker_mask = ACAImage(np.ones(self.shape, dtype=bool),
-                                     row0=self.row0, col0=self.col0)
+        self.flicker_mask = ACAImage(
+            np.ones(self.shape, dtype=bool), row0=self.row0, col0=self.col0
+        )
         self.flicker_mask_vals = self.flicker_mask.view(np.ndarray).ravel()
 
         # Get the index to the CDFs which is appropriate for each pixel
         # based on its initial value.
-        self.flicker_cdf_idxs = np.searchsorted(self.flicker_cdf_bins,
-                                                self.flicker_vals0) - 1
+        self.flicker_cdf_idxs = (
+            np.searchsorted(self.flicker_cdf_bins, self.flicker_vals0) - 1
+        )
 
         # Create an array of time (secs) until next flicker for each pixel
         if seed == -1:
@@ -420,22 +438,24 @@ class ACAImage(np.ndarray):
         :param dt: time (secs) to propagate image
         :param use_numba: use the numba version of updating (default=True)
         """
-        if not hasattr(self, 'flicker_times'):
+        if not hasattr(self, "flicker_times"):
             self.flicker_init()
 
         if use_numba:
-            _flicker_update_numba(dt,
-                                  len(self.flicker_vals),
-                                  self.test_idx,
-                                  self.flicker_vals0,
-                                  self.flicker_vals,
-                                  self.flicker_mask_vals,
-                                  self.flicker_times,
-                                  self.flicker_cdf_idxs,
-                                  self.flicker_cdf_x,
-                                  self.flicker_cdfs,
-                                  self.flicker_scale,
-                                  self.flicker_mean_time)
+            _flicker_update_numba(
+                dt,
+                len(self.flicker_vals),
+                self.test_idx,
+                self.flicker_vals0,
+                self.flicker_vals,
+                self.flicker_mask_vals,
+                self.flicker_times,
+                self.flicker_cdf_idxs,
+                self.flicker_cdf_x,
+                self.flicker_cdfs,
+                self.flicker_scale,
+                self.flicker_mean_time,
+            )
             if self.test_idx > 0:
                 self.test_idx += 1
         else:
@@ -458,9 +478,9 @@ class ACAImage(np.ndarray):
             # Determine the new value after flickering and set in array view.
             # First get the right CDF from the list of CDFs based on the pixel value.
             cdf_idx = self.flicker_cdf_idxs[idx]
-            y = np.interp(fp=self.flicker_cdf_x,
-                          xp=self.flicker_cdfs[cdf_idx],
-                          x=rand_ampl)
+            y = np.interp(
+                fp=self.flicker_cdf_x, xp=self.flicker_cdfs[cdf_idx], x=rand_ampl
+            )
 
             if self.flicker_scale != 1.0:
                 # Express the multiplicative change as (1 + x) and change
@@ -471,7 +491,7 @@ class ACAImage(np.ndarray):
                 dy = (10 ** np.abs(y) - 1.0) * self.flicker_scale + 1.0
                 y = np.log10(dy) * np.sign(y)
 
-            val = self.flicker_vals0[idx] * 10 ** y
+            val = self.flicker_vals0[idx] * 10**y
             self.flicker_vals[idx] = val
 
             # Get the new time before next flicker
@@ -485,16 +505,20 @@ def _numba_random_seed(seed):
 
 
 @numba.jit(nopython=True)
-def _flicker_update_numba(dt, nvals, test_idx,
-                          flicker_vals0,
-                          flicker_vals,
-                          flicker_mask_vals,
-                          flicker_times,
-                          flicker_cdf_idxs,
-                          flicker_cdf_x,
-                          flicker_cdfs,
-                          flicker_scale,
-                          flicker_mean_time):
+def _flicker_update_numba(
+    dt,
+    nvals,
+    test_idx,
+    flicker_vals0,
+    flicker_vals,
+    flicker_mask_vals,
+    flicker_times,
+    flicker_cdf_idxs,
+    flicker_cdf_x,
+    flicker_cdfs,
+    flicker_scale,
+    flicker_mean_time,
+):
     """
     Propagate the image forward by ``dt`` seconds and update any pixels
     that have flickered during that interval.
@@ -524,9 +548,7 @@ def _flicker_update_numba(dt, nvals, test_idx,
 
         # Determine the new value after flickering and set in array view.
         # First get the right CDF from the list of CDFs based on the pixel value.
-        y = np_interp(yin=flicker_cdf_x,
-                      xin=flicker_cdfs[cdf_idx],
-                      xout=rand_ampl)
+        y = np_interp(yin=flicker_cdf_x, xin=flicker_cdfs[cdf_idx], xout=rand_ampl)
 
         if flicker_scale != 1.0:
             # Express the multiplicative change as (1 + x) and change
@@ -585,7 +607,7 @@ def _prep_6x6(img, bgd=None):
     return img
 
 
-def centroid_fm(img, bgd=None, pix_zero_loc='center', norm_clip=None):
+def centroid_fm(img, bgd=None, pix_zero_loc="center", norm_clip=None):
     """
     First moment centroid of ``img``.
 
@@ -606,7 +628,7 @@ def centroid_fm(img, bgd=None, pix_zero_loc='center', norm_clip=None):
 
     sz_r, sz_c = img.shape
     if sz_r != sz_c:
-        raise ValueError('input img must be square')
+        raise ValueError("input img must be square")
 
     rw, cw = np.mgrid[1:7, 1:7] if sz_r == 8 else np.mgrid[0:sz_r, 0:sz_r]
 
@@ -619,17 +641,17 @@ def centroid_fm(img, bgd=None, pix_zero_loc='center', norm_clip=None):
         norm = norm.clip(norm_clip, None)
     else:
         if norm <= 0:
-            raise ValueError('non-positive image norm {}'.format(norm))
+            raise ValueError("non-positive image norm {}".format(norm))
 
     row = np.sum(rw * img) / norm
     col = np.sum(cw * img) / norm
 
-    if pix_zero_loc == 'edge':
+    if pix_zero_loc == "edge":
         # Transform row/col values from 'center' convention (as returned
         # by centroiding) to the 'edge' convention requested by user.
         row = row + 0.5
         col = col + 0.5
-    elif pix_zero_loc != 'center':
+    elif pix_zero_loc != "center":
         raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
 
     return row, col, norm
@@ -662,27 +684,37 @@ class AcaPsfLibrary(object):
 
     def __init__(self, filename=None):
         from astropy.table import Table  # Table is a somewhat-heavy import
+
         psfs = {}
 
         if filename is None:
-            filename = os.path.join(os.path.dirname(__file__), 'data', 'aca_psf_lib.dat')
-        dat = Table.read(filename, format='ascii.basic', guess=False)
+            filename = os.path.join(
+                os.path.dirname(__file__), "data", "aca_psf_lib.dat"
+            )
+        dat = Table.read(filename, format="ascii.basic", guess=False)
         self.dat = dat
 
         # Sub-pixel grid spacing in pixels.  This assumes the sub-pixels are
         # all the same size and square, which is indeed the case.
-        self.drc = dat['row_bin_right_edge'][0] - dat['row_bin_left_edge'][0]
+        self.drc = dat["row_bin_right_edge"][0] - dat["row_bin_left_edge"][0]
 
         for row in dat:
-            ii = row['row_bin_idx']
-            jj = row['col_bin_idx']
+            ii = row["row_bin_idx"]
+            jj = row["col_bin_idx"]
             psf = np.array([row[label] for label in chain(*EIGHT_LABELS)]).reshape(8, 8)
             psfs[ii, jj] = psf
 
         self.psfs = psfs
 
-    def get_psf_image(self, row, col, norm=1.0, pix_zero_loc='center',
-                      interpolation='bilinear', aca_image=True):
+    def get_psf_image(
+        self,
+        row,
+        col,
+        norm=1.0,
+        pix_zero_loc="center",
+        interpolation="bilinear",
+        aca_image=True,
+    ):
         """
         Get interpolated ACA PSF image that corresponds to pixel location
         ``row``, ``col``.
@@ -698,11 +730,11 @@ class AcaPsfLibrary(object):
         """
         drc = self.drc
 
-        if pix_zero_loc == 'center':
+        if pix_zero_loc == "center":
             # Transform to 'edge' coordinates (pixel lower-left corner at 0.0, 0.0)
             row = row + 0.5
             col = col + 0.5
-        elif pix_zero_loc != 'edge':
+        elif pix_zero_loc != "edge":
             raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
 
         # 8x8 image row0, col0
@@ -720,13 +752,13 @@ class AcaPsfLibrary(object):
         ix = (r + 0.5) / drc - 0.5
         iy = (c + 0.5) / drc - 0.5
 
-        if interpolation == 'nearest':
+        if interpolation == "nearest":
             # Int index into PSF library
             ii = int(round(ix))
             jj = int(round(iy))
             psf = self.psfs[ii, jj].copy()
 
-        elif interpolation == 'bilinear':
+        elif interpolation == "bilinear":
             # Int index into PSF library
             ii = int(floor(ix))
             jj = int(floor(iy))

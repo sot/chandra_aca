@@ -1,55 +1,54 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import division
 
+from contextlib import contextmanager
+from functools import wraps
+
+import agasc
+import astropy.units as u
+import matplotlib.pyplot as plt
+import numpy as np
+import Quaternion
+from astropy.table import Table
+from cxotime import CxoTime
 from Quaternion import Quat
+from Ska.quatutil import radec2yagzag
+
 from chandra_aca.planets import get_planet_chandra, get_planet_eci
 
-from functools import wraps
-from contextlib import contextmanager
-
-import numpy as np
-import matplotlib.pyplot as plt
-import astropy.units as u
-
-from astropy.table import Table
-import agasc
-import Quaternion
-from Ska.quatutil import radec2yagzag
-from cxotime import CxoTime
-
-from .transform import eci_to_radec, radec_to_yagzag, yagzag_to_pixels
 from .planets import GET_PLANET_ECI_ERRORS, NoEphemerisError, get_planet_angular_sep
+from .transform import eci_to_radec, radec_to_yagzag, yagzag_to_pixels
 
 # rc definitions
-frontcolor = 'black'
-backcolor = 'white'
+frontcolor = "black"
+backcolor = "white"
 rcParams = {}
-rcParams['lines.color'] = frontcolor
-rcParams['patch.edgecolor'] = frontcolor
-rcParams['text.color'] = frontcolor
-rcParams['axes.facecolor'] = backcolor
-rcParams['axes.edgecolor'] = frontcolor
-rcParams['axes.labelcolor'] = frontcolor
-rcParams['xtick.color'] = frontcolor
-rcParams['ytick.color'] = frontcolor
-rcParams['grid.color'] = frontcolor
-rcParams['figure.facecolor'] = backcolor
-rcParams['figure.edgecolor'] = backcolor
-rcParams['savefig.facecolor'] = backcolor
-rcParams['savefig.edgecolor'] = backcolor
+rcParams["lines.color"] = frontcolor
+rcParams["patch.edgecolor"] = frontcolor
+rcParams["text.color"] = frontcolor
+rcParams["axes.facecolor"] = backcolor
+rcParams["axes.edgecolor"] = frontcolor
+rcParams["axes.labelcolor"] = frontcolor
+rcParams["xtick.color"] = frontcolor
+rcParams["ytick.color"] = frontcolor
+rcParams["grid.color"] = frontcolor
+rcParams["figure.facecolor"] = backcolor
+rcParams["figure.edgecolor"] = backcolor
+rcParams["savefig.facecolor"] = backcolor
+rcParams["savefig.edgecolor"] = backcolor
 
 # Classic grid params https://matplotlib.org/users/dflt_style_changes.html#grid-lines
-rcParams['grid.color'] = 'k'
-rcParams['grid.linestyle'] = ':'
-rcParams['grid.linewidth'] = 0.5
+rcParams["grid.color"] = "k"
+rcParams["grid.linestyle"] = ":"
+rcParams["grid.linewidth"] = 0.5
 
-BAD_STAR_COLOR = 'tomato'
-BAD_STAR_ALPHA = .75
-FAINT_STAR_COLOR = 'lightseagreen'
-FAINT_STAR_ALPHA = .75
+BAD_STAR_COLOR = "tomato"
+BAD_STAR_ALPHA = 0.75
+FAINT_STAR_COLOR = "lightseagreen"
+FAINT_STAR_ALPHA = 0.75
 
 
-__all__ = ['plot_stars', 'plot_compass', 'bad_acq_stars']
+__all__ = ["plot_stars", "plot_compass", "bad_acq_stars"]
 
 
 @contextmanager
@@ -66,10 +65,12 @@ def custom_plt_rcparams(func):
     temporarily.  This uses a context manage to ensure original
     params always get restored.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         with custom_plt():
             return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -92,54 +93,62 @@ def _plot_catalog_items(ax, catalog):
                     astropy.table.Table(catalog).  A list of dicts is the convention.
     """
     cat = Table(catalog)
-    cat['row'], cat['col'] = yagzag_to_pixels(cat['yang'], cat['zang'], allow_bad=True)
-    gui_stars = cat[(cat['type'] == 'GUI') | (cat['type'] == 'BOT')]
-    acq_stars = cat[(cat['type'] == 'ACQ') | (cat['type'] == 'BOT')]
-    fids = cat[cat['type'] == 'FID']
-    mon_wins = cat[cat['type'] == 'MON']
+    cat["row"], cat["col"] = yagzag_to_pixels(cat["yang"], cat["zang"], allow_bad=True)
+    gui_stars = cat[(cat["type"] == "GUI") | (cat["type"] == "BOT")]
+    acq_stars = cat[(cat["type"] == "ACQ") | (cat["type"] == "BOT")]
+    fids = cat[cat["type"] == "FID"]
+    mon_wins = cat[cat["type"] == "MON"]
 
     for row in cat:
-        ax.annotate("%s" % row['idx'],
-                    xy=(row['row'] + 120 / 5, row['col'] + 60 / 5),
-                    color='red',
-                    fontsize=12)
-    ax.scatter(gui_stars['row'], gui_stars['col'],
-               facecolors='none',
-               edgecolors='green',
-               s=100)
+        ax.annotate(
+            "%s" % row["idx"],
+            xy=(row["row"] + 120 / 5, row["col"] + 60 / 5),
+            color="red",
+            fontsize=12,
+        )
+    ax.scatter(
+        gui_stars["row"], gui_stars["col"], facecolors="none", edgecolors="green", s=100
+    )
 
     for acq_star in acq_stars:
         box = plt.Rectangle(
-            (acq_star['row'] - acq_star['halfw'] / 5,
-             acq_star['col'] - acq_star['halfw'] / 5),
-            width=acq_star['halfw'] * 2 / 5,
-            height=acq_star['halfw'] * 2 / 5,
-            color='blue',
-            fill=False)
+            (
+                acq_star["row"] - acq_star["halfw"] / 5,
+                acq_star["col"] - acq_star["halfw"] / 5,
+            ),
+            width=acq_star["halfw"] * 2 / 5,
+            height=acq_star["halfw"] * 2 / 5,
+            color="blue",
+            fill=False,
+        )
         ax.add_patch(box)
 
     for mon_box in mon_wins:
         # starcheck convention was to plot monitor boxes at 2X halfw
         box = plt.Rectangle(
-            (mon_box['row'] - (mon_box['halfw'] * 2 / 5),
-             mon_box['col'] - (mon_box['halfw'] * 2 / 5)),
-            width=mon_box['halfw'] * 4 / 5,
-            height=mon_box['halfw'] * 4 / 5,
-            color='orange',
-            fill=False)
+            (
+                mon_box["row"] - (mon_box["halfw"] * 2 / 5),
+                mon_box["col"] - (mon_box["halfw"] * 2 / 5),
+            ),
+            width=mon_box["halfw"] * 4 / 5,
+            height=mon_box["halfw"] * 4 / 5,
+            color="orange",
+            fill=False,
+        )
         ax.add_patch(box)
 
-    ax.scatter(fids['row'], fids['col'],
-               facecolors='none',
-               edgecolors='red',
-               linewidth=1,
-               marker='o',
-               s=175)
-    ax.scatter(fids['row'], fids['col'],
-               facecolors='red',
-               marker='+',
-               linewidth=1,
-               s=175)
+    ax.scatter(
+        fids["row"],
+        fids["col"],
+        facecolors="none",
+        edgecolors="red",
+        linewidth=1,
+        marker="o",
+        s=175,
+    )
+    ax.scatter(
+        fids["row"], fids["col"], facecolors="red", marker="+", linewidth=1, s=175
+    )
 
 
 def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
@@ -159,22 +168,22 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     if bad_stars is None:
         bad_stars = np.zeros(len(stars), dtype=bool)
 
-    if 'yang' not in stars.colnames or 'zang' not in stars.colnames:
+    if "yang" not in stars.colnames or "zang" not in stars.colnames:
         # Add star Y angle and Z angle in arcsec to the stars table.
         # radec2yagzag returns degrees.
-        yags, zags = radec2yagzag(stars['RA_PMCORR'], stars['DEC_PMCORR'], quat)
-        stars['yang'] = yags * 3600
-        stars['zang'] = zags * 3600
+        yags, zags = radec2yagzag(stars["RA_PMCORR"], stars["DEC_PMCORR"], quat)
+        stars["yang"] = yags * 3600
+        stars["zang"] = zags * 3600
 
     # Update table to include row/col values corresponding to yag/zag
-    rows, cols = yagzag_to_pixels(stars['yang'], stars['zang'], allow_bad=True)
-    stars['row'] = rows
-    stars['col'] = cols
+    rows, cols = yagzag_to_pixels(stars["yang"], stars["zang"], allow_bad=True)
+    stars["row"] = rows
+    stars["col"] = cols
 
     # Initialize array of colors for the stars, default is black.  Use 'object'
     # type to not worry in advance about string length and also for Py2/3 compat.
-    colors = np.zeros(len(stars), dtype='object')
-    colors[:] = 'black'
+    colors = np.zeros(len(stars), dtype="object")
+    colors[:] = "black"
 
     colors[bad_stars] = BAD_STAR_COLOR
 
@@ -187,35 +196,54 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
         nsigma = 3.0
         mag_error_low_limit = 1.5
         randerr = 0.26
-        caterr = stars['MAG_ACA_ERR'] / 100.
+        caterr = stars["MAG_ACA_ERR"] / 100.0
         error = nsigma * np.sqrt(randerr**2 + caterr**2)
         error = error.clip(mag_error_low_limit)
         # Faint and bad stars will keep their BAD_STAR_COLOR
         # Only use the faint mask on stars that are not bad
-        colors[(stars['MAG_ACA'] >= red_mag_lim) &
-               (stars['MAG_ACA'] < red_mag_lim + error) &
-               ~bad_stars] = FAINT_STAR_COLOR
+        colors[
+            (stars["MAG_ACA"] >= red_mag_lim)
+            & (stars["MAG_ACA"] < red_mag_lim + error)
+            & ~bad_stars
+        ] = FAINT_STAR_COLOR
         # Don't plot those for which MAG_ACA is fainter than red_mag_lim + error
         # This overrides any that may be 'bad'
-        colors[stars['MAG_ACA'] >= red_mag_lim + error] = 'none'
+        colors[stars["MAG_ACA"] >= red_mag_lim + error] = "none"
 
-    size = symsize(stars['MAG_ACA'])
+    size = symsize(stars["MAG_ACA"])
     # scatter() does not take an array of alphas, and rgba is
     # awkward for color='none', so plot these in a loop.
-    for color, alpha in [(FAINT_STAR_COLOR, FAINT_STAR_ALPHA),
-                         (BAD_STAR_COLOR, BAD_STAR_ALPHA),
-                         ('black', 1.0)]:
+    for color, alpha in [
+        (FAINT_STAR_COLOR, FAINT_STAR_ALPHA),
+        (BAD_STAR_COLOR, BAD_STAR_ALPHA),
+        ("black", 1.0),
+    ]:
         colormatch = colors == color
-        ax.scatter(stars[colormatch]['row'],
-                   stars[colormatch]['col'],
-                   c=color, s=size[colormatch], edgecolor='none',
-                   alpha=alpha)
+        ax.scatter(
+            stars[colormatch]["row"],
+            stars[colormatch]["col"],
+            c=color,
+            s=size[colormatch],
+            edgecolor="none",
+            alpha=alpha,
+        )
 
 
 @custom_plt_rcparams
-def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None,
-               red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None,
-               plot_keepout=False, ax=None, duration=0):
+def plot_stars(
+    attitude,
+    catalog=None,
+    stars=None,
+    title=None,
+    starcat_time=None,
+    red_mag_lim=None,
+    quad_bound=True,
+    grid=True,
+    bad_stars=None,
+    plot_keepout=False,
+    ax=None,
+    duration=0,
+):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
     If supplying a star field, an attitude must also be supplied.
@@ -246,9 +274,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     """
     if stars is None:
         quat = Quaternion.Quat(attitude)
-        stars = agasc.get_agasc_cone(quat.ra, quat.dec,
-                                     radius=1.5,
-                                     date=starcat_time)
+        stars = agasc.get_agasc_cone(quat.ra, quat.dec, radius=1.5, date=starcat_time)
 
     if bad_stars is None:
         bad_stars = bad_acq_stars(stars)
@@ -262,25 +288,26 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     else:
         fig = ax.get_figure()
 
-    ax.set_aspect('equal')
+    ax.set_aspect("equal")
     lim0, lim1 = -580, 590
     plt.xlim(lim0, lim1)  # Matches -2900, 2900 arcsec roughly
     plt.ylim(lim0, lim1)
 
     # plot the box and set the labels
     b1hw = 512
-    box1 = plt.Rectangle((b1hw, -b1hw), -2 * b1hw, 2 * b1hw,
-                         fill=False)
+    box1 = plt.Rectangle((b1hw, -b1hw), -2 * b1hw, 2 * b1hw, fill=False)
     ax.add_patch(box1)
     b2w = 520
-    box2 = plt.Rectangle((b2w, -b1hw), -4 + -2 * b2w, 2 * b1hw,
-                         fill=False)
+    box2 = plt.Rectangle((b2w, -b1hw), -4 + -2 * b2w, 2 * b1hw, fill=False)
     ax.add_patch(box2)
 
-    ax.scatter(np.array([-2700, -2700, -2700, -2700, -2700]) / -5,
-               np.array([2400, 2100, 1800, 1500, 1200]) / 5,
-               c='orange', edgecolors='none',
-               s=symsize(np.array([10.0, 9.0, 8.0, 7.0, 6.0])))
+    ax.scatter(
+        np.array([-2700, -2700, -2700, -2700, -2700]) / -5,
+        np.array([2400, 2100, 1800, 1500, 1200]) / 5,
+        c="orange",
+        edgecolors="none",
+        s=symsize(np.array([10.0, 9.0, 8.0, 7.0, 6.0])),
+    )
 
     # Manually set ticks and grid to specified yag/zag values
     yz_ticks = [-2000, -1000, 0, 1000, 2000]
@@ -298,25 +325,38 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     [label.set_rotation(90) for label in ax.get_yticklabels()]
 
     if quad_bound:
-        ax.plot([-511, 511], [0, 0], color='magenta', alpha=0.4)
-        ax.plot([0, 0], [-511, 511], color='magenta', alpha=0.4)
+        ax.plot([-511, 511], [0, 0], color="magenta", alpha=0.4)
+        ax.plot([0, 0], [-511, 511], color="magenta", alpha=0.4)
 
     if plot_keepout:
         # Plot grey area showing effective keep-out zones for stars.  Back off on
         # outer limits by one pixel to improve rendered PNG slightly.
         row_pad = 15
         col_pad = 8
-        box = plt.Rectangle((-511, -511), 1022, 1022, edgecolor='none',
-                            facecolor='black', alpha=0.2, zorder=-1000)
+        box = plt.Rectangle(
+            (-511, -511),
+            1022,
+            1022,
+            edgecolor="none",
+            facecolor="black",
+            alpha=0.2,
+            zorder=-1000,
+        )
         ax.add_patch(box)
-        box = plt.Rectangle((-512 + row_pad, -512 + col_pad),
-                            1024 - row_pad * 2, 1024 - col_pad * 2,
-                            edgecolor='none', facecolor='white', zorder=-999)
+        box = plt.Rectangle(
+            (-512 + row_pad, -512 + col_pad),
+            1024 - row_pad * 2,
+            1024 - col_pad * 2,
+            edgecolor="none",
+            facecolor="white",
+            zorder=-999,
+        )
         ax.add_patch(box)
 
     # Plot stars
-    _plot_field_stars(ax, stars, attitude=attitude,
-                      bad_stars=bad_stars, red_mag_lim=red_mag_lim)
+    _plot_field_stars(
+        ax, stars, attitude=attitude, bad_stars=bad_stars, red_mag_lim=red_mag_lim
+    )
 
     # plot starcheck catalog
     if catalog is not None:
@@ -326,7 +366,7 @@ def plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None
     _plot_planets(ax, attitude, starcat_time, duration, lim0, lim1)
 
     if title is not None:
-        ax.set_title(title, fontsize='small')
+        ax.set_title(title, fontsize="small")
 
     return fig
 
@@ -356,16 +396,20 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
     n_times = int(duration / 1000) + 1
     dates = date0 + np.linspace(0, duration, n_times) * u.s
 
-    planets = ('venus', 'mars', 'jupiter', 'saturn')
+    planets = ("venus", "mars", "jupiter", "saturn")
     has_planet = False
 
     for planet in planets:
         # First check if planet is within 2 deg of aimpoint using Earth as the
         # reference point (without fetching Chandra ephemeris). These values are
         # accurate to better than 0.25 deg.
-        sep = get_planet_angular_sep(planet, ra=att.ra, dec=att.dec,
-                                     time=date0 + ([0, 0.5, 1] * u.s) * duration,
-                                     observer_position='earth')
+        sep = get_planet_angular_sep(
+            planet,
+            ra=att.ra,
+            dec=att.dec,
+            time=date0 + ([0, 0.5, 1] * u.s) * duration,
+            observer_position="earth",
+        )
         if np.all(sep > 2.0):
             continue
 
@@ -391,18 +435,17 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
             row = row[ok]
             col = col[ok]
             # Plot with green at beginning, red at ending
-            ax.plot(row, col, '.', color='m', alpha=0.5)
-            ax.plot(row[0], col[0], '.', color='g')
+            ax.plot(row, col, ".", color="m", alpha=0.5)
+            ax.plot(row[0], col[0], ".", color="g")
             label = planet.capitalize()
             if from_earth:
                 err = GET_PLANET_ECI_ERRORS[planet].to(u.arcsec)
-                label += f' (from Earth, errors to {err})'
+                label += f" (from Earth, errors to {err})"
 
-            ax.plot(row[-1], col[-1], '.', color='r', label=label)
+            ax.plot(row[-1], col[-1], ".", color="r", label=label)
 
     if has_planet:
-        ax.legend(loc='upper left', fontsize='small', facecolor='y',
-                  edgecolor='k')
+        ax.legend(loc="upper left", fontsize="small", facecolor="y", edgecolor="k")
 
 
 def bad_acq_stars(stars):
@@ -413,13 +456,15 @@ def bad_acq_stars(stars):
           are ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
     :returns: boolean mask true for 'bad' stars
     """
-    return ((stars['CLASS'] != 0) |
-            (stars['MAG_ACA_ERR'] > 100) |
-            (stars['POS_ERR'] > 3000) |
-            (stars['ASPQ1'] > 0) |
-            (stars['ASPQ2'] > 0) |
-            (stars['ASPQ3'] > 999) |
-            (stars['VAR'] > -9999))
+    return (
+        (stars["CLASS"] != 0)
+        | (stars["MAG_ACA_ERR"] > 100)
+        | (stars["POS_ERR"] > 3000)
+        | (stars["ASPQ1"] > 0)
+        | (stars["ASPQ2"] > 0)
+        | (stars["ASPQ3"] > 999)
+        | (stars["VAR"] > -9999)
+    )
 
 
 @custom_plt_rcparams
@@ -432,10 +477,15 @@ def plot_compass(roll):
     """
     fig = plt.figure(figsize=(3, 3))
     ax = plt.subplot(polar=True)
-    ax.annotate("", xy=(0, 0), xytext=(0, 1),
-                arrowprops=dict(arrowstyle="<-", color="k"))
-    ax.annotate("", xy=(0, 0), xytext=(np.radians(90), 1),
-                arrowprops=dict(arrowstyle="<-", color="k"))
+    ax.annotate(
+        "", xy=(0, 0), xytext=(0, 1), arrowprops=dict(arrowstyle="<-", color="k")
+    )
+    ax.annotate(
+        "",
+        xy=(0, 0),
+        xytext=(np.radians(90), 1),
+        arrowprops=dict(arrowstyle="<-", color="k"),
+    )
     ax.annotate("N", xy=(0, 0), xytext=(0, 1.2))
     ax.annotate("E", xy=(0, 0), xytext=(np.radians(90), 1.2))
     ax.set_theta_offset(np.radians(90 + roll))

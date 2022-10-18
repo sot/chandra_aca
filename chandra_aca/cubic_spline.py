@@ -40,9 +40,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import numpy as np
-from six import string_types
 from scipy.interpolate import PPoly
-from scipy.linalg import solve_banded, solve
+from scipy.linalg import solve, solve_banded
+from six import string_types
 
 
 class CubicSpline(PPoly):
@@ -209,7 +209,7 @@ class CubicSpline(PPoly):
     .. [2] Carl de Boor, "A Practical Guide to Splines", Springer-Verlag, 1978.
     """
 
-    def __init__(self, x, y, axis=0, bc_type='not-a-knot', extrapolate=None):
+    def __init__(self, x, y, axis=0, bc_type="not-a-knot", extrapolate=None):
         x, y = map(np.asarray, (x, y))
 
         if np.issubdtype(x.dtype, np.complexfloating):
@@ -227,8 +227,10 @@ class CubicSpline(PPoly):
         if x.shape[0] < 2:
             raise ValueError("`x` must contain at least 2 elements.")
         if x.shape[0] != y.shape[axis]:
-            raise ValueError("The length of `y` along `axis`={0} doesn't "
-                             "match the length of `x`".format(axis))
+            raise ValueError(
+                "The length of `y` along `axis`={0} doesn't "
+                "match the length of `x`".format(axis)
+            )
 
         if not np.all(np.isfinite(x)):
             raise ValueError("`x` must contain only finite values.")
@@ -245,8 +247,8 @@ class CubicSpline(PPoly):
         bc, y = self._validate_bc(bc_type, y, y.shape[1:], axis)
 
         if extrapolate is None:
-            if bc[0] == 'periodic':
-                extrapolate = 'periodic'
+            if bc[0] == "periodic":
+                extrapolate = "periodic"
             else:
                 extrapolate = True
 
@@ -258,16 +260,16 @@ class CubicSpline(PPoly):
         # and the spline is just a constant, we handle this case in the same
         # way by setting the first derivatives to slope, which is 0.
         if n == 2:
-            if bc[0] in ['not-a-knot', 'periodic']:
+            if bc[0] in ["not-a-knot", "periodic"]:
                 bc[0] = (1, slope[0])
-            if bc[1] in ['not-a-knot', 'periodic']:
+            if bc[1] in ["not-a-knot", "periodic"]:
                 bc[1] = (1, slope[0])
 
         # This is a very special case, when both conditions are 'not-a-knot'
         # and n == 3. In this case 'not-a-knot' can't be handled regularly
         # as the both conditions are identical. We handle this case by
         # constructing a parabola passing through given points.
-        if n == 3 and bc[0] == 'not-a-knot' and bc[1] == 'not-a-knot':
+        if n == 3 and bc[0] == "not-a-knot" and bc[1] == "not-a-knot":
             A = np.zeros((3, 3))  # This is a standard matrix.
             b = np.empty((3,) + y.shape[1:], dtype=y.dtype)
 
@@ -283,8 +285,7 @@ class CubicSpline(PPoly):
             b[1] = 3 * (dxr[0] * slope[1] + dxr[1] * slope[0])
             b[2] = 2 * slope[1]
 
-            s = solve(A, b, overwrite_a=True, overwrite_b=True,
-                      check_finite=False)
+            s = solve(A, b, overwrite_a=True, overwrite_b=True, check_finite=False)
         else:
             # Find derivative values at each x[i] by solving a tridiagonal
             # system.
@@ -299,14 +300,14 @@ class CubicSpline(PPoly):
             #           (x[i] - x[i-1])*(y[i+1] - y[i])/(x[i+1] - x[i]))
 
             A[1, 1:-1] = 2 * (dx[:-1] + dx[1:])  # The diagonal
-            A[0, 2:] = dx[:-1]                   # The upper diagonal
-            A[-1, :-2] = dx[1:]                  # The lower diagonal
+            A[0, 2:] = dx[:-1]  # The upper diagonal
+            A[-1, :-2] = dx[1:]  # The lower diagonal
 
             b[1:-1] = 3 * (dxr[1:] * slope[:-1] + dxr[:-1] * slope[1:])
 
             bc_start, bc_end = bc
 
-            if bc_start == 'periodic':
+            if bc_start == "periodic":
                 # Due to the periodicity, and because y[-1] = y[0], the linear
                 # system has (n-1) unknowns/equations instead of n:
                 A = A[:, 0:-1]
@@ -339,15 +340,28 @@ class CubicSpline(PPoly):
                 b2[-1] = -a_m2_m1
 
                 # s1 and s2 are the solutions of (n-2, n-2) system
-                s1 = solve_banded((1, 1), Ac, b1, overwrite_ab=False,
-                                  overwrite_b=False, check_finite=False)
+                s1 = solve_banded(
+                    (1, 1),
+                    Ac,
+                    b1,
+                    overwrite_ab=False,
+                    overwrite_b=False,
+                    check_finite=False,
+                )
 
-                s2 = solve_banded((1, 1), Ac, b2, overwrite_ab=False,
-                                  overwrite_b=False, check_finite=False)
+                s2 = solve_banded(
+                    (1, 1),
+                    Ac,
+                    b2,
+                    overwrite_ab=False,
+                    overwrite_b=False,
+                    check_finite=False,
+                )
 
                 # computing the s[n-2] solution:
-                s_m1 = ((b[-1] - a_m1_0 * s1[0] - a_m1_m2 * s1[-1]) /
-                        (a_m1_m1 + a_m1_0 * s2[0] + a_m1_m2 * s2[-1]))
+                s_m1 = (b[-1] - a_m1_0 * s1[0] - a_m1_m2 * s1[-1]) / (
+                    a_m1_m1 + a_m1_0 * s2[0] + a_m1_m2 * s2[-1]
+                )
 
                 # s is the solution of the (n, n) system:
                 s = np.empty((n,) + y.shape[1:], dtype=y.dtype)
@@ -355,12 +369,13 @@ class CubicSpline(PPoly):
                 s[-2] = s_m1
                 s[-1] = s[0]
             else:
-                if bc_start == 'not-a-knot':
+                if bc_start == "not-a-knot":
                     A[1, 0] = dx[1]
                     A[0, 1] = x[2] - x[0]
                     d = x[2] - x[0]
-                    b[0] = ((dxr[0] + 2 * d) * dxr[1] * slope[0] +
-                            dxr[0]**2 * slope[1]) / d
+                    b[0] = (
+                        (dxr[0] + 2 * d) * dxr[1] * slope[0] + dxr[0] ** 2 * slope[1]
+                    ) / d
                 elif bc_start[0] == 1:
                     A[1, 0] = 1
                     A[0, 1] = 0
@@ -368,14 +383,16 @@ class CubicSpline(PPoly):
                 elif bc_start[0] == 2:
                     A[1, 0] = 2 * dx[0]
                     A[0, 1] = dx[0]
-                    b[0] = -0.5 * bc_start[1] * dx[0]**2 + 3 * (y[1] - y[0])
+                    b[0] = -0.5 * bc_start[1] * dx[0] ** 2 + 3 * (y[1] - y[0])
 
-                if bc_end == 'not-a-knot':
+                if bc_end == "not-a-knot":
                     A[1, -1] = dx[-2]
                     A[-1, -2] = x[-1] - x[-3]
                     d = x[-1] - x[-3]
-                    b[-1] = ((dxr[-1]**2 * slope[-2] +
-                              (2 * d + dxr[-1]) * dxr[-2] * slope[-1]) / d)
+                    b[-1] = (
+                        dxr[-1] ** 2 * slope[-2]
+                        + (2 * d + dxr[-1]) * dxr[-2] * slope[-1]
+                    ) / d
                 elif bc_end[0] == 1:
                     A[1, -1] = 1
                     A[-1, -2] = 0
@@ -383,10 +400,16 @@ class CubicSpline(PPoly):
                 elif bc_end[0] == 2:
                     A[1, -1] = 2 * dx[-1]
                     A[-1, -2] = dx[-1]
-                    b[-1] = 0.5 * bc_end[1] * dx[-1]**2 + 3 * (y[-1] - y[-2])
+                    b[-1] = 0.5 * bc_end[1] * dx[-1] ** 2 + 3 * (y[-1] - y[-2])
 
-                s = solve_banded((1, 1), A, b, overwrite_ab=True,
-                                 overwrite_b=True, check_finite=False)
+                s = solve_banded(
+                    (1, 1),
+                    A,
+                    b,
+                    overwrite_ab=True,
+                    overwrite_b=True,
+                    check_finite=False,
+                )
 
         # Compute coefficients in PPoly form.
         t = (s[:-1] + s[1:] - 2 * slope) / dxr
@@ -412,33 +435,38 @@ class CubicSpline(PPoly):
             complex dtype.
         """
         if isinstance(bc_type, string_types):
-            if bc_type == 'periodic':
+            if bc_type == "periodic":
                 if not np.allclose(y[0], y[-1], rtol=1e-15, atol=1e-15):
                     raise ValueError(
                         "The first and last `y` point along axis {} must "
                         "be identical (within machine precision) when "
-                        "bc_type='periodic'.".format(axis))
+                        "bc_type='periodic'.".format(axis)
+                    )
 
             bc_type = (bc_type, bc_type)
 
         else:
             if len(bc_type) != 2:
-                raise ValueError("`bc_type` must contain 2 elements to "
-                                 "specify start and end conditions.")
+                raise ValueError(
+                    "`bc_type` must contain 2 elements to "
+                    "specify start and end conditions."
+                )
 
-            if 'periodic' in bc_type:
-                raise ValueError("'periodic' `bc_type` is defined for both "
-                                 "curve ends and cannot be used with other "
-                                 "boundary conditions.")
+            if "periodic" in bc_type:
+                raise ValueError(
+                    "'periodic' `bc_type` is defined for both "
+                    "curve ends and cannot be used with other "
+                    "boundary conditions."
+                )
 
         validated_bc = []
         for bc in bc_type:
             if isinstance(bc, string_types):
-                if bc == 'clamped':
+                if bc == "clamped":
                     validated_bc.append((1, np.zeros(expected_deriv_shape)))
-                elif bc == 'natural':
+                elif bc == "natural":
                     validated_bc.append((2, np.zeros(expected_deriv_shape)))
-                elif bc in ['not-a-knot', 'periodic']:
+                elif bc in ["not-a-knot", "periodic"]:
                     validated_bc.append(bc)
                 else:
                     raise ValueError("bc_type={} is not allowed.".format(bc))
@@ -446,18 +474,23 @@ class CubicSpline(PPoly):
                 try:
                     deriv_order, deriv_value = bc
                 except Exception:
-                    raise ValueError("A specified derivative value must be "
-                                     "given in the form (order, value).")
+                    raise ValueError(
+                        "A specified derivative value must be "
+                        "given in the form (order, value)."
+                    )
 
                 if deriv_order not in [1, 2]:
-                    raise ValueError("The specified derivative order must "
-                                     "be 1 or 2.")
+                    raise ValueError(
+                        "The specified derivative order must " "be 1 or 2."
+                    )
 
                 deriv_value = np.asarray(deriv_value)
                 if deriv_value.shape != expected_deriv_shape:
                     raise ValueError(
-                        "`deriv_value` shape {} is not the expected one {}."
-                        .format(deriv_value.shape, expected_deriv_shape))
+                        "`deriv_value` shape {} is not the expected one {}.".format(
+                            deriv_value.shape, expected_deriv_shape
+                        )
+                    )
 
                 if np.issubdtype(deriv_value.dtype, np.complexfloating):
                     y = y.astype(complex, copy=False)

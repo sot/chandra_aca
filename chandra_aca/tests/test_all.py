@@ -1,31 +1,38 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from __future__ import print_function, division
+from __future__ import division, print_function
 
 import os
 
+import numpy as np
 import pytest
 import requests
-import numpy as np
 from astropy.io import ascii
 from astropy.table import Table
-
-from Quaternion import Quat
 from Chandra.Time import DateTime
+from Quaternion import Quat
 
 import chandra_aca
-from chandra_aca.transform import (calc_aca_from_targ, snr_mag_for_t_ccd, radec_to_yagzag,
-                                   yagzag_to_radec, pixels_to_yagzag, yagzag_to_pixels,
-                                   eci_to_radec, radec_to_eci, calc_target_offsets)
 from chandra_aca import drift
+from chandra_aca.transform import (
+    calc_aca_from_targ,
+    calc_target_offsets,
+    eci_to_radec,
+    pixels_to_yagzag,
+    radec_to_eci,
+    radec_to_yagzag,
+    snr_mag_for_t_ccd,
+    yagzag_to_pixels,
+    yagzag_to_radec,
+)
 
 dirname = os.path.dirname(__file__)
 
 TOLERANCE = 0.05
 
 # SI_ALIGN matrix used from just after launch through NOV0215 (Nov 2015) loads.
-SI_ALIGN_CLASSIC = np.array([[1.0, 3.3742E-4, 2.7344E-4],
-                             [-3.3742E-4, 1.0, 0.0],
-                             [-2.7344E-4, 0.0, 1.0]]).transpose()
+SI_ALIGN_CLASSIC = np.array(
+    [[1.0, 3.3742e-4, 2.7344e-4], [-3.3742e-4, 1.0, 0.0], [-2.7344e-4, 0.0, 1.0]]
+).transpose()
 
 # Use this for testing in case the icxc version is not available.
 ZERO_OFFSET_TABLE = """
@@ -86,15 +93,18 @@ def test_edge_checking():
 
 
 def test_pix_to_angle():
-    pix_to_angle = ascii.read(os.path.join(dirname, 'data', 'pix_to_angle.txt'))
+    pix_to_angle = ascii.read(os.path.join(dirname, "data", "pix_to_angle.txt"))
 
-    print("testing {} row/col pairs match to {} arcsec".format(
-        len(pix_to_angle), TOLERANCE))
+    print(
+        "testing {} row/col pairs match to {} arcsec".format(
+            len(pix_to_angle), TOLERANCE
+        )
+    )
     pyyang, pyzang = chandra_aca.pixels_to_yagzag(
-        pix_to_angle['row'],
-        pix_to_angle['col'])
-    np.testing.assert_allclose(pix_to_angle['yang'], pyyang, atol=TOLERANCE, rtol=0)
-    np.testing.assert_allclose(pix_to_angle['zang'], pyzang, atol=TOLERANCE, rtol=0)
+        pix_to_angle["row"], pix_to_angle["col"]
+    )
+    np.testing.assert_allclose(pix_to_angle["yang"], pyyang, atol=TOLERANCE, rtol=0)
+    np.testing.assert_allclose(pix_to_angle["zang"], pyzang, atol=TOLERANCE, rtol=0)
 
 
 def test_pix_to_angle_flight():
@@ -102,22 +112,25 @@ def test_pix_to_angle_flight():
     This is a minimal regression test.  For actual validation that the
     values are correct see aca_track/predict_track.ipynb notebook.
     """
-    yag, zag = chandra_aca.pixels_to_yagzag(100., 100., flight=True, t_aca=24.0)
+    yag, zag = chandra_aca.pixels_to_yagzag(100.0, 100.0, flight=True, t_aca=24.0)
     assert np.allclose([yag, zag], [-467.7295724, 475.3100623])
 
-    yag, zag = chandra_aca.pixels_to_yagzag(100., 100., flight=True, t_aca=14.0)
+    yag, zag = chandra_aca.pixels_to_yagzag(100.0, 100.0, flight=True, t_aca=14.0)
     assert np.allclose([yag, zag], [-467.8793858, 475.4463912])
 
 
 def test_angle_to_pix():
-    angle_to_pix = ascii.read(os.path.join(dirname, 'data', 'angle_to_pix.txt'))
-    print("testing {} yang/zang pairs match to {} pixels".format(
-        len(angle_to_pix), TOLERANCE))
+    angle_to_pix = ascii.read(os.path.join(dirname, "data", "angle_to_pix.txt"))
+    print(
+        "testing {} yang/zang pairs match to {} pixels".format(
+            len(angle_to_pix), TOLERANCE
+        )
+    )
     pyrow, pycol = chandra_aca.yagzag_to_pixels(
-        angle_to_pix['yang'],
-        angle_to_pix['zang'])
-    np.testing.assert_allclose(angle_to_pix['row'], pyrow, atol=TOLERANCE, rtol=0)
-    np.testing.assert_allclose(angle_to_pix['col'], pycol, atol=TOLERANCE, rtol=0)
+        angle_to_pix["yang"], angle_to_pix["zang"]
+    )
+    np.testing.assert_allclose(angle_to_pix["row"], pyrow, atol=TOLERANCE, rtol=0)
+    np.testing.assert_allclose(angle_to_pix["col"], pycol, atol=TOLERANCE, rtol=0)
 
 
 def test_angle_to_pix_types():
@@ -129,16 +142,16 @@ def test_angle_to_pix_types():
 
 def test_pix_zero_loc():
     r, c = 100, 200
-    ye, ze = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc='edge')
-    yc, zc = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc='center')
+    ye, ze = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc="edge")
+    yc, zc = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc="center")
 
     # Different by about 2.5 arcsec for sanity check
     assert np.isclose(abs(ye - yc), 2.5, rtol=0, atol=0.02)
     assert np.isclose(abs(ze - zc), 2.5, rtol=0, atol=0.02)
 
     # Round trips r,c => y,z => r,c
-    re, ce = chandra_aca.yagzag_to_pixels(ye, ze, pix_zero_loc='edge')
-    rc, cc = chandra_aca.yagzag_to_pixels(yc, zc, pix_zero_loc='center')
+    re, ce = chandra_aca.yagzag_to_pixels(ye, ze, pix_zero_loc="edge")
+    rc, cc = chandra_aca.yagzag_to_pixels(yc, zc, pix_zero_loc="center")
 
     # Interestingly these transforms do not round trip more accurately
     # than about 0.01 pixels.
@@ -148,8 +161,9 @@ def test_pix_zero_loc():
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
 
 
-@pytest.mark.parametrize('func', [chandra_aca.pixels_to_yagzag,
-                                  chandra_aca.yagzag_to_pixels])
+@pytest.mark.parametrize(
+    "func", [chandra_aca.pixels_to_yagzag, chandra_aca.yagzag_to_pixels]
+)
 def test_transform_broadcast(func):
     rows = [-100, 100]
     cols = [-200, 200]
@@ -219,37 +233,43 @@ def test_aca_targ_transforms():
 
     q_aca_rt = chandra_aca.calc_aca_from_targ(q_targ, y_off, z_off)
     dq = q_aca_rt.inv() * q_aca
-    assert np.degrees(np.abs(dq.q[0] * 2)) < 30 / 3600.
-    assert np.degrees(np.abs(dq.q[1] * 2)) < 1 / 3600.
-    assert np.degrees(np.abs(dq.q[2] * 2)) < 1 / 3600.
+    assert np.degrees(np.abs(dq.q[0] * 2)) < 30 / 3600.0
+    assert np.degrees(np.abs(dq.q[1] * 2)) < 1 / 3600.0
+    assert np.degrees(np.abs(dq.q[2] * 2)) < 1 / 3600.0
 
 
 def test_get_aimpoint():
-    obstests = [('2016-08-22', 15, 'ACIS-S'),
-                ('2014-08-22', 16, 'HRC-I', True),
-                ('2017-09-01', 18, 'ACIS-I')]
-    answers = [(224.0, 490.0, 7),
-               (7606.0, 7941.0, 0),
-               (970.0, 975.0, 3)]
+    obstests = [
+        ("2016-08-22", 15, "ACIS-S"),
+        ("2014-08-22", 16, "HRC-I", True),
+        ("2017-09-01", 18, "ACIS-I"),
+    ]
+    answers = [(224.0, 490.0, 7), (7606.0, 7941.0, 0), (970.0, 975.0, 3)]
     try:
         r = requests.head(
             "https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt",
-            timeout=5)
+            timeout=5,
+        )
         assert r.status_code == 200
         zot = None
     except Exception:
-        zot = Table.read(ZERO_OFFSET_TABLE, format='ascii')
+        zot = Table.read(ZERO_OFFSET_TABLE, format="ascii")
 
     for obstest, answer in zip(obstests, answers):
-        chipx, chipy, chip_id = drift.get_target_aimpoint(*obstest, zero_offset_table=zot)
+        chipx, chipy, chip_id = drift.get_target_aimpoint(
+            *obstest, zero_offset_table=zot
+        )
         assert chipx == answer[0]
         assert chipy == answer[1]
         assert chip_id == answer[2]
     zot = Table.read(
         """date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
-2012-12-15      15               ACIS-I    888   999   -1        1.6""", format='ascii')
+2012-12-15      15               ACIS-I    888   999   -1        1.6""",
+        format="ascii",
+    )
     chipx, chipy, chip_id = drift.get_target_aimpoint(
-        '2016-08-22', 15, 'ACIS-I', zero_offset_table=zot)
+        "2016-08-22", 15, "ACIS-I", zero_offset_table=zot
+    )
     assert chipx == 888
     assert chipy == 999
     assert chip_id == -1
@@ -263,7 +283,7 @@ def simple_test_aca_drift():
 
     Match: YES.
     """
-    times = DateTime(np.arange(2013.0, 2019.0, 0.01), format='frac_year').secs
+    times = DateTime(np.arange(2013.0, 2019.0, 0.01), format="frac_year").secs
     t_ccd = -10.0 * np.ones_like(times)  # degC
     dy = drift.DRIFT_Y.calc(times, t_ccd)
     dz = drift.DRIFT_Z.calc(times, t_ccd)
@@ -279,16 +299,20 @@ def test_get_aca_offsets():
     The output reference values here have been validated as being "reasonable" for the
     given inputs.
     """
-    offsets = drift.get_aca_offsets('ACIS-I', 3, 930.2, 1009.6, '2016:180:12:00:00', -15.0)
+    offsets = drift.get_aca_offsets(
+        "ACIS-I", 3, 930.2, 1009.6, "2016:180:12:00:00", -15.0
+    )
     assert np.allclose(offsets, (11.45, 2.34), atol=0.1, rtol=0)
 
-    offsets = drift.get_aca_offsets('ACIS-S', 7, 200.7, 476.9, '2016:180:12:00:00', -15.0)
+    offsets = drift.get_aca_offsets(
+        "ACIS-S", 7, 200.7, 476.9, "2016:180:12:00:00", -15.0
+    )
     assert np.allclose(offsets, (12.98, 3.52), atol=0.1, rtol=0)
 
-    offsets = drift.get_aca_offsets('HRC-I', 0, 7591, 7936, '2016:180:12:00:00', -15.0)
+    offsets = drift.get_aca_offsets("HRC-I", 0, 7591, 7936, "2016:180:12:00:00", -15.0)
     assert np.allclose(offsets, (14.35, 0.45), atol=0.1, rtol=0)
 
-    offsets = drift.get_aca_offsets('HRC-S', 2, 2041, 9062, '2016:180:12:00:00', -15.0)
+    offsets = drift.get_aca_offsets("HRC-S", 2, 2041, 9062, "2016:180:12:00:00", -15.0)
     assert np.allclose(offsets, (16.89, 3.10), atol=0.1, rtol=0)
 
 
@@ -297,12 +321,17 @@ def test_snr_mag():
     assert np.isclose(same, 10.3, atol=0.0001, rtol=0)
     # Show a fewdifferent combinations of results based on different values
     # for ref_mag and ref_t_ccd
-    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]),
-                            ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=1.59)
+    arr = snr_mag_for_t_ccd(
+        np.array([-11.5, -10, -5]), ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=1.59
+    )
     assert np.allclose(arr, [10.3, 10.1112, 9.4818], atol=0.0001, rtol=0)
-    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-11.5, scale_4c=1.59)
+    arr = snr_mag_for_t_ccd(
+        np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-11.5, scale_4c=1.59
+    )
     assert np.allclose(arr, [9.0, 8.8112, 8.1818], atol=0.0001, rtol=0)
-    arr = snr_mag_for_t_ccd(np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-9.5, scale_4c=1.59)
+    arr = snr_mag_for_t_ccd(
+        np.array([-11.5, -10, -5]), ref_mag=9.0, ref_t_ccd=-9.5, scale_4c=1.59
+    )
     assert np.allclose(arr, [9.2517, 9.0630, 8.4336], atol=0.0001, rtol=0)
 
 
@@ -316,8 +345,9 @@ def test_eci_to_radec():
 
 
 def test_vectorized_eci_to_radec():
-    eci = np.array([[0.92541658, 0.16317591, 0.34202014],
-                    [0.9248273, -0.16307201, 0.34365969]])
+    eci = np.array(
+        [[0.92541658, 0.16317591, 0.34202014], [0.9248273, -0.16307201, 0.34365969]]
+    )
     ra, dec = eci_to_radec(eci)
     assert np.allclose(ra[0], 9.9999999129952908)
     assert np.allclose(ra[1], 349.9999997287627)
@@ -335,11 +365,11 @@ def test_radec_to_eci():
     assert isinstance(eci, np.ndarray)
 
 
-@pytest.mark.parametrize('shape', [(24,), (6, 4), (3, 4, 2)])
+@pytest.mark.parametrize("shape", [(24,), (6, 4), (3, 4, 2)])
 def test_radec_eci_multidim(shape):
     """Test radec_to_eci and eci_to_radec for multidimensional inputs"""
-    ras = np.linspace(0., 359., 24)
-    decs = np.linspace(-90., 90., 24)
+    ras = np.linspace(0.0, 359.0, 24)
+    decs = np.linspace(-90.0, 90.0, 24)
     ras_nd = ras.reshape(shape)
     decs_nd = decs.reshape(shape)
 
@@ -358,11 +388,11 @@ def test_radec_eci_multidim(shape):
     assert np.allclose(decs_rt, decs_nd)
 
 
-@pytest.mark.parametrize('shape', [(24,), (6, 4), (3, 4, 2)])
+@pytest.mark.parametrize("shape", [(24,), (6, 4), (3, 4, 2)])
 def test_radec_yagzag_multidim(shape):
     """Test radec_to_yagzag and yagzag_to_radec for multidimensional inputs"""
     dec = 0.5
-    ras = np.linspace(0., 1., 24)
+    ras = np.linspace(0.0, 1.0, 24)
     eqs = np.empty(shape=(24, 3))
     eqs[..., 0] = 0.1
     eqs[..., 1] = np.linspace(-0.1, 0.1, 24)
@@ -372,8 +402,10 @@ def test_radec_yagzag_multidim(shape):
     qs_nd = Quat(equatorial=eqs.reshape(shape + (3,)))
 
     # First do everything as scalars
-    yagzags_list = [radec_to_yagzag(ra, dec, Quat(equatorial=eq))
-                    for ra, eq in zip(ras.tolist(), eqs.tolist())]
+    yagzags_list = [
+        radec_to_yagzag(ra, dec, Quat(equatorial=eq))
+        for ra, eq in zip(ras.tolist(), eqs.tolist())
+    ]
     yagzags_nd_from_list = np.array(yagzags_list).reshape(shape + (2,))
 
     # Test broadcasting by providing a scalar for `dec`

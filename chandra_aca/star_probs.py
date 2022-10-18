@@ -12,20 +12,23 @@ SSAWG review: 2020-01-29
 
 import os
 import warnings
-from numba import jit
 
-from scipy.optimize import brentq, bisect
-import scipy.stats
 import numpy as np
+import scipy.stats
 from Chandra.Time import DateTime
+from numba import jit
+from scipy.optimize import bisect, brentq
 
-from chandra_aca.transform import (snr_mag_for_t_ccd, broadcast_arrays,
-                                   broadcast_arrays_flatten)
+from chandra_aca.transform import (
+    broadcast_arrays,
+    broadcast_arrays_flatten,
+    snr_mag_for_t_ccd,
+)
 
-STAR_PROBS_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'star_probs')
+STAR_PROBS_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "star_probs")
 
 # Default acquisition probability model
-DEFAULT_MODEL = 'grid-floor-2020-02'
+DEFAULT_MODEL = "grid-floor-2020-02"
 
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
@@ -56,8 +59,10 @@ def get_box_delta(halfwidth):
     B1 = 0.96
     B2 = -0.30
 
-    box120 = (halfwidth - 120) / 120  # normalized version of box, equal to 0.0 at nominal default
-    box_delta = B1 * box120 + B2 * box120 ** 2
+    box120 = (
+        halfwidth - 120
+    ) / 120  # normalized version of box, equal to 0.0 at nominal default
+    box_delta = B1 * box120 + B2 * box120**2
 
     return box_delta
 
@@ -79,8 +84,16 @@ def set_acq_model_ms_filter(ms_enabled=False):
     MULT_STARS_ENABLED = ms_enabled
 
 
-def t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0,
-                     cold_t_ccd=-16, warm_t_ccd=-5, model=None):
+def t_ccd_warm_limit(
+    mags,
+    date=None,
+    colors=0,
+    halfwidths=120,
+    min_n_acq=5.0,
+    cold_t_ccd=-16,
+    warm_t_ccd=-5,
+    model=None,
+):
     """
     Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars
     criterion.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
@@ -116,8 +129,14 @@ def t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0,
         This will be positive if the expected number of stars is above the
         minimum number of stars.  Positive => more expected stars.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors,
-                                 halfwidth=halfwidths, model=model)
+        probs = acq_success_prob(
+            date=date,
+            t_ccd=t_ccd,
+            mag=mags,
+            color=colors,
+            halfwidth=halfwidths,
+            model=model,
+        )
         return np.sum(probs) - min_n_acq
 
     def prob_n_or_fewer_below_max(t_ccd):
@@ -125,13 +144,20 @@ def t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0,
         This will be positive if the computed probability of acquiring n_or_fewer
         stars is less than the threshold.  Positive => lower prob. of safing action.
         """
-        probs = acq_success_prob(date=date, t_ccd=t_ccd, mag=mags, color=colors,
-                                 halfwidth=halfwidths, model=model)
+        probs = acq_success_prob(
+            date=date,
+            t_ccd=t_ccd,
+            mag=mags,
+            color=colors,
+            halfwidth=halfwidths,
+            model=model,
+        )
         n_acq_probs, n_or_fewer_probs = prob_n_acq(probs)
         return prob_n_or_fewer - n_or_fewer_probs[n_or_fewer]
 
-    merit_func = (prob_n_or_fewer_below_max if isinstance(min_n_acq, tuple)
-                  else n_acq_above_min)
+    merit_func = (
+        prob_n_or_fewer_below_max if isinstance(min_n_acq, tuple) else n_acq_above_min
+    )
 
     if merit_func(warm_t_ccd) >= 0:
         # If there are enough ACQ stars at the warmest reasonable CCD temperature
@@ -196,8 +222,15 @@ def prob_n_acq(star_probs):
     return n_acq_probs, np.cumsum(n_acq_probs)
 
 
-def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False, halfwidth=120,
-                     model=None):
+def acq_success_prob(
+    date=None,
+    t_ccd=-10.0,
+    mag=10.0,
+    color=0.6,
+    spoiler=False,
+    halfwidth=120,
+    model=None,
+):
     """
     Return probability of acquisition success for given date, temperature, star properties
     and search box size.
@@ -224,12 +257,13 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
 
     date = DateTime(date).secs
     is_scalar, dates, t_ccds, mags, colors, spoilers, halfwidths = broadcast_arrays(
-        date, t_ccd, mag, color, spoiler, halfwidth)
+        date, t_ccd, mag, color, spoiler, halfwidth
+    )
 
     spoilers = spoilers.astype(bool)
 
     # Actually evaluate the model
-    if model == 'sota':
+    if model == "sota":
         from .dark_model import get_warm_fracs
 
         warm_fracs = []
@@ -241,10 +275,10 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
         probs = sota_model_acq_prob(mags, warm_fracs, colors, halfwidths)
         probs[mags < 8.5] = MAX_ACQ_PROB
 
-    elif model == 'spline':
+    elif model == "spline":
         probs = spline_model_acq_prob(mags, t_ccds, colors, halfwidths)
 
-    elif model.startswith('grid-'):
+    elif model.startswith("grid-"):
         probs = grid_model_acq_prob(mags, t_ccds, colors, halfwidths, model=model)
 
     else:
@@ -252,13 +286,13 @@ def acq_success_prob(date=None, t_ccd=-10.0, mag=10.0, color=0.6, spoiler=False,
 
     # Deal with color=0.7 stars and/or spoiled stars.  The spoiling correction
     # is a relic that should never be used once proseco is promoted.
-    p_0p7color = .4294  # probability multiplier for a B-V = 0.700 star (REF?)
-    p_spoiler = .9241  # probability multiplier for a search-spoiled star (REF?)
+    p_0p7color = 0.4294  # probability multiplier for a B-V = 0.700 star (REF?)
+    p_spoiler = 0.9241  # probability multiplier for a search-spoiled star (REF?)
 
     probs[np.isclose(colors, 0.7, atol=1e-6, rtol=0)] *= p_0p7color
     probs[spoilers] *= p_spoiler
 
-    if model in ('sota', 'spline'):
+    if model in ("sota", "spline"):
         # Clip probabilities for older models.  Newer models (grid-* included)
         # should do all this internally.
         probs = probs.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
@@ -285,16 +319,20 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
     """
     val = np.asarray(val)
     if np.any((val > val_hi) | (val < val_lo)):
-        warnings.warn('\nModel {} computed between {} <= {} <= {}, '
-                      'clipping input {}(s) outside that range.'
-                      .format(model, name, val_lo, val_hi, name))
+        warnings.warn(
+            "\nModel {} computed between {} <= {} <= {}, "
+            "clipping input {}(s) outside that range.".format(
+                model, name, val_lo, val_hi, name
+            )
+        )
         val = np.clip(val, val_lo, val_hi)
 
     return val
 
 
-def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False,
-                        model=None):
+def grid_model_acq_prob(
+    mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False, model=None
+):
     """Calculate a grid model probability of acquisition success for a star with
     specified mag, t_ccd, color, and search box halfwidth.
 
@@ -317,9 +355,9 @@ def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=
         from scipy.interpolate import RegularGridInterpolator
 
         # Read the model file and put into local vars
-        filename = os.path.join(STAR_PROBS_DATA_DIR, model) + '.fits.gz'
+        filename = os.path.join(STAR_PROBS_DATA_DIR, model) + ".fits.gz"
         if not os.path.exists(filename):
-            raise IOError('model file {} does not exist'.format(filename))
+            raise IOError("model file {} does not exist".format(filename))
 
         hdus = fits.open(filename)
         hdu0 = hdus[0]
@@ -327,58 +365,65 @@ def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=
         probit_p_fail_1p5 = hdus[2].data
 
         hdr = hdu0.header
-        grid_mags = np.linspace(hdr['mag_lo'], hdr['mag_hi'], hdr['mag_n'])
-        grid_t_ccds = np.linspace(hdr['t_ccd_lo'], hdr['t_ccd_hi'], hdr['t_ccd_n'])
-        grid_halfws = np.linspace(hdr['halfw_lo'], hdr['halfw_hi'], hdr['halfw_n'])
+        grid_mags = np.linspace(hdr["mag_lo"], hdr["mag_hi"], hdr["mag_n"])
+        grid_t_ccds = np.linspace(hdr["t_ccd_lo"], hdr["t_ccd_hi"], hdr["t_ccd_n"])
+        grid_halfws = np.linspace(hdr["halfw_lo"], hdr["halfw_hi"], hdr["halfw_n"])
 
         # Sanity checks on model data
-        assert probit_p_fail_no_1p5.shape == (len(grid_mags),
-                                              len(grid_t_ccds),
-                                              len(grid_halfws))
+        assert probit_p_fail_no_1p5.shape == (
+            len(grid_mags),
+            len(grid_t_ccds),
+            len(grid_halfws),
+        )
         assert probit_p_fail_1p5.shape == probit_p_fail_no_1p5.shape
 
         # Generate the 3-d linear interpolation functions
-        func_no_1p5 = RegularGridInterpolator(points=(grid_mags, grid_t_ccds, grid_halfws),
-                                              values=probit_p_fail_no_1p5)
-        func_1p5 = RegularGridInterpolator(points=(grid_mags, grid_t_ccds, grid_halfws),
-                                           values=probit_p_fail_1p5)
-        mag_lo = hdr['mag_lo']
-        mag_hi = hdr['mag_hi']
-        t_ccd_lo = hdr['t_ccd_lo']
-        t_ccd_hi = hdr['t_ccd_hi']
-        halfw_lo = hdr['halfw_lo']
-        halfw_hi = hdr['halfw_hi']
+        func_no_1p5 = RegularGridInterpolator(
+            points=(grid_mags, grid_t_ccds, grid_halfws), values=probit_p_fail_no_1p5
+        )
+        func_1p5 = RegularGridInterpolator(
+            points=(grid_mags, grid_t_ccds, grid_halfws), values=probit_p_fail_1p5
+        )
+        mag_lo = hdr["mag_lo"]
+        mag_hi = hdr["mag_hi"]
+        t_ccd_lo = hdr["t_ccd_lo"]
+        t_ccd_hi = hdr["t_ccd_hi"]
+        halfw_lo = hdr["halfw_lo"]
+        halfw_hi = hdr["halfw_hi"]
 
-        GRID_FUNCS[model] = {'filename': filename,
-                             'func_no_1p5': func_no_1p5,
-                             'func_1p5': func_1p5,
-                             'mag_lo': mag_lo,
-                             'mag_hi': mag_hi,
-                             't_ccd_lo': t_ccd_lo,
-                             't_ccd_hi': t_ccd_hi,
-                             'halfw_lo': halfw_lo,
-                             'halfw_hi': halfw_hi}
+        GRID_FUNCS[model] = {
+            "filename": filename,
+            "func_no_1p5": func_no_1p5,
+            "func_1p5": func_1p5,
+            "mag_lo": mag_lo,
+            "mag_hi": mag_hi,
+            "t_ccd_lo": t_ccd_lo,
+            "t_ccd_hi": t_ccd_hi,
+            "halfw_lo": halfw_lo,
+            "halfw_hi": halfw_hi,
+        }
     else:
         gfm = GRID_FUNCS[model]
-        func_no_1p5 = gfm['func_no_1p5']
-        func_1p5 = gfm['func_1p5']
-        mag_lo = gfm['mag_lo']
-        mag_hi = gfm['mag_hi']
-        t_ccd_lo = gfm['t_ccd_lo']
-        t_ccd_hi = gfm['t_ccd_hi']
-        halfw_lo = gfm['halfw_lo']
-        halfw_hi = gfm['halfw_hi']
+        func_no_1p5 = gfm["func_no_1p5"]
+        func_1p5 = gfm["func_1p5"]
+        mag_lo = gfm["mag_lo"]
+        mag_hi = gfm["mag_hi"]
+        t_ccd_lo = gfm["t_ccd_lo"]
+        t_ccd_hi = gfm["t_ccd_hi"]
+        halfw_lo = gfm["halfw_lo"]
+        halfw_hi = gfm["halfw_hi"]
 
     # Make sure inputs are within range of gridded model
-    mag = clip_and_warn('mag', mag, mag_lo, mag_hi, model)
-    t_ccd = clip_and_warn('t_ccd', t_ccd, t_ccd_lo, t_ccd_hi, model)
-    halfwidth = clip_and_warn('halfw', halfwidth, halfw_lo, halfw_hi, model)
+    mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model)
+    t_ccd = clip_and_warn("t_ccd", t_ccd, t_ccd_lo, t_ccd_hi, model)
+    halfwidth = clip_and_warn("halfw", halfwidth, halfw_lo, halfw_hi, model)
 
     # Broadcast all inputs to a common shape.  If they are all scalars
     # then shape=().  The returns values are flattened, so the final output
     # needs to be reshape at the end.
     shape, t_ccds, mags, colors, halfwidths = broadcast_arrays_flatten(
-        t_ccd, mag, color, halfwidth)
+        t_ccd, mag, color, halfwidth
+    )
 
     if shape:
         # One or more inputs are arrays, output is array with shape
@@ -405,7 +450,9 @@ def grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=
     return p_success
 
 
-def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False):
+def spline_model_acq_prob(
+    mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False
+):
     """
     Calculate poly-spline-tccd model (aka 'spline' model) probability of acquisition
     success for a star with specified mag, t_ccd, color, and search box halfwidth.
@@ -433,30 +480,68 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
         from .cubic_spline import CubicSpline
 
     is_scalar, t_ccds, mags, colors, halfwidths = broadcast_arrays(
-        t_ccd, mag, color, halfwidth)
+        t_ccd, mag, color, halfwidth
+    )
 
     if np.any(t_ccds < -16.0):
-        warnings.warn('\nSpline model is not calibrated below -16 C, '
-                      'so take results with skepticism!\n'
-                      'For cold temperatures use the SOTA model.')
+        warnings.warn(
+            "\nSpline model is not calibrated below -16 C, "
+            "so take results with skepticism!\n"
+            "For cold temperatures use the SOTA model."
+        )
 
     # Cubic spline functions are computed on the first call and cached
     if len(SPLINE_FUNCS) == 0:
-        fit_no_1p5 = np.array([-2.69826, -1.96063, -1.20245, -0.01713, 1.23724,  # P0 values
-                               0.07135, 0.12711, 0.14508, 0.59646, 0.64262,  # P1 values
-                               0.02341, 0.0, 0.00704, 0.06926, 0.05629])  # P2 values
-        fit_1p5 = np.array([-2.56169, -1.65157, -0.26794, 1.00488, 3.52181,  # P0 values
-                            0.0, 0.09193, 0.23026, 0.61243, 0.94157,  # P1 values
-                            0.00471, 0.00637, 0.01118, 0.07461, 0.09556])  # P2 values
+        fit_no_1p5 = np.array(
+            [
+                -2.69826,
+                -1.96063,
+                -1.20245,
+                -0.01713,
+                1.23724,  # P0 values
+                0.07135,
+                0.12711,
+                0.14508,
+                0.59646,
+                0.64262,  # P1 values
+                0.02341,
+                0.0,
+                0.00704,
+                0.06926,
+                0.05629,
+            ]
+        )  # P2 values
+        fit_1p5 = np.array(
+            [
+                -2.56169,
+                -1.65157,
+                -0.26794,
+                1.00488,
+                3.52181,  # P0 values
+                0.0,
+                0.09193,
+                0.23026,
+                0.61243,
+                0.94157,  # P1 values
+                0.00471,
+                0.00637,
+                0.01118,
+                0.07461,
+                0.09556,
+            ]
+        )  # P2 values
         spline_mags = np.array([8.5, 9.25, 10.0, 10.4, 10.7])
 
-        for vals, label in ((fit_no_1p5, 'no_1p5'), (fit_1p5, '1p5')):
-            SPLINE_FUNCS[0, label] = CubicSpline(spline_mags, vals[0:5],
-                                                 bc_type=((1, 0.0), (2, 0.0)))
-            SPLINE_FUNCS[1, label] = CubicSpline(spline_mags, vals[5:10],
-                                                 bc_type=((1, 0.0), (2, 0.0)))
-            SPLINE_FUNCS[2, label] = CubicSpline(spline_mags, vals[10:15],
-                                                 bc_type=((1, 0.0), (2, 0.0)))
+        for vals, label in ((fit_no_1p5, "no_1p5"), (fit_1p5, "1p5")):
+            SPLINE_FUNCS[0, label] = CubicSpline(
+                spline_mags, vals[0:5], bc_type=((1, 0.0), (2, 0.0))
+            )
+            SPLINE_FUNCS[1, label] = CubicSpline(
+                spline_mags, vals[5:10], bc_type=((1, 0.0), (2, 0.0))
+            )
+            SPLINE_FUNCS[2, label] = CubicSpline(
+                spline_mags, vals[10:15], bc_type=((1, 0.0), (2, 0.0))
+            )
 
     # Model is calibrated using t_ccd - (-12) for numerical stability.
     tc12 = t_ccds - (-12)
@@ -466,8 +551,8 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
     is_1p5 = np.isclose(colors, 1.5)
 
     # Process the color != 1.5 stars, then the color == 1.5 stars
-    for label in ('no_1p5', '1p5'):
-        mask = is_1p5 if label == '1p5' else ~is_1p5
+    for label in ("no_1p5", "1p5"):
+        mask = is_1p5 if label == "1p5" else ~is_1p5
 
         # If no stars in this category then continue
         if not np.any(mask):
@@ -489,14 +574,16 @@ def spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probi
         p1 = SPLINE_FUNCS[1, label](magmc)
         p2 = SPLINE_FUNCS[2, label](magmc)
 
-        probit_p_fail[mask] = p0 + p1 * tcm + p2 * tcm ** 2 + boxm - bright
+        probit_p_fail[mask] = p0 + p1 * tcm + p2 * tcm**2 + boxm - bright
 
     # Return probability of success (not failure, as in the raw model)
     p_out = -probit_p_fail
 
     # Return raw probit value?
     if not probit:
-        p_out = scipy.stats.norm.cdf(p_out)  # transform from probit to linear probability
+        p_out = scipy.stats.norm.cdf(
+            p_out
+        )  # transform from probit to linear probability
 
     return p_out
 
@@ -548,19 +635,23 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
     # scale = scl2 * m10**2 + scl1 * m10 + scl0, where m10 = mag - 10,
     # and likewise for offset.
 
-    SOTA_FIT_NO_1P5_WITH_MS = [9.6887121605441173,  # scl0
-                               9.1613040261776177,  # scl1
-                               -0.41919343599067715,  # scl2
-                               -2.3829996965532048,  # off0
-                               0.54998934814773903,  # off1
-                               0.47839260691599156]  # off2
+    SOTA_FIT_NO_1P5_WITH_MS = [
+        9.6887121605441173,  # scl0
+        9.1613040261776177,  # scl1
+        -0.41919343599067715,  # scl2
+        -2.3829996965532048,  # off0
+        0.54998934814773903,  # off1
+        0.47839260691599156,
+    ]  # off2
 
-    SOTA_FIT_ONLY_1P5_WITH_MS = [8.541709287866361,
-                                 0.44482688155644085,
-                                 -3.5137852251178465,
-                                 -1.3505424393223699,
-                                 1.5278061271148755,
-                                 0.30973569068842272]
+    SOTA_FIT_ONLY_1P5_WITH_MS = [
+        8.541709287866361,
+        0.44482688155644085,
+        -3.5137852251178465,
+        -1.3505424393223699,
+        1.5278061271148755,
+        0.30973569068842272,
+    ]
 
     #
     # FLIGHT model coefficients.
@@ -568,21 +659,23 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
     # Multiple stars flag disabled (starting operationally with FEB0816).  Fit
     # with fit_flight_acq_prob_model.ipynb in the aca_stats repo.
 
-    SOTA_FIT_NO_1P5_NO_MS = [4.38145,  # scl0
-                             6.22480,  # scl1
-                             2.20862,  # scl2
-                             -2.24494,  # off0
-                             0.32180,  # off1
-                             0.08306,  # off2
-                             ]
+    SOTA_FIT_NO_1P5_NO_MS = [
+        4.38145,  # scl0
+        6.22480,  # scl1
+        2.20862,  # scl2
+        -2.24494,  # off0
+        0.32180,  # off1
+        0.08306,  # off2
+    ]
 
-    SOTA_FIT_ONLY_1P5_NO_MS = [4.73283,  # scl0
-                               7.63540,  # scl1
-                               4.56612,  # scl2
-                               -1.49046,  # off0
-                               0.53391,  # off1
-                               -0.37074,  # off2
-                               ]
+    SOTA_FIT_ONLY_1P5_NO_MS = [
+        4.73283,  # scl0
+        7.63540,  # scl1
+        4.56612,  # scl2
+        -1.49046,  # off0
+        0.53391,  # off1
+        -0.37074,  # off2
+    ]
 
     if MULT_STARS_ENABLED:
         SOTA_FIT_NO_1P5 = SOTA_FIT_NO_1P5_WITH_MS
@@ -597,8 +690,7 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
 
     p_fail = np.zeros_like(mag)
     color1p5 = np.isclose(color, 1.5, atol=1e-6, rtol=0)
-    for mask, fit_pars in ((color1p5, SOTA_FIT_ONLY_1P5),
-                           (~color1p5, SOTA_FIT_NO_1P5)):
+    for mask, fit_pars in ((color1p5, SOTA_FIT_ONLY_1P5), (~color1p5, SOTA_FIT_NO_1P5)):
         if np.any(mask):
             scale = np.polyval(fit_pars[0:3][::-1], m10)
             offset = np.polyval(fit_pars[3:6][::-1], m10)
@@ -608,7 +700,7 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
 
     p_fail = scipy.stats.norm.cdf(p_fail)  # probit transform
     p_fail[mag < 8.5] = 0.015  # actual best fit is ~0.006, but put in some conservatism
-    p_success = (1 - p_fail)
+    p_success = 1 - p_fail
 
     # Clip values to reasonable range regardless of model prediction
     p_success = p_success.clip(MIN_ACQ_PROB, MAX_ACQ_PROB)
@@ -632,7 +724,9 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
 
     def prob_minus_p_acq(mag):
         """Function that gets zeroed in brentq call later"""
-        prob = acq_success_prob(date=date, t_ccd=t_ccd, mag=mag, halfwidth=halfwidth, model=model)
+        prob = acq_success_prob(
+            date=date, t_ccd=t_ccd, mag=mag, halfwidth=halfwidth, model=model
+        )
         return prob - p_acq
 
     # prob_minus_p_acq is monotonically decreasing from the (minimum)
@@ -692,7 +786,8 @@ def guide_count(mags, t_ccd, count_9th=False):
         # reject it.  Note that around 6th mag mean observed catalog error is
         # around 0.1 mag.
         ref_mags[t_ccd] = np.concatenate(
-            [[5.25, 5.35], snr_mag_for_t_ccd(t_ccd, ref_mags0, ref_t_ccd)])
+            [[5.25, 5.35], snr_mag_for_t_ccd(t_ccd, ref_mags0, ref_t_ccd)]
+        )
 
     ref_counts = [0.0, 1.0005, 1.0, 0.75, 0.5, 0.0]
 
@@ -705,7 +800,9 @@ def guide_count(mags, t_ccd, count_9th=False):
     return count
 
 
-def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_t_ccd=-16.0):
+def t_ccd_warm_limit_for_guide(
+    mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_t_ccd=-16.0
+):
     """
     Solve for the warmest temperature that still gets the min_guide_count.
     This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
@@ -730,7 +827,9 @@ def t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_
         count = guide_count(mags, t_ccd)
         return count - min_guide_count
 
-    return bisect(merit_func, cold_t_ccd, warm_t_ccd, xtol=0.001, rtol=1e-15, full_output=False)
+    return bisect(
+        merit_func, cold_t_ccd, warm_t_ccd, xtol=0.001, rtol=1e-15, full_output=False
+    )
 
 
 def binom_ppf(k, n, conf, n_sample=1000):

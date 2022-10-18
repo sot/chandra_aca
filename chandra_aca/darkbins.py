@@ -16,5 +16,5 @@ n_bins = np.round((lx1 - lx0) / dx)
 dx = (lx1 - lx0) / n_bins
 
 log_bins = np.arange(lx0, lx2, dx)
-bins = 10 ** log_bins
+bins = 10**log_bins
 bin_centers = 10 ** ((log_bins[1:] + log_bins[:-1]) / 2.0)

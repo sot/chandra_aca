@@ -13,9 +13,9 @@ Alternatively:
 http://nbviewer.ipython.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model.ipynb
 """
 
-import numpy as np
 import warnings
 
+import numpy as np
 from Chandra.Time import DateTime
 
 # Define a common fixed binning of dark current distribution
@@ -29,12 +29,12 @@ CACHE = {}
 
 # Fixed gaussian for smoothing the broken power law
 dx = 0.1
-sigma = 0.30                            # Gaussian sigma in log space
+sigma = 0.30  # Gaussian sigma in log space
 xg = np.arange(-2.5 * sigma, 2.5 * sigma, dx, dtype=float)
 yg = np.exp(-0.5 * (xg / sigma) ** 2)
 yg /= np.sum(yg)
 
-NPIX = 1024 ** 2
+NPIX = 1024**2
 
 # Fixed
 xbins = darkbins.bins
@@ -44,7 +44,7 @@ imax = len(xall)
 
 # Warm threshold used in fitting acq prob model.  This constant is
 # not used in any configured code, but leave here just in case.
-warm_threshold = 100.
+warm_threshold = 100.0
 
 # Increase in dark current per 4 degC increase in T_ccd
 DARK_SCALE_4C = 1.0 / 0.70
@@ -122,7 +122,7 @@ def smooth_broken_pow(pars, x):
     y[ok] = ampl2 * (xall[ok] / x_r) ** (-gamma2)
     imin = np.searchsorted(xall, x[0] - 1e-3)
     imax = np.searchsorted(xall, x[-1] + 1e-3)
-    return np.convolve(y, yg, mode='same')[imin:imax]
+    return np.convolve(y, yg, mode="same")[imin:imax]
 
 
 def smooth_twice_broken_pow(pars, x):
@@ -150,7 +150,7 @@ def smooth_twice_broken_pow(pars, x):
 
     imin = np.searchsorted(xall, x[0] - 1e-3)
     imax = np.searchsorted(xall, x[-1] + 1e-3)
-    return np.convolve(y, yg, mode='same')[imin:imax]
+    return np.convolve(y, yg, mode="same")[imin:imax]
 
 
 def temp_scalefac(T_ccd):
@@ -164,7 +164,9 @@ def temp_scalefac(T_ccd):
     chandra_aca.dark_model.dark_temp_scale and the value will be determined using the
     module DARK_SCALE_4C value which may differ from previous values of 1.0/0.70 or 1.0/0.62.
     """
-    warnings.warn("temp_scalefac is deprecated.  See chandra_aca.dark_model.dark_temp_scale.")
+    warnings.warn(
+        "temp_scalefac is deprecated.  See chandra_aca.dark_model.dark_temp_scale."
+    )
     return dark_temp_scale(-19, T_ccd)
 
 
@@ -202,12 +204,13 @@ def get_sbp_pars(dates):
 
     # Poly fit parameter for pre-2012 and post-2012.  Vals here are:
     # y_mid, slope_pre, slope_post
-    par_fits = ((0.075, -0.00692, -0.0207),  # g1
-                (3.32, 0.0203, 0 * 0.0047),  # g2
-                (2.40, 0.061, 0.061),  # g3
-                (192, 0.1, 0.1),  # x_b
-                (18400, 1.45e3, 742),  # ampl
-                )
+    par_fits = (
+        (0.075, -0.00692, -0.0207),  # g1
+        (3.32, 0.0203, 0 * 0.0047),  # g2
+        (2.40, 0.061, 0.061),  # g3
+        (192, 0.1, 0.1),  # x_b
+        (18400, 1.45e3, 742),  # ampl
+    )
 
     pars_list = []
     for dyear in dyears:
@@ -223,7 +226,7 @@ def get_sbp_pars(dates):
     return pars_list
 
 
-def get_warm_fracs(warm_threshold, date='2013:001:12:00:00', T_ccd=-19.0):
+def get_warm_fracs(warm_threshold, date="2013:001:12:00:00", T_ccd=-19.0):
     """
     Calculate fraction of pixels in modeled dark current distribution
     above warm threshold(s).
@@ -248,7 +251,7 @@ def get_warm_fracs(warm_threshold, date='2013:001:12:00:00', T_ccd=-19.0):
         ly0 = np.log(y[ii - 1])
         ly1 = np.log(y[ii])
         m = (ly1 - ly0) / (lx1 - lx0)
-        partial_bin = y[ii] * (lx1 ** m - lx ** m) / (lx1 ** m - lx0 ** m)
+        partial_bin = y[ii] * (lx1**m - lx**m) / (lx1**m - lx0**m)
         warmpix += partial_bin
         warmpixes.append(warmpix)
 
@@ -257,7 +260,7 @@ def get_warm_fracs(warm_threshold, date='2013:001:12:00:00', T_ccd=-19.0):
     else:
         out = np.array(warmpixes)
 
-    return out / (1024.0 ** 2)
+    return out / (1024.0**2)
 
 
 def synthetic_dark_image(date, t_ccd_ref=None):
@@ -271,11 +274,13 @@ def synthetic_dark_image(date, t_ccd_ref=None):
 
     from mica.archive.aca_dark import get_dark_cal_image
 
-    if 'dark_1999223' not in CACHE:
-        dark = get_dark_cal_image('1999:223:12:00:00', select='nearest', t_ccd_ref=-14).ravel()
-        CACHE['dark_1999223'] = dark.copy()
+    if "dark_1999223" not in CACHE:
+        dark = get_dark_cal_image(
+            "1999:223:12:00:00", select="nearest", t_ccd_ref=-14
+        ).ravel()
+        CACHE["dark_1999223"] = dark.copy()
     else:
-        dark = CACHE['dark_1999223'].copy()
+        dark = CACHE["dark_1999223"].copy()
 
     # Fill any pixels above 40 e-/sec with a random sampling from a cool
     # pixel below 40 e-/sec
@@ -294,7 +299,7 @@ def synthetic_dark_image(date, t_ccd_ref=None):
         # Generate n log-uniform variates within bin
         if npix > 0:
             logdark = np.random.uniform(np.log(xbins[ii]), np.log(xbins[ii + 1]), npix)
-            dark[nn:nn + npix] += np.exp(logdark)
+            dark[nn : nn + npix] += np.exp(logdark)
             nn += npix
 
     np.random.shuffle(dark)
