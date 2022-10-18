@@ -8,10 +8,14 @@ a desired zero-offset target aimpoint.
 A key element of this module is the fitting analysis here:
 https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb
 """
+import functools
+import os
+from pathlib import Path
 
-from Chandra.Time import DateTime
-from astropy.table import Table
 import numpy as np
+from astropy.table import Table
+from astropy.utils.data import download_file
+from Chandra.Time import DateTime
 
 # Capture best fit model parameters for ACA drift model.
 # https://github.com/sot/aimpoint_mon/blob/7809b89/fit_aimpoint_drift.ipynb
@@ -185,6 +189,7 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
     return ddy, ddz
 
 
+@functools.lru_cache
 def get_default_zero_offset_table():
     """
     Get official SOT MP zero offset aimpoint table.
@@ -199,17 +204,21 @@ def get_default_zero_offset_table():
 
     :returns: zero offset aimpoint table as astropy.Table
     """
-    if 'ZERO_OFFSET_TABLE' in CACHE:
-        return CACHE['ZERO_OFFSET_TABLE']
     try:
-        CACHE['ZERO_OFFSET_TABLE'] = Table.read(
-            '/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt',
-            format='ascii')
+        path = (
+            Path(os.environ["SKA"])
+            / "data"
+            / "mpcrit1"
+            / "aimpoint_table"
+            / "zero_offset_aimpoints.txt"
+        )
+        out = Table.read(str(path), format="ascii")
     except FileNotFoundError:
-        CACHE['ZERO_OFFSET_TABLE'] = Table.read(
-            "https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt",
-            format='ascii')
-    return CACHE['ZERO_OFFSET_TABLE']
+        url = "https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt"
+        path = download_file(url, show_progress=False, timeout=10)
+        out = Table.read(path, format="ascii")
+
+    return out
 
 
 def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None):
