@@ -146,7 +146,7 @@ def get_planet_angular_sep(
     else:
         raise ValueError(
             f"{observer_position} is not an allowed value: "
-            f'("earth", "chandra", or "chandra-horizons")'
+            '("earth", "chandra", or "chandra-horizons")'
         )
 
     sep = sphere_dist(ra, dec, body_ra, body_dec)
@@ -165,7 +165,7 @@ def get_planet_barycentric(body, time=None):
     kernel = KERNEL.val
     if body not in BODY_NAME_TO_KERNEL_SPEC:
         raise ValueError(
-            f"{body} is not an allowed value " f"{tuple(BODY_NAME_TO_KERNEL_SPEC)}"
+            f"{body} is not an allowed value {tuple(BODY_NAME_TO_KERNEL_SPEC)}"
         )
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]

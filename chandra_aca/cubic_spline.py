@@ -480,9 +480,7 @@ class CubicSpline(PPoly):
                     )
 
                 if deriv_order not in [1, 2]:
-                    raise ValueError(
-                        "The specified derivative order must " "be 1 or 2."
-                    )
+                    raise ValueError("The specified derivative order must be 1 or 2.")
 
                 deriv_value = np.asarray(deriv_value)
                 if deriv_value.shape != expected_deriv_shape:

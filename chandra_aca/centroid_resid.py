@@ -302,7 +302,8 @@ class CentroidResiduals(object):
         obstype = "or" if self.obsid < 38000 else "er"
         if fetch_source == "maude" and obstype == "er":
             warnings.warn(
-                "Centroid time offsets not well fit for 'maude' telem source on ERs. Use caution."
+                "Centroid time offsets not well fit for 'maude' telem source on ERs."
+                " Use caution."
             )
 
         # Offsets calculated using OR and ER notebooks in SKA/analysis/centroid_and_sol_time_offsets
@@ -350,7 +351,8 @@ class CentroidResiduals(object):
             )
         if len(self.att_times) < 2:
             raise ValueError(
-                "Cannot attempt to calculate residuals with fewer than 2 attitude samples"
+                "Cannot attempt to calculate residuals with fewer than 2 attitude"
+                " samples"
             )
         eci = transform.radec_to_eci(self.ra, self.dec)
         # Transform the 3x3 to get the axes to align to have the dot product make sense
