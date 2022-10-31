@@ -1,16 +1,17 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-import numpy as np
 import warnings
 
-from astropy.table import Table, vstack
-from kadi import events
-from Ska.Numpy import interpolate
-from mica.archive import asp_l1
-import mica.starcheck
-from Ska.engarchive import fetch
-from Chandra.Time import DateTime
 import agasc
+import mica.starcheck
+import numpy as np
+from astropy.table import Table, vstack
+from Chandra.Time import DateTime
+from kadi import events
+from mica.archive import asp_l1
 from Quaternion import Quat
+from Ska.engarchive import fetch
+from Ska.Numpy import interpolate
+
 from chandra_aca import transform
 
 R2A = 206264.81  # Convert from radians to arcsec
@@ -71,6 +72,7 @@ class CentroidResiduals(object):
     :param stop: stop time of interval for residuals (DateTime compatible)
 
     """
+
     centroid_source = None
     att_source = None
     ra = None
@@ -102,24 +104,35 @@ class CentroidResiduals(object):
         start = self.start
         stop = self.stop
         # Get centroids from Ska eng archive or mica L1 archive
-        if source == 'ground':
-            acen_files = sorted(asp_l1.get_files(start=start, stop=stop, content=['ACACENT']))
-            acen = vstack([Table.read(f) for f in sorted(acen_files)], metadata_conflicts='silent')
-            ok = ((acen['slot'] == slot) & (acen['alg'] == alg) & (acen['status'] == 0) &
-                  (acen['time'] >= DateTime(start).secs) & (acen['time'] <= DateTime(stop).secs))
-            yags = np.array(acen[ok]['ang_y'] * 3600)
-            zags = np.array(acen[ok]['ang_z'] * 3600)
-            yag_times = np.array(acen[ok]['time'])
-            zag_times = np.array(acen[ok]['time'])
-        elif source == 'obc':
-            telem = fetch.Msidset(['AOACYAN{}'.format(slot), 'AOACZAN{}'.format(slot)], start, stop)
+        if source == "ground":
+            acen_files = sorted(
+                asp_l1.get_files(start=start, stop=stop, content=["ACACENT"])
+            )
+            acen = vstack(
+                [Table.read(f) for f in sorted(acen_files)], metadata_conflicts="silent"
+            )
+            ok = (
+                (acen["slot"] == slot)
+                & (acen["alg"] == alg)
+                & (acen["status"] == 0)
+                & (acen["time"] >= DateTime(start).secs)
+                & (acen["time"] <= DateTime(stop).secs)
+            )
+            yags = np.array(acen[ok]["ang_y"] * 3600)
+            zags = np.array(acen[ok]["ang_z"] * 3600)
+            yag_times = np.array(acen[ok]["time"])
+            zag_times = np.array(acen[ok]["time"])
+        elif source == "obc":
+            telem = fetch.Msidset(
+                ["AOACYAN{}".format(slot), "AOACZAN{}".format(slot)], start, stop
+            )
             # Filter centroids for reasonble-ness
-            yok = telem['AOACYAN{}'.format(slot)].vals > -3276
-            zok = telem['AOACZAN{}'.format(slot)].vals > -3276
-            yags = telem['AOACYAN{}'.format(slot)].vals[yok]
-            yag_times = telem['AOACYAN{}'.format(slot)].times[yok]
-            zags = telem['AOACZAN{}'.format(slot)].vals[zok]
-            zag_times = telem['AOACZAN{}'.format(slot)].times[zok]
+            yok = telem["AOACYAN{}".format(slot)].vals > -3276
+            zok = telem["AOACZAN{}".format(slot)].vals > -3276
+            yags = telem["AOACYAN{}".format(slot)].vals[yok]
+            yag_times = telem["AOACYAN{}".format(slot)].times[yok]
+            zags = telem["AOACZAN{}".format(slot)].vals[zok]
+            zag_times = telem["AOACZAN{}".format(slot)].times[zok]
         else:
             raise ValueError("centroid_source must be 'obc' or 'ground'")
         self.yags = yags
@@ -140,25 +153,31 @@ class CentroidResiduals(object):
         tstart = DateTime(self.start).secs
         tstop = DateTime(self.stop).secs
         # Get attitudes and times
-        if source == 'obc':
-            telem = fetch.Msidset(['aoattqt*'], tstart, tstop)
-            atts = np.vstack([telem['aoattqt{}'.format(idx)].vals
-                              for idx in [1, 2, 3, 4]]).transpose()
-            att_times = telem['aoattqt1'].times
+        if source == "obc":
+            telem = fetch.Msidset(["aoattqt*"], tstart, tstop)
+            atts = np.vstack(
+                [telem["aoattqt{}".format(idx)].vals for idx in [1, 2, 3, 4]]
+            ).transpose()
+            att_times = telem["aoattqt1"].times
             # Fetch COBSQID at beginning and end of interval, check they match, and define obsid
             if self.obsid is None:
-                obsid_start = fetch.Msid('COBSRQID', tstart, tstart + 60)
-                obsid_stop = fetch.Msid('COBSRQID', tstop - 60, tstop)
+                obsid_start = fetch.Msid("COBSRQID", tstart, tstart + 60)
+                obsid_stop = fetch.Msid("COBSRQID", tstop - 60, tstop)
                 if len(obsid_start.vals) == 0 or len(obsid_stop.vals) == 0:
                     raise ValueError(
-                        "Error getting COBSRQID telem for tstart:{} tstop:{} from fetch_source:{}"
-                        .format(tstart, tstop, fetch.data_source.sources()[0]))
+                        "Error getting COBSRQID telem for "
+                        "tstart:{} tstop:{} from fetch_source:{}".format(
+                            tstart, tstop, fetch.data_source.sources()[0]
+                        )
+                    )
                 self.obsid = obsid_start.vals[-1]
-        elif source == 'ground':
+        elif source == "ground":
             atts, att_times, asol_recs = asp_l1.get_atts(start=tstart, stop=tstop)
-            obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
+            obsids = np.unique(np.array([int(rec["OBS_ID"]) for rec in asol_recs]))
             if len(obsids) > 1:
-                raise ValueError("Time range covers more than one obsid; Not supported.")
+                raise ValueError(
+                    "Time range covers more than one obsid; Not supported."
+                )
             self.obsid = obsids[0]
         else:
             raise ValueError("att_source must be 'obc' or 'ground'")
@@ -168,8 +187,9 @@ class CentroidResiduals(object):
 
     def set_atts_from_solfiles(self, asol_files, acal_files, aqual_files, filter=True):
         atts, att_times, asol_recs = asp_l1.get_atts_from_files(
-            asol_files, acal_files, aqual_files, filter=filter)
-        obsids = np.unique(np.array([int(rec['OBS_ID']) for rec in asol_recs]))
+            asol_files, acal_files, aqual_files, filter=filter
+        )
+        obsids = np.unique(np.array([int(rec["OBS_ID"]) for rec in asol_recs]))
         if len(obsids) > 1:
             raise ValueError("Time range covers more than one obsid; Not supported.")
         self.atts = atts
@@ -188,20 +208,24 @@ class CentroidResiduals(object):
             star = agasc.get_star(agasc_id, date=self.start)
         elif slot is not None:
             sc = mica.starcheck.get_starcheck_catalog_at_date(self.start)
-            stars = sc['cat'][(sc['cat']['slot'] == slot) &
-                              ((sc['cat']['type'] == 'GUI') | (sc['cat']['type'] == 'BOT'))]
+            stars = sc["cat"][
+                (sc["cat"]["slot"] == slot)
+                & ((sc["cat"]["type"] == "GUI") | (sc["cat"]["type"] == "BOT"))
+            ]
             if not len(stars):
                 raise ValueError(
-                    "No GUI or BOT in slot {} at time {} in dwell"
-                    .format(slot, DateTime(self.start).date))
-            star = agasc.get_star(stars[0]['id'], date=self.start)
+                    "No GUI or BOT in slot {} at time {} in dwell".format(
+                        slot, DateTime(self.start).date
+                    )
+                )
+            star = agasc.get_star(stars[0]["id"], date=self.start)
         else:
             raise ValueError("Need to supply agasc_id or slot to look up star")
 
         # Could also add logic to infer star from loose position and magnitude
-        self.agasc_id = star['AGASC_ID']
-        self.ra = star['RA_PMCORR']
-        self.dec = star['DEC_PMCORR']
+        self.agasc_id = star["AGASC_ID"]
+        self.ra = star["RA_PMCORR"]
+        self.dec = star["DEC_PMCORR"]
 
     @property
     def yags(self):
@@ -263,43 +287,47 @@ class CentroidResiduals(object):
             return
         # Get and check reasonable-ness of fetch data source
         if len(fetch.data_source.sources()) > 1:
-            warnings.warn("Can't set offsets based on fetch data "
-                          "source if multiple data sources set")
+            warnings.warn(
+                "Can't set offsets based on fetch data "
+                "source if multiple data sources set"
+            )
             return
         fetch_source = fetch.data_source.sources()[0]
-        if fetch_source != 'cxc' and fetch_source != 'maude':
+        if fetch_source != "cxc" and fetch_source != "maude":
             warnings.warn(
                 "Only maude and cxc fetch data sources are supported for offsets. "
-                "Not applying offsets.")
+                "Not applying offsets."
+            )
             return
-        obstype = 'or' if self.obsid < 38000 else 'er'
-        if fetch_source == 'maude' and obstype == 'er':
+        obstype = "or" if self.obsid < 38000 else "er"
+        if fetch_source == "maude" and obstype == "er":
             warnings.warn(
-                "Centroid time offsets not well fit for 'maude' telem source on ERs. Use caution.")
+                "Centroid time offsets not well fit for 'maude' telem source on ERs."
+                " Use caution."
+            )
 
         # Offsets calculated using OR and ER notebooks in SKA/analysis/centroid_and_sol_time_offsets
         offsets = {
             # (centroid_source, att_source, fetch_source, obstype):  median offset in time
-            ('obc', 'obc', 'cxc', 'or'): -2.45523126997,
-            ('obc', 'ground', 'cxc', 'or'): -2.46900481785,
-            ('ground', 'obc', 'cxc', 'or'): 0.0366092437236,
-            ('ground', 'ground', 'cxc', 'or'): 0.0553306628318,
-            ('obc', 'obc', 'maude', 'or'): -2.96746879688,
-            ('obc', 'ground', 'maude', 'or'): -2.94076404877,
-            ('ground', 'obc', 'maude', 'or'): 0.010515586472,
-            ('obc', 'obc', 'cxc', 'er'): -2.53954270068,
-            ('obc', 'ground', 'cxc', 'er'): -2.49080106675,
-            ('ground', 'obc', 'cxc', 'er'): -0.0322463030744,
-            ('ground', 'ground', 'cxc', 'er'): 0.0355677462107,
-            ('obc', 'obc', 'maude', 'er'): -2.90454699136,
-            ('obc', 'ground', 'maude', 'er'): -3.00151559564,
-            ('ground', 'obc', 'maude', 'er'): 0.116096583881,
+            ("obc", "obc", "cxc", "or"): -2.45523126997,
+            ("obc", "ground", "cxc", "or"): -2.46900481785,
+            ("ground", "obc", "cxc", "or"): 0.0366092437236,
+            ("ground", "ground", "cxc", "or"): 0.0553306628318,
+            ("obc", "obc", "maude", "or"): -2.96746879688,
+            ("obc", "ground", "maude", "or"): -2.94076404877,
+            ("ground", "obc", "maude", "or"): 0.010515586472,
+            ("obc", "obc", "cxc", "er"): -2.53954270068,
+            ("obc", "ground", "cxc", "er"): -2.49080106675,
+            ("ground", "obc", "cxc", "er"): -0.0322463030744,
+            ("ground", "ground", "cxc", "er"): 0.0355677462107,
+            ("obc", "obc", "maude", "er"): -2.90454699136,
+            ("obc", "ground", "maude", "er"): -3.00151559564,
+            ("ground", "obc", "maude", "er"): 0.116096583881,
         }
 
-        self.centroid_dt = offsets[(self.centroid_source,
-                                    self.att_source,
-                                    fetch_source,
-                                    obstype)]
+        self.centroid_dt = offsets[
+            (self.centroid_source, self.att_source, fetch_source, obstype)
+        ]
 
         self.yag_times = self.yag_times + self.centroid_dt
         self.zag_times = self.zag_times + self.centroid_dt
@@ -318,31 +346,46 @@ class CentroidResiduals(object):
             self.set_offsets()
         # If still not set, warn
         if self.centroid_dt is None:
-            warnings.warn("Residuals calculated on centroids without time offsets applied")
+            warnings.warn(
+                "Residuals calculated on centroids without time offsets applied"
+            )
         if len(self.att_times) < 2:
             raise ValueError(
-                "Cannot attempt to calculate residuals with fewer than 2 attitude samples")
+                "Cannot attempt to calculate residuals with fewer than 2 attitude"
+                " samples"
+            )
         eci = transform.radec_to_eci(self.ra, self.dec)
         # Transform the 3x3 to get the axes to align to have the dot product make sense
         d_aca = np.dot(Quat(q=self.atts).transform.transpose(0, 2, 1), eci)
         p_yags = np.arctan2(d_aca[:, 1], d_aca[:, 0]) * R2A
         p_zags = np.arctan2(d_aca[:, 2], d_aca[:, 0]) * R2A
-        self.pred_yags = interpolate(p_yags, self.att_times, self.yag_times, sorted=True)
-        self.pred_zags = interpolate(p_zags, self.att_times, self.zag_times, sorted=True)
+        self.pred_yags = interpolate(
+            p_yags, self.att_times, self.yag_times, sorted=True
+        )
+        self.pred_zags = interpolate(
+            p_zags, self.att_times, self.zag_times, sorted=True
+        )
         self.dyags = self.yags - self.pred_yags
         self.dzags = self.zags - self.pred_zags
 
     @classmethod
-    def for_slot(cls, obsid=None, start=None, stop=None,
-                 slot=None, att_source='ground', centroid_source='ground'):
+    def for_slot(
+        cls,
+        obsid=None,
+        start=None,
+        stop=None,
+        slot=None,
+        att_source="ground",
+        centroid_source="ground",
+    ):
         if obsid is not None:
             if start is not None or stop is not None:
-                raise ValueError('cannot specify both obsid and start / stop')
+                raise ValueError("cannot specify both obsid and start / stop")
             ds = events.dwells.filter(obsid=obsid)
             start = ds[0].start
             stop = ds[len(ds) - 1].stop
         if start is None or stop is None:
-            raise ValueError('must specify obsid or start / stop')
+            raise ValueError("must specify obsid or start / stop")
         cr = cls(start, stop)
         if obsid is not None:
             cr.obsid = obsid

@@ -1,17 +1,21 @@
 import numpy as np
-from ..aca_image import AcaPsfLibrary, ACAImage
+
+from ..aca_image import ACAImage, AcaPsfLibrary
 
 ap = AcaPsfLibrary()
 
 
 def test_basic():
-    assert len(ap.psfs) == 12 ** 2
-    assert np.isclose(ap.drc, 0.1, rtol=0, atol=1e-8)  # Current PSF library has 0.1 pixel gridding
+    assert len(ap.psfs) == 12**2
+    assert np.isclose(
+        ap.drc, 0.1, rtol=0, atol=1e-8
+    )  # Current PSF library has 0.1 pixel gridding
     psf = ap.get_psf_image(0, 0)
     assert isinstance(psf, ACAImage)
 
-    psf, row0, col0 = ap.get_psf_image(104.1, 203.9, aca_image=False,
-                                       pix_zero_loc='edge')
+    psf, row0, col0 = ap.get_psf_image(
+        104.1, 203.9, aca_image=False, pix_zero_loc="edge"
+    )
     assert not isinstance(psf, ACAImage)
     assert isinstance(psf, np.ndarray)
     assert row0 == 100
@@ -63,25 +67,28 @@ def test_psf_at_index_location():
     dat = ap.dat
     ii = 2
     jj = 3
-    ok = (dat['row_bin_idx'] == ii) & (dat['col_bin_idx'] == jj)
+    ok = (dat["row_bin_idx"] == ii) & (dat["col_bin_idx"] == jj)
     i22 = np.flatnonzero(ok)[0]
     row = dat[i22]
 
     # Row/col of center of bin
-    rc = (row['row_bin_left_edge'] + row['row_bin_right_edge']) / 2.0
-    cc = (row['col_bin_left_edge'] + row['col_bin_right_edge']) / 2.0
+    rc = (row["row_bin_left_edge"] + row["row_bin_right_edge"]) / 2.0
+    cc = (row["col_bin_left_edge"] + row["col_bin_right_edge"]) / 2.0
 
     psf_direct = ap.psfs[ii, jj]
 
-    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc='edge')
+    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc="edge")
     assert np.allclose(psf_direct, psf_interp, rtol=0, atol=1e-5)
 
     # Test with interpolation=nearest
-    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc='edge', interpolation='nearest')
+    psf_interp = ap.get_psf_image(rc, cc, pix_zero_loc="edge", interpolation="nearest")
     assert np.allclose(psf_direct, psf_interp, rtol=0, atol=1e-5)
 
     # Test with interpolation=nearest, slightly offset but still within grid subpixel
-    psf_interp = ap.get_psf_image(rc + ap.drc * 0.45, cc - ap.drc * 0.45,
-                                  pix_zero_loc='edge',
-                                  interpolation='nearest')
+    psf_interp = ap.get_psf_image(
+        rc + ap.drc * 0.45,
+        cc - ap.drc * 0.45,
+        pix_zero_loc="edge",
+        interpolation="nearest",
+    )
     assert np.allclose(psf_direct, psf_interp, rtol=0, atol=1e-5)

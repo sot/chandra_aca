@@ -24,7 +24,7 @@ def test_init():
     a = ACAImage(im6, row0=1, col0=2)
     assert a.row0 == 1
     assert a.col0 == 2
-    assert a.meta == {'IMGROW0': 1, 'IMGCOL0': 2}
+    assert a.meta == {"IMGROW0": 1, "IMGCOL0": 2}
 
     # Init as zeroes with shape
     a = ACAImage(shape=(1024, 1024), row0=-512.0, col0=-512.0)
@@ -32,7 +32,7 @@ def test_init():
     assert type(a.row0) is np.int64
     assert type(a.col0) is np.int64
 
-    a = ACAImage(im6, meta={'IMGROW0': 1, 'IMGCOL0': 2})
+    a = ACAImage(im6, meta={"IMGROW0": 1, "IMGCOL0": 2})
     assert a.row0 == 1
     assert a.col0 == 2
 
@@ -51,8 +51,8 @@ def test_meta_set():
     a = ACAImage(im6)
     a.ATTR = 10
     assert a.ATTR == 10
-    assert a.meta['ATTR'] == 10
-    a.meta['ATTR'] = 20
+    assert a.meta["ATTR"] == 10
+    a.meta["ATTR"] = 20
     assert a.ATTR == 20
 
 
@@ -159,7 +159,7 @@ def test_fm_centroid():
     assert np.all(img == img_orig)
 
     # Check 'edge' coordinates
-    row, col, norm = centroid_fm(img, bgd=10, pix_zero_loc='edge')
+    row, col, norm = centroid_fm(img, bgd=10, pix_zero_loc="edge")
     assert np.isclose(row, 3.5)
     assert np.isclose(col, 3.5)
     assert np.isclose(norm, 90)
@@ -176,19 +176,19 @@ def test_fm_centroid():
     # Exceptions
     with pytest.raises(ValueError) as err:
         row, col, norm = centroid_fm(img, bgd=100)
-    assert 'non-positive' in str(err)
+    assert "non-positive" in str(err)
 
     with pytest.raises(ValueError) as err:
-        row, col, norm = centroid_fm(img, pix_zero_loc='FAIL')
-    assert 'pix_zero_loc' in str(err)
+        row, col, norm = centroid_fm(img, pix_zero_loc="FAIL")
+    assert "pix_zero_loc" in str(err)
 
     # Norm clip (with expected bogus centroid value)
-    row, col, norm = centroid_fm(img, bgd=100, pix_zero_loc='edge', norm_clip=1.0)
+    row, col, norm = centroid_fm(img, bgd=100, pix_zero_loc="edge", norm_clip=1.0)
     assert np.isclose(row, -9379.5)
     assert np.isclose(col, -9379.5)
 
 
-@pytest.mark.parametrize('aca', [True, False])
+@pytest.mark.parametrize("aca", [True, False])
 def test_aca_image_fm_centroid(aca):
     # 6x6 image
     row0 = -150
@@ -214,7 +214,7 @@ def test_aca_image_fm_centroid(aca):
     assert np.isclose(norm, 90)
 
     # Check 'edge' coordinates
-    row, col, norm = (img.aca if aca else img).centroid_fm(bgd=10, pix_zero_loc='edge')
+    row, col, norm = (img.aca if aca else img).centroid_fm(bgd=10, pix_zero_loc="edge")
     assert np.isclose(row, 3.5 + (row0 if aca else 0))
     assert np.isclose(col, 3.5 + (col0 if aca else 0))
     assert np.isclose(norm, 90)
@@ -232,15 +232,16 @@ def test_aca_image_fm_centroid(aca):
     # Exceptions
     with pytest.raises(ValueError) as err:
         row, col, norm = (img.aca if aca else img).centroid_fm(bgd=100)
-    assert 'non-positive' in str(err)
+    assert "non-positive" in str(err)
 
     with pytest.raises(ValueError) as err:
-        row, col, norm = (img.aca if aca else img).centroid_fm(pix_zero_loc='FAIL')
-    assert 'pix_zero_loc' in str(err)
+        row, col, norm = (img.aca if aca else img).centroid_fm(pix_zero_loc="FAIL")
+    assert "pix_zero_loc" in str(err)
 
     # Norm clip (with expected bogus centroid value)
-    row, col, norm = (img.aca if aca else img).centroid_fm(bgd=100, pix_zero_loc='edge',
-                                                           norm_clip=1.0)
+    row, col, norm = (img.aca if aca else img).centroid_fm(
+        bgd=100, pix_zero_loc="edge", norm_clip=1.0
+    )
     assert np.isclose(row, -9379.5 + (row0 if aca else 0))
     assert np.isclose(col, -9379.5 + (col0 if aca else 0))
 
@@ -267,17 +268,11 @@ def test_aca_image_operators():
     #        [ 90, 100, 110, 120],
     #        [130, 140, 150, 160]])>
 
-    ab = [[12, 22, 32, 42],
-          [52, 62, 72, 82],
-          [92, 102, 112, 122],
-          [132, 142, 152, 162]]
+    ab = [[12, 22, 32, 42], [52, 62, 72, 82], [92, 102, 112, 122], [132, 142, 152, 162]]
     assert np.all(a + b == ab)
 
     # Now test adding in ACA coordinates with partially overlapping images.
-    ab_aca = [[102, 112, 122, 2],
-              [142, 152, 162, 2],
-              [2, 2, 2, 2],
-              [2, 2, 2, 2]]
+    ab_aca = [[102, 112, 122, 2], [142, 152, 162, 2], [2, 2, 2, 2], [2, 2, 2, 2]]
     assert np.all(a + b.aca == ab_aca)
     assert np.all(a.aca + b == ab_aca)
     assert np.all(a.aca + b.aca == ab_aca)
@@ -296,10 +291,9 @@ def test_aca_image_operators():
     a = ACAImage(shape=(4, 4), row0=row0, col0=col0) + 2
     b = ACAImage(np.arange(1, 17).reshape(4, 4), row0=row0 + 2, col0=col0 - 2) * 10
 
-    assert np.all(a + b.aca == [[2, 2, 2, 2],
-                                [2, 2, 2, 2],
-                                [32, 42, 2, 2],
-                                [72, 82, 2, 2]])
+    assert np.all(
+        a + b.aca == [[2, 2, 2, 2], [2, 2, 2, 2], [32, 42, 2, 2], [72, 82, 2, 2]]
+    )
 
     a = ACAImage(np.arange(16).reshape(4, 4), row0=row0, col0=col0) + 2
     b = ACAImage([[100, 200], [300, 400]], row0=row0 + 1, col0=col0 + 1)
@@ -310,27 +304,24 @@ def test_aca_image_operators():
 
     # right side is enclosed within left side
     out = a + b.aca
-    assert np.all(out == [[2, 3, 4, 5],
-                          [6, 107, 208, 9],
-                          [10, 311, 412, 13],
-                          [14, 15, 16, 17]])
+    assert np.all(
+        out == [[2, 3, 4, 5], [6, 107, 208, 9], [10, 311, 412, 13], [14, 15, 16, 17]]
+    )
 
     assert out.row0 == 10
     assert out.col0 == 20
 
     # right side is a superset of left side
     out = b + a.aca
-    assert np.all(out == [[107, 208],
-                          [311, 412]])
+    assert np.all(out == [[107, 208], [311, 412]])
     assert out.row0 == 11
     assert out.col0 == 21
 
     # Subtraction
     out = a - b.aca
-    assert np.all(out == [[2, 3, 4, 5],
-                          [6, -93, -192, 9],
-                          [10, -289, -388, 13],
-                          [14, 15, 16, 17]])
+    assert np.all(
+        out == [[2, 3, 4, 5], [6, -93, -192, 9], [10, -289, -388, 13], [14, 15, 16, 17]]
+    )
 
 
 def test_flicker_numba():
@@ -339,9 +330,7 @@ def test_flicker_numba():
     for ii in range(10):
         a.flicker_update(100.0, use_numba=True)
 
-    assert np.all(np.round(a) == [[0, 81, 200],
-                                  [326, 176, 609],
-                                  [659, 720, 1043]])
+    assert np.all(np.round(a) == [[0, 81, 200], [326, 176, 609], [659, 720, 1043]])
 
 
 def test_flicker_vectorized():
@@ -350,9 +339,7 @@ def test_flicker_vectorized():
     for ii in range(10):
         a.flicker_update(100.0, use_numba=False)
 
-    assert np.all(np.round(a) == [[0, 111, 200],
-                                  [219, 436, 531],
-                                  [470, 829, 822]])
+    assert np.all(np.round(a) == [[0, 111, 200], [219, 436, 531], [470, 829, 822]])
 
 
 def test_flicker_no_seed():
@@ -377,30 +364,32 @@ def test_flicker_test_sequence():
     a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
     a.flicker_init(seed=-1, flicker_mean_time=15)
     dt = 10
-    assert np.all(np.round(a) == [[0, 100, 200],
-                                  [300, 400, 500],
-                                  [600, 700, 800]])
+    assert np.all(np.round(a) == [[0, 100, 200], [300, 400, 500], [600, 700, 800]])
 
     a.flicker_update(dt)
-    assert np.all(np.round(a) == [[0, 100, 200],
-                                  [300, 400, 500],
-                                  [600, 700, 800]])
+    assert np.all(np.round(a) == [[0, 100, 200], [300, 400, 500], [600, 700, 800]])
 
     a.flicker_update(dt)
-    assert np.all(np.round(a) == [[0, 80, 229],
-                                  [447, 374, 531],
-                                  [952, 693, 815]])
+    assert np.all(np.round(a) == [[0, 80, 229], [447, 374, 531], [952, 693, 815]])
     a.flicker_update(dt)
-    assert np.all(np.round(a) == [[0, 80, 229],
-                                  [278, 374, 531],
-                                  [592, 693, 815]])
+    assert np.all(np.round(a) == [[0, 80, 229], [278, 374, 531], [592, 693, 815]])
 
     a.flicker_update(dt)
-    assert np.all(np.round(a) == [[0, 80, 185],
-                                  [278, 374, 531],
-                                  [592, 693, 815]])
+    assert np.all(np.round(a) == [[0, 80, 185], [278, 374, 531], [592, 693, 815]])
 
-    assert np.allclose(a.flicker_times,
-                       np.array([15., 49.06630191, 48.34713118, 38.34713118,
-                                 28.34713118, 1.03039723, 26.30875397, 16.30875397,
-                                 7.40192939]))
+    assert np.allclose(
+        a.flicker_times,
+        np.array(
+            [
+                15.0,
+                49.06630191,
+                48.34713118,
+                38.34713118,
+                28.34713118,
+                1.03039723,
+                26.30875397,
+                16.30875397,
+                7.40192939,
+            ]
+        ),
+    )
