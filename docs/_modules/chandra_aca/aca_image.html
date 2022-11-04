@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.35.1 documentation</title>
+    <title>chandra_aca.aca_image &#8212; chandra_aca 4.36.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.35.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.36.1 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -64,28 +64,31 @@
   <h1>Source code for chandra_aca.aca_image</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">count</span><span class="p">,</span> <span class="n">chain</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">count</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-
-<span class="kn">import</span> <span class="nn">six</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="nb">zip</span>
 
 <span class="kn">import</span> <span class="nn">numba</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">six</span>
 <span class="kn">from</span> <span class="nn">astropy.utils.compat.misc</span> <span class="kn">import</span> <span class="n">override__dir__</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="nb">zip</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ACAImage&#39;</span><span class="p">,</span> <span class="s1">&#39;centroid_fm&#39;</span><span class="p">,</span> <span class="s1">&#39;AcaPsfLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;EIGHT_LABELS&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ACAImage&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid_fm&quot;</span><span class="p">,</span> <span class="s2">&quot;AcaPsfLibrary&quot;</span><span class="p">,</span> <span class="s2">&quot;EIGHT_LABELS&quot;</span><span class="p">]</span>
 
-<span class="n">EIGHT_LABELS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;B1&#39;</span><span class="p">,</span> <span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="s1">&#39;D1&#39;</span><span class="p">,</span> <span class="s1">&#39;E1&#39;</span><span class="p">,</span> <span class="s1">&#39;F1&#39;</span><span class="p">,</span> <span class="s1">&#39;G1&#39;</span><span class="p">,</span> <span class="s1">&#39;H1&#39;</span><span class="p">],</span>
-                         <span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">,</span> <span class="s1">&#39;J1&#39;</span><span class="p">,</span> <span class="s1">&#39;K1&#39;</span><span class="p">,</span> <span class="s1">&#39;L1&#39;</span><span class="p">,</span> <span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;N1&#39;</span><span class="p">,</span> <span class="s1">&#39;O1&#39;</span><span class="p">,</span> <span class="s1">&#39;P1&#39;</span><span class="p">],</span>
-                         <span class="p">[</span><span class="s1">&#39;A2&#39;</span><span class="p">,</span> <span class="s1">&#39;B2&#39;</span><span class="p">,</span> <span class="s1">&#39;C2&#39;</span><span class="p">,</span> <span class="s1">&#39;D2&#39;</span><span class="p">,</span> <span class="s1">&#39;E2&#39;</span><span class="p">,</span> <span class="s1">&#39;F2&#39;</span><span class="p">,</span> <span class="s1">&#39;G2&#39;</span><span class="p">,</span> <span class="s1">&#39;H2&#39;</span><span class="p">],</span>
-                         <span class="p">[</span><span class="s1">&#39;I2&#39;</span><span class="p">,</span> <span class="s1">&#39;J2&#39;</span><span class="p">,</span> <span class="s1">&#39;K2&#39;</span><span class="p">,</span> <span class="s1">&#39;L2&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;N2&#39;</span><span class="p">,</span> <span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;P2&#39;</span><span class="p">],</span>
-                         <span class="p">[</span><span class="s1">&#39;A3&#39;</span><span class="p">,</span> <span class="s1">&#39;B3&#39;</span><span class="p">,</span> <span class="s1">&#39;C3&#39;</span><span class="p">,</span> <span class="s1">&#39;D3&#39;</span><span class="p">,</span> <span class="s1">&#39;E3&#39;</span><span class="p">,</span> <span class="s1">&#39;F3&#39;</span><span class="p">,</span> <span class="s1">&#39;G3&#39;</span><span class="p">,</span> <span class="s1">&#39;H3&#39;</span><span class="p">],</span>
-                         <span class="p">[</span><span class="s1">&#39;I3&#39;</span><span class="p">,</span> <span class="s1">&#39;J3&#39;</span><span class="p">,</span> <span class="s1">&#39;K3&#39;</span><span class="p">,</span> <span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="s1">&#39;M3&#39;</span><span class="p">,</span> <span class="s1">&#39;N3&#39;</span><span class="p">,</span> <span class="s1">&#39;O3&#39;</span><span class="p">,</span> <span class="s1">&#39;P3&#39;</span><span class="p">],</span>
-                         <span class="p">[</span><span class="s1">&#39;A4&#39;</span><span class="p">,</span> <span class="s1">&#39;B4&#39;</span><span class="p">,</span> <span class="s1">&#39;C4&#39;</span><span class="p">,</span> <span class="s1">&#39;D4&#39;</span><span class="p">,</span> <span class="s1">&#39;E4&#39;</span><span class="p">,</span> <span class="s1">&#39;F4&#39;</span><span class="p">,</span> <span class="s1">&#39;G4&#39;</span><span class="p">,</span> <span class="s1">&#39;H4&#39;</span><span class="p">],</span>
-                         <span class="p">[</span><span class="s1">&#39;I4&#39;</span><span class="p">,</span> <span class="s1">&#39;J4&#39;</span><span class="p">,</span> <span class="s1">&#39;K4&#39;</span><span class="p">,</span> <span class="s1">&#39;L4&#39;</span><span class="p">,</span> <span class="s1">&#39;M4&#39;</span><span class="p">,</span> <span class="s1">&#39;N4&#39;</span><span class="p">,</span> <span class="s1">&#39;O4&#39;</span><span class="p">,</span> <span class="s1">&#39;P4&#39;</span><span class="p">]])</span>
+<span class="n">EIGHT_LABELS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="s2">&quot;A1&quot;</span><span class="p">,</span> <span class="s2">&quot;B1&quot;</span><span class="p">,</span> <span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">,</span> <span class="s2">&quot;E1&quot;</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">,</span> <span class="s2">&quot;G1&quot;</span><span class="p">,</span> <span class="s2">&quot;H1&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;I1&quot;</span><span class="p">,</span> <span class="s2">&quot;J1&quot;</span><span class="p">,</span> <span class="s2">&quot;K1&quot;</span><span class="p">,</span> <span class="s2">&quot;L1&quot;</span><span class="p">,</span> <span class="s2">&quot;M1&quot;</span><span class="p">,</span> <span class="s2">&quot;N1&quot;</span><span class="p">,</span> <span class="s2">&quot;O1&quot;</span><span class="p">,</span> <span class="s2">&quot;P1&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;A2&quot;</span><span class="p">,</span> <span class="s2">&quot;B2&quot;</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">,</span> <span class="s2">&quot;D2&quot;</span><span class="p">,</span> <span class="s2">&quot;E2&quot;</span><span class="p">,</span> <span class="s2">&quot;F2&quot;</span><span class="p">,</span> <span class="s2">&quot;G2&quot;</span><span class="p">,</span> <span class="s2">&quot;H2&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;I2&quot;</span><span class="p">,</span> <span class="s2">&quot;J2&quot;</span><span class="p">,</span> <span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;L2&quot;</span><span class="p">,</span> <span class="s2">&quot;M2&quot;</span><span class="p">,</span> <span class="s2">&quot;N2&quot;</span><span class="p">,</span> <span class="s2">&quot;O2&quot;</span><span class="p">,</span> <span class="s2">&quot;P2&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;A3&quot;</span><span class="p">,</span> <span class="s2">&quot;B3&quot;</span><span class="p">,</span> <span class="s2">&quot;C3&quot;</span><span class="p">,</span> <span class="s2">&quot;D3&quot;</span><span class="p">,</span> <span class="s2">&quot;E3&quot;</span><span class="p">,</span> <span class="s2">&quot;F3&quot;</span><span class="p">,</span> <span class="s2">&quot;G3&quot;</span><span class="p">,</span> <span class="s2">&quot;H3&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;I3&quot;</span><span class="p">,</span> <span class="s2">&quot;J3&quot;</span><span class="p">,</span> <span class="s2">&quot;K3&quot;</span><span class="p">,</span> <span class="s2">&quot;L3&quot;</span><span class="p">,</span> <span class="s2">&quot;M3&quot;</span><span class="p">,</span> <span class="s2">&quot;N3&quot;</span><span class="p">,</span> <span class="s2">&quot;O3&quot;</span><span class="p">,</span> <span class="s2">&quot;P3&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;A4&quot;</span><span class="p">,</span> <span class="s2">&quot;B4&quot;</span><span class="p">,</span> <span class="s2">&quot;C4&quot;</span><span class="p">,</span> <span class="s2">&quot;D4&quot;</span><span class="p">,</span> <span class="s2">&quot;E4&quot;</span><span class="p">,</span> <span class="s2">&quot;F4&quot;</span><span class="p">,</span> <span class="s2">&quot;G4&quot;</span><span class="p">,</span> <span class="s2">&quot;H4&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;I4&quot;</span><span class="p">,</span> <span class="s2">&quot;J4&quot;</span><span class="p">,</span> <span class="s2">&quot;K4&quot;</span><span class="p">,</span> <span class="s2">&quot;L4&quot;</span><span class="p">,</span> <span class="s2">&quot;M4&quot;</span><span class="p">,</span> <span class="s2">&quot;N4&quot;</span><span class="p">,</span> <span class="s2">&quot;O4&quot;</span><span class="p">,</span> <span class="s2">&quot;P4&quot;</span><span class="p">],</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 <span class="sd">&quot;&quot;&quot;Constant for labeling ACA image pixels using the EQ-278 spec format.</span>
 <span class="sd">Pixel A1 has the lowest values of row and column; pixel H1 has the lowest</span>
 <span class="sd">row and highest col; pixel I4 has the highest row and lowest column.&quot;&quot;&quot;</span>
@@ -100,8 +103,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Define the operator and the in-place version (which might be the</span>
     <span class="c1"># same if op is already in-place)</span>
-    <span class="n">op</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s1">&#39;__</span><span class="si">{}</span><span class="s1">__&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">operator</span><span class="p">))</span>
-    <span class="n">inplace_op</span> <span class="o">=</span> <span class="n">op</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s1">&#39;__i</span><span class="si">{}</span><span class="s1">__&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">operator</span><span class="p">))</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s2">&quot;__</span><span class="si">{}</span><span class="s2">__&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">operator</span><span class="p">))</span>
+    <span class="n">inplace_op</span> <span class="o">=</span> <span class="n">op</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s2">&quot;__i</span><span class="si">{}</span><span class="s2">__&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">operator</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 
@@ -113,10 +116,15 @@
             <span class="n">sz_r1</span><span class="p">,</span> <span class="n">sz_c1</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">shape</span>
 
             <span class="c1"># If images overlap do this process, else return unmodified ``out``.</span>
-            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">row0</span> <span class="o">+</span> <span class="n">sz_r0</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span>
-                                         <span class="bp">self</span><span class="o">.</span><span class="n">col0</span> <span class="o">+</span> <span class="n">sz_c0</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">col0</span><span class="p">,</span>
-                                         <span class="n">other</span><span class="o">.</span><span class="n">row0</span> <span class="o">+</span> <span class="n">sz_r1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span>
-                                         <span class="n">other</span><span class="o">.</span><span class="n">col0</span> <span class="o">+</span> <span class="n">sz_c1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">col0</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span>
+                <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">row0</span> <span class="o">+</span> <span class="n">sz_r0</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">col0</span> <span class="o">+</span> <span class="n">sz_c0</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">col0</span><span class="p">,</span>
+                    <span class="n">other</span><span class="o">.</span><span class="n">row0</span> <span class="o">+</span> <span class="n">sz_r1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span>
+                    <span class="n">other</span><span class="o">.</span><span class="n">col0</span> <span class="o">+</span> <span class="n">sz_c1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">col0</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">):</span>
 
                 <span class="n">dr</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">row0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">row0</span>
                 <span class="n">dc</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">col0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">col0</span>
@@ -132,12 +140,15 @@
 
                 <span class="c1"># Always use the inplace operator, but remember that ``out`` is a copy of</span>
                 <span class="c1"># self for inplace=False (thus mimicking the non-inplace version).</span>
-                <span class="n">inplace_op</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="n">other</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)[</span><span class="n">r_min</span><span class="p">:</span><span class="n">r_max</span><span class="p">,</span> <span class="n">c_min</span><span class="p">:</span><span class="n">c_max</span><span class="p">])</span>
+                <span class="n">inplace_op</span><span class="p">(</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="n">other</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)[</span><span class="n">r_min</span><span class="p">:</span><span class="n">r_max</span><span class="p">,</span> <span class="n">c_min</span><span class="p">:</span><span class="n">c_max</span><span class="p">]</span>
+                <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>  <span class="c1"># returns self for inplace ops</span>
 
         <span class="k">return</span> <span class="n">out</span>
+
     <span class="k">return</span> <span class="n">_operator</span>
 
 
@@ -187,12 +198,12 @@
 
     <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-        <span class="n">meta</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;meta&quot;</span><span class="p">,</span> <span class="p">{})</span>
 
         <span class="c1"># Set default row0 and col0 to 0 (if not already in meta), and</span>
         <span class="c1"># then override with like-named kwargs.  row0 attribute =&gt; meta[&#39;IMGROW0&#39;]</span>
-        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;row0&#39;</span><span class="p">,</span> <span class="s1">&#39;col0&#39;</span><span class="p">):</span>
-            <span class="n">imgax</span> <span class="o">=</span> <span class="s1">&#39;IMG&#39;</span> <span class="o">+</span> <span class="n">ax</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;row0&quot;</span><span class="p">,</span> <span class="s2">&quot;col0&quot;</span><span class="p">):</span>
+            <span class="n">imgax</span> <span class="o">=</span> <span class="s2">&quot;IMG&quot;</span> <span class="o">+</span> <span class="n">ax</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
             <span class="n">meta</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">imgax</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
                 <span class="n">meta</span><span class="p">[</span><span class="n">imgax</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">ax</span><span class="p">))</span>
@@ -207,7 +218,7 @@
         <span class="n">obj</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> must be 2-d&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> must be 2-d&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
 
         <span class="c1"># add the new attribute to the created instance</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">meta</span>
@@ -221,28 +232,28 @@
         <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{}))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_aca_coords</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;_aca_coords&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;meta&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aca_coords</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_aca_coords&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-    <span class="fm">__add__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;add&#39;</span><span class="p">)</span>
-    <span class="fm">__sub__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;sub&#39;</span><span class="p">)</span>
-    <span class="fm">__mul__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;mul&#39;</span><span class="p">)</span>
+    <span class="fm">__add__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
+    <span class="fm">__sub__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;sub&quot;</span><span class="p">)</span>
+    <span class="fm">__mul__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;mul&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
-        <span class="n">__div__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">)</span>
-    <span class="fm">__truediv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;truediv&#39;</span><span class="p">)</span>
-    <span class="fm">__floordiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;floordiv&#39;</span><span class="p">)</span>
-    <span class="fm">__mod__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;mod&#39;</span><span class="p">)</span>
-    <span class="fm">__pow__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;pow&#39;</span><span class="p">)</span>
+        <span class="n">__div__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">)</span>
+    <span class="fm">__truediv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;truediv&quot;</span><span class="p">)</span>
+    <span class="fm">__floordiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;floordiv&quot;</span><span class="p">)</span>
+    <span class="fm">__mod__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;mod&quot;</span><span class="p">)</span>
+    <span class="fm">__pow__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;pow&quot;</span><span class="p">)</span>
 
-    <span class="fm">__iadd__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;iadd&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="fm">__isub__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;isub&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="fm">__imul__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;imul&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="fm">__iadd__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;iadd&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="fm">__isub__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;isub&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="fm">__imul__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;imul&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
-        <span class="n">__idiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;idiv&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="fm">__itruediv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;itruediv&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="fm">__ifloordiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;ifloordiv&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="fm">__imod__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;imod&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="fm">__ipow__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s1">&#39;ipow&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">__idiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;idiv&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="fm">__itruediv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;itruediv&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="fm">__ifloordiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;ifloordiv&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="fm">__imod__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;imod&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="fm">__ipow__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;ipow&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_adjust_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -252,8 +263,10 @@
         <span class="c1"># Allow slicing via an existing ACAImage object</span>
         <span class="n">aca_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aca_coords</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ACAImage</span><span class="p">):</span>
-            <span class="n">item</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">row0</span> <span class="o">+</span> <span class="n">item</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-                    <span class="nb">slice</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">col0</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">col0</span> <span class="o">+</span> <span class="n">item</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">row0</span> <span class="o">+</span> <span class="n">item</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">col0</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">col0</span> <span class="o">+</span> <span class="n">item</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="p">)</span>
             <span class="n">aca_coords</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="n">out_rc</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># New [row0, col0]</span>
@@ -312,9 +325,9 @@
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Make an integerized version for viewing more nicely</span>
         <span class="n">outarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="s1">&#39;&lt;</span><span class="si">{}</span><span class="s1"> row0=</span><span class="si">{}</span><span class="s1"> col0=</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                                                <span class="bp">self</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">col0</span><span class="p">,</span>
-                                                <span class="n">outarr</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">())</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2"> row0=</span><span class="si">{}</span><span class="s2"> col0=</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">col0</span><span class="p">,</span> <span class="n">outarr</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
@@ -332,7 +345,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">(</span><span class="n">ACAImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ACAImage.centroid_fm"><a class="viewcode-back" href="../../index.html#chandra_aca.aca_image.ACAImage.centroid_fm">[docs]</a>    <span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ACAImage.centroid_fm"><a class="viewcode-back" href="../../index.html#chandra_aca.aca_image.ACAImage.centroid_fm">[docs]</a>    <span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        First moment centroid of ``self`` using 6x6 mousebitten image for input</span>
 <span class="sd">        6x6 or 8x8 images.</span>
@@ -347,8 +360,9 @@
 
 <span class="sd">        :returns: row, col, norm float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">centroid_fm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="n">bgd</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="n">pix_zero_loc</span><span class="p">,</span>
-                                     <span class="n">norm_clip</span><span class="o">=</span><span class="n">norm_clip</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">centroid_fm</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="n">bgd</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="n">pix_zero_loc</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="n">norm_clip</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aca_coords</span><span class="p">:</span>
             <span class="n">row</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row0</span>
             <span class="n">col</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col0</span>
@@ -361,19 +375,19 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">row0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;IMGROW0&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGROW0&quot;</span><span class="p">]</span>
 
     <span class="nd">@row0</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">row0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;IMGROW0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGROW0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">col0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;IMGCOL0&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGCOL0&quot;</span><span class="p">]</span>
 
     <span class="nd">@col0</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">col0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;IMGCOL0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGCOL0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_read_flicker_cdfs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
@@ -386,7 +400,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
 
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;data&#39;</span> <span class="o">/</span> <span class="s1">&#39;flicker_cdf.fits.gz&#39;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;flicker_cdf.fits.gz&quot;</span>
         <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdus</span><span class="p">:</span>
             <span class="n">hdu</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">hdr</span> <span class="o">=</span> <span class="n">hdu</span><span class="o">.</span><span class="n">header</span>
@@ -398,12 +412,14 @@
 
             <span class="c1"># CDF_x is the x-value of the distribution, namely the log-amplitude change</span>
             <span class="c1"># in pixel value due to a flicker event.</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">flicker_cdf_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;cdf_x0&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;cdf_x1&#39;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;n_cdf_x&#39;</span><span class="p">])</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">flicker_cdf_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                <span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;cdf_x0&quot;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;cdf_x1&quot;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;n_cdf_x&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
 
             <span class="c1"># CDF bin range (e-/sec) for each for in flicker_cdfs.</span>
             <span class="n">cdf_bins</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;n_bin&#39;</span><span class="p">]):</span>
-                <span class="n">cdf_bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;cdf_bin</span><span class="si">{</span><span class="n">ii</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;n_bin&quot;</span><span class="p">]):</span>
+                <span class="n">cdf_bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cdf_bin</span><span class="si">{</span><span class="n">ii</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">flicker_cdf_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cdf_bins</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ACAImage.flicker_init"><a class="viewcode-back" href="../../index.html#chandra_aca.aca_image.ACAImage.flicker_init">[docs]</a>    <span class="k">def</span> <span class="nf">flicker_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flicker_mean_time</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">flicker_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -428,7 +444,7 @@
 <span class="sd">               flickering amplitude (default=1.0)</span>
 <span class="sd">        :param seed: random seed for reproducibility (default=None =&gt; no seed)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;flicker_cdf_bins&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;flicker_cdf_bins&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_read_flicker_cdfs</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mean_time</span> <span class="o">=</span> <span class="n">flicker_mean_time</span>
@@ -450,14 +466,16 @@
         <span class="c1"># Make a bool ACAImage like self to allow convenient mask/unmask of</span>
         <span class="c1"># pixels to flicker.  This is used in annie.  Also make the corresponding</span>
         <span class="c1"># 1-d ravelled version.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mask</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-                                     <span class="n">row0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span> <span class="n">col0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">col0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mask</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="n">row0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">row0</span><span class="p">,</span> <span class="n">col0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">col0</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mask_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mask</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
         <span class="c1"># Get the index to the CDFs which is appropriate for each pixel</span>
         <span class="c1"># based on its initial value.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_bins</span><span class="p">,</span>
-                                                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_idxs</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_bins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">)</span>
 
         <span class="c1"># Create an array of time (secs) until next flicker for each pixel</span>
         <span class="k">if</span> <span class="n">seed</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
@@ -484,22 +502,24 @@
 <span class="sd">        :param dt: time (secs) to propagate image</span>
 <span class="sd">        :param use_numba: use the numba version of updating (default=True)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;flicker_times&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;flicker_times&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flicker_init</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">use_numba</span><span class="p">:</span>
-            <span class="n">_flicker_update_numba</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span>
-                                  <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals</span><span class="p">),</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">test_idx</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals0</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mask_vals</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_times</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_idxs</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_x</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdfs</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_scale</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mean_time</span><span class="p">)</span>
+            <span class="n">_flicker_update_numba</span><span class="p">(</span>
+                <span class="n">dt</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">test_idx</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals0</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mask_vals</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_times</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_idxs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_x</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdfs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_scale</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flicker_mean_time</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">test_idx</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -522,9 +542,9 @@
             <span class="c1"># Determine the new value after flickering and set in array view.</span>
             <span class="c1"># First get the right CDF from the list of CDFs based on the pixel value.</span>
             <span class="n">cdf_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_idxs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">fp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_x</span><span class="p">,</span>
-                          <span class="n">xp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdfs</span><span class="p">[</span><span class="n">cdf_idx</span><span class="p">],</span>
-                          <span class="n">x</span><span class="o">=</span><span class="n">rand_ampl</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                <span class="n">fp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdf_x</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_cdfs</span><span class="p">[</span><span class="n">cdf_idx</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="n">rand_ampl</span>
+            <span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flicker_scale</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
                 <span class="c1"># Express the multiplicative change as (1 + x) and change</span>
@@ -535,7 +555,7 @@
                 <span class="n">dy</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">flicker_scale</span> <span class="o">+</span> <span class="mf">1.0</span>
                 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dy</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
-            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals0</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">y</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals0</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="n">y</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flicker_vals</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
 
             <span class="c1"># Get the new time before next flicker</span>
@@ -549,16 +569,20 @@
 
 
 <span class="nd">@numba</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_flicker_update_numba</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">nvals</span><span class="p">,</span> <span class="n">test_idx</span><span class="p">,</span>
-                          <span class="n">flicker_vals0</span><span class="p">,</span>
-                          <span class="n">flicker_vals</span><span class="p">,</span>
-                          <span class="n">flicker_mask_vals</span><span class="p">,</span>
-                          <span class="n">flicker_times</span><span class="p">,</span>
-                          <span class="n">flicker_cdf_idxs</span><span class="p">,</span>
-                          <span class="n">flicker_cdf_x</span><span class="p">,</span>
-                          <span class="n">flicker_cdfs</span><span class="p">,</span>
-                          <span class="n">flicker_scale</span><span class="p">,</span>
-                          <span class="n">flicker_mean_time</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_flicker_update_numba</span><span class="p">(</span>
+    <span class="n">dt</span><span class="p">,</span>
+    <span class="n">nvals</span><span class="p">,</span>
+    <span class="n">test_idx</span><span class="p">,</span>
+    <span class="n">flicker_vals0</span><span class="p">,</span>
+    <span class="n">flicker_vals</span><span class="p">,</span>
+    <span class="n">flicker_mask_vals</span><span class="p">,</span>
+    <span class="n">flicker_times</span><span class="p">,</span>
+    <span class="n">flicker_cdf_idxs</span><span class="p">,</span>
+    <span class="n">flicker_cdf_x</span><span class="p">,</span>
+    <span class="n">flicker_cdfs</span><span class="p">,</span>
+    <span class="n">flicker_scale</span><span class="p">,</span>
+    <span class="n">flicker_mean_time</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Propagate the image forward by ``dt`` seconds and update any pixels</span>
 <span class="sd">    that have flickered during that interval.</span>
@@ -588,9 +612,7 @@
 
         <span class="c1"># Determine the new value after flickering and set in array view.</span>
         <span class="c1"># First get the right CDF from the list of CDFs based on the pixel value.</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">np_interp</span><span class="p">(</span><span class="n">yin</span><span class="o">=</span><span class="n">flicker_cdf_x</span><span class="p">,</span>
-                      <span class="n">xin</span><span class="o">=</span><span class="n">flicker_cdfs</span><span class="p">[</span><span class="n">cdf_idx</span><span class="p">],</span>
-                      <span class="n">xout</span><span class="o">=</span><span class="n">rand_ampl</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np_interp</span><span class="p">(</span><span class="n">yin</span><span class="o">=</span><span class="n">flicker_cdf_x</span><span class="p">,</span> <span class="n">xin</span><span class="o">=</span><span class="n">flicker_cdfs</span><span class="p">[</span><span class="n">cdf_idx</span><span class="p">],</span> <span class="n">xout</span><span class="o">=</span><span class="n">rand_ampl</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">flicker_scale</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
             <span class="c1"># Express the multiplicative change as (1 + x) and change</span>
@@ -649,7 +671,7 @@
     <span class="k">return</span> <span class="n">img</span>
 
 
-<div class="viewcode-block" id="centroid_fm"><a class="viewcode-back" href="../../index.html#chandra_aca.aca_image.centroid_fm">[docs]</a><span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="centroid_fm"><a class="viewcode-back" href="../../index.html#chandra_aca.aca_image.centroid_fm">[docs]</a><span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    First moment centroid of ``img``.</span>
 
@@ -670,7 +692,7 @@
 
     <span class="n">sz_r</span><span class="p">,</span> <span class="n">sz_c</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">if</span> <span class="n">sz_r</span> <span class="o">!=</span> <span class="n">sz_c</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;input img must be square&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input img must be square&quot;</span><span class="p">)</span>
 
     <span class="n">rw</span><span class="p">,</span> <span class="n">cw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="k">if</span> <span class="n">sz_r</span> <span class="o">==</span> <span class="mi">8</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">sz_r</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">sz_r</span><span class="p">]</span>
 
@@ -683,17 +705,17 @@
         <span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">norm_clip</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">norm</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;non-positive image norm </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">norm</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;non-positive image norm </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">norm</span><span class="p">))</span>
 
     <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rw</span> <span class="o">*</span> <span class="n">img</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span>
     <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cw</span> <span class="o">*</span> <span class="n">img</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span>
 
-    <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s1">&#39;edge&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
         <span class="c1"># Transform row/col values from &#39;center&#39; convention (as returned</span>
         <span class="c1"># by centroiding) to the &#39;edge&#39; convention requested by user.</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">row</span> <span class="o">+</span> <span class="mf">0.5</span>
         <span class="n">col</span> <span class="o">=</span> <span class="n">col</span> <span class="o">+</span> <span class="mf">0.5</span>
-    <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pix_zero_loc can be only &#39;edge&#39; or &#39;center&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span></div>
@@ -726,27 +748,37 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>  <span class="c1"># Table is a somewhat-heavy import</span>
+
         <span class="n">psfs</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;aca_psf_lib.dat&#39;</span><span class="p">)</span>
-        <span class="n">dat</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;ascii.basic&#39;</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;aca_psf_lib.dat&quot;</span>
+            <span class="p">)</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ascii.basic&quot;</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span>
 
         <span class="c1"># Sub-pixel grid spacing in pixels.  This assumes the sub-pixels are</span>
         <span class="c1"># all the same size and square, which is indeed the case.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">drc</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;row_bin_right_edge&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dat</span><span class="p">[</span><span class="s1">&#39;row_bin_left_edge&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drc</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;row_bin_right_edge&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;row_bin_left_edge&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">dat</span><span class="p">:</span>
-            <span class="n">ii</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;row_bin_idx&#39;</span><span class="p">]</span>
-            <span class="n">jj</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;col_bin_idx&#39;</span><span class="p">]</span>
+            <span class="n">ii</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;row_bin_idx&quot;</span><span class="p">]</span>
+            <span class="n">jj</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;col_bin_idx&quot;</span><span class="p">]</span>
             <span class="n">psf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">EIGHT_LABELS</span><span class="p">)])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
             <span class="n">psfs</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">psf</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">psfs</span> <span class="o">=</span> <span class="n">psfs</span>
 
-<div class="viewcode-block" id="AcaPsfLibrary.get_psf_image"><a class="viewcode-back" href="../../index.html#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_psf_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
-                      <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;bilinear&#39;</span><span class="p">,</span> <span class="n">aca_image</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="AcaPsfLibrary.get_psf_image"><a class="viewcode-back" href="../../index.html#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_psf_image</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">row</span><span class="p">,</span>
+        <span class="n">col</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+        <span class="n">aca_image</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get interpolated ACA PSF image that corresponds to pixel location</span>
 <span class="sd">        ``row``, ``col``.</span>
@@ -762,11 +794,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">drc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drc</span>
 
-        <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
             <span class="c1"># Transform to &#39;edge&#39; coordinates (pixel lower-left corner at 0.0, 0.0)</span>
             <span class="n">row</span> <span class="o">=</span> <span class="n">row</span> <span class="o">+</span> <span class="mf">0.5</span>
             <span class="n">col</span> <span class="o">=</span> <span class="n">col</span> <span class="o">+</span> <span class="mf">0.5</span>
-        <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s1">&#39;edge&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pix_zero_loc can be only &#39;edge&#39; or &#39;center&#39;&quot;</span><span class="p">)</span>
 
         <span class="c1"># 8x8 image row0, col0</span>
@@ -784,13 +816,13 @@
         <span class="n">ix</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">drc</span> <span class="o">-</span> <span class="mf">0.5</span>
         <span class="n">iy</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">drc</span> <span class="o">-</span> <span class="mf">0.5</span>
 
-        <span class="k">if</span> <span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;nearest&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">interpolation</span> <span class="o">==</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
             <span class="c1"># Int index into PSF library</span>
             <span class="n">ii</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ix</span><span class="p">))</span>
             <span class="n">jj</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">iy</span><span class="p">))</span>
             <span class="n">psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">psfs</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="k">elif</span> <span class="n">interpolation</span> <span class="o">==</span> <span class="s1">&#39;bilinear&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">interpolation</span> <span class="o">==</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">:</span>
             <span class="c1"># Int index into PSF library</span>
             <span class="n">ii</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">ix</span><span class="p">))</span>
             <span class="n">jj</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">iy</span><span class="p">))</span>

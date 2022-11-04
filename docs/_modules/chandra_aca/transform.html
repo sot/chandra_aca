@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.transform &#8212; chandra_aca 4.35.1 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.36.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.35.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.36.1 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -72,35 +72,41 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">Quaternion</span> <span class="kn">import</span> <span class="n">Quat</span>
 
 <span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">dark_model</span>
-<span class="kn">from</span> <span class="nn">Quaternion</span> <span class="kn">import</span> <span class="n">Quat</span>
 
 <span class="c1"># coefficients for converting from ACA angle to pixels (ground)</span>
 <span class="n">ACA2PIX_coeff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-    <span class="p">[[</span><span class="mf">6.08840495576943</span><span class="p">,</span> <span class="mf">4.92618563916467</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">0.000376181788609776</span><span class="p">,</span> <span class="mf">0.200203020554239</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">0.200249577514165</span><span class="p">,</span> <span class="mf">0.000332284183255046</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">2.7052897180601e-009</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.35702097772202e-009</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">9.75572638037165e-010</span><span class="p">,</span> <span class="mf">1.91073314224894e-008</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">2.94865155316778e-008</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.85766581852866e-009</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">8.31198018312775e-013</span><span class="p">,</span> <span class="mf">2.01092070428495e-010</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">1.96043819238097e-010</span><span class="p">,</span> <span class="mf">5.09721545876414e-016</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">5.14134244771463e-013</span><span class="p">,</span> <span class="mf">1.99339355492595e-010</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">1.97282476269237e-010</span><span class="p">,</span> <span class="mf">2.52739834319184e-014</span><span class="p">]])</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mf">6.08840495576943</span><span class="p">,</span> <span class="mf">4.92618563916467</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.000376181788609776</span><span class="p">,</span> <span class="mf">0.200203020554239</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">0.200249577514165</span><span class="p">,</span> <span class="mf">0.000332284183255046</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">2.7052897180601e-009</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.35702097772202e-009</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">9.75572638037165e-010</span><span class="p">,</span> <span class="mf">1.91073314224894e-008</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">2.94865155316778e-008</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.85766581852866e-009</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">8.31198018312775e-013</span><span class="p">,</span> <span class="mf">2.01092070428495e-010</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.96043819238097e-010</span><span class="p">,</span> <span class="mf">5.09721545876414e-016</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.14134244771463e-013</span><span class="p">,</span> <span class="mf">1.99339355492595e-010</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.97282476269237e-010</span><span class="p">,</span> <span class="mf">2.52739834319184e-014</span><span class="p">],</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 
 <span class="c1"># coefficients for converting from pixels to ACA angle in radians</span>
 <span class="n">PIX2ACA_coeff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-    <span class="p">[[</span><span class="mf">1.471572165932506e-04</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.195271491928579e-04</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">4.554462091388806e-08</span><span class="p">,</span> <span class="mf">2.421478755190295e-05</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">2.420905844425065e-05</span><span class="p">,</span> <span class="mf">4.005224006503938e-08</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">4.989939217701764e-12</span><span class="p">,</span> <span class="mf">1.188134673090465e-11</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">6.116309500303049e-12</span><span class="p">,</span> <span class="mf">1.832694593246024e-11</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">2.793916972292602e-11</span><span class="p">,</span> <span class="mf">5.823266376976988e-12</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">2.420403450703432e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.923401659857833e-13</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">5.751137659424387e-13</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.666025332027183e-15</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">9.934587837231732e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.847450395792513e-13</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">5.807475081470944e-13</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.842673748068349e-15</span><span class="p">]])</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mf">1.471572165932506e-04</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.195271491928579e-04</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">4.554462091388806e-08</span><span class="p">,</span> <span class="mf">2.421478755190295e-05</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">2.420905844425065e-05</span><span class="p">,</span> <span class="mf">4.005224006503938e-08</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">4.989939217701764e-12</span><span class="p">,</span> <span class="mf">1.188134673090465e-11</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">6.116309500303049e-12</span><span class="p">,</span> <span class="mf">1.832694593246024e-11</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">2.793916972292602e-11</span><span class="p">,</span> <span class="mf">5.823266376976988e-12</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">2.420403450703432e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.923401659857833e-13</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.751137659424387e-13</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.666025332027183e-15</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">9.934587837231732e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.847450395792513e-13</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.807475081470944e-13</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.842673748068349e-15</span><span class="p">],</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 
 <span class="c1"># From /proj/sot/ska/analysis/aca_plate_scale/calib_prelaunch/eeprom_cal.txt</span>
 <span class="c1"># This is the full 20-coefficient solution that includes a</span>
@@ -108,25 +114,28 @@
 <span class="c1"># The ground coefficients do not include the terms that have</span>
 <span class="c1"># temperature term.</span>
 <span class="n">PIX2ACA_eeprom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-    <span class="p">[[</span><span class="mf">3.03464844e+01</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.46503906e+01</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">9.38110352e-03</span><span class="p">,</span> <span class="mf">4.99642792e+00</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">4.99528198e+00</span><span class="p">,</span> <span class="mf">9.14611816e-03</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">0.00000000e+00</span><span class="p">,</span> <span class="mf">0.00000000e+00</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">1.14440918e-06</span><span class="p">,</span> <span class="mf">2.53915787e-06</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">1.19805336e-06</span><span class="p">,</span> <span class="mf">3.72529030e-06</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">7.62343407e-06</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.25670433e-04</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">5.62667847e-06</span><span class="p">,</span> <span class="mf">1.03116035e-06</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">1.40523911e-04</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.25801563e-04</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">0.00000000e+00</span><span class="p">,</span> <span class="mf">0.00000000e+00</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">4.65661287e-11</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.20745972e-07</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">1.17020682e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.25962901e-10</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">1.06869265e-08</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.35979187e-09</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">2.09547579e-10</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.18976459e-07</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">2.56113708e-09</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.51925802e-09</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">4.74276021e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.41877681e-06</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">1.18394382e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.72529030e-10</span><span class="p">],</span>
-     <span class="p">[</span><span class="o">-</span><span class="mf">3.70200723e-09</span><span class="p">,</span> <span class="mf">1.03842467e-08</span><span class="p">],</span>
-     <span class="p">[</span><span class="mf">5.06476499e-07</span><span class="p">,</span> <span class="mf">4.46331687e-06</span><span class="p">]])</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mf">3.03464844e01</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.46503906e01</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">9.38110352e-03</span><span class="p">,</span> <span class="mf">4.99642792e00</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">4.99528198e00</span><span class="p">,</span> <span class="mf">9.14611816e-03</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.00000000e00</span><span class="p">,</span> <span class="mf">0.00000000e00</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.14440918e-06</span><span class="p">,</span> <span class="mf">2.53915787e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.19805336e-06</span><span class="p">,</span> <span class="mf">3.72529030e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">7.62343407e-06</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.25670433e-04</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">5.62667847e-06</span><span class="p">,</span> <span class="mf">1.03116035e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.40523911e-04</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.25801563e-04</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.00000000e00</span><span class="p">,</span> <span class="mf">0.00000000e00</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">4.65661287e-11</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.20745972e-07</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.17020682e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.25962901e-10</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.06869265e-08</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.35979187e-09</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">2.09547579e-10</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.18976459e-07</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">2.56113708e-09</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.51925802e-09</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">4.74276021e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.41877681e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.18394382e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.72529030e-10</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">3.70200723e-09</span><span class="p">,</span> <span class="mf">1.03842467e-08</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.06476499e-07</span><span class="p">,</span> <span class="mf">4.46331687e-06</span><span class="p">],</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 
 <span class="c1"># Convert from arcsec to radians</span>
 <span class="n">PIX2ACA_eeprom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">PIX2ACA_eeprom</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span>
@@ -138,9 +147,13 @@
 <span class="c1"># characteristics and was originally generated by Bill Davis. It corresponds to the OFLS</span>
 <span class="c1"># ODB_SI_ALIGN transform matrix from post-launch through Nov-2015, but it is orthonormal</span>
 <span class="c1"># to machine precision.  (ODB_SI_ALIGN is expressed with only 5 digits of precision.)</span>
-<span class="n">ODB_SI_ALIGN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.999999905689160</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000337419984089</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000273439987106</span><span class="p">],</span>
-                         <span class="p">[</span><span class="mf">0.000337419984089</span><span class="p">,</span> <span class="mf">0.999999943073875</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000000046132060</span><span class="p">],</span>
-                         <span class="p">[</span><span class="mf">0.000273439987106</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000000046132060</span><span class="p">,</span> <span class="mf">0.999999962615285</span><span class="p">]])</span>
+<span class="n">ODB_SI_ALIGN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mf">0.999999905689160</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000337419984089</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000273439987106</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.000337419984089</span><span class="p">,</span> <span class="mf">0.999999943073875</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000000046132060</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.000273439987106</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000000046132060</span><span class="p">,</span> <span class="mf">0.999999962615285</span><span class="p">],</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="broadcast_arrays"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.broadcast_arrays">[docs]</a><span class="k">def</span> <span class="nf">broadcast_arrays</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -179,8 +192,9 @@
     <span class="k">return</span> <span class="p">[</span><span class="n">shape</span><span class="p">]</span> <span class="o">+</span> <span class="n">outs</span></div>
 
 
-<div class="viewcode-block" id="pixels_to_yagzag"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.pixels_to_yagzag">[docs]</a><span class="k">def</span> <span class="nf">pixels_to_yagzag</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">flight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">t_aca</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-                     <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s1">&#39;edge&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="pixels_to_yagzag"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.pixels_to_yagzag">[docs]</a><span class="k">def</span> <span class="nf">pixels_to_yagzag</span><span class="p">(</span>
+    <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">flight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">t_aca</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;edge&quot;</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ACA row/column positions to ACA y-angle, z-angle.</span>
 <span class="sd">    It is expected that the row and column input arguments have the same length.</span>
@@ -203,18 +217,17 @@
     <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
     <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
         <span class="c1"># Transform row/col values from &#39;center&#39; convention to &#39;edge&#39;</span>
         <span class="c1"># convention, which is required for use in _poly_convert below.</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">row</span> <span class="o">+</span> <span class="mf">0.5</span>
         <span class="n">col</span> <span class="o">=</span> <span class="n">col</span> <span class="o">+</span> <span class="mf">0.5</span>
-    <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s1">&#39;edge&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pix_zero_loc can be only &#39;edge&#39; or &#39;center&#39;&quot;</span><span class="p">)</span>
 
     <span class="c1"># Row/col are in edge coordinates at this point, check if they are on</span>
     <span class="c1"># the CCD unless allow_bad is True.</span>
-    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">allow_bad</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)</span> <span class="ow">or</span>
-                           <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">))):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_bad</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Coordinate off CCD&quot;</span><span class="p">)</span>
 
     <span class="n">coeff</span> <span class="o">=</span> <span class="n">PIX2ACA_eeprom</span> <span class="k">if</span> <span class="n">flight</span> <span class="k">else</span> <span class="n">PIX2ACA_coeff</span>
@@ -224,7 +237,7 @@
     <span class="k">return</span> <span class="mi">3600</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">yrad</span><span class="p">),</span> <span class="mi">3600</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">zrad</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="yagzag_to_pixels"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.yagzag_to_pixels">[docs]</a><span class="k">def</span> <span class="nf">yagzag_to_pixels</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s1">&#39;edge&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="yagzag_to_pixels"><a class="viewcode-back" href="../../index.html#chandra_aca.transform.yagzag_to_pixels">[docs]</a><span class="k">def</span> <span class="nf">yagzag_to_pixels</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;edge&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ACA y-angle/z-angle positions to ACA pixel row, column.</span>
 <span class="sd">    It is expected that the y-angle/z-angle input arguments have the same length.</span>
@@ -248,16 +261,15 @@
 
     <span class="c1"># Row/col are in edge coordinates at this point, check if they are on</span>
     <span class="c1"># the CCD unless allow_bad is True.</span>
-    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">allow_bad</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)</span> <span class="ow">or</span>
-                           <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">))):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_bad</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Coordinate off CCD&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
         <span class="c1"># Transform row/col values from &#39;edge&#39; convention (as returned</span>
         <span class="c1"># by _poly_convert) to the &#39;center&#39; convention requested by user.</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">row</span> <span class="o">-</span> <span class="mf">0.5</span>
         <span class="n">col</span> <span class="o">=</span> <span class="n">col</span> <span class="o">-</span> <span class="mf">0.5</span>
-    <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s1">&#39;edge&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pix_zero_loc can be only &#39;edge&#39; or &#39;center&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span></div>
@@ -278,7 +290,9 @@
         <span class="c1"># No temperature dependence</span>
         <span class="n">yy</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span>
         <span class="n">zz</span> <span class="o">=</span> <span class="n">z</span> <span class="o">*</span> <span class="n">z</span>
-        <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">zz</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">*</span> <span class="n">z</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">zz</span><span class="p">,</span> <span class="n">yy</span> <span class="o">*</span> <span class="n">z</span><span class="p">,</span> <span class="n">yy</span> <span class="o">*</span> <span class="n">y</span><span class="p">])</span>
+        <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">zz</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">*</span> <span class="n">z</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">zz</span><span class="p">,</span> <span class="n">yy</span> <span class="o">*</span> <span class="n">z</span><span class="p">,</span> <span class="n">yy</span> <span class="o">*</span> <span class="n">y</span><span class="p">]</span>
+        <span class="p">)</span>
 
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">19</span><span class="p">:</span>
         <span class="c1"># Full temperature dependent equation</span>
@@ -286,12 +300,31 @@
         <span class="n">r</span> <span class="o">=</span> <span class="n">y</span>
         <span class="n">ones</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">t_aca</span> <span class="o">*</span> <span class="n">ones</span>
-        <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ones</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
-                         <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
-                         <span class="n">t</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
-                         <span class="n">r</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span><span class="p">])</span>
+        <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">ones</span><span class="p">,</span>
+                <span class="n">c</span><span class="p">,</span>
+                <span class="n">r</span><span class="p">,</span>
+                <span class="n">t</span><span class="p">,</span>
+                <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
+                <span class="n">c</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span>
+                <span class="n">c</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span>
+                <span class="n">r</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                <span class="n">t</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                <span class="n">c</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
+                <span class="n">r</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
+                <span class="n">t</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
+                <span class="n">c</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span>
+                <span class="n">c</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                <span class="n">c</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                <span class="n">r</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span>
+                <span class="n">t</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span>
+                <span class="n">r</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Bad coefficients, length != 10 or 19&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad coefficients, length != 10 or 19&quot;</span><span class="p">)</span>
 
     <span class="n">newy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">coeffs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">poly</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">newz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">coeffs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">poly</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
@@ -335,10 +368,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">eci</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;final dimension of `eci` must be 3&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;final dimension of `eci` must be 3&quot;</span><span class="p">)</span>
 
     <span class="n">ra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
-    <span class="n">dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="n">dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="p">)</span>
     <span class="c1"># Enforce strictly 0 &lt;= RA &lt; 360. Note weird corner case that one can get</span>
     <span class="c1"># ra being negative and very small, e.g. -7.7e-18, which then has 360 added</span>
     <span class="c1"># and turns into exactly 360.0 because of floating point precision.</span>
@@ -520,7 +555,7 @@
         <span class="n">q_att</span> <span class="o">=</span> <span class="n">Quat</span><span class="p">(</span><span class="n">q_att</span><span class="p">)</span>
     <span class="n">eci</span> <span class="o">=</span> <span class="n">radec_to_eci</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">)</span>  <span class="c1"># N x 3</span>
     <span class="n">qt</span> <span class="o">=</span> <span class="n">q_att</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Transpose, allowing for leading dimensions</span>
-    <span class="n">d_aca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;...jk,...k-&gt;...j&#39;</span><span class="p">,</span> <span class="n">qt</span><span class="p">,</span> <span class="n">eci</span><span class="p">)</span>
+    <span class="n">d_aca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...jk,...k-&gt;...j&quot;</span><span class="p">,</span> <span class="n">qt</span><span class="p">,</span> <span class="n">eci</span><span class="p">)</span>
     <span class="n">yag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
     <span class="n">zag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
     <span class="k">return</span> <span class="n">yag</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">zag</span> <span class="o">*</span> <span class="mi">3600</span></div>
@@ -548,7 +583,7 @@
     <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">yag</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">))</span>
     <span class="n">d_aca</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">zag</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">))</span>
     <span class="n">d_aca</span> <span class="o">=</span> <span class="n">normalize_vector</span><span class="p">(</span><span class="n">d_aca</span><span class="p">)</span>
-    <span class="n">eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;...jk,...k-&gt;...j&#39;</span><span class="p">,</span> <span class="n">q_att</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="n">d_aca</span><span class="p">)</span>
+    <span class="n">eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...jk,...k-&gt;...j&quot;</span><span class="p">,</span> <span class="n">q_att</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="n">d_aca</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span></div>
 
 

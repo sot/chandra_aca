@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>chandra_aca &#8212; chandra_aca 4.35.1 documentation</title>
+    <title>chandra_aca &#8212; chandra_aca 4.36.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="#">chandra_aca 4.35.1 documentation</a>
+	<a href="#">chandra_aca 4.36.1 documentation</a>
 	 &#187;
       </li>
       
@@ -988,7 +988,13 @@ the scale factor 20.493 arcsec/mm.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.drift.get_default_zero_offset_table">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_default_zero_offset_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_default_zero_offset_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_default_zero_offset_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get official SOT MP zero offset aimpoint table:</p>
+<dd><p>Get official SOT MP zero offset aimpoint table.</p>
+<p>First try <code class="docutils literal notranslate"><span class="pre">/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt</span></code>.
+If that is not available use:
+<a class="reference external" href="https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt">https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt</a>.
+The web version is updated weekly on Sunday via a Ska cron job.</p>
+<p>Note the definitive source of this file is:
+<a class="reference external" href="https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt">https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>zero offset aimpoint table as astropy.Table</p>
