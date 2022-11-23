@@ -9,6 +9,7 @@ A key element of this module is the fitting analysis here:
 https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb
 """
 import functools
+import json
 import os
 from pathlib import Path
 
@@ -16,38 +17,31 @@ import numpy as np
 from astropy.table import Table
 from astropy.utils.data import download_file
 from Chandra.Time import DateTime
+from ska_helpers.utils import LazyDict
 
-# Capture best fit model parameters for ACA drift model.
-# https://github.com/sot/aimpoint_mon/blob/7809b89/fit_aimpoint_drift.ipynb
-# These are used below to instantiate corresponding AcaDriftModel objects.
 
-DRIFT_Y_PARS = dict(
-    scale=2.1467,  # drift per degF (NOT degC as elsewhere in this module)
-    offset=-6.012,
-    trend=-1.108,
-    jumps=(
-        ("2015:006:12:00:00", -4.600),
-        ("2015:265:12:00:00", -4.669),
-        ("2016:064:12:00:00", -1.793),
-        ("2017:066:12:00:00", -1.725),
-        ("2018:285:12:00:00", -12.505),
-    ),
-    year0=2016.0,
-)
+# Define path to best fit model parameters for ACA drift model.
+# See notebooks fit_aimpoint_drift_*.ipynb for fit details.
+def DRIFT_MODEL_PATH():
+    default_path = Path(
+        os.environ["SKA"],
+        "data",
+        "chandra_models",
+        "chandra_models",
+        "aca_drift",
+        "aca_drift_model.json",
+    )
+    path = Path(os.environ.get("ACA_DRIFT_MODEL_PATH", default_path))
 
-DRIFT_Z_PARS = dict(
-    scale=1.004,
-    offset=-15.963,
-    trend=-0.159,
-    jumps=(
-        ("2015:006:12:00:00", -2.109),
-        ("2015:265:12:00:00", -0.368),
-        ("2016:064:12:00:00", -0.902),
-        ("2017:066:12:00:00", -0.856),
-        ("2018:285:12:00:00", -6.056),
-    ),
-    year0=2016.0,
-)
+    return path
+
+
+def load_drift_pars():
+    pars = json.loads(DRIFT_MODEL_PATH().read_text())
+    return pars
+
+
+DRIFT_PARS = LazyDict(load_drift_pars)
 
 # Define transform from aspect solution DY, DZ (mm) to CHIPX, CHIPY for
 # nominal target position.  This uses the transform:
@@ -175,11 +169,6 @@ class AcaDriftModel(object):
         return out[0] if is_scalar else out
 
 
-# Define model instances using calibrated parameters
-DRIFT_Y = AcaDriftModel(**DRIFT_Y_PARS)
-DRIFT_Z = AcaDriftModel(**DRIFT_Z_PARS)
-
-
 def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
     """
     Compute the dynamical ACA offset values for the provided inputs.
@@ -195,6 +184,10 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
 
     :returns: aca_offset_y, aca_offset_z (arcsec)
     """
+    # Define model instances using calibrated parameters
+    drift_y = AcaDriftModel(**DRIFT_PARS["dy"])
+    drift_z = AcaDriftModel(**DRIFT_PARS["dz"])
+
     try:
         asol_to_chip = ASOL_TO_CHIP[detector, chip_id]
     except KeyError:
@@ -217,8 +210,8 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
     # Compute the predicted asol DY/DZ based on time and ACA CCD temperature
     # via the predictive model calibrated in the fit_aimpoint_drift notebook
     # in this repo.
-    dy_pred = DRIFT_Y.calc(time, t_ccd)
-    dz_pred = DRIFT_Z.calc(time, t_ccd)
+    dy_pred = drift_y.calc(time, t_ccd)
+    dz_pred = drift_z.calc(time, t_ccd)
 
     # The difference is the dynamic ACA offset that must be applied to the attitude.
     # This has the same sign convention as the user-supplied TARGET OFFSET in the
