@@ -38,6 +38,7 @@ setup(
             "data/*.dat",
             "data/*.fits.gz",
             "data/*.pkl",
+            "data/*.ecsv",
         ],
         "chandra_aca": [
             "data/*.dat",

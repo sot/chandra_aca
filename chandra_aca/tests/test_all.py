@@ -291,31 +291,6 @@ def simple_test_aca_drift():
     return dy, dz, times
 
 
-def test_get_aca_offsets():
-    """
-    Test that ACA offsets are reasonable, and regression test particular values
-    corresponding to cycle 17 zero-offset aimpoints used below for chip_x, chip_y inputs.
-
-    The output reference values here have been validated as being "reasonable" for the
-    given inputs.
-    """
-    offsets = drift.get_aca_offsets(
-        "ACIS-I", 3, 930.2, 1009.6, "2016:180:12:00:00", -15.0
-    )
-    assert np.allclose(offsets, (11.45, 2.34), atol=0.1, rtol=0)
-
-    offsets = drift.get_aca_offsets(
-        "ACIS-S", 7, 200.7, 476.9, "2016:180:12:00:00", -15.0
-    )
-    assert np.allclose(offsets, (12.98, 3.52), atol=0.1, rtol=0)
-
-    offsets = drift.get_aca_offsets("HRC-I", 0, 7591, 7936, "2016:180:12:00:00", -15.0)
-    assert np.allclose(offsets, (14.35, 0.45), atol=0.1, rtol=0)
-
-    offsets = drift.get_aca_offsets("HRC-S", 2, 2041, 9062, "2016:180:12:00:00", -15.0)
-    assert np.allclose(offsets, (16.89, 3.10), atol=0.1, rtol=0)
-
-
 def test_snr_mag():
     same = snr_mag_for_t_ccd(-11.5, ref_mag=10.3, ref_t_ccd=-11.5, scale_4c=5)
     assert np.isclose(same, 10.3, atol=0.0001, rtol=0)
