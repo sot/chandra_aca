@@ -139,14 +139,14 @@ class AcaDriftModel(object):
         """
         # The drift model is calibrated assuming t_ccd is in degF, but we want inputs
         # in degC, so convert at this point.
-        t_ccd = t_ccd * 1.8 + 32.0
+        t_ccd_degF = t_ccd * 1.8 + 32.0
 
-        times, t_ccd = np.broadcast_arrays(times, t_ccd)
-        is_scalar = times.ndim == 0 and t_ccd.ndim == 0
+        times, t_ccd_degF = np.broadcast_arrays(times, t_ccd_degF)
+        is_scalar = times.ndim == 0 and t_ccd_degF.ndim == 0
         times = DateTime(np.atleast_1d(times)).secs
-        t_ccd = np.atleast_1d(t_ccd)
+        t_ccd_degF = np.atleast_1d(t_ccd_degF)
 
-        if times.shape != t_ccd.shape:
+        if times.shape != t_ccd_degF.shape:
             raise ValueError("times and t_ccd args must match in shape")
 
         if np.any(np.diff(times) < 0):
@@ -159,7 +159,7 @@ class AcaDriftModel(object):
         dyears = DateTime(times, format="secs").frac_year - self.year0
 
         # Raw offsets without jumps
-        out = (t_ccd - self.offset) * self.scale + dyears * self.trend
+        out = (t_ccd_degF - self.offset) * self.scale + dyears * self.trend
 
         # Put in the step function jumps
         for jump_date, jump in self.jumps:
