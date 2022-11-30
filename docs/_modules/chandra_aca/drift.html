@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.drift &#8212; chandra_aca 4.36.1 documentation</title>
+    <title>chandra_aca.drift &#8212; chandra_aca 4.37.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.36.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.37.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -73,6 +73,7 @@
 <span class="sd">https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
@@ -80,38 +81,31 @@
 <span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
 <span class="kn">from</span> <span class="nn">astropy.utils.data</span> <span class="kn">import</span> <span class="n">download_file</span>
 <span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+<span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyDict</span>
 
-<span class="c1"># Capture best fit model parameters for ACA drift model.</span>
-<span class="c1"># https://github.com/sot/aimpoint_mon/blob/7809b89/fit_aimpoint_drift.ipynb</span>
-<span class="c1"># These are used below to instantiate corresponding AcaDriftModel objects.</span>
 
-<span class="n">DRIFT_Y_PARS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-    <span class="n">scale</span><span class="o">=</span><span class="mf">2.1467</span><span class="p">,</span>  <span class="c1"># drift per degF (NOT degC as elsewhere in this module)</span>
-    <span class="n">offset</span><span class="o">=-</span><span class="mf">6.012</span><span class="p">,</span>
-    <span class="n">trend</span><span class="o">=-</span><span class="mf">1.108</span><span class="p">,</span>
-    <span class="n">jumps</span><span class="o">=</span><span class="p">(</span>
-        <span class="p">(</span><span class="s2">&quot;2015:006:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.600</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2015:265:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.669</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2016:064:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.793</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2017:066:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.725</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2018:285:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">12.505</span><span class="p">),</span>
-    <span class="p">),</span>
-    <span class="n">year0</span><span class="o">=</span><span class="mf">2016.0</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="c1"># Define path to best fit model parameters for ACA drift model.</span>
+<span class="c1"># See notebooks fit_aimpoint_drift_*.ipynb for fit details.</span>
+<span class="k">def</span> <span class="nf">DRIFT_MODEL_PATH</span><span class="p">():</span>
+    <span class="n">default_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SKA&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chandra_models&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chandra_models&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;aca_drift&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;aca_drift_model.json&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ACA_DRIFT_MODEL_PATH&quot;</span><span class="p">,</span> <span class="n">default_path</span><span class="p">))</span>
 
-<span class="n">DRIFT_Z_PARS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-    <span class="n">scale</span><span class="o">=</span><span class="mf">1.004</span><span class="p">,</span>
-    <span class="n">offset</span><span class="o">=-</span><span class="mf">15.963</span><span class="p">,</span>
-    <span class="n">trend</span><span class="o">=-</span><span class="mf">0.159</span><span class="p">,</span>
-    <span class="n">jumps</span><span class="o">=</span><span class="p">(</span>
-        <span class="p">(</span><span class="s2">&quot;2015:006:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.109</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2015:265:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.368</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2016:064:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.902</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2017:066:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.856</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;2018:285:12:00:00&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.056</span><span class="p">),</span>
-    <span class="p">),</span>
-    <span class="n">year0</span><span class="o">=</span><span class="mf">2016.0</span><span class="p">,</span>
-<span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+
+<span class="k">def</span> <span class="nf">load_drift_pars</span><span class="p">():</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">DRIFT_MODEL_PATH</span><span class="p">()</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">pars</span>
+
+
+<span class="n">DRIFT_PARS</span> <span class="o">=</span> <span class="n">LazyDict</span><span class="p">(</span><span class="n">load_drift_pars</span><span class="p">)</span>
 
 <span class="c1"># Define transform from aspect solution DY, DZ (mm) to CHIPX, CHIPY for</span>
 <span class="c1"># nominal target position.  This uses the transform:</span>
@@ -209,14 +203,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># The drift model is calibrated assuming t_ccd is in degF, but we want inputs</span>
         <span class="c1"># in degC, so convert at this point.</span>
-        <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">t_ccd</span> <span class="o">*</span> <span class="mf">1.8</span> <span class="o">+</span> <span class="mf">32.0</span>
+        <span class="n">t_ccd_degF</span> <span class="o">=</span> <span class="n">t_ccd</span> <span class="o">*</span> <span class="mf">1.8</span> <span class="o">+</span> <span class="mf">32.0</span>
 
-        <span class="n">times</span><span class="p">,</span> <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
-        <span class="n">is_scalar</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">t_ccd</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="n">times</span><span class="p">,</span> <span class="n">t_ccd_degF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">t_ccd_degF</span><span class="p">)</span>
+        <span class="n">is_scalar</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">t_ccd_degF</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span>
         <span class="n">times</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">))</span><span class="o">.</span><span class="n">secs</span>
-        <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">)</span>
+        <span class="n">t_ccd_degF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">t_ccd_degF</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">times</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">t_ccd</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">times</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">t_ccd_degF</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;times and t_ccd args must match in shape&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
@@ -229,7 +223,7 @@
         <span class="n">dyears</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;secs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">frac_year</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">year0</span>
 
         <span class="c1"># Raw offsets without jumps</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_ccd</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">+</span> <span class="n">dyears</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">trend</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_ccd_degF</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">+</span> <span class="n">dyears</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">trend</span>
 
         <span class="c1"># Put in the step function jumps</span>
         <span class="k">for</span> <span class="n">jump_date</span><span class="p">,</span> <span class="n">jump</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jumps</span><span class="p">:</span>
@@ -237,11 +231,6 @@
             <span class="n">out</span><span class="p">[</span><span class="n">jump_idx</span><span class="p">:]</span> <span class="o">+=</span> <span class="n">jump</span>
 
         <span class="k">return</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">out</span></div></div>
-
-
-<span class="c1"># Define model instances using calibrated parameters</span>
-<span class="n">DRIFT_Y</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_Y_PARS</span><span class="p">)</span>
-<span class="n">DRIFT_Z</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_Z_PARS</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_aca_offsets"><a class="viewcode-back" href="../../index.html#chandra_aca.drift.get_aca_offsets">[docs]</a><span class="k">def</span> <span class="nf">get_aca_offsets</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">,</span> <span class="n">chipx</span><span class="p">,</span> <span class="n">chipy</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
@@ -259,6 +248,10 @@
 
 <span class="sd">    :returns: aca_offset_y, aca_offset_z (arcsec)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define model instances using calibrated parameters</span>
+    <span class="n">drift_y</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_PARS</span><span class="p">[</span><span class="s2">&quot;dy&quot;</span><span class="p">])</span>
+    <span class="n">drift_z</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_PARS</span><span class="p">[</span><span class="s2">&quot;dz&quot;</span><span class="p">])</span>
+
     <span class="k">try</span><span class="p">:</span>
         <span class="n">asol_to_chip</span> <span class="o">=</span> <span class="n">ASOL_TO_CHIP</span><span class="p">[</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -281,8 +274,8 @@
     <span class="c1"># Compute the predicted asol DY/DZ based on time and ACA CCD temperature</span>
     <span class="c1"># via the predictive model calibrated in the fit_aimpoint_drift notebook</span>
     <span class="c1"># in this repo.</span>
-    <span class="n">dy_pred</span> <span class="o">=</span> <span class="n">DRIFT_Y</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
-    <span class="n">dz_pred</span> <span class="o">=</span> <span class="n">DRIFT_Z</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+    <span class="n">dy_pred</span> <span class="o">=</span> <span class="n">drift_y</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+    <span class="n">dz_pred</span> <span class="o">=</span> <span class="n">drift_z</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
 
     <span class="c1"># The difference is the dynamic ACA offset that must be applied to the attitude.</span>
     <span class="c1"># This has the same sign convention as the user-supplied TARGET OFFSET in the</span>
