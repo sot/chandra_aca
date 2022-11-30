@@ -39,6 +39,7 @@ setup(
             "data/*.fits.gz",
             "data/*.pkl",
             "data/*.ecsv",
+            "data/chandra_models/aca_drift/aca_drift_model.json",
         ],
         "chandra_aca": [
             "data/*.dat",
