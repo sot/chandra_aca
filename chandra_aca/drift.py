@@ -19,19 +19,20 @@ from astropy.utils.data import download_file
 from Chandra.Time import DateTime
 from ska_helpers.utils import LazyDict
 
+# Name of environment variable to override default root for data files
+DATA_ROOT_ENV_VAR = "THERMAL_MODELS_DIR_FOR_MATLAB_TOOLS_SW"
+
 
 # Define path to best fit model parameters for ACA drift model.
 # See notebooks fit_aimpoint_drift_*.ipynb for fit details.
 def DRIFT_MODEL_PATH():
-    default_path = Path(
+    default_root = Path(
         os.environ["SKA"],
         "data",
         "chandra_models",
-        "chandra_models",
-        "aca_drift",
-        "aca_drift_model.json",
     )
-    path = Path(os.environ.get("ACA_DRIFT_MODEL_PATH", default_path))
+    root = os.environ.get(DATA_ROOT_ENV_VAR, default_root)
+    path = Path(root) / "chandra_models" / "aca_drift" / "aca_drift_model.json"
 
     return path
 
