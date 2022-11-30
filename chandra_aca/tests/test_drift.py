@@ -53,9 +53,13 @@ for row in dat:
 
 
 @pytest.mark.parametrize("kwargs", kwargs_list)
-def test_get_aca_offsets(kwargs):
+@pytest.mark.parametrize("env_override", [None, str(Path(__file__).parent / "data")])
+def test_get_aca_offsets(kwargs, env_override, monkeypatch):
     """Regression test that ACA offsets match the original flight values to expected
     precision."""
+    if env_override:
+        monkeypatch.setenv(drift.DATA_ROOT_ENV_VAR, env_override)
+    kwargs = kwargs.copy()
     aca_offset_y = kwargs.pop("aca_offset_y")
     aca_offset_z = kwargs.pop("aca_offset_z")
     offsets = drift.get_aca_offsets(**kwargs)
