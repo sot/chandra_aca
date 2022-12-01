@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.drift &#8212; chandra_aca 4.37.0 documentation</title>
+    <title>chandra_aca.drift &#8212; chandra_aca 4.37.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.37.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.37.1 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -83,19 +83,20 @@
 <span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
 <span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyDict</span>
 
+<span class="c1"># Name of environment variable to override default root for data files</span>
+<span class="n">DATA_ROOT_ENV_VAR</span> <span class="o">=</span> <span class="s2">&quot;THERMAL_MODELS_DIR_FOR_MATLAB_TOOLS_SW&quot;</span>
+
 
 <span class="c1"># Define path to best fit model parameters for ACA drift model.</span>
 <span class="c1"># See notebooks fit_aimpoint_drift_*.ipynb for fit details.</span>
 <span class="k">def</span> <span class="nf">DRIFT_MODEL_PATH</span><span class="p">():</span>
-    <span class="n">default_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
+    <span class="n">default_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
         <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SKA&quot;</span><span class="p">],</span>
         <span class="s2">&quot;data&quot;</span><span class="p">,</span>
         <span class="s2">&quot;chandra_models&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;chandra_models&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;aca_drift&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;aca_drift_model.json&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ACA_DRIFT_MODEL_PATH&quot;</span><span class="p">,</span> <span class="n">default_path</span><span class="p">))</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DATA_ROOT_ENV_VAR</span><span class="p">,</span> <span class="n">default_root</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;chandra_models&quot;</span> <span class="o">/</span> <span class="s2">&quot;aca_drift&quot;</span> <span class="o">/</span> <span class="s2">&quot;aca_drift_model.json&quot;</span>
 
     <span class="k">return</span> <span class="n">path</span>
 
