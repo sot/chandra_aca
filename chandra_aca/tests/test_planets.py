@@ -114,8 +114,9 @@ def test_planet_positions_array():
 
 
 @pytest.mark.skipif(not HAS_INTERNET, reason="Requires network access")
-def test_get_chandra_planet_horizons():
-    dat = get_planet_chandra_horizons("jupiter", "2020:001", "2020:002", n_times=11)
+@pytest.mark.parametrize("body", ["jupiter", 599])
+def test_get_chandra_planet_horizons(body):
+    dat = get_planet_chandra_horizons(body, "2020:001", "2020:002", n_times=11)
     exp = [
         "         time             ra       dec     rate_ra    rate_dec   mag  "
         "    surf_brt   ang_diam",
@@ -147,6 +148,22 @@ def test_get_chandra_planet_horizons():
         "         5.408    31.76",
     ]
 
+    assert dat.pformat_all() == exp
+
+
+@pytest.mark.skipif(not HAS_INTERNET, reason="Requires network access")
+def test_get_chandra_planet_horizons_non_planet():
+    dat = get_planet_chandra_horizons(
+        "ACE (spacecraft)", "2020:001", "2020:002", n_times=2
+    )
+    exp = [
+        "    ra       dec     rate_ra    rate_dec  mag    surf_brt   ang_diam",
+        "   deg       deg    arcsec / h arcsec / h mag mag / arcsec2  arcsec ",
+        "--------- --------- ---------- ---------- --- ------------- --------",
+        "274.14524 -24.72559      10.75    -325.04  --            --       --",
+        "275.29375 -23.83915     349.43     659.97  --            --       --",
+    ]
+    del dat["time"]
     assert dat.pformat_all() == exp
 
 

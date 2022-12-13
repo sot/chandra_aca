@@ -360,12 +360,17 @@ def get_planet_chandra_horizons(
 
     if resp.status_code != requests.codes["ok"]:
         raise ValueError(
-            "request {resp.url} failed: {resp.reason} ({resp.status_code})"
+            f"request {resp.url} failed: {resp.reason} ({resp.status_code})"
         )
 
     resp_json: dict = resp.json()
     result: str = resp_json["result"]
     lines = result.splitlines()
+
+    if "$$SOE" not in lines:
+        msg = "problem with Horizons query:\n" + "\n".join(lines)
+        raise ValueError(msg)
+
     idx0 = lines.index("$$SOE") + 1
     idx1 = lines.index("$$EOE")
     lines = lines[idx0:idx1]
@@ -386,6 +391,7 @@ def get_planet_chandra_horizons(
             "ang_diam",
             "null3",
         ],
+        fill_values=[("n.a.", "0")],
     )
 
     times = [datetime.strptime(val[:20], "%Y-%b-%d %H:%M:%S") for val in dat["time"]]
