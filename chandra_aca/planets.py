@@ -319,11 +319,9 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
         "uranus": "799",
         "neptune": "899",
     }
-    if body not in planet_ids:
-        raise ValueError(f"body must be one of {tuple(planet_ids)}")
 
     params = dict(
-        COMMAND=planet_ids[body],
+        COMMAND=planet_ids.get(body, str(body).lower()),
         MAKE_EPHEM="YES",
         CENTER="@-151",
         TABLE_TYPE="OBSERVER",
