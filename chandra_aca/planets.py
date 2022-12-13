@@ -93,7 +93,7 @@ BODY_NAME_TO_KERNEL_SPEC = dict(
         ("pluto", [(0, 9)]),
     ]
 )
-URL_HORIZONS = "https://ssd.jpl.nasa.gov/horizons_batch.cgi?"
+URL_HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api?"
 
 
 def get_planet_angular_sep(
@@ -278,7 +278,7 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
     columns. The ``time`` column is a ``CxoTime`` object.
 
     The returned Table has a meta key value ``response_text`` with the full text
-    of the Horizons response.
+    of the Horizons response and a ``response_json`` key with the parsed JSON.
 
     Example::
 
@@ -336,10 +336,9 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
     )
 
     # The HORIZONS web API seems to require all params to be quoted strings.
-    # See: https://ssd.jpl.nasa.gov/horizons_batch.cgi
+    # See: https://ssd-api.jpl.nasa.gov/doc/horizons.html
     for key, val in params.items():
         params[key] = repr(val)
-    params["batch"] = 1
     resp = requests.get(URL_HORIZONS, params=params, timeout=timeout)
 
     if resp.status_code != requests.codes["ok"]:
@@ -347,7 +346,9 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
             "request {resp.url} failed: {resp.reason} ({resp.status_code})"
         )
 
-    lines = resp.text.splitlines()
+    resp_json: dict = resp.json()
+    result: str = resp_json["result"]
+    lines = result.splitlines()
     idx0 = lines.index("$$SOE") + 1
     idx1 = lines.index("$$EOE")
     lines = lines[idx0:idx1]
@@ -390,6 +391,7 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
     dat["ang_diam"].info.format = ".2f"
 
     dat.meta["response_text"] = resp.text
+    dat.meta["response_json"] = resp_json
 
     del dat["null1"]
     del dat["null2"]
