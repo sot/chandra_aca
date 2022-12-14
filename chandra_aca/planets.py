@@ -22,12 +22,13 @@ See the ``validation/planet-accuracy.ipynb`` notebook for details.
 """
 from datetime import datetime
 from pathlib import Path
+from typing import Optional, Union
 
 import astropy.constants as const
 import astropy.units as u
 import numpy as np
 from astropy.io import ascii
-from cxotime import CxoTime
+from cxotime import CxoTime, CxoTimeLike
 from ska_helpers.utils import LazyVal
 
 from chandra_aca.transform import eci_to_radec
@@ -93,7 +94,7 @@ BODY_NAME_TO_KERNEL_SPEC = dict(
         ("pluto", [(0, 9)]),
     ]
 )
-URL_HORIZONS = "https://ssd.jpl.nasa.gov/horizons_batch.cgi?"
+URL_HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api?"
 
 
 def get_planet_angular_sep(
@@ -153,10 +154,13 @@ def get_planet_angular_sep(
     return sep
 
 
-def get_planet_barycentric(body, time=None):
+def get_planet_barycentric(body: str, time: CxoTimeLike = None):
     """Get barycentric position for solar system ``body`` at ``time``.
 
     This uses the built-in JPL ephemeris file DE432s and jplephem.
+
+    ``body`` must be one of "sun", "mercury", "venus", "earth-moon-barycenter", "earth",
+    "moon", "mars", "jupiter", "saturn", "uranus", "neptune", or "pluto".
 
     :param body: Body name (lower case planet name)
     :param time: Time or times for returned position (default=NOW)
@@ -178,12 +182,18 @@ def get_planet_barycentric(body, time=None):
     return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
 
 
-def get_planet_eci(body, time=None, pos_observer=None):
+def get_planet_eci(
+    body: str, time: CxoTimeLike = None, pos_observer: Optional[str] = None
+):
     """Get ECI apparent position for solar system ``body`` at ``time``.
 
     This uses the built-in JPL ephemeris file DE432s and jplephem. The position
     is computed at the supplied ``time`` minus the light-travel time from the
     observer to ``body`` to generate the apparent position on Earth at ``time``.
+
+    ``body`` and ``pos_observer`` must be one of "sun", "mercury", "venus",
+    "earth-moon-barycenter", "earth", "moon", "mars", "jupiter", "saturn", "uranus",
+    "neptune", or "pluto".
 
     Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the
     JPL Horizons positions are used as the "truth". This assumes the observer
@@ -214,7 +224,7 @@ def get_planet_eci(body, time=None, pos_observer=None):
     return pos_planet - pos_observer
 
 
-def get_planet_chandra(body, time=None):
+def get_planet_chandra(body: str, time: CxoTimeLike = None):
     """Get position for solar system ``body`` at ``time`` relative to Chandra.
 
     This uses the built-in JPL ephemeris file DE432s and jplephem, along with
@@ -267,18 +277,27 @@ def get_planet_chandra(body, time=None):
     return planet_chandra
 
 
-def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=10):
-    """Get body position, rate, mag, surface brightness, diameter from Horizons.
+def get_planet_chandra_horizons(
+    body: Union[str, int],
+    timestart: CxoTimeLike,
+    timestop: CxoTimeLike,
+    n_times: int = 10,
+    timeout: float = 10,
+):
+    """Get body position and other info as seen from Chandra using JPL Horizons.
 
-    This function queries the JPL Horizons site using the CGI batch interface
-    (See https://ssd.jpl.nasa.gov/horizons_batch.cgi for docs).
+    In addition to the planet names, the ``body`` argument can be any identifier that
+    Horizon supports, e.g. ``sun`` or ``geo`` (Earth geocenter).
+
+    This function queries the JPL Horizons site using the web API interface
+    (See https://ssd-api.jpl.nasa.gov/doc/horizons.html for docs).
 
     The return value is an astropy Table with columns: time, ra, dec, rate_ra,
     rate_dec, mag, surf_brt, ang_diam. The units are included in the table
     columns. The ``time`` column is a ``CxoTime`` object.
 
     The returned Table has a meta key value ``response_text`` with the full text
-    of the Horizons response.
+    of the Horizons response and a ``response_json`` key with the parsed JSON.
 
     Example::
 
@@ -297,7 +316,7 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
       2020:002:00:00:00.000 277.21454 -23.18970      34.69       2.51  -1.839         5.408    31.76
 
     :param body: one of 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
-        'uranus', 'neptune'
+        'uranus', 'neptune', or any other body that Horizons supports.
     :param timestart: start time (any CxoTime-compatible time)
     :param timestop: stop time (any CxoTime-compatible time)
     :param n_times: number of time samples (inclusive, default=10)
@@ -319,11 +338,9 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
         "uranus": "799",
         "neptune": "899",
     }
-    if body not in planet_ids:
-        raise ValueError(f"body must be one of {tuple(planet_ids)}")
 
     params = dict(
-        COMMAND=planet_ids[body],
+        COMMAND=planet_ids.get(body, str(body).lower()),
         MAKE_EPHEM="YES",
         CENTER="@-151",
         TABLE_TYPE="OBSERVER",
@@ -336,18 +353,24 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
     )
 
     # The HORIZONS web API seems to require all params to be quoted strings.
-    # See: https://ssd.jpl.nasa.gov/horizons_batch.cgi
+    # See: https://ssd-api.jpl.nasa.gov/doc/horizons.html
     for key, val in params.items():
         params[key] = repr(val)
-    params["batch"] = 1
     resp = requests.get(URL_HORIZONS, params=params, timeout=timeout)
 
     if resp.status_code != requests.codes["ok"]:
         raise ValueError(
-            "request {resp.url} failed: {resp.reason} ({resp.status_code})"
+            f"request {resp.url} failed: {resp.reason} ({resp.status_code})"
         )
 
-    lines = resp.text.splitlines()
+    resp_json: dict = resp.json()
+    result: str = resp_json["result"]
+    lines = result.splitlines()
+
+    if "$$SOE" not in lines:
+        msg = "problem with Horizons query:\n" + "\n".join(lines)
+        raise ValueError(msg)
+
     idx0 = lines.index("$$SOE") + 1
     idx1 = lines.index("$$EOE")
     lines = lines[idx0:idx1]
@@ -368,6 +391,7 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
             "ang_diam",
             "null3",
         ],
+        fill_values=[("n.a.", "0")],
     )
 
     times = [datetime.strptime(val[:20], "%Y-%b-%d %H:%M:%S") for val in dat["time"]]
@@ -390,6 +414,7 @@ def get_planet_chandra_horizons(body, timestart, timestop, n_times=10, timeout=1
     dat["ang_diam"].info.format = ".2f"
 
     dat.meta["response_text"] = resp.text
+    dat.meta["response_json"] = resp_json
 
     del dat["null1"]
     del dat["null2"]
