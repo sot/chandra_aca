@@ -24,10 +24,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-import astropy.constants as const
 import astropy.units as u
 import numpy as np
 from astropy.io import ascii
+from Chandra.Time import DateTime
 from cxotime import CxoTime, CxoTimeLike
 from ska_helpers.utils import LazyVal
 
@@ -134,9 +134,6 @@ def get_planet_angular_sep(
     """
     from agasc import sphere_dist
 
-    if not isinstance(time, CxoTime):
-        time = CxoTime(time)
-
     if observer_position == "earth":
         eci = get_planet_eci(body, time)
         body_ra, body_dec = eci_to_radec(eci)
@@ -144,12 +141,16 @@ def get_planet_angular_sep(
         eci = get_planet_chandra(body, time)
         body_ra, body_dec = eci_to_radec(eci)
     elif observer_position == "chandra-horizons":
-        if time.shape == ():
-            time = CxoTime([time, time + 1000 * u.s])
+        time_secs = CxoTime(time).secs
+
+        if time_secs.shape == ():
+            time_secs = [time_secs, time_secs + 1000]
             is_scalar = True
         else:
             is_scalar = False
-        pos = get_planet_chandra_horizons(body, time[0], time[1], n_times=len(time))
+        pos = get_planet_chandra_horizons(
+            body, time_secs[0], time_secs[-1], n_times=len(time_secs)
+        )
         body_ra = pos["ra"]
         body_dec = pos["dec"]
         if is_scalar:
@@ -191,8 +192,9 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
         )
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
-    time = CxoTime(time)
-    time_jd = time.jd
+    # NOTE: DateTime(time).jd is about 10 times faster than CxoTime(time).jd.
+    # TODO: Use a faster built-in from cxotime when available.
+    time_jd = DateTime(time).jd
     pos = kernel[spk_pairs[0]].compute(time_jd)
     for spk_pair in spk_pairs[1:]:
         pos += kernel[spk_pair].compute(time_jd)
@@ -237,16 +239,17 @@ def get_planet_eci(
         Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
-    time = CxoTime(time)
+    time_sec = DateTime(time).secs
 
-    pos_planet = get_planet_barycentric(body, time)
+    pos_planet = get_planet_barycentric(body, time_sec)
     if pos_observer is None:
         pos_observer = get_planet_barycentric("earth", time)
 
-    dist = np.sqrt(np.sum((pos_planet - pos_observer) ** 2, axis=-1)) * u.km
-    light_travel_time = (dist / const.c).to(u.s)
+    dist = np.sqrt(np.sum((pos_planet - pos_observer) ** 2, axis=-1))  # km
+    # Divide distance by the speed of light in km/s
+    light_travel_time = dist / 299792.458  # s
 
-    pos_planet = get_planet_barycentric(body, time - light_travel_time)
+    pos_planet = get_planet_barycentric(body, time_sec - light_travel_time)
 
     return pos_planet - pos_observer
 
