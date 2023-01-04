@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.planets &#8212; chandra_aca 4.37.1 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.38.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.37.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.38.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -86,12 +86,13 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">astropy.constants</span> <span class="k">as</span> <span class="nn">const</span>
 <span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">ascii</span>
-<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span>
+<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
 <span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyVal</span>
 
 <span class="kn">from</span> <span class="nn">chandra_aca.transform</span> <span class="kn">import</span> <span class="n">eci_to_radec</span>
@@ -157,7 +158,7 @@
         <span class="p">(</span><span class="s2">&quot;pluto&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">)]),</span>
     <span class="p">]</span>
 <span class="p">)</span>
-<span class="n">URL_HORIZONS</span> <span class="o">=</span> <span class="s2">&quot;https://ssd.jpl.nasa.gov/horizons_batch.cgi?&quot;</span>
+<span class="n">URL_HORIZONS</span> <span class="o">=</span> <span class="s2">&quot;https://ssd.jpl.nasa.gov/api/horizons.api?&quot;</span>
 
 
 <div class="viewcode-block" id="get_planet_angular_sep"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_angular_sep">[docs]</a><span class="k">def</span> <span class="nf">get_planet_angular_sep</span><span class="p">(</span>
@@ -217,10 +218,13 @@
     <span class="k">return</span> <span class="n">sep</span></div>
 
 
-<div class="viewcode-block" id="get_planet_barycentric"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_barycentric">[docs]</a><span class="k">def</span> <span class="nf">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="get_planet_barycentric"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_barycentric">[docs]</a><span class="k">def</span> <span class="nf">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">CxoTimeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get barycentric position for solar system ``body`` at ``time``.</span>
 
 <span class="sd">    This uses the built-in JPL ephemeris file DE432s and jplephem.</span>
+
+<span class="sd">    ``body`` must be one of &quot;sun&quot;, &quot;mercury&quot;, &quot;venus&quot;, &quot;earth-moon-barycenter&quot;, &quot;earth&quot;,</span>
+<span class="sd">    &quot;moon&quot;, &quot;mars&quot;, &quot;jupiter&quot;, &quot;saturn&quot;, &quot;uranus&quot;, &quot;neptune&quot;, or &quot;pluto&quot;.</span>
 
 <span class="sd">    :param body: Body name (lower case planet name)</span>
 <span class="sd">    :param time: Time or times for returned position (default=NOW)</span>
@@ -242,12 +246,18 @@
     <span class="k">return</span> <span class="n">pos</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>  <span class="c1"># SPK returns (3, N) but we need (N, 3)</span></div>
 
 
-<div class="viewcode-block" id="get_planet_eci"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_eci">[docs]</a><span class="k">def</span> <span class="nf">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos_observer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="get_planet_eci"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_eci">[docs]</a><span class="k">def</span> <span class="nf">get_planet_eci</span><span class="p">(</span>
+    <span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">CxoTimeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pos_observer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get ECI apparent position for solar system ``body`` at ``time``.</span>
 
 <span class="sd">    This uses the built-in JPL ephemeris file DE432s and jplephem. The position</span>
 <span class="sd">    is computed at the supplied ``time`` minus the light-travel time from the</span>
 <span class="sd">    observer to ``body`` to generate the apparent position on Earth at ``time``.</span>
+
+<span class="sd">    ``body`` and ``pos_observer`` must be one of &quot;sun&quot;, &quot;mercury&quot;, &quot;venus&quot;,</span>
+<span class="sd">    &quot;earth-moon-barycenter&quot;, &quot;earth&quot;, &quot;moon&quot;, &quot;mars&quot;, &quot;jupiter&quot;, &quot;saturn&quot;, &quot;uranus&quot;,</span>
+<span class="sd">    &quot;neptune&quot;, or &quot;pluto&quot;.</span>
 
 <span class="sd">    Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the</span>
 <span class="sd">    JPL Horizons positions are used as the &quot;truth&quot;. This assumes the observer</span>
@@ -278,7 +288,7 @@
     <span class="k">return</span> <span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_observer</span></div>
 
 
-<div class="viewcode-block" id="get_planet_chandra"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_chandra">[docs]</a><span class="k">def</span> <span class="nf">get_planet_chandra</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="get_planet_chandra"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_chandra">[docs]</a><span class="k">def</span> <span class="nf">get_planet_chandra</span><span class="p">(</span><span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">CxoTimeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get position for solar system ``body`` at ``time`` relative to Chandra.</span>
 
 <span class="sd">    This uses the built-in JPL ephemeris file DE432s and jplephem, along with</span>
@@ -331,18 +341,27 @@
     <span class="k">return</span> <span class="n">planet_chandra</span></div>
 
 
-<div class="viewcode-block" id="get_planet_chandra_horizons"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_chandra_horizons">[docs]</a><span class="k">def</span> <span class="nf">get_planet_chandra_horizons</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">timestart</span><span class="p">,</span> <span class="n">timestop</span><span class="p">,</span> <span class="n">n_times</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get body position, rate, mag, surface brightness, diameter from Horizons.</span>
+<div class="viewcode-block" id="get_planet_chandra_horizons"><a class="viewcode-back" href="../../index.html#chandra_aca.planets.get_planet_chandra_horizons">[docs]</a><span class="k">def</span> <span class="nf">get_planet_chandra_horizons</span><span class="p">(</span>
+    <span class="n">body</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">timestart</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
+    <span class="n">timestop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
+    <span class="n">n_times</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get body position and other info as seen from Chandra using JPL Horizons.</span>
 
-<span class="sd">    This function queries the JPL Horizons site using the CGI batch interface</span>
-<span class="sd">    (See https://ssd.jpl.nasa.gov/horizons_batch.cgi for docs).</span>
+<span class="sd">    In addition to the planet names, the ``body`` argument can be any identifier that</span>
+<span class="sd">    Horizon supports, e.g. ``sun`` or ``geo`` (Earth geocenter).</span>
+
+<span class="sd">    This function queries the JPL Horizons site using the web API interface</span>
+<span class="sd">    (See https://ssd-api.jpl.nasa.gov/doc/horizons.html for docs).</span>
 
 <span class="sd">    The return value is an astropy Table with columns: time, ra, dec, rate_ra,</span>
 <span class="sd">    rate_dec, mag, surf_brt, ang_diam. The units are included in the table</span>
 <span class="sd">    columns. The ``time`` column is a ``CxoTime`` object.</span>
 
 <span class="sd">    The returned Table has a meta key value ``response_text`` with the full text</span>
-<span class="sd">    of the Horizons response.</span>
+<span class="sd">    of the Horizons response and a ``response_json`` key with the parsed JSON.</span>
 
 <span class="sd">    Example::</span>
 
@@ -361,7 +380,7 @@
 <span class="sd">      2020:002:00:00:00.000 277.21454 -23.18970      34.69       2.51  -1.839         5.408    31.76</span>
 
 <span class="sd">    :param body: one of &#39;mercury&#39;, &#39;venus&#39;, &#39;mars&#39;, &#39;jupiter&#39;, &#39;saturn&#39;,</span>
-<span class="sd">        &#39;uranus&#39;, &#39;neptune&#39;</span>
+<span class="sd">        &#39;uranus&#39;, &#39;neptune&#39;, or any other body that Horizons supports.</span>
 <span class="sd">    :param timestart: start time (any CxoTime-compatible time)</span>
 <span class="sd">    :param timestop: stop time (any CxoTime-compatible time)</span>
 <span class="sd">    :param n_times: number of time samples (inclusive, default=10)</span>
@@ -383,11 +402,9 @@
         <span class="s2">&quot;uranus&quot;</span><span class="p">:</span> <span class="s2">&quot;799&quot;</span><span class="p">,</span>
         <span class="s2">&quot;neptune&quot;</span><span class="p">:</span> <span class="s2">&quot;899&quot;</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="k">if</span> <span class="n">body</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">planet_ids</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;body must be one of </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">planet_ids</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">COMMAND</span><span class="o">=</span><span class="n">planet_ids</span><span class="p">[</span><span class="n">body</span><span class="p">],</span>
+        <span class="n">COMMAND</span><span class="o">=</span><span class="n">planet_ids</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">body</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span>
         <span class="n">MAKE_EPHEM</span><span class="o">=</span><span class="s2">&quot;YES&quot;</span><span class="p">,</span>
         <span class="n">CENTER</span><span class="o">=</span><span class="s2">&quot;@-151&quot;</span><span class="p">,</span>
         <span class="n">TABLE_TYPE</span><span class="o">=</span><span class="s2">&quot;OBSERVER&quot;</span><span class="p">,</span>
@@ -400,18 +417,24 @@
     <span class="p">)</span>
 
     <span class="c1"># The HORIZONS web API seems to require all params to be quoted strings.</span>
-    <span class="c1"># See: https://ssd.jpl.nasa.gov/horizons_batch.cgi</span>
+    <span class="c1"># See: https://ssd-api.jpl.nasa.gov/doc/horizons.html</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">URL_HORIZONS</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="n">requests</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="s2">&quot;ok&quot;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;request </span><span class="si">{resp.url}</span><span class="s2"> failed: </span><span class="si">{resp.reason}</span><span class="s2"> (</span><span class="si">{resp.status_code}</span><span class="s2">)&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;request </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">)&quot;</span>
         <span class="p">)</span>
 
-    <span class="n">lines</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="n">resp_json</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="n">result</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">resp_json</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s2">&quot;$$SOE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;problem with Horizons query:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
     <span class="n">idx0</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;$$SOE&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">idx1</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;$$EOE&quot;</span><span class="p">)</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">idx0</span><span class="p">:</span><span class="n">idx1</span><span class="p">]</span>
@@ -432,6 +455,7 @@
             <span class="s2">&quot;ang_diam&quot;</span><span class="p">,</span>
             <span class="s2">&quot;null3&quot;</span><span class="p">,</span>
         <span class="p">],</span>
+        <span class="n">fill_values</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;n.a.&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)],</span>
     <span class="p">)</span>
 
     <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">val</span><span class="p">[:</span><span class="mi">20</span><span class="p">],</span> <span class="s2">&quot;%Y-%b-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]]</span>
@@ -454,6 +478,7 @@
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;ang_diam&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span>
 
     <span class="n">dat</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;response_text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">text</span>
+    <span class="n">dat</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;response_json&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resp_json</span>
 
     <span class="k">del</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;null1&quot;</span><span class="p">]</span>
     <span class="k">del</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;null2&quot;</span><span class="p">]</span>
