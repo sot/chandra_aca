@@ -116,7 +116,7 @@ def t_ccd_warm_limit(
     :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
     :param model: probability model (see acq_success_prob() for allowed values, default)
 
-    :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit and:
+    :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit:
               - number of expected ACQ stars at that temperature (scalar min_n_acq)
               - probability of acquiring ``n`` or fewer stars (tuple min_n_acq)
     """
@@ -165,9 +165,9 @@ def t_ccd_warm_limit(
         t_ccd = warm_t_ccd
 
     elif merit_func(cold_t_ccd) <= 0:
-        # If there are not enough ACQ stars at the coldest CCD temperature then stop there
-        # as well.  The ACA thermal model will never predict a temperature below this
-        # value so this catalog will fail thermal check.
+        # If there are not enough ACQ stars at the coldest CCD temperature then stop
+        # there as well.  The ACA thermal model will never predict a temperature below
+        # this value so this catalog will fail thermal check.
         t_ccd = cold_t_ccd
 
     else:
@@ -232,8 +232,8 @@ def acq_success_prob(
     model=None,
 ):
     """
-    Return probability of acquisition success for given date, temperature, star properties
-    and search box size.
+    Return probability of acquisition success for given date, temperature, star
+    properties and search box size.
 
     Any of the inputs can be scalars or arrays, with the output being the result of
     the broadcasted dimension of the inputs.
@@ -473,7 +473,7 @@ def spline_model_acq_prob(
     :param probit: if True then return Probit(p_success). Default=False
 
     :returns: Acquisition success probability(s)
-    """
+    """  # noqa: E501
     try:
         from scipy.interpolate import CubicSpline
     except ImportError:
@@ -562,11 +562,11 @@ def spline_model_acq_prob(
         tcm = tc12[mask]
         boxm = box_deltas[mask]
 
-        # The model is only calibrated betweeen 8.5 and 10.7.  First, clip mags going into
-        # the spline to be larger than 8.5.  (Extrapolating slightly above 10.7 is OK).
-        # Second, subtract a linearly varying term from probit_p_fail from stars brighter
-        # than 8.5 mag ==> from 0.0 for mag=8.5 to 0.25 for mag=6.0.  This is to allow
-        # star selection to favor a 6.0 mag star over 8.5 mag.
+        # The model is only calibrated betweeen 8.5 and 10.7.  First, clip mags going
+        # into the spline to be larger than 8.5.  (Extrapolating slightly above 10.7 is
+        # OK). Second, subtract a linearly varying term from probit_p_fail from stars
+        # brighter than 8.5 mag ==> from 0.0 for mag=8.5 to 0.25 for mag=6.0.  This is
+        # to allow star selection to favor a 6.0 mag star over 8.5 mag.
         magmc = magm.clip(8.5, None)
         bright = (8.5 - magm.clip(None, 8.5)) / 10.0
 
@@ -598,20 +598,21 @@ def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
 
 def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
     """
-    Calculate raw SOTA model probability of acquisition success for a star with ``mag``
-    magnitude and a CCD warm fraction ``warm_frac``.  This is not typically used directly
-    since it does not account for star properties like spoiled or color=0.7.
+    Calculate raw SOTA model probability of acquisition success.
+
+    This is for a star with ``mag`` magnitude and a CCD warm fraction ``warm_frac``.
+    This is not typically used directly since it does not account for star properties
+    like spoiled or color=0.7.
 
     Uses the empirical relation::
 
        P_fail_probit = offset(mag) + scale(mag) * warm_frac + box_delta(halfwidth)
-       P_acq_fail = Normal_CDF()
-       P_acq_success = 1 - P_acq_fail
+       P_acq_fail = Normal_CDF() P_acq_success = 1 - P_acq_fail
 
     This is based on the dark model and acquisition success model presented in the State
-    of the ACA 2013, and subsequently updated to use a Probit transform and separately fit
-    B-V=1.5 stars.  It was updated in 2017 to include a fitted dependence on the search
-    box halfwidth.  See:
+    of the ACA 2013, and subsequently updated to use a Probit transform and separately
+    fit B-V=1.5 stars.  It was updated in 2017 to include a fitted dependence on the
+    search box halfwidth.  See:
 
     https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
     https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb
