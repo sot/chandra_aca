@@ -2,15 +2,14 @@
 import hashlib
 import itertools
 import os
-from pathlib import Path
 
 import numpy as np
 import pytest
 from astropy.table import Table
+from ska_helpers.paths import aca_acq_prob_models_path
 
 from chandra_aca.star_probs import (
     DEFAULT_MODEL,
-    STAR_PROBS_DATA_DIR,
     acq_success_prob,
     binom_ppf,
     grid_model_acq_prob,
@@ -591,7 +590,7 @@ def test_md5_2020_02():
     """Test that model data file has expected MD5 sum.  See cell 29 of
     aca_stats/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
     """
-    filename = Path(STAR_PROBS_DATA_DIR, "grid-floor-2020-02.fits.gz")
+    filename = aca_acq_prob_models_path() / "grid-floor-2020-02.fits.gz"
     md5 = hashlib.md5(open(filename, "rb").read()).hexdigest()
     assert md5 == "39960b6254acc4a7500397aac9908412"
 

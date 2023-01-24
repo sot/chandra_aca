@@ -17,28 +17,12 @@ import numpy as np
 from astropy.table import Table
 from astropy.utils.data import download_file
 from Chandra.Time import DateTime
+from ska_helpers.paths import aca_drift_model_path
 from ska_helpers.utils import LazyDict
-
-# Name of environment variable to override default root for data files
-DATA_ROOT_ENV_VAR = "THERMAL_MODELS_DIR_FOR_MATLAB_TOOLS_SW"
-
-
-# Define path to best fit model parameters for ACA drift model.
-# See notebooks fit_aimpoint_drift_*.ipynb for fit details.
-def DRIFT_MODEL_PATH():
-    default_root = Path(
-        os.environ["SKA"],
-        "data",
-        "chandra_models",
-    )
-    root = os.environ.get(DATA_ROOT_ENV_VAR, default_root)
-    path = Path(root) / "chandra_models" / "aca_drift" / "aca_drift_model.json"
-
-    return path
 
 
 def load_drift_pars():
-    pars = json.loads(DRIFT_MODEL_PATH().read_text())
+    pars = json.loads(aca_drift_model_path().read_text())
     return pars
 
 
@@ -127,8 +111,8 @@ class AcaDriftModel(object):
 
     def calc(self, times, t_ccd):
         """
-        Calculate the drift model for aspect solution SIM DY/DZ values for input ``times``
-        and ``t_ccd``.  The two arrays are broadcasted to match.
+        Calculate the drift model for aspect solution SIM DY/DZ values for input
+        ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.
 
         The returned drifts are in arcsec and provide the expected aspect solution
         SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via

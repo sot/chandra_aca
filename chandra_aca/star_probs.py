@@ -11,26 +11,19 @@ SSAWG review: 2020-01-29
 """
 
 import functools
-import os
 import warnings
-from pathlib import Path
 
 import numpy as np
 import scipy.stats
 from Chandra.Time import DateTime
 from numba import jit
 from scipy.optimize import bisect, brentq
+from ska_helpers.paths import aca_acq_prob_models_path
 
 from chandra_aca.transform import (
     broadcast_arrays,
     broadcast_arrays_flatten,
     snr_mag_for_t_ccd,
-)
-
-SKA = Path(os.environ["SKA"])
-
-STAR_PROBS_DATA_DIR = (
-    SKA / "data" / "chandra_models" / "chandra_models" / "aca_acq_prob"
 )
 
 # Default acquisition probability model
@@ -340,11 +333,11 @@ def get_grid_func_model(model):
     from scipy.interpolate import RegularGridInterpolator
 
     # Read the model file and put into local vars
-    filename = os.path.join(STAR_PROBS_DATA_DIR, model) + ".fits.gz"
-    if not os.path.exists(filename):
-        raise IOError("model file {} does not exist".format(filename))
+    filepath = aca_acq_prob_models_path() / (model + ".fits.gz")
+    if not filepath.exists():
+        raise IOError(f"model file {filepath} does not exist")
 
-    hdus = fits.open(filename)
+    hdus = fits.open(filepath)
     hdu0 = hdus[0]
     probit_p_fail_no_1p5 = hdus[1].data
     probit_p_fail_1p5 = hdus[2].data
@@ -377,7 +370,7 @@ def get_grid_func_model(model):
     halfw_hi = hdr["halfw_hi"]
 
     out = {
-        "filename": filename,
+        "filename": filepath,
         "func_no_1p5": func_no_1p5,
         "func_1p5": func_1p5,
         "mag_lo": mag_lo,
@@ -616,7 +609,8 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
     Uses the empirical relation::
 
        P_fail_probit = offset(mag) + scale(mag) * warm_frac + box_delta(halfwidth)
-       P_acq_fail = Normal_CDF() P_acq_success = 1 - P_acq_fail
+       P_acq_fail = Normal_CDF()
+       P_acq_success = 1 - P_acq_fail
 
     This is based on the dark model and acquisition success model presented in the State
     of the ACA 2013, and subsequently updated to use a Probit transform and separately
