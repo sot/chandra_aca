@@ -13,6 +13,7 @@ SSAWG review: 2020-01-29
 import functools
 import os
 import warnings
+from pathlib import Path
 
 import numpy as np
 import scipy.stats
@@ -26,7 +27,11 @@ from chandra_aca.transform import (
     snr_mag_for_t_ccd,
 )
 
-STAR_PROBS_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "star_probs")
+SKA = Path(os.environ["SKA"])
+
+STAR_PROBS_DATA_DIR = (
+    SKA / "data" / "chandra_models" / "chandra_models" / "aca_acq_prob"
+)
 
 # Default acquisition probability model
 DEFAULT_MODEL = "grid-floor-2020-02"
