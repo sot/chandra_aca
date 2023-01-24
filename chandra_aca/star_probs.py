@@ -10,6 +10,7 @@ The grid-floor-2020-02 model definition and fit values based on:
 SSAWG review: 2020-01-29
 """
 
+import functools
 import os
 import warnings
 
@@ -33,10 +34,8 @@ DEFAULT_MODEL = "grid-floor-2020-02"
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
 
-# Cache of grid model interpolation functions
-GRID_FUNCS = {}
-
-WARM_THRESHOLD = 100  # Value (N100) used for fitting
+# Value (N100) used for fitting
+WARM_THRESHOLD = 100
 
 
 # Min and max star acquisition probabilities, regardless of model predictions
@@ -330,6 +329,62 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
     return val
 
 
+@functools.lru_cache
+def get_grid_func_model(model):
+    from astropy.io import fits
+    from scipy.interpolate import RegularGridInterpolator
+
+    # Read the model file and put into local vars
+    filename = os.path.join(STAR_PROBS_DATA_DIR, model) + ".fits.gz"
+    if not os.path.exists(filename):
+        raise IOError("model file {} does not exist".format(filename))
+
+    hdus = fits.open(filename)
+    hdu0 = hdus[0]
+    probit_p_fail_no_1p5 = hdus[1].data
+    probit_p_fail_1p5 = hdus[2].data
+
+    hdr = hdu0.header
+    grid_mags = np.linspace(hdr["mag_lo"], hdr["mag_hi"], hdr["mag_n"])
+    grid_t_ccds = np.linspace(hdr["t_ccd_lo"], hdr["t_ccd_hi"], hdr["t_ccd_n"])
+    grid_halfws = np.linspace(hdr["halfw_lo"], hdr["halfw_hi"], hdr["halfw_n"])
+
+    # Sanity checks on model data
+    assert probit_p_fail_no_1p5.shape == (
+        len(grid_mags),
+        len(grid_t_ccds),
+        len(grid_halfws),
+    )
+    assert probit_p_fail_1p5.shape == probit_p_fail_no_1p5.shape
+
+    # Generate the 3-d linear interpolation functions
+    func_no_1p5 = RegularGridInterpolator(
+        points=(grid_mags, grid_t_ccds, grid_halfws), values=probit_p_fail_no_1p5
+    )
+    func_1p5 = RegularGridInterpolator(
+        points=(grid_mags, grid_t_ccds, grid_halfws), values=probit_p_fail_1p5
+    )
+    mag_lo = hdr["mag_lo"]
+    mag_hi = hdr["mag_hi"]
+    t_ccd_lo = hdr["t_ccd_lo"]
+    t_ccd_hi = hdr["t_ccd_hi"]
+    halfw_lo = hdr["halfw_lo"]
+    halfw_hi = hdr["halfw_hi"]
+
+    out = {
+        "filename": filename,
+        "func_no_1p5": func_no_1p5,
+        "func_1p5": func_1p5,
+        "mag_lo": mag_lo,
+        "mag_hi": mag_hi,
+        "t_ccd_lo": t_ccd_lo,
+        "t_ccd_hi": t_ccd_hi,
+        "halfw_lo": halfw_lo,
+        "halfw_hi": halfw_hi,
+    }
+    return out
+
+
 def grid_model_acq_prob(
     mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False, model=None
 ):
@@ -349,69 +404,18 @@ def grid_model_acq_prob(
     :returns: Acquisition success probability(s)
 
     """
-    # Info about model is cached in GRID_FUNCS
-    if model not in GRID_FUNCS:
-        from astropy.io import fits
-        from scipy.interpolate import RegularGridInterpolator
+    # Get the grid model function and model parameters from a FITS file. This function
+    # call is cached.
+    gfm = get_grid_func_model(model)
 
-        # Read the model file and put into local vars
-        filename = os.path.join(STAR_PROBS_DATA_DIR, model) + ".fits.gz"
-        if not os.path.exists(filename):
-            raise IOError("model file {} does not exist".format(filename))
-
-        hdus = fits.open(filename)
-        hdu0 = hdus[0]
-        probit_p_fail_no_1p5 = hdus[1].data
-        probit_p_fail_1p5 = hdus[2].data
-
-        hdr = hdu0.header
-        grid_mags = np.linspace(hdr["mag_lo"], hdr["mag_hi"], hdr["mag_n"])
-        grid_t_ccds = np.linspace(hdr["t_ccd_lo"], hdr["t_ccd_hi"], hdr["t_ccd_n"])
-        grid_halfws = np.linspace(hdr["halfw_lo"], hdr["halfw_hi"], hdr["halfw_n"])
-
-        # Sanity checks on model data
-        assert probit_p_fail_no_1p5.shape == (
-            len(grid_mags),
-            len(grid_t_ccds),
-            len(grid_halfws),
-        )
-        assert probit_p_fail_1p5.shape == probit_p_fail_no_1p5.shape
-
-        # Generate the 3-d linear interpolation functions
-        func_no_1p5 = RegularGridInterpolator(
-            points=(grid_mags, grid_t_ccds, grid_halfws), values=probit_p_fail_no_1p5
-        )
-        func_1p5 = RegularGridInterpolator(
-            points=(grid_mags, grid_t_ccds, grid_halfws), values=probit_p_fail_1p5
-        )
-        mag_lo = hdr["mag_lo"]
-        mag_hi = hdr["mag_hi"]
-        t_ccd_lo = hdr["t_ccd_lo"]
-        t_ccd_hi = hdr["t_ccd_hi"]
-        halfw_lo = hdr["halfw_lo"]
-        halfw_hi = hdr["halfw_hi"]
-
-        GRID_FUNCS[model] = {
-            "filename": filename,
-            "func_no_1p5": func_no_1p5,
-            "func_1p5": func_1p5,
-            "mag_lo": mag_lo,
-            "mag_hi": mag_hi,
-            "t_ccd_lo": t_ccd_lo,
-            "t_ccd_hi": t_ccd_hi,
-            "halfw_lo": halfw_lo,
-            "halfw_hi": halfw_hi,
-        }
-    else:
-        gfm = GRID_FUNCS[model]
-        func_no_1p5 = gfm["func_no_1p5"]
-        func_1p5 = gfm["func_1p5"]
-        mag_lo = gfm["mag_lo"]
-        mag_hi = gfm["mag_hi"]
-        t_ccd_lo = gfm["t_ccd_lo"]
-        t_ccd_hi = gfm["t_ccd_hi"]
-        halfw_lo = gfm["halfw_lo"]
-        halfw_hi = gfm["halfw_hi"]
+    func_no_1p5 = gfm["func_no_1p5"]
+    func_1p5 = gfm["func_1p5"]
+    mag_lo = gfm["mag_lo"]
+    mag_hi = gfm["mag_hi"]
+    t_ccd_lo = gfm["t_ccd_lo"]
+    t_ccd_hi = gfm["t_ccd_hi"]
+    halfw_lo = gfm["halfw_lo"]
+    halfw_hi = gfm["halfw_hi"]
 
     # Make sure inputs are within range of gridded model
     mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model)
