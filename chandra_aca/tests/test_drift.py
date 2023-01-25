@@ -4,6 +4,7 @@ from pathlib import Path
 import astropy.table as tbl
 import numpy as np
 import pytest
+import ska_helpers.paths
 
 from chandra_aca import drift
 
@@ -58,7 +59,7 @@ def test_get_aca_offsets(kwargs, env_override, monkeypatch):
     """Regression test that ACA offsets match the original flight values to expected
     precision."""
     if env_override:
-        monkeypatch.setenv(drift.DATA_ROOT_ENV_VAR, env_override)
+        monkeypatch.setenv(ska_helpers.paths.CHANDRA_MODELS_ROOT_ENV_VAR, env_override)
     kwargs = kwargs.copy()
     aca_offset_y = kwargs.pop("aca_offset_y")
     aca_offset_z = kwargs.pop("aca_offset_z")
