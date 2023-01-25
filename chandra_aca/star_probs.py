@@ -327,6 +327,27 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
     return val
 
 
+def get_grid_axis_values(hdr, axis):
+    """Get grid model axis values from FITS header.
+
+    This is an irregularly-spaced grid if ``hdr`` has ``{axis}_0`` .. ``{axis}_<N-1>``.
+    Otherwise it is a regularly-spaced grid:
+        linspace(hdr[f"{axis}_lo"], hdr[f"{axis}_hi"], n_vals)
+
+    :param hdr: FITS header (dict-like)
+    :param axis: Axis name (e.g. "mag")
+    """
+    n_vals = hdr[f"{axis}_n"]
+    if all(f"{axis}_{ii}" in hdr for ii in range(n_vals)):
+        # New style grid model file
+        vals = np.array([hdr[f"{axis}_{ii}"] for ii in range(n_vals)])
+    else:
+        # Old style grid model file
+        vals = np.linspace(hdr[f"{axis}_lo"], hdr[f"{axis}_hi"], n_vals)
+
+    return vals
+
+
 @functools.lru_cache
 def get_grid_func_model(model):
     from astropy.io import fits
@@ -343,9 +364,9 @@ def get_grid_func_model(model):
     probit_p_fail_1p5 = hdus[2].data
 
     hdr = hdu0.header
-    grid_mags = np.linspace(hdr["mag_lo"], hdr["mag_hi"], hdr["mag_n"])
-    grid_t_ccds = np.linspace(hdr["t_ccd_lo"], hdr["t_ccd_hi"], hdr["t_ccd_n"])
-    grid_halfws = np.linspace(hdr["halfw_lo"], hdr["halfw_hi"], hdr["halfw_n"])
+    grid_mags = get_grid_axis_values(hdr, "mag")
+    grid_t_ccds = get_grid_axis_values(hdr, "t_ccd")
+    grid_halfws = get_grid_axis_values(hdr, "halfw")
 
     # Sanity checks on model data
     assert probit_p_fail_no_1p5.shape == (
