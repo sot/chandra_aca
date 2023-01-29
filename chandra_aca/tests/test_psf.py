@@ -57,8 +57,6 @@ def test_centroids():
                     assert np.isclose(r, rc, rtol=0, atol=atol)
                     assert np.isclose(c, cc, rtol=0, atol=atol)
 
-    return outr, outc
-
 
 def test_psf_at_index_location():
     """Test that requesting a PSF image at exactly an existing location in the
