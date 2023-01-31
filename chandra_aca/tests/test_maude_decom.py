@@ -280,11 +280,13 @@ def test_vcdu_vs_level0():
         "TEMPSEC",
         "BGDSTAT",
     ]
+
     for slot in range(8):
         l0_test_data = Table.read(
             os.path.join(
                 os.path.dirname(__file__), "data", f"test_level0_{slot}.fits.gz"
-            )
+            ),
+            unit_parse_strict="silent",
         )
         td = l0_test_data[
             (l0_test_data["TIME"] <= stop) * (l0_test_data["TIME"] >= start)

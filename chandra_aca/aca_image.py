@@ -7,9 +7,6 @@ from pathlib import Path
 
 import numba
 import numpy as np
-import six
-from astropy.utils.compat.misc import override__dir__
-from six.moves import zip
 
 __all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
 
@@ -174,8 +171,6 @@ class ACAImage(np.ndarray):
     __add__ = _operator_factory("add")
     __sub__ = _operator_factory("sub")
     __mul__ = _operator_factory("mul")
-    if not six.PY3:
-        __div__ = _operator_factory("div")
     __truediv__ = _operator_factory("truediv")
     __floordiv__ = _operator_factory("floordiv")
     __mod__ = _operator_factory("mod")
@@ -184,8 +179,6 @@ class ACAImage(np.ndarray):
     __iadd__ = _operator_factory("iadd", inplace=True)
     __isub__ = _operator_factory("isub", inplace=True)
     __imul__ = _operator_factory("imul", inplace=True)
-    if not six.PY3:
-        __idiv__ = _operator_factory("idiv", inplace=True)
     __itruediv__ = _operator_factory("itruediv", inplace=True)
     __ifloordiv__ = _operator_factory("ifloordiv", inplace=True)
     __imod__ = _operator_factory("imod", inplace=True)
@@ -305,9 +298,8 @@ class ACAImage(np.ndarray):
 
         return row, col, norm
 
-    @override__dir__
     def __dir__(self):
-        return list(self.meta)
+        return sorted(super().__dir__() + list(self.meta))
 
     @property
     def row0(self):
