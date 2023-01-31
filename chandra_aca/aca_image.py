@@ -8,7 +8,6 @@ from pathlib import Path
 import numba
 import numpy as np
 import six
-from astropy.utils.compat.misc import override__dir__
 from six.moves import zip
 
 __all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
@@ -305,9 +304,8 @@ class ACAImage(np.ndarray):
 
         return row, col, norm
 
-    @override__dir__
     def __dir__(self):
-        return list(self.meta)
+        return sorted(set(super().__dir__()) | set(self.meta))
 
     @property
     def row0(self):
