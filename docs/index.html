@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>chandra_aca &#8212; chandra_aca 4.38.0 documentation</title>
+    <title>chandra_aca &#8212; chandra_aca 4.38.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="#">chandra_aca 4.38.0 documentation</a>
+	<a href="#">chandra_aca 4.38.2 documentation</a>
 	 &#187;
       </li>
       
@@ -815,117 +815,8 @@ input <code class="docutils literal notranslate"><span class="pre">yag</span></c
 </dd></dl>
 
 </section>
-<section id="module-chandra_aca.centroid_resid">
-<span id="centroid-residuals"></span><h2>Centroid residuals<a class="headerlink" href="#module-chandra_aca.centroid_resid" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.centroid_resid.</span></span><span class="sig-name descname"><span class="pre">CentroidResiduals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to calculate star centroid residuals.</p>
-<p>This class is designed to set up and perform the residual calculations on
-any desired combination of source centroids and source attitudes.  For the common use cases,
-centroids, attitudes, and commanded star positions are retrieved automatically from archived
-sources.</p>
-<p>Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:</p>
-<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</a></p>
-<p>and</p>
-<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</a></p>
-<p>Users should see the class method <code class="docutils literal notranslate"><span class="pre">for_slot</span></code> for a convenient way to get centroid
-residuals on an <code class="docutils literal notranslate"><span class="pre">obsid</span></code> for an ACA <code class="docutils literal notranslate"><span class="pre">slot</span></code> (aka image number).</p>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.centroid_resid</span> <span class="kn">import</span> <span class="n">CentroidResiduals</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span> <span class="o">=</span> <span class="n">CentroidResiduals</span><span class="o">.</span><span class="n">for_slot</span><span class="p">(</span><span class="n">obsid</span><span class="o">=</span><span class="mi">20001</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dyags</span><span class="p">))</span>
-<span class="go">0.87602233734844503</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dzags</span><span class="p">))</span>
-<span class="go">1.2035827855862777</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">atts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="go">array([-0.07933254,  0.87065874, -0.47833673,  0.08278696])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">agasc_id</span>
-<span class="go">649201816</span>
-</pre></div>
-</div>
-<p>This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
-and ground centroids.  Here is another example that does the same thing without using the
-<code class="docutils literal notranslate"><span class="pre">for_slot</span></code> convenience.</p>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.centroid_resid</span> <span class="kn">import</span> <span class="n">CentroidResiduals</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span> <span class="o">=</span> <span class="n">CentroidResiduals</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s1">&#39;2017:169:18:54:50.138&#39;</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="s1">&#39;2017:170:05:13:58.190&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">set_atts</span><span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">set_centroids</span><span class="p">(</span><span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">set_star</span><span class="p">(</span><span class="n">agasc_id</span><span class="o">=</span><span class="mi">649201816</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="o">.</span><span class="n">calc_residuals</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dyags</span><span class="p">))</span>
-<span class="go">0.87602233734844503</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – start time of interval for residuals (DateTime compatible)</p></li>
-<li><p><strong>stop</strong> – stop time of interval for residuals (DateTime compatible)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.calc_residuals">
-<span class="sig-name descname"><span class="pre">calc_residuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.calc_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.calc_residuals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate residuals based on attitude and ra/dec of star.  Note that the sampling and times
-of yags may be different from zags so these should be done independently.</p>
-<p>Residuals are available in self.dyags and self.dzags.
-Predicted values from attitude and star position in self.pred_yags and self.pred_zags</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_atts">
-<span class="sig-name descname"><span class="pre">set_atts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_atts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_atts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get attitude solution quaternions from <code class="docutils literal notranslate"><span class="pre">source</span></code>.</p>
-<p>One could also just set atts and att_times attributes directly.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_centroids">
-<span class="sig-name descname"><span class="pre">set_centroids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_centroids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Assign centroids from <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">slot</span></code> to the objects centroid attributes
-(yag, zag, yag_times, zag_times)</p>
-<p>For the supported sources (ground, obc) the centroids are fetched from the mica L1
-archive or telemetry.</p>
-<p>yag, zag, yag_times an zag_times can also be set directly without use of this method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> – ‘ground’ | ‘obc’</p></li>
-<li><p><strong>slot</strong> – ACA slot</p></li>
-<li><p><strong>alg</strong> – for ground processing, use centroids from this algorithm.</p></li>
-<li><p><strong>apply_dt</strong> – apply centroid time offsets via ‘set_offsets’</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_offsets">
-<span class="sig-name descname"><span class="pre">set_offsets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_offsets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply time offsets to centroids based on type and source of centroid, obsid
-(suggesting 8x8 or 6x6 data), telemetry source (‘maude’ or ‘cxc’) and aspect solution
-source. These time offsets were fit.  See fit notebooks at:</p>
-<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</a></p>
-<p>and</p>
-<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_star">
-<span class="sig-name descname"><span class="pre">set_star</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agasc_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/centroid_resid.html#CentroidResiduals.set_star"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_star" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set self.ra and dec from either agasc_id <em>or</em> slot.</p>
-<p>This assumes use of star in default agasc miniagasc (no 1.4 or 1.5 or very faint stars)
-Lookup by “slot” relies on database of starcheck catalogs.</p>
-<p>This also sets self.agasc_id.</p>
-</dd></dl>
-
-</dd></dl>
-
+<section id="centroid-residuals">
+<h2>Centroid residuals<a class="headerlink" href="#centroid-residuals" title="Permalink to this headline">¶</a></h2>
 </section>
 <section id="module-chandra_aca.drift">
 <span id="aca-alignment-drift"></span><h2>ACA alignment drift<a class="headerlink" href="#module-chandra_aca.drift" title="Permalink to this headline">¶</a></h2>
@@ -2025,7 +1916,7 @@ or N x (x, y, z)</p>
 <li><a class="reference internal" href="#module-chandra_aca.plot">Plotting</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.star_probs">Star probabilities</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.transform">Transformations</a></li>
-<li><a class="reference internal" href="#module-chandra_aca.centroid_resid">Centroid residuals</a></li>
+<li><a class="reference internal" href="#centroid-residuals">Centroid residuals</a></li>
 <li><a class="reference internal" href="#module-chandra_aca.drift">ACA alignment drift</a></li>
 <li><a class="reference internal" href="#aca-images">ACA images</a><ul>
 <li><a class="reference internal" href="#acaimage-class">ACAImage class</a><ul>

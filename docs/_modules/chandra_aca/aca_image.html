@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.38.0 documentation</title>
+    <title>chandra_aca.aca_image &#8212; chandra_aca 4.38.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.38.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.38.2 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -71,9 +71,6 @@
 
 <span class="kn">import</span> <span class="nn">numba</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">six</span>
-<span class="kn">from</span> <span class="nn">astropy.utils.compat.misc</span> <span class="kn">import</span> <span class="n">override__dir__</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="nb">zip</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ACAImage&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid_fm&quot;</span><span class="p">,</span> <span class="s2">&quot;AcaPsfLibrary&quot;</span><span class="p">,</span> <span class="s2">&quot;EIGHT_LABELS&quot;</span><span class="p">]</span>
 
@@ -238,8 +235,6 @@
     <span class="fm">__add__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
     <span class="fm">__sub__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;sub&quot;</span><span class="p">)</span>
     <span class="fm">__mul__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;mul&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
-        <span class="n">__div__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">)</span>
     <span class="fm">__truediv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;truediv&quot;</span><span class="p">)</span>
     <span class="fm">__floordiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;floordiv&quot;</span><span class="p">)</span>
     <span class="fm">__mod__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;mod&quot;</span><span class="p">)</span>
@@ -248,8 +243,6 @@
     <span class="fm">__iadd__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;iadd&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="fm">__isub__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;isub&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="fm">__imul__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;imul&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
-        <span class="n">__idiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;idiv&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="fm">__itruediv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;itruediv&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="fm">__ifloordiv__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;ifloordiv&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="fm">__imod__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;imod&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -369,9 +362,8 @@
 
         <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span></div>
 
-    <span class="nd">@override__dir__</span>
     <span class="k">def</span> <span class="fm">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">()</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">row0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
