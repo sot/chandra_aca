@@ -40,7 +40,6 @@ def _operator_factory(operator, inplace=False):
     inplace_op = op if inplace else getattr(np.ndarray, "__i{}__".format(operator))
 
     def _operator(self, other):
-
         if isinstance(other, ACAImage) and (other._aca_coords or self._aca_coords):
             # If inplace then work on the original self, else use a copy
             out = self if inplace else self.copy()
@@ -58,7 +57,6 @@ def _operator_factory(operator, inplace=False):
                     other.col0 + sz_c1 - self.col0,
                 ]
             ):
-
                 dr = other.row0 - self.row0
                 dc = other.col0 - self.col0
 
@@ -130,7 +128,6 @@ class ACAImage(np.ndarray):
         return obj
 
     def __new__(cls, *args, **kwargs):
-
         meta = kwargs.pop("meta", {})
 
         # Set default row0 and col0 to 0 (if not already in meta), and
@@ -454,7 +451,6 @@ class ACAImage(np.ndarray):
             self._flicker_update_vectorized(dt)
 
     def _flicker_update_vectorized(self, dt):
-
         self.flicker_times[self.flicker_mask_vals] -= dt
 
         # When flicker_times < 0 that means a flicker occurs

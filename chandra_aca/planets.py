@@ -75,6 +75,7 @@ def load_kernel():
         )
     kernel = SPK.open(kernel_path)
     import atexit
+
     atexit.register(_close_kernel)
     return kernel
 
