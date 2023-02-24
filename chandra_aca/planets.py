@@ -74,7 +74,13 @@ def load_kernel():
             'run "python setup.py build" to install it locally'
         )
     kernel = SPK.open(kernel_path)
+    import atexit
+    atexit.register(_close_kernel)
     return kernel
+
+
+def _close_kernel():
+    KERNEL.val.close()
 
 
 KERNEL = LazyVal(load_kernel)
