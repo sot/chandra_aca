@@ -631,7 +631,6 @@ def test_dynbgd_decom():
                 raw_frames[key], combine=True, start=start, stop=stop
             )
             for slot in range(8):
-
                 assert np.all(
                     partial_packets[key][
                         "TIME", "VCDUCTR", "IMGTYPE", "BGDTYP", "PIXTLM"

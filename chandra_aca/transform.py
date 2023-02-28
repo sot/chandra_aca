@@ -212,7 +212,6 @@ def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc="edge"):
 
 
 def _poly_convert(y, z, coeffs, t_aca=None):
-
     # Convert to avoid overflow errors with the polys on int32
     y = np.asarray(y, dtype=np.float64)
     z = np.asarray(z, dtype=np.float64)
