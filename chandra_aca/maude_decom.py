@@ -553,6 +553,9 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     These correspond to the minor frame time, minor frame count, major frame count,
     the list of packets, and flags returned by MAUDE respectively.
 
+    This function raises an exception if the VCDU frames in maude_result are not contiguous, which
+    can also happen if the frames are corrupted in some way.
+
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
     :param maude_result: the result of calling maude.get_frames. Optional.
@@ -567,18 +570,27 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     )  # ensure input is proper date
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 
+    # get the frames and unpack front matter
+    if maude_result is None:
+        frames = maude.get_frames(
+            start=date_start, stop=date_stop + stop_pad, **maude_kwargs
+        )["data"]
+    else:
+        frames = maude_result["data"]
+    flags = frames["f"]
+    frames = frames["frames"]
+
     # also getting major and minor frames to figure out which is the first ACA packet in a group
-    vcdu_counter = maude.get_msids(
-        ["CVCMNCTR", "CVCMJCTR", "CVCDUCTR"],
-        start=date_start,
-        stop=date_stop + stop_pad,
-        **maude_kwargs,
+    w = np.array([1, 2**8, 2**16])[::-1]
+    vcdu_times = np.array([frame["t"] for frame in frames])
+    vcdu = np.array(
+        [np.sum(w * _unpack("BBB", frame["bytes"][2:5])) for frame in frames]
     )
 
-    sub = (
-        vcdu_counter["data"][0]["values"] % 4
-    )  # the minor frame index within each ACA update
-    vcdu_times = vcdu_counter["data"][0]["times"]
+    if np.any(np.diff(vcdu) != 1):
+        raise Exception("VCDU frames are not contiguous")  # a sanity check
+
+    sub = vcdu % 4  # the minor frame index within each ACA update
 
     major_counter = np.cumsum(
         sub == 0
@@ -598,16 +610,6 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
         * (aca_frame_times[:, 0] <= date_stop.secs)
     )
 
-    # get the frames and unpack front matter
-    if maude_result is None:
-        frames = maude.get_frames(
-            start=date_start, stop=date_stop + stop_pad, **maude_kwargs
-        )["data"]
-    else:
-        frames = maude_result["data"]
-    flags = frames["f"]
-    frames = frames["frames"]
-
     # assemble the 56 bit ACA minor records and times (time is not unpacked)
     aca = []
     aca_times = []
@@ -622,17 +624,15 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     for a in aca_packets:
         assert len(a) == 224
 
-    times = vcdu_counter["data"][0]["times"][aca_frame_entries[select, 0]]
-    minor_counter = vcdu_counter["data"][0]["values"][aca_frame_entries[select, 0]]
-    major_counter = vcdu_counter["data"][1]["values"][aca_frame_entries[select, 0]]
-    vcdu_counter = vcdu_counter["data"][2]["values"][aca_frame_entries[select, 0]]
+    times = vcdu_times[aca_frame_entries[select, 0]]
+    vcdu_counter = vcdu[aca_frame_entries[select, 0]]
 
     return {
         "flags": flags,
         "packets": aca_packets,
         "TIME": times,
-        "MNF": minor_counter,
-        "MJF": major_counter,
+        "MNF": vcdu_counter % (1 << 7),
+        "MJF": vcdu_counter // (1 << 7),
         "VCDUCTR": vcdu_counter,
     }
 
