@@ -74,6 +74,39 @@ def test_vcdu_0_raw():
     assert data["flags"] == ref_data["flags"]
 
 
+def test_vcdu_0_raw_2():
+    # this test gets the raw ACA packets (225 byte packets that come in 4 VCDU frames)
+    # for two time ranges, where the second time range is a subset of the first.
+
+    t1 = 387039066.184
+    t2 = 387039216.184
+    t3 = 387039370.034
+
+    frames = maude.get_frames(t1, t3, channel="FLIGHT")
+
+    raw_aca_packets_1 = maude_decom.get_raw_aca_packets(
+        t1, t3, maude_result=frames, channel="FLIGHT"
+    )
+
+    # This time we request the packets for a time range that is a subset of the previous one.
+    # However, we pass _all_ the frames from the previous query, so the times do not match.
+    raw_aca_packets_2 = maude_decom.get_raw_aca_packets(
+        t2, t3, maude_result=frames, channel="FLIGHT"
+    )
+
+    n_frames = raw_aca_packets_2["TIME"].shape[0]
+    assert np.all(raw_aca_packets_2["TIME"] == raw_aca_packets_1["TIME"][-n_frames:])
+    assert np.all(raw_aca_packets_2["MJF"] == raw_aca_packets_1["MJF"][-n_frames:])
+    assert np.all(raw_aca_packets_2["MNF"] == raw_aca_packets_1["MNF"][-n_frames:])
+    assert np.all(
+        [
+            raw_aca_packets_2["packets"][i]
+            == raw_aca_packets_1["packets"][-n_frames:][i]
+            for i in range(n_frames)
+        ]
+    )
+
+
 def test_blob_0_raw():
     blobs = maude_decom.get_raw_aca_blobs(176267186, 176267186)
     t = maude.blobs_to_table(**blobs)[["TIME", "CVCMJCTR", "CVCMNCTR"]]
