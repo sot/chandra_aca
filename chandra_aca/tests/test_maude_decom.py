@@ -751,3 +751,29 @@ def test_get_aca_packets_blobs():
         blobs=blobs,
     )
     assert blobs == ref_blobs
+
+
+def test_imgtype_dnld():
+    """
+    Tests for the case when IMGTYPE is DNLD
+    """
+
+    start = "2023:047:02:58:13.213"
+    stop = "2023:047:02:58:14.239"
+    maude_result = maude.get_frames(start, stop, channel="FLIGHT")
+    raw_aca_packets = maude_decom.get_raw_aca_packets(
+        start, stop, maude_result=maude_result
+    )
+    # decom_packets = [maude_decom.unpack_aca_telemetry(a) for a in raw_aca_packets["packets"]]
+    # assert 3 not in [p['IMGTYPE'] for packet in decom_packets for p in packet]
+
+    _ = maude_decom._get_aca_packets(
+        raw_aca_packets,
+        start,
+        stop,
+        combine=False,
+        adjust_time=False,
+        calibrate=False,
+    )
+
+    # what is tested still needs to be determined, but at the very least it should not fail.

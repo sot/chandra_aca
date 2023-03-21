@@ -310,7 +310,7 @@ _IMG_INDICES = [
     np.array([PIXEL_MAP_INV["4x4"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["6x6"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["6x6"][f"{k}2"] for k in _a2p]).T,
-    [],
+    np.array([PIXEL_MAP_INV["4x4"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["8x8"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["8x8"][f"{k}2"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["8x8"][f"{k}3"] for k in _a2p]).T,
@@ -531,9 +531,9 @@ def _group_packets(packets, discard=True):
             res = []
         if not res:
             # the number of minor frames expected within the same ACA packet
-            s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[int(packet["IMGTYPE"])]
+            s = {0: 1, 1: 2, 2: 2, 3: 1, 4: 4, 5: 4, 6: 4, 7: 4}[int(packet["IMGTYPE"])]
             # the number of minor frames within the same ACA packet expected after this minor frame
-            remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[
+            remaining = {0: 0, 1: 1, 2: 0, 3: 0, 4: 3, 5: 2, 6: 1, 7: 0}[
                 int(packet["IMGTYPE"])
             ]
             n = packet["MJF"] * 128 + packet["MNF"] + 4 * remaining
