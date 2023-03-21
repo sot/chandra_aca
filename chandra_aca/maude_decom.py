@@ -153,6 +153,8 @@ def _aca_msid_list(pea):
         "cmd_count": f"{_msid_prefix[pea]}CCMDS",
         "cmd_progress_to_go": f"{_msid_prefix[pea]}AROW2GO",  # No. of ROWS TO GO COMMAND PROGRESS
         "cmd_progress": "AOCMDPG1",  # COMMAND PROGRESS COUNT
+        "pixel_telemetry_type": f"{_msid_prefix[pea]}APIXTLM",
+        "dynamic_background_type": f"{_msid_prefix[pea]}ABGDTYP",
     }
 
 
@@ -450,11 +452,12 @@ def unpack_aca_telemetry(packet):
         img_header["pixels"] = img_pixels
         slots.append(img_header)
 
+    bgd_types = {0: "FLAT", 1: "DYNB"}
+    pix_tlm_types = {0: "ORIG", 1: "DYNB", 2: "DIFF", 3: "ERR3"}
     # Before the dynamic background patch, the first two bytes contained INTEG in those
     # 16 bits (named integbits).  After the dynamic background patch, the first 6 bits of
     # integbits will be repurposed: two bits for PIXTLM, next bit for BGDTYP, 3 spares,
-    # and 10 bits for INTEG.  This telem/decom change is back-compatible and can be promoted
-    # before the dynamic background patch is in use onboard.
+    # and 10 bits for INTEG.
     integbits = np.unpackbits(np.array(_unpack("BB", packet[0:2]), dtype=np.uint8))
     pixtlm = _packbits(integbits[0:2])
     bgdtyp = integbits[2]
@@ -462,8 +465,8 @@ def unpack_aca_telemetry(packet):
     glbstat = _unpack("B", packet[2:3])[0]
     bits = np.unpackbits(np.array(_unpack("BBB", packet[2:5]), dtype=np.uint8))
     res = {
-        "PIXTLM": pixtlm,
-        "BGDTYP": bgdtyp,
+        "PIXTLM": pix_tlm_types[pixtlm],
+        "BGDTYP": bgd_types[bgdtyp],
         "INTEG": integ,
         "GLBSTAT": glbstat,
         "HIGH_BGD": bool(bits[0]),
@@ -684,8 +687,8 @@ ACA_PACKETS_DTYPE = np.dtype(
         ("IMGROW0_8X8", np.int16),
         ("IMGCOL0_8X8", np.int16),
         ("END_INTEG_TIME", np.float64),
-        ("PIXTLM", np.uint8),
-        ("BGDTYP", np.uint8),
+        ("PIXTLM", "<U4"),
+        ("BGDTYP", "<U4"),
         ("IMG", "<f8", (8, 8)),
     ]
 )
@@ -1174,8 +1177,8 @@ def blob_to_aca_image_dict(blob, imgnum, pea=1):
         "pixels": np.array(
             [int(blob[pixel]) for pixel in slot_msids["pixels"] if pixel in blob]
         ),
-        "PIXTLM": 0,  # unused
-        "BGDTYP": 0,  # unused
+        "PIXTLM": blob.get(global_msids["pixel_telemetry_type"], "ORIG"),
+        "BGDTYP": blob.get(global_msids["dynamic_background_type"], "FLAT"),
         "INTEG": int(blob[global_msids["integration_time"]]),
         "GLBSTAT": int(blob[global_msids["status"]]),
         "HIGH_BGD": bool(glbstat_bits[0]),
