@@ -122,6 +122,18 @@ PIXEL_MAP = {
             ["I4", "J4", "K4", "L4", "M4", "N4", "O4", "P4"],
         ]
     ),
+    "DNLD": np.array(
+        [
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+        ]
+    ),
 }
 
 PIXEL_MASK = {k: PIXEL_MAP[k] == "  " for k in PIXEL_MAP}
@@ -509,9 +521,12 @@ def _combine_aca_packets(aca_packets):
     pixels = np.ma.masked_all((8, 8))
     pixels.data[:] = np.nan
     for f in aca_packets:
-        pixels[_IMG_INDICES[f["IMGTYPE"]][0], _IMG_INDICES[f["IMGTYPE"]][1]] = f[
-            "pixels"
-        ]
+        i0, i1 = _IMG_INDICES[f["IMGTYPE"]]
+        pixels[i0, i1] = f["pixels"]
+        # IMGTYPE 3 is not a real image. It means the pixels are used to download engineering data
+        # We set the pixel values to the values in telemetry, but mask them.
+        if f["IMGTYPE"] == 3:
+            pixels.mask[i0, i1] = True
 
     for f in aca_packets:
         res.update(f)
