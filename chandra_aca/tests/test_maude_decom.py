@@ -776,8 +776,8 @@ def test_imgtype_dnld():
         calibrate=False,
     )
 
-    all_masked = np.array([np.all(row['IMG'].mask) for row in img])
-    img_dnld = (img['IMGTYPE'] == 3)
+    all_masked = np.array([np.all(row["IMG"].mask) for row in img])
+    img_dnld = img["IMGTYPE"] == 3
     assert np.all(all_masked == img_dnld)
 
     # what is tested still needs to be determined, but at the very least it should not fail.
