@@ -308,6 +308,12 @@ ACA_SLOT_MSID_LIST = {i + 1: _aca_image_msid_list(i + 1) for i in range(2)}
 
 
 _a2p = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"]
+# This maps image type to a list of pixel indices over the 8x8 array.
+# - Type 0 is 4x4,
+# - Types 1 (first batch of 6x6) and 4 (first batch of 8x8) use the same pixel IDs as 4x4.
+# - Type 3 is not a real image type. It occurs when the image telemetry is used to download
+#   engineering data. In this case, the image is treated as 4x4, but the values will be giberish.
+# - Types 2 (second batch of 6x6) and 5 (second batch of 8x8) use the same pixel IDs.
 _IMG_INDICES = [
     np.array([PIXEL_MAP_INV["4x4"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["6x6"][f"{k}1"] for k in _a2p]).T,
@@ -583,7 +589,10 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     flags = frames["f"]
     frames = frames["frames"]
 
-    # also getting major and minor frames to figure out which is the first ACA packet in a group
+    # Getting major and minor frames to figure out which is the first ACA packet in a group
+    # The VCDU counter is stored in 24 bits, and struct.unpack does not have a 24-bit format code.
+    # We therefore decom the bytes separately and combine them into a single integer using the
+    # following weights:
     w = np.array([1, 2**8, 2**16])[::-1]
     vcdu_times = np.array([frame["t"] for frame in frames])
     vcdu = np.array(
