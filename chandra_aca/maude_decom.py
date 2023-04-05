@@ -122,6 +122,18 @@ PIXEL_MAP = {
             ["I4", "J4", "K4", "L4", "M4", "N4", "O4", "P4"],
         ]
     ),
+    "DNLD": np.array(
+        [
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+        ]
+    ),
 }
 
 PIXEL_MASK = {k: PIXEL_MAP[k] == "  " for k in PIXEL_MAP}
@@ -153,6 +165,8 @@ def _aca_msid_list(pea):
         "cmd_count": f"{_msid_prefix[pea]}CCMDS",
         "cmd_progress_to_go": f"{_msid_prefix[pea]}AROW2GO",  # No. of ROWS TO GO COMMAND PROGRESS
         "cmd_progress": "AOCMDPG1",  # COMMAND PROGRESS COUNT
+        "pixel_telemetry_type": f"{_msid_prefix[pea]}APIXTLM",
+        "dynamic_background_type": f"{_msid_prefix[pea]}ABGDTYP",
     }
 
 
@@ -306,11 +320,17 @@ ACA_SLOT_MSID_LIST = {i + 1: _aca_image_msid_list(i + 1) for i in range(2)}
 
 
 _a2p = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"]
+# This maps image type to a list of pixel indices over the 8x8 array.
+# - Type 0 is 4x4,
+# - Types 1 (first batch of 6x6) and 4 (first batch of 8x8) use the same pixel IDs as 4x4.
+# - Type 3 is not a real image type. It occurs when the image telemetry is used to download
+#   engineering data. In this case, the image is treated as 4x4, but the values will be giberish.
+# - Types 2 (second batch of 6x6) and 5 (second batch of 8x8) use the same pixel IDs.
 _IMG_INDICES = [
     np.array([PIXEL_MAP_INV["4x4"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["6x6"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["6x6"][f"{k}2"] for k in _a2p]).T,
-    [],
+    np.array([PIXEL_MAP_INV["4x4"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["8x8"][f"{k}1"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["8x8"][f"{k}2"] for k in _a2p]).T,
     np.array([PIXEL_MAP_INV["8x8"][f"{k}3"] for k in _a2p]).T,
@@ -450,11 +470,12 @@ def unpack_aca_telemetry(packet):
         img_header["pixels"] = img_pixels
         slots.append(img_header)
 
+    bgd_types = {0: "FLAT", 1: "DYNB"}
+    pix_tlm_types = {0: "ORIG", 1: "DYNB", 2: "DIFF", 3: "ERR3"}
     # Before the dynamic background patch, the first two bytes contained INTEG in those
     # 16 bits (named integbits).  After the dynamic background patch, the first 6 bits of
     # integbits will be repurposed: two bits for PIXTLM, next bit for BGDTYP, 3 spares,
-    # and 10 bits for INTEG.  This telem/decom change is back-compatible and can be promoted
-    # before the dynamic background patch is in use onboard.
+    # and 10 bits for INTEG.
     integbits = np.unpackbits(np.array(_unpack("BB", packet[0:2]), dtype=np.uint8))
     pixtlm = _packbits(integbits[0:2])
     bgdtyp = integbits[2]
@@ -462,8 +483,8 @@ def unpack_aca_telemetry(packet):
     glbstat = _unpack("B", packet[2:3])[0]
     bits = np.unpackbits(np.array(_unpack("BBB", packet[2:5]), dtype=np.uint8))
     res = {
-        "PIXTLM": pixtlm,
-        "BGDTYP": bgdtyp,
+        "PIXTLM": pix_tlm_types[pixtlm],
+        "BGDTYP": bgd_types[bgdtyp],
         "INTEG": integ,
         "GLBSTAT": glbstat,
         "HIGH_BGD": bool(bits[0]),
@@ -500,9 +521,12 @@ def _combine_aca_packets(aca_packets):
     pixels = np.ma.masked_all((8, 8))
     pixels.data[:] = np.nan
     for f in aca_packets:
-        pixels[_IMG_INDICES[f["IMGTYPE"]][0], _IMG_INDICES[f["IMGTYPE"]][1]] = f[
-            "pixels"
-        ]
+        i0, i1 = _IMG_INDICES[f["IMGTYPE"]]
+        pixels[i0, i1] = f["pixels"]
+        # IMGTYPE 3 is not a real image. It means the pixels are used to download engineering data
+        # We set the pixel values to the values in telemetry, but mask them.
+        if f["IMGTYPE"] == 3:
+            pixels.mask[i0, i1] = True
 
     for f in aca_packets:
         res.update(f)
@@ -531,9 +555,9 @@ def _group_packets(packets, discard=True):
             res = []
         if not res:
             # the number of minor frames expected within the same ACA packet
-            s = {0: 1, 1: 2, 2: 2, 4: 4, 5: 4, 6: 4, 7: 4}[int(packet["IMGTYPE"])]
+            s = {0: 1, 1: 2, 2: 2, 3: 1, 4: 4, 5: 4, 6: 4, 7: 4}[int(packet["IMGTYPE"])]
             # the number of minor frames within the same ACA packet expected after this minor frame
-            remaining = {0: 0, 1: 1, 2: 0, 4: 3, 5: 2, 6: 1, 7: 0}[
+            remaining = {0: 0, 1: 1, 2: 0, 3: 0, 4: 3, 5: 2, 6: 1, 7: 0}[
                 int(packet["IMGTYPE"])
             ]
             n = packet["MJF"] * 128 + packet["MNF"] + 4 * remaining
@@ -553,6 +577,9 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     These correspond to the minor frame time, minor frame count, major frame count,
     the list of packets, and flags returned by MAUDE respectively.
 
+    This function raises an exception if the VCDU frames in maude_result are not contiguous, which
+    can also happen if the frames are corrupted in some way.
+
     :param start: timestamp interpreted as a Chandra.Time.DateTime
     :param stop: timestamp interpreted as a Chandra.Time.DateTime
     :param maude_result: the result of calling maude.get_frames. Optional.
@@ -567,18 +594,30 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     )  # ensure input is proper date
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 
-    # also getting major and minor frames to figure out which is the first ACA packet in a group
-    vcdu_counter = maude.get_msids(
-        ["CVCMNCTR", "CVCMJCTR", "CVCDUCTR"],
-        start=date_start,
-        stop=date_stop + stop_pad,
-        **maude_kwargs,
+    # get the frames and unpack front matter
+    if maude_result is None:
+        frames = maude.get_frames(
+            start=date_start, stop=date_stop + stop_pad, **maude_kwargs
+        )["data"]
+    else:
+        frames = maude_result["data"]
+    flags = frames["f"]
+    frames = frames["frames"]
+
+    # Getting major and minor frames to figure out which is the first ACA packet in a group
+    # The VCDU counter is stored in 24 bits, and struct.unpack does not have a 24-bit format code.
+    # We therefore decom the bytes separately and combine them into a single integer using the
+    # following weights:
+    w = np.array([1, 2**8, 2**16])[::-1]
+    vcdu_times = np.array([frame["t"] for frame in frames])
+    vcdu = np.array(
+        [np.sum(w * _unpack("BBB", frame["bytes"][2:5])) for frame in frames]
     )
 
-    sub = (
-        vcdu_counter["data"][0]["values"] % 4
-    )  # the minor frame index within each ACA update
-    vcdu_times = vcdu_counter["data"][0]["times"]
+    if np.any(np.diff(vcdu) != 1):
+        raise Exception("VCDU frames are not contiguous")  # a sanity check
+
+    sub = vcdu % 4  # the minor frame index within each ACA update
 
     major_counter = np.cumsum(
         sub == 0
@@ -598,16 +637,6 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
         * (aca_frame_times[:, 0] <= date_stop.secs)
     )
 
-    # get the frames and unpack front matter
-    if maude_result is None:
-        frames = maude.get_frames(
-            start=date_start, stop=date_stop + stop_pad, **maude_kwargs
-        )["data"]
-    else:
-        frames = maude_result["data"]
-    flags = frames["f"]
-    frames = frames["frames"]
-
     # assemble the 56 bit ACA minor records and times (time is not unpacked)
     aca = []
     aca_times = []
@@ -622,17 +651,15 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     for a in aca_packets:
         assert len(a) == 224
 
-    times = vcdu_counter["data"][0]["times"][aca_frame_entries[select, 0]]
-    minor_counter = vcdu_counter["data"][0]["values"][aca_frame_entries[select, 0]]
-    major_counter = vcdu_counter["data"][1]["values"][aca_frame_entries[select, 0]]
-    vcdu_counter = vcdu_counter["data"][2]["values"][aca_frame_entries[select, 0]]
+    times = vcdu_times[aca_frame_entries[select, 0]]
+    vcdu_counter = vcdu[aca_frame_entries[select, 0]]
 
     return {
         "flags": flags,
         "packets": aca_packets,
         "TIME": times,
-        "MNF": minor_counter,
-        "MJF": major_counter,
+        "MNF": vcdu_counter % (1 << 7),
+        "MJF": vcdu_counter // (1 << 7),
         "VCDUCTR": vcdu_counter,
     }
 
@@ -684,8 +711,8 @@ ACA_PACKETS_DTYPE = np.dtype(
         ("IMGROW0_8X8", np.int16),
         ("IMGCOL0_8X8", np.int16),
         ("END_INTEG_TIME", np.float64),
-        ("PIXTLM", np.uint8),
-        ("BGDTYP", np.uint8),
+        ("PIXTLM", "<U4"),
+        ("BGDTYP", "<U4"),
         ("IMG", "<f8", (8, 8)),
     ]
 )
@@ -1174,8 +1201,8 @@ def blob_to_aca_image_dict(blob, imgnum, pea=1):
         "pixels": np.array(
             [int(blob[pixel]) for pixel in slot_msids["pixels"] if pixel in blob]
         ),
-        "PIXTLM": 0,  # unused
-        "BGDTYP": 0,  # unused
+        "PIXTLM": blob.get(global_msids["pixel_telemetry_type"], "ORIG"),
+        "BGDTYP": blob.get(global_msids["dynamic_background_type"], "FLAT"),
         "INTEG": int(blob[global_msids["integration_time"]]),
         "GLBSTAT": int(blob[global_msids["status"]]),
         "HIGH_BGD": bool(glbstat_bits[0]),
