@@ -483,8 +483,8 @@ def unpack_aca_telemetry(packet):
     glbstat = _unpack("B", packet[2:3])[0]
     bits = np.unpackbits(np.array(_unpack("BBB", packet[2:5]), dtype=np.uint8))
     res = {
-        "PIXTLM": pix_tlm_types[pixtlm],
-        "BGDTYP": bgd_types[bgdtyp],
+        "AAPIXTLM": pix_tlm_types[pixtlm],
+        "AABGDTYP": bgd_types[bgdtyp],
         "INTEG": integ,
         "GLBSTAT": glbstat,
         "HIGH_BGD": bool(bits[0]),
@@ -711,8 +711,8 @@ ACA_PACKETS_DTYPE = np.dtype(
         ("IMGROW0_8X8", np.int16),
         ("IMGCOL0_8X8", np.int16),
         ("END_INTEG_TIME", np.float64),
-        ("PIXTLM", "<U4"),
-        ("BGDTYP", "<U4"),
+        ("AAPIXTLM", "<U4"),
+        ("AABGDTYP", "<U4"),
         ("IMG", "<f8", (8, 8)),
     ]
 )
@@ -1201,8 +1201,8 @@ def blob_to_aca_image_dict(blob, imgnum, pea=1):
         "pixels": np.array(
             [int(blob[pixel]) for pixel in slot_msids["pixels"] if pixel in blob]
         ),
-        "PIXTLM": blob.get(global_msids["pixel_telemetry_type"], "ORIG"),
-        "BGDTYP": blob.get(global_msids["dynamic_background_type"], "FLAT"),
+        "AAPIXTLM": blob.get(global_msids["pixel_telemetry_type"], "ORIG"),
+        "AABGDTYP": blob.get(global_msids["dynamic_background_type"], "FLAT"),
         "INTEG": int(blob[global_msids["integration_time"]]),
         "GLBSTAT": int(blob[global_msids["status"]]),
         "HIGH_BGD": bool(glbstat_bits[0]),

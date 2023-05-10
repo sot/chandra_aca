@@ -628,25 +628,25 @@ def test_start_stop():
 
 def test_dynbgd_decom():
     """
-    This test looks at telemetry data around times when either BGDTYP or PIXTLM change.
+    This test looks at telemetry data around times when either AABGDTYP or AAPIXTLM change.
     It checks two things: that the values are properly decommuted and that the proper values of
-    BGDTYP and PIXTLM are set when packets are combined.
+    AABGDTYP and AAPIXTLM are set when packets are combined.
 
-    BGDTYP and PIXTLM are the same for all slots within an ACA packet, but they might not
+    AABGDTYP and AAPIXTLM are the same for all slots within an ACA packet, but they might not
     correspond to actual pixel data. The values that correspond to the pixel data being sent are
     the values in the first packet of the image (image types 0, 1 and 4).
 
-    For example, this series of ACA packets shows a change in PIXTLM and BGDTYP at frame 39736:
-         TIME     VCDUCTR IMGTYPE BGDTYP PIXTLM
+    For example, this series of ACA packets shows a change in AAPIXTLM and AABGDTYP at frame 39736:
+         TIME     VCDUCTR IMGTYPE AABGDTYP AAPIXTLM
     ------------- ------- ------- ------ ------
     694916092.438   39732       4      1      2
     694916093.464   39736       5      0      0
     694916094.483   39740       6      0      0
     694916095.509   39744       7      0      0
 
-    however, frames 39732 to 39744 form an 8x8 image, and the value of PIXTLM in the first packet
+    however, frames 39732 to 39744 form an 8x8 image, and the value of AAPIXTLM in the first packet
     of the image is 2. Therefore, the packets must be combined to give
-         TIME     VCDUCTR BGDTYP PIXTLM
+         TIME     VCDUCTR AABGDTYP AAPIXTLM
     ------------- ------- ------ ------
     694916092.438   39732      1      2
     """
@@ -666,18 +666,18 @@ def test_dynbgd_decom():
             for slot in range(8):
                 assert np.all(
                     partial_packets[key][
-                        "TIME", "VCDUCTR", "IMGTYPE", "BGDTYP", "PIXTLM"
+                        "TIME", "VCDUCTR", "IMGTYPE", "AABGDTYP", "AAPIXTLM"
                     ]
                     == partial_packets_2[
-                        "TIME", "VCDUCTR", "IMGTYPE", "BGDTYP", "PIXTLM"
+                        "TIME", "VCDUCTR", "IMGTYPE", "AABGDTYP", "AAPIXTLM"
                     ]
                 )
                 assert np.all(
                     grouped_packets[key][
-                        "TIME", "VCDUCTR", "IMGTYPE", "BGDTYP", "PIXTLM"
+                        "TIME", "VCDUCTR", "IMGTYPE", "AABGDTYP", "AAPIXTLM"
                     ]
                     == grouped_packets_2[
-                        "TIME", "VCDUCTR", "IMGTYPE", "BGDTYP", "PIXTLM"
+                        "TIME", "VCDUCTR", "IMGTYPE", "AABGDTYP", "AAPIXTLM"
                     ]
                 )
 
