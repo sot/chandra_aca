@@ -521,12 +521,11 @@ def _combine_aca_packets(aca_packets):
     pixels = np.ma.masked_all((8, 8))
     pixels.data[:] = np.nan
     for f in aca_packets:
-        i0, i1 = _IMG_INDICES[f["IMGTYPE"]]
-        pixels[i0, i1] = f["pixels"]
         # IMGTYPE 3 is not a real image. It means the pixels are used to download engineering data
-        # We set the pixel values to the values in telemetry, but mask them.
-        if f["IMGTYPE"] == 3:
-            pixels.mask[i0, i1] = True
+        # if IMGTYPE == 3, do nothing. All pixels will be masked
+        if f["IMGTYPE"] != 3:
+            i0, i1 = _IMG_INDICES[f["IMGTYPE"]]
+            pixels[i0, i1] = f["pixels"]
 
     for f in aca_packets:
         res.update(f)
