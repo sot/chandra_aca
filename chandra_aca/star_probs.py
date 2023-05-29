@@ -2,12 +2,20 @@
 """
 Functions related to probabilities for star acquisition and guide tracking.
 
-Current default acquisition probability model: grid-floor-2020-02
+Current default acquisition probability model: ``grid-*`` (latest grid model) This can
+be changed by setting the module configuration value ``conf.default_model`` to an
+available model or model glob in the ``chandra_models`` repository.
+
+The grid-local-quadratic-2023-05 model definition and fit values based on:
+
+- https://github.com/sot/aca_stats/blob/master/fit_acq_model-2023-05-local-quadratic.ipynb
+- https://github.com/sot/aca_stats/blob/master/validate-2023-05-local-quadratic.ipynb
+- SS&AWG review 2023-02-01
 
 The grid-floor-2020-02 model definition and fit values based on:
-  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
 
-SSAWG review: 2020-01-29
+- https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
+- SSAWG review: 2020-01-29
 """
 
 import functools
@@ -356,6 +364,27 @@ def get_grid_axis_values(hdr, axis):
 
 @functools.lru_cache
 def get_grid_func_model(model: Optional[str] = None):
+    """Get grid model from the ``model`` name.
+
+    This reads the model data from the FITS file in the ``chandra_models`` repository.
+    The ``model`` name can be a glob pattern like ``grid-*``, which will match the
+    grid model with the most recent date. If not provided the ``DEFAULT_MODEL`` is used.
+
+    The return value is a dict with necessary data to use the model::
+
+        "filename": filepath (Path),
+        "func_no_1p5": RegularGridInterpolator for stars with color != 1.5 (common)
+        "func_1p5": RegularGridInterpolator for stars with color = 1.5 (less common)
+        "mag_lo": lower bound of mag axis
+        "mag_hi": upper bound of mag axis
+        "t_ccd_lo": lower bound of t_ccd axis
+        "t_ccd_hi": upper bound of t_ccd axis
+        "halfw_lo": lower bound of halfw axis
+        "halfw_hi": upper bound of halfw axis
+
+    :param model: Model name (optional)
+    :returns: dict of model data
+    """
     hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath = chandra_models.get_data(
         file_path=aca_acq_prob_models_path(),
         read_func=read_grid_func_model,
@@ -510,13 +539,15 @@ def spline_model_acq_prob(
     success for a star with specified mag, t_ccd, color, and search box halfwidth.
 
     The model definition and fit values based on:
+
     - https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb
 
     See also:
+
     - Description of the motivation and initial model development.
-       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11
+      https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11
     - Final review and approval.
-       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18
+      https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18
 
     :param mag: ACA magnitude (float or np.ndarray)
     :param t_ccd: CCD temperature (degC, float or ndarray)
@@ -816,7 +847,7 @@ def guide_count(mags, t_ccd, count_9th=False):
 
     One feature is the slight incline in the guide_count curve from 1.0005 at
     mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs
-    of guide_counts to two decimal places (8 * 0.0005 = 0.004), but helps with
+    of guide_counts to two decimal places (``8 * 0.0005 = 0.004``), but helps with
     minimization.
 
     :param mags: float, array

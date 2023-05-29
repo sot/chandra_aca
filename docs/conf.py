@@ -14,14 +14,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
 import os
-import shlex
 import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath(".."))  # noqa
-from chandra_aca import __version__
+from chandra_aca import __version__  # noqa: E402
 
 # -- General configuration ------------------------------------------------
 
@@ -70,7 +69,7 @@ release = __version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
