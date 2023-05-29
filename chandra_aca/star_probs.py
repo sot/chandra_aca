@@ -26,8 +26,10 @@ from typing import Optional
 
 import numpy as np
 import scipy.stats
+from astropy import config
 from astropy.io import fits
 from Chandra.Time import DateTime
+from cxotime import CxoTimeLike
 from numba import jit
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import bisect, brentq
@@ -40,21 +42,35 @@ from chandra_aca.transform import (
     snr_mag_for_t_ccd,
 )
 
-# Default acquisition probability model
-DEFAULT_MODEL = "grid-*"
-
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
 
-# Value (N100) used for fitting
+# Value (N100) used for fitting the `sota` model
 WARM_THRESHOLD = 100
-
 
 # Min and max star acquisition probabilities, regardless of model predictions
 MIN_ACQ_PROB = 1e-6
 MAX_ACQ_PROB = 0.985
 
 MULT_STARS_ENABLED = False
+
+
+class ConfigItem(config.ConfigItem):
+    rootname = "chandra_aca.star_probs"
+
+
+class Conf(config.ConfigNamespace):
+    default_model = ConfigItem(
+        defaultvalue="grid-*",
+        description=(
+            "Default acquisition probability model.  This can be a specific model name "
+            "or a glob pattern (e.g. ``'grid-*'`` for latest grid model)."
+        ),
+    )
+
+
+# Create a configuration instance for the user
+conf = Conf()
 
 
 def get_box_delta(halfwidth):
@@ -234,14 +250,14 @@ def prob_n_acq(star_probs):
 
 
 def acq_success_prob(
-    date=None,
-    t_ccd=-10.0,
-    mag=10.0,
-    color=0.6,
-    spoiler=False,
-    halfwidth=120,
-    model=None,
-):
+    date: CxoTimeLike = None,
+    t_ccd: float | np.ndarray[float] = -10.0,
+    mag: float | np.ndarray[float] = 10.0,
+    color: float | np.ndarray[float] = 0.6,
+    spoiler: bool | np.ndarray[bool] = False,
+    halfwidth: int | np.ndarray[int] = 120,
+    model: Optional[str] = None,
+) -> float | np.ndarray[float]:
     """
     Return probability of acquisition success for given date, temperature, star
     properties and search box size.
@@ -249,22 +265,22 @@ def acq_success_prob(
     Any of the inputs can be scalars or arrays, with the output being the result of
     the broadcasted dimension of the inputs.
 
-    The default probability model is defined by ``DEFAULT_MODEL`` in this module.
+    The default probability model is defined by ``conf.default_model`` in this module.
     Allowed values for the ``model`` name are 'sota', 'spline', or a grid model
     specified by 'grid-<name>-<date>' (e.g. 'grid-floor-2018-11').
 
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
-    :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-10C)
+    :param t_ccd: CCD temperature(s) (degC, scalar or np.ndarray, default=-10C)
     :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
-    :param model: probability model name: 'sota' | 'spline' | 'grid-*'
+    :param model: probability model name: 'sota' | 'spline' | 'grid-\*'
 
     :returns: Acquisition success probability(s)
     """
     if model is None:
-        model = DEFAULT_MODEL
+        model = conf.default_model
 
     date = DateTime(date).secs
     is_scalar, dates, t_ccds, mags, colors, spoilers, halfwidths = broadcast_arrays(
@@ -345,7 +361,8 @@ def get_grid_axis_values(hdr, axis):
     """Get grid model axis values from FITS header.
 
     This is an irregularly-spaced grid if ``hdr`` has ``{axis}_0`` .. ``{axis}_<N-1>``.
-    Otherwise it is a regularly-spaced grid:
+    Otherwise it is a regularly-spaced grid::
+
         linspace(hdr[f"{axis}_lo"], hdr[f"{axis}_hi"], n_vals)
 
     :param hdr: FITS header (dict-like)
@@ -387,7 +404,7 @@ def get_grid_func_model(model: Optional[str] = None):
     """
     hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath = chandra_models.get_data(
         file_path=aca_acq_prob_models_path(),
-        read_func=read_grid_func_model,
+        read_func=_read_grid_func_model,
         read_func_kwargs={"model_name": model},
     )
 
@@ -432,13 +449,13 @@ def get_grid_func_model(model: Optional[str] = None):
     return out
 
 
-def read_grid_func_model(models_dir: Path, model_name: Optional[str] = None):
+def _read_grid_func_model(models_dir: Path, model_name: Optional[str] = None):
     """Read the model file and put into local vars"""
     if model_name is None:
-        model_name = DEFAULT_MODEL
+        model_name = conf.default_model
     filepaths = models_dir.glob(model_name + ".fits.gz")
     filepaths = list(filepaths)
-    filepaths = sorted(filepaths, key=get_date_from_model_filename)
+    filepaths = sorted(filepaths, key=_get_date_from_model_filename)
     if len(filepaths) == 0:
         raise IOError(f"no model files found for {model_name}")
 
@@ -454,7 +471,7 @@ def read_grid_func_model(models_dir: Path, model_name: Optional[str] = None):
     return hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath
 
 
-def get_date_from_model_filename(filepath: Path):
+def _get_date_from_model_filename(filepath: Path):
     match = re.search(r"(\d{4}-\d{2})\.fits\.gz$", filepath.name)
     if match:
         return match.group(1)
