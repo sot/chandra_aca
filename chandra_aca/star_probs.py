@@ -34,7 +34,6 @@ from numba import jit
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import bisect, brentq
 from ska_helpers import chandra_models
-from ska_helpers.paths import aca_acq_prob_models_path
 
 from chandra_aca.transform import (
     broadcast_arrays,
@@ -258,7 +257,7 @@ def acq_success_prob(
     halfwidth: int | np.ndarray[int] = 120,
     model: Optional[str] = None,
 ) -> float | np.ndarray[float]:
-    """
+    r"""
     Return probability of acquisition success for given date, temperature, star
     properties and search box size.
 
@@ -403,7 +402,7 @@ def get_grid_func_model(model: Optional[str] = None):
     :returns: dict of model data
     """
     hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath = chandra_models.get_data(
-        file_path=aca_acq_prob_models_path(),
+        file_path="chandra_models/aca_acq_prob",
         read_func=_read_grid_func_model,
         read_func_kwargs={"model_name": model},
     )
