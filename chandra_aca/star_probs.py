@@ -11,13 +11,19 @@ SSAWG review: 2020-01-29
 """
 
 import functools
+import re
 import warnings
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import scipy.stats
+from astropy.io import fits
 from Chandra.Time import DateTime
 from numba import jit
+from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import bisect, brentq
+from ska_helpers import chandra_models
 from ska_helpers.paths import aca_acq_prob_models_path
 
 from chandra_aca.transform import (
@@ -27,7 +33,7 @@ from chandra_aca.transform import (
 )
 
 # Default acquisition probability model
-DEFAULT_MODEL = "grid-floor-2020-02"
+DEFAULT_MODEL = "grid-*"
 
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
@@ -349,19 +355,12 @@ def get_grid_axis_values(hdr, axis):
 
 
 @functools.lru_cache
-def get_grid_func_model(model):
-    from astropy.io import fits
-    from scipy.interpolate import RegularGridInterpolator
-
-    # Read the model file and put into local vars
-    filepath = aca_acq_prob_models_path() / (model + ".fits.gz")
-    if not filepath.exists():
-        raise IOError(f"model file {filepath} does not exist")
-
-    hdus = fits.open(filepath)
-    hdu0 = hdus[0]
-    probit_p_fail_no_1p5 = hdus[1].data
-    probit_p_fail_1p5 = hdus[2].data
+def get_grid_func_model(model: Optional[str] = None):
+    hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath = chandra_models.get_data(
+        file_path=aca_acq_prob_models_path(),
+        read_func=read_grid_func_model,
+        read_func_kwargs={"model_name": model},
+    )
 
     hdr = hdu0.header
     grid_mags = get_grid_axis_values(hdr, "mag")
@@ -402,6 +401,36 @@ def get_grid_func_model(model):
         "halfw_hi": halfw_hi,
     }
     return out
+
+
+def read_grid_func_model(models_dir: Path, model_name: Optional[str] = None):
+    """Read the model file and put into local vars"""
+    if model_name is None:
+        model_name = DEFAULT_MODEL
+    filepaths = models_dir.glob(model_name + ".fits.gz")
+    filepaths = list(filepaths)
+    filepaths = sorted(filepaths, key=get_date_from_model_filename)
+    if len(filepaths) == 0:
+        raise IOError(f"no model files found for {model_name}")
+
+    filepath = filepaths[-1]
+    if not filepath.exists():
+        raise IOError(f"model file {filepath} does not exist")
+
+    with fits.open(filepath) as hdus:
+        hdu0 = hdus[0]
+        probit_p_fail_no_1p5 = hdus[1].data
+        probit_p_fail_1p5 = hdus[2].data
+
+    return hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath
+
+
+def get_date_from_model_filename(filepath: Path):
+    match = re.search(r"(\d{4}-\d{2})\.fits\.gz$", filepath.name)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError(f"could not parse date from {filepath}")
 
 
 def grid_model_acq_prob(
