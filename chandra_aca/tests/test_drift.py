@@ -56,10 +56,9 @@ for row in dat:
 @pytest.mark.parametrize("kwargs", kwargs_list)
 @pytest.mark.parametrize("env_override", [None, str(Path(__file__).parent / "data")])
 def test_get_aca_offsets(kwargs, env_override, monkeypatch):
-    """Regression test that ACA offsets match the original flight values to expected
-    precision."""
-    if env_override:
-        monkeypatch.setenv(ska_helpers.paths.CHANDRA_MODELS_ROOT_ENV_VAR, env_override)
+    """Regression test that ACA offsets match the original flight values from 2022-11
+    analysis to expected precision."""
+    monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
     kwargs = kwargs.copy()
     aca_offset_y = kwargs.pop("aca_offset_y")
     aca_offset_z = kwargs.pop("aca_offset_z")
