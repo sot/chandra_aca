@@ -19,6 +19,7 @@ The grid-floor-2020-02 model definition and fit values based on:
 """
 
 import functools
+import os
 import re
 import warnings
 from pathlib import Path
@@ -379,7 +380,11 @@ def get_grid_axis_values(hdr, axis):
 
 
 @functools.lru_cache
-def get_grid_func_model(model: Optional[str] = None):
+def get_grid_func_model(
+    model: Optional[str] = None,
+    version: Optional[str] = None,
+    repo_path: Optional[str | Path] = None,
+):
     """Get grid model from the ``model`` name.
 
     This reads the model data from the FITS file in the ``chandra_models`` repository.
@@ -399,12 +404,16 @@ def get_grid_func_model(model: Optional[str] = None):
         "halfw_hi": upper bound of halfw axis
 
     :param model: Model name (optional)
+    :param version: Version / tag / branch of ``chandra_models`` repository (optional)
+    :param repo_path: Path to ``chandra_models`` repository (optional)
     :returns: dict of model data
     """
     data, info = chandra_models.get_data(
         file_path="chandra_models/aca_acq_prob",
         read_func=_read_grid_func_model,
         read_func_kwargs={"model_name": model},
+        version=version,
+        repo_path=repo_path,
     )
     hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5 = data
 
@@ -503,7 +512,11 @@ def grid_model_acq_prob(
     """
     # Get the grid model function and model parameters from a FITS file. This function
     # call is cached.
-    gfm = get_grid_func_model(model)
+    gfm = get_grid_func_model(
+        model,
+        version=os.environ.get("CHANDRA_MODELS_DEFAULT_VERSION"),
+        repo_path=os.environ.get("CHANDRA_MODELS_REPO_PATH"),
+    )
 
     func_no_1p5 = gfm["func_no_1p5"]
     func_1p5 = gfm["func_1p5"]
