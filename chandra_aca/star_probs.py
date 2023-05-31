@@ -401,11 +401,12 @@ def get_grid_func_model(model: Optional[str] = None):
     :param model: Model name (optional)
     :returns: dict of model data
     """
-    hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath = chandra_models.get_data(
+    data, info = chandra_models.get_data(
         file_path="chandra_models/aca_acq_prob",
         read_func=_read_grid_func_model,
         read_func_kwargs={"model_name": model},
     )
+    hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5 = data
 
     hdr = hdu0.header
     grid_mags = get_grid_axis_values(hdr, "mag")
@@ -435,7 +436,7 @@ def get_grid_func_model(model: Optional[str] = None):
     halfw_hi = hdr["halfw_hi"]
 
     out = {
-        "filename": filepath,
+        "filename": info["data_file_path"],
         "func_no_1p5": func_no_1p5,
         "func_1p5": func_1p5,
         "mag_lo": mag_lo,
@@ -444,6 +445,7 @@ def get_grid_func_model(model: Optional[str] = None):
         "t_ccd_hi": t_ccd_hi,
         "halfw_lo": halfw_lo,
         "halfw_hi": halfw_hi,
+        "info": info,
     }
     return out
 
@@ -467,7 +469,9 @@ def _read_grid_func_model(models_dir: Path, model_name: Optional[str] = None):
         probit_p_fail_no_1p5 = hdus[1].data
         probit_p_fail_1p5 = hdus[2].data
 
-    return hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5, filepath
+    # Pack the output data as a tuple
+    data = (hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5)
+    return data, filepath
 
 
 def _get_date_from_model_filename(filepath: Path):
