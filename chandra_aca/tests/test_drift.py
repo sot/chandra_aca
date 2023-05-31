@@ -4,7 +4,6 @@ from pathlib import Path
 import astropy.table as tbl
 import numpy as np
 import pytest
-import ska_helpers.paths
 
 from chandra_aca import drift
 
