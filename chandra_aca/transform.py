@@ -93,7 +93,7 @@ ODB_SI_ALIGN = np.array(
 
 
 def broadcast_arrays(*args):
-    """
+    r"""
     Broadcast ``*args`` inputs to same shape and return an ``is_scalar`` flag and
     the broadcasted version of inputs.  This lets intermediate code work on
     arrays that are guaranteed to be the same shape and at least a 1-d array,
@@ -110,7 +110,7 @@ def broadcast_arrays(*args):
 
 
 def broadcast_arrays_flatten(*args):
-    """Broadcast ``*args`` inputs to same shape and then return that shape and the
+    r"""Broadcast ``*args`` inputs to same shape and then return that shape and the
     flattened view of all the inputs.  This lets intermediate code work on all
     scalars or all arrays that are the same-length 1-d array and then reshape
     the output at the end (if necessary).
