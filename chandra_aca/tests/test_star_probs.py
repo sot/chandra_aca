@@ -9,9 +9,9 @@ from astropy.table import Table
 from ska_helpers.paths import aca_acq_prob_models_path
 
 from chandra_aca.star_probs import (
-    DEFAULT_MODEL,
     acq_success_prob,
     binom_ppf,
+    conf,
     grid_model_acq_prob,
     guide_count,
     mag_for_p_acq,
@@ -564,12 +564,7 @@ def test_grid_floor_2020_02():
 
 
 def test_default_acq_prob_model():
-    """Ensure that the default model matches expectation.  This test needs to be
-    updated whenever a new (default) flight model is released.
-    """
-    # UPDATE with the expectation for the current flight default model
-    assert DEFAULT_MODEL == "grid-floor-2020-02"
-
+    """Ensure that acq_success_prob correctly selects the default model."""
     mags = [9, 9.5, 10.5]
     t_ccds = [-10, -5]
     halfws = [60, 120, 160]
@@ -577,7 +572,7 @@ def test_default_acq_prob_model():
 
     # Specifically call out the default model name
     probs1 = grid_model_acq_prob(
-        mag, t_ccd, halfwidth=halfw, color=1.0, model=DEFAULT_MODEL
+        mag, t_ccd, halfwidth=halfw, color=1.0, model=conf.default_model
     )
     # Use the high-level (model-independent) API with defaults
     probs2 = acq_success_prob(t_ccd=t_ccd, mag=mag, halfwidth=halfw)

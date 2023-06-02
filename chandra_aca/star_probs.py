@@ -2,23 +2,39 @@
 """
 Functions related to probabilities for star acquisition and guide tracking.
 
-Current default acquisition probability model: grid-floor-2020-02
+Current default acquisition probability model: ``grid-*`` (latest grid model) This can
+be changed by setting the module configuration value ``conf.default_model`` to an
+available model or model glob in the ``chandra_models`` repository.
+
+The grid-local-quadratic-2023-05 model definition and fit values based on:
+
+- https://github.com/sot/aca_stats/blob/master/fit_acq_model-2023-05-local-quadratic.ipynb
+- https://github.com/sot/aca_stats/blob/master/validate-2023-05-local-quadratic.ipynb
+- SS&AWG review 2023-02-01
 
 The grid-floor-2020-02 model definition and fit values based on:
-  https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
 
-SSAWG review: 2020-01-29
+- https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
+- SSAWG review: 2020-01-29
 """
 
 import functools
+import os
+import re
 import warnings
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import scipy.stats
+from astropy import config
+from astropy.io import fits
 from Chandra.Time import DateTime
+from cxotime import CxoTimeLike
 from numba import jit
+from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import bisect, brentq
-from ska_helpers.paths import aca_acq_prob_models_path
+from ska_helpers import chandra_models
 
 from chandra_aca.transform import (
     broadcast_arrays,
@@ -26,21 +42,35 @@ from chandra_aca.transform import (
     snr_mag_for_t_ccd,
 )
 
-# Default acquisition probability model
-DEFAULT_MODEL = "grid-floor-2020-02"
-
 # Cache of cubic spline functions.  Eval'd only on the first time.
 SPLINE_FUNCS = {}
 
-# Value (N100) used for fitting
+# Value (N100) used for fitting the `sota` model
 WARM_THRESHOLD = 100
-
 
 # Min and max star acquisition probabilities, regardless of model predictions
 MIN_ACQ_PROB = 1e-6
 MAX_ACQ_PROB = 0.985
 
 MULT_STARS_ENABLED = False
+
+
+class ConfigItem(config.ConfigItem):
+    rootname = "chandra_aca.star_probs"
+
+
+class Conf(config.ConfigNamespace):
+    default_model = ConfigItem(
+        defaultvalue="grid-*",
+        description=(
+            "Default acquisition probability model.  This can be a specific model name "
+            "or a glob pattern (e.g. ``'grid-*'`` for latest grid model)."
+        ),
+    )
+
+
+# Create a configuration instance for the user
+conf = Conf()
 
 
 def get_box_delta(halfwidth):
@@ -220,37 +250,37 @@ def prob_n_acq(star_probs):
 
 
 def acq_success_prob(
-    date=None,
-    t_ccd=-10.0,
-    mag=10.0,
-    color=0.6,
-    spoiler=False,
-    halfwidth=120,
-    model=None,
-):
-    """
+    date: CxoTimeLike = None,
+    t_ccd: float | np.ndarray[float] = -10.0,
+    mag: float | np.ndarray[float] = 10.0,
+    color: float | np.ndarray[float] = 0.6,
+    spoiler: bool | np.ndarray[bool] = False,
+    halfwidth: int | np.ndarray[int] = 120,
+    model: Optional[str] = None,
+) -> float | np.ndarray[float]:
+    r"""
     Return probability of acquisition success for given date, temperature, star
     properties and search box size.
 
     Any of the inputs can be scalars or arrays, with the output being the result of
     the broadcasted dimension of the inputs.
 
-    The default probability model is defined by ``DEFAULT_MODEL`` in this module.
+    The default probability model is defined by ``conf.default_model`` in this module.
     Allowed values for the ``model`` name are 'sota', 'spline', or a grid model
     specified by 'grid-<name>-<date>' (e.g. 'grid-floor-2018-11').
 
     :param date: Date(s) (scalar or np.ndarray, default=NOW)
-    :param t_ccd: CD temperature(s) (degC, scalar or np.ndarray, default=-10C)
+    :param t_ccd: CCD temperature(s) (degC, scalar or np.ndarray, default=-10C)
     :param mag: Star magnitude(s) (scalar or np.ndarray, default=10.0)
     :param color: Star color(s) (scalar or np.ndarray, default=0.6)
     :param spoiler: Star spoiled (boolean or np.ndarray, default=False)
     :param halfwidth: Search box halfwidth (arcsec, default=120)
-    :param model: probability model name: 'sota' | 'spline' | 'grid-*'
+    :param model: probability model name: 'sota' | 'spline' | 'grid-\*'
 
     :returns: Acquisition success probability(s)
     """
     if model is None:
-        model = DEFAULT_MODEL
+        model = conf.default_model
 
     date = DateTime(date).secs
     is_scalar, dates, t_ccds, mags, colors, spoilers, halfwidths = broadcast_arrays(
@@ -331,7 +361,8 @@ def get_grid_axis_values(hdr, axis):
     """Get grid model axis values from FITS header.
 
     This is an irregularly-spaced grid if ``hdr`` has ``{axis}_0`` .. ``{axis}_<N-1>``.
-    Otherwise it is a regularly-spaced grid:
+    Otherwise it is a regularly-spaced grid::
+
         linspace(hdr[f"{axis}_lo"], hdr[f"{axis}_hi"], n_vals)
 
     :param hdr: FITS header (dict-like)
@@ -349,19 +380,42 @@ def get_grid_axis_values(hdr, axis):
 
 
 @functools.lru_cache
-def get_grid_func_model(model):
-    from astropy.io import fits
-    from scipy.interpolate import RegularGridInterpolator
+def get_grid_func_model(
+    model: Optional[str] = None,
+    version: Optional[str] = None,
+    repo_path: Optional[str | Path] = None,
+):
+    """Get grid model from the ``model`` name.
 
-    # Read the model file and put into local vars
-    filepath = aca_acq_prob_models_path() / (model + ".fits.gz")
-    if not filepath.exists():
-        raise IOError(f"model file {filepath} does not exist")
+    This reads the model data from the FITS file in the ``chandra_models`` repository.
+    The ``model`` name can be a glob pattern like ``grid-*``, which will match the
+    grid model with the most recent date. If not provided the ``DEFAULT_MODEL`` is used.
 
-    hdus = fits.open(filepath)
-    hdu0 = hdus[0]
-    probit_p_fail_no_1p5 = hdus[1].data
-    probit_p_fail_1p5 = hdus[2].data
+    The return value is a dict with necessary data to use the model::
+
+        "filename": filepath (Path),
+        "func_no_1p5": RegularGridInterpolator for stars with color != 1.5 (common)
+        "func_1p5": RegularGridInterpolator for stars with color = 1.5 (less common)
+        "mag_lo": lower bound of mag axis
+        "mag_hi": upper bound of mag axis
+        "t_ccd_lo": lower bound of t_ccd axis
+        "t_ccd_hi": upper bound of t_ccd axis
+        "halfw_lo": lower bound of halfw axis
+        "halfw_hi": upper bound of halfw axis
+
+    :param model: Model name (optional)
+    :param version: Version / tag / branch of ``chandra_models`` repository (optional)
+    :param repo_path: Path to ``chandra_models`` repository (optional)
+    :returns: dict of model data
+    """
+    data, info = chandra_models.get_data(
+        file_path="chandra_models/aca_acq_prob",
+        read_func=_read_grid_func_model,
+        read_func_kwargs={"model_name": model},
+        version=version,
+        repo_path=repo_path,
+    )
+    hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5 = data
 
     hdr = hdu0.header
     grid_mags = get_grid_axis_values(hdr, "mag")
@@ -391,7 +445,7 @@ def get_grid_func_model(model):
     halfw_hi = hdr["halfw_hi"]
 
     out = {
-        "filename": filepath,
+        "filename": info["data_file_path"],
         "func_no_1p5": func_no_1p5,
         "func_1p5": func_1p5,
         "mag_lo": mag_lo,
@@ -400,8 +454,41 @@ def get_grid_func_model(model):
         "t_ccd_hi": t_ccd_hi,
         "halfw_lo": halfw_lo,
         "halfw_hi": halfw_hi,
+        "info": info,
     }
     return out
+
+
+def _read_grid_func_model(models_dir: Path, model_name: Optional[str] = None):
+    """Read the model file and put into local vars"""
+    if model_name is None:
+        model_name = conf.default_model
+    filepaths = models_dir.glob(model_name + ".fits.gz")
+    filepaths = list(filepaths)
+    filepaths = sorted(filepaths, key=_get_date_from_model_filename)
+    if len(filepaths) == 0:
+        raise IOError(f"no model files found for {model_name}")
+
+    filepath = filepaths[-1]
+    if not filepath.exists():
+        raise IOError(f"model file {filepath} does not exist")
+
+    with fits.open(filepath) as hdus:
+        hdu0 = hdus[0]
+        probit_p_fail_no_1p5 = hdus[1].data
+        probit_p_fail_1p5 = hdus[2].data
+
+    # Pack the output data as a tuple
+    data = (hdu0, probit_p_fail_no_1p5, probit_p_fail_1p5)
+    return data, filepath
+
+
+def _get_date_from_model_filename(filepath: Path):
+    match = re.search(r"(\d{4}-\d{2})\.fits\.gz$", filepath.name)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError(f"could not parse date from {filepath}")
 
 
 def grid_model_acq_prob(
@@ -425,7 +512,11 @@ def grid_model_acq_prob(
     """
     # Get the grid model function and model parameters from a FITS file. This function
     # call is cached.
-    gfm = get_grid_func_model(model)
+    gfm = get_grid_func_model(
+        model,
+        version=os.environ.get("CHANDRA_MODELS_DEFAULT_VERSION"),
+        repo_path=os.environ.get("CHANDRA_MODELS_REPO_PATH"),
+    )
 
     func_no_1p5 = gfm["func_no_1p5"]
     func_1p5 = gfm["func_1p5"]
@@ -481,13 +572,15 @@ def spline_model_acq_prob(
     success for a star with specified mag, t_ccd, color, and search box halfwidth.
 
     The model definition and fit values based on:
+
     - https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb
 
     See also:
+
     - Description of the motivation and initial model development.
-       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11
+      https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11
     - Final review and approval.
-       https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18
+      https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18
 
     :param mag: ACA magnitude (float or np.ndarray)
     :param t_ccd: CCD temperature (degC, float or ndarray)
@@ -787,7 +880,7 @@ def guide_count(mags, t_ccd, count_9th=False):
 
     One feature is the slight incline in the guide_count curve from 1.0005 at
     mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs
-    of guide_counts to two decimal places (8 * 0.0005 = 0.004), but helps with
+    of guide_counts to two decimal places (``8 * 0.0005 = 0.004``), but helps with
     minimization.
 
     :param mags: float, array

@@ -17,12 +17,16 @@ import numpy as np
 from astropy.table import Table
 from astropy.utils.data import download_file
 from Chandra.Time import DateTime
-from ska_helpers.paths import aca_drift_model_path
+from ska_helpers import chandra_models
 from ska_helpers.utils import LazyDict
 
 
 def load_drift_pars():
-    pars = json.loads(aca_drift_model_path().read_text())
+    pars_txt, info = chandra_models.get_data(
+        Path("chandra_models") / "aca_drift" / "aca_drift_model.json"
+    )
+    pars = json.loads(pars_txt)
+    pars["info"] = info
     return pars
 
 
