@@ -324,7 +324,7 @@ _a2p = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O
 # - Type 0 is 4x4,
 # - Types 1 (first batch of 6x6) and 4 (first batch of 8x8) use the same pixel IDs as 4x4.
 # - Type 3 is not a real image type. It occurs when the image telemetry is used to download
-#   engineering data. In this case, the image is treated as 4x4, but the values will be giberish.
+#   memory dump data. In this case, the image is treated as 4x4, but the values might be giberish.
 # - Types 2 (second batch of 6x6) and 5 (second batch of 8x8) use the same pixel IDs.
 _IMG_INDICES = [
     np.array([PIXEL_MAP_INV["4x4"][f"{k}1"] for k in _a2p]).T,
@@ -521,12 +521,11 @@ def _combine_aca_packets(aca_packets):
     pixels = np.ma.masked_all((8, 8))
     pixels.data[:] = np.nan
     for f in aca_packets:
-        i0, i1 = _IMG_INDICES[f["IMGTYPE"]]
-        pixels[i0, i1] = f["pixels"]
-        # IMGTYPE 3 is not a real image. It means the pixels are used to download engineering data
-        # We set the pixel values to the values in telemetry, but mask them.
-        if f["IMGTYPE"] == 3:
-            pixels.mask[i0, i1] = True
+        # IMGTYPE 3 is not a real image. It means the pixels are used to download memory dump data
+        # if IMGTYPE == 3, do nothing. All pixels will be masked
+        if f["IMGTYPE"] != 3:
+            i0, i1 = _IMG_INDICES[f["IMGTYPE"]]
+            pixels[i0, i1] = f["pixels"]
 
     for f in aca_packets:
         res.update(f)

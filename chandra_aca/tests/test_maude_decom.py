@@ -753,29 +753,27 @@ def test_get_aca_packets_blobs():
     assert blobs == ref_blobs
 
 
-def test_imgtype_dnld():
+@pytest.mark.parametrize("source", ["blobs", "frames"])
+def test_imgtype_dnld(source):
     """
-    Tests for the case when IMGTYPE is DNLD
+    Tests for the case when IMGTYPE is DNLD.
     """
+    from cxotime import CxoTime
 
-    start = "2023:047:02:58:13.213"
-    stop = "2023:047:02:58:14.239"
-    maude_result = maude.get_frames(start, stop, channel="FLIGHT")
-    raw_aca_packets = maude_decom.get_raw_aca_packets(
-        start, stop, maude_result=maude_result
-    )
-    # decom_packets = [maude_decom.unpack_aca_telemetry(a) for a in raw_aca_packets["packets"]]
-    # assert 3 not in [p['IMGTYPE'] for packet in decom_packets for p in packet]
+    start = CxoTime("2023:047:02:57")
+    stop = CxoTime("2023:047:02:58")
+    if source == "blobs":
+        maude_result = maude.get_blobs(start, stop, channel="FLIGHT")
+        args = {"blobs": maude_result}
+    else:
+        maude_result = maude.get_frames(start, stop, channel="FLIGHT")
+        args = {"frames": maude_result}
 
-    img = maude_decom._get_aca_packets(
-        raw_aca_packets,
-        start,
-        stop,
-        combine=False,
-        adjust_time=False,
-        calibrate=False,
+    img = maude_decom.get_aca_packets(
+        start, stop, combine=False, adjust_time=False, calibrate=False, **args
     )
 
     all_masked = np.array([np.all(row["IMG"].mask) for row in img])
     img_dnld = img["IMGTYPE"] == 3
+    assert img_dnld.shape[0] > 0
     assert np.all(all_masked == img_dnld)
