@@ -756,7 +756,7 @@ def test_get_aca_packets_blobs():
 @pytest.mark.parametrize("source", ["blobs", "frames"])
 def test_imgtype_dnld(source):
     """
-    Tests for the case when IMGTYPE is DNLD (from blobs)
+    Tests for the case when IMGTYPE is DNLD.
     """
     from cxotime import CxoTime
 
