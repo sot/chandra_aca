@@ -1,11 +1,11 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.39.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.40.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -46,7 +46,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.39.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.40.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -388,7 +388,7 @@
 <span class="c1"># - Type 0 is 4x4,</span>
 <span class="c1"># - Types 1 (first batch of 6x6) and 4 (first batch of 8x8) use the same pixel IDs as 4x4.</span>
 <span class="c1"># - Type 3 is not a real image type. It occurs when the image telemetry is used to download</span>
-<span class="c1">#   engineering data. In this case, the image is treated as 4x4, but the values will be giberish.</span>
+<span class="c1">#   memory dump data. In this case, the image is treated as 4x4, but the values might be giberish.</span>
 <span class="c1"># - Types 2 (second batch of 6x6) and 5 (second batch of 8x8) use the same pixel IDs.</span>
 <span class="n">_IMG_INDICES</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">PIXEL_MAP_INV</span><span class="p">[</span><span class="s2">&quot;4x4&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">1&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_a2p</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
@@ -507,7 +507,7 @@
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;DIAGNOSTIC&quot;</span><span class="p">:</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBBBBB&quot;</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:])}</span>
 
 
-<div class="viewcode-block" id="unpack_aca_telemetry"><a class="viewcode-back" href="../../index.html#chandra_aca.maude_decom.unpack_aca_telemetry">[docs]</a><span class="k">def</span> <span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
+<div class="viewcode-block" id="unpack_aca_telemetry"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.unpack_aca_telemetry">[docs]</a><span class="k">def</span> <span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Unpack ACA telemetry encoded in 225-byte packets.</span>
 
@@ -585,12 +585,11 @@
     <span class="n">pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
     <span class="n">pixels</span><span class="o">.</span><span class="n">data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">aca_packets</span><span class="p">:</span>
-        <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">_IMG_INDICES</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]]</span>
-        <span class="n">pixels</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;pixels&quot;</span><span class="p">]</span>
-        <span class="c1"># IMGTYPE 3 is not a real image. It means the pixels are used to download engineering data</span>
-        <span class="c1"># We set the pixel values to the values in telemetry, but mask them.</span>
-        <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">pixels</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># IMGTYPE 3 is not a real image. It means the pixels are used to download memory dump data</span>
+        <span class="c1"># if IMGTYPE == 3, do nothing. All pixels will be masked</span>
+        <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">_IMG_INDICES</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]]</span>
+            <span class="n">pixels</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;pixels&quot;</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">aca_packets</span><span class="p">:</span>
         <span class="n">res</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -630,7 +629,7 @@
         <span class="k">yield</span> <span class="n">res</span>
 
 
-<div class="viewcode-block" id="get_raw_aca_packets"><a class="viewcode-back" href="../../index.html#chandra_aca.maude_decom.get_raw_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_raw_aca_packets"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</span>
 
@@ -813,7 +812,7 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<div class="viewcode-block" id="get_aca_packets"><a class="viewcode-back" href="../../index.html#chandra_aca.maude_decom.get_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_aca_packets</span><span class="p">(</span>
+<div class="viewcode-block" id="get_aca_packets"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_aca_packets</span><span class="p">(</span>
     <span class="n">start</span><span class="p">,</span>
     <span class="n">stop</span><span class="p">,</span>
     <span class="n">level0</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1146,7 +1145,7 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<div class="viewcode-block" id="get_aca_images"><a class="viewcode-back" href="../../index.html#chandra_aca.maude_decom.get_aca_images">[docs]</a><span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_aca_images"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_images">[docs]</a><span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch ACA image telemetry</span>
 
@@ -1163,7 +1162,7 @@
 <span class="c1">######################</span>
 
 
-<div class="viewcode-block" id="get_raw_aca_blobs"><a class="viewcode-back" href="../../index.html#chandra_aca.maude_decom.get_raw_aca_blobs">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_raw_aca_blobs"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_blobs">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</span>
 
@@ -1231,7 +1230,7 @@
     <span class="k">return</span> <span class="n">result</span></div>
 
 
-<div class="viewcode-block" id="blob_to_aca_image_dict"><a class="viewcode-back" href="../../index.html#chandra_aca.maude_decom.blob_to_aca_image_dict">[docs]</a><span class="k">def</span> <span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="blob_to_aca_image_dict"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict">[docs]</a><span class="k">def</span> <span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assemble ACA image MSIDs from a blob into a dictionary.</span>
 

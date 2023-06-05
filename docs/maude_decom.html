@@ -1,0 +1,485 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.40.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
+    <script type="text/javascript" src="_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="chandra_aca.planets" href="planets.html" />
+    <link rel="prev" title="chandra_aca.centroid_resid" href="centroid_resid.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
+        <span id="logotext1">ska</span><span id="logotext2">tools</span>
+    </a></li>
+    <li><a title="General Index" href="genindex.html">Index</a></li>
+    <li><a title="Module Index" href="py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="planets.html" title="chandra_aca.planets">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="centroid_resid.html" title="chandra_aca.centroid_resid">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="index.html">chandra_aca 4.40.0 documentation</a>
+	 &#187;
+      </li>
+      
+      <li>chandra_aca.maude_decom</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-chandra_aca.maude_decom">
+<span id="chandra-aca-maude-decom"></span><h1>chandra_aca.maude_decom<a class="headerlink" href="#module-chandra_aca.maude_decom" title="Permalink to this headline">¶</a></h1>
+<p>Classes and functions to help fetching ACA telemetry data using MAUDE.
+These include the following global variables</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID</p></li>
+<li><p>PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.</p></li>
+<li><p>PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes</p></li>
+<li><p>ACA_MSID_LIST: dictionary of commonly-used ACA telemetry MSIDs.</p></li>
+<li><p>ACA_SLOT_MSID_LIST: dictionary of ACA image telemetry MSIDs.</p></li>
+</ul>
+</div></blockquote>
+<p>PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the image size.
+In the following tables, column index increases to the right and row index increases to the top
+(c.f. ACA User Manual Figs 1.8 and 1.9 ):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">Size</span> <span class="mi">4</span><span class="n">X41</span><span class="p">:</span>
+
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">D1</span> <span class="o">|</span> <span class="n">H1</span> <span class="o">|</span> <span class="n">L1</span> <span class="o">|</span> <span class="n">P1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">C1</span> <span class="o">|</span> <span class="n">G1</span> <span class="o">|</span> <span class="n">K1</span> <span class="o">|</span> <span class="n">O1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">B1</span> <span class="o">|</span> <span class="n">F1</span> <span class="o">|</span> <span class="n">J1</span> <span class="o">|</span> <span class="n">N1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">A1</span> <span class="o">|</span> <span class="n">E1</span> <span class="o">|</span> <span class="n">I1</span> <span class="o">|</span> <span class="n">M1</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+
+<span class="o">-</span> <span class="n">Size</span> <span class="mi">6</span><span class="n">X61</span> <span class="ow">or</span> <span class="mi">6</span><span class="n">X62</span><span class="p">:</span>
+
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">E2</span> <span class="o">|</span> <span class="n">F2</span> <span class="o">|</span> <span class="n">G2</span> <span class="o">|</span> <span class="n">H2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">D2</span> <span class="o">|</span> <span class="n">D1</span> <span class="o">|</span> <span class="n">H1</span> <span class="o">|</span> <span class="n">L1</span> <span class="o">|</span> <span class="n">P1</span> <span class="o">|</span> <span class="n">I2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">C2</span> <span class="o">|</span> <span class="n">C1</span> <span class="o">|</span> <span class="n">G1</span> <span class="o">|</span> <span class="n">K1</span> <span class="o">|</span> <span class="n">O1</span> <span class="o">|</span> <span class="n">J2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">B2</span> <span class="o">|</span> <span class="n">B1</span> <span class="o">|</span> <span class="n">F1</span> <span class="o">|</span> <span class="n">J1</span> <span class="o">|</span> <span class="n">N1</span> <span class="o">|</span> <span class="n">K2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">A2</span> <span class="o">|</span> <span class="n">A1</span> <span class="o">|</span> <span class="n">E1</span> <span class="o">|</span> <span class="n">I1</span> <span class="o">|</span> <span class="n">M1</span> <span class="o">|</span> <span class="n">L2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="n">P2</span> <span class="o">|</span> <span class="n">O2</span> <span class="o">|</span> <span class="n">N2</span> <span class="o">|</span> <span class="n">M2</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span> <span class="o">--</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+
+
+<span class="o">-</span> <span class="n">Size</span> <span class="mi">8</span><span class="n">X81</span><span class="p">,</span> <span class="mi">8</span><span class="n">X82</span><span class="p">,</span> <span class="mi">8</span><span class="n">X83</span> <span class="ow">or</span> <span class="mi">8</span><span class="n">X84</span><span class="p">:</span>
+
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">H1</span> <span class="o">|</span> <span class="n">P1</span> <span class="o">|</span> <span class="n">H2</span> <span class="o">|</span> <span class="n">P2</span> <span class="o">|</span> <span class="n">H3</span> <span class="o">|</span> <span class="n">P3</span> <span class="o">|</span> <span class="n">H4</span> <span class="o">|</span> <span class="n">P4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">G1</span> <span class="o">|</span> <span class="n">O1</span> <span class="o">|</span> <span class="n">G2</span> <span class="o">|</span> <span class="n">O2</span> <span class="o">|</span> <span class="n">G3</span> <span class="o">|</span> <span class="n">O3</span> <span class="o">|</span> <span class="n">G4</span> <span class="o">|</span> <span class="n">O4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">F1</span> <span class="o">|</span> <span class="n">N1</span> <span class="o">|</span> <span class="n">F2</span> <span class="o">|</span> <span class="n">N2</span> <span class="o">|</span> <span class="n">F3</span> <span class="o">|</span> <span class="n">N3</span> <span class="o">|</span> <span class="n">F4</span> <span class="o">|</span> <span class="n">N4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">E1</span> <span class="o">|</span> <span class="n">M1</span> <span class="o">|</span> <span class="n">E2</span> <span class="o">|</span> <span class="n">M2</span> <span class="o">|</span> <span class="n">E3</span> <span class="o">|</span> <span class="n">M3</span> <span class="o">|</span> <span class="n">E4</span> <span class="o">|</span> <span class="n">M4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">D1</span> <span class="o">|</span> <span class="n">L1</span> <span class="o">|</span> <span class="n">D2</span> <span class="o">|</span> <span class="n">L2</span> <span class="o">|</span> <span class="n">D3</span> <span class="o">|</span> <span class="n">L3</span> <span class="o">|</span> <span class="n">D4</span> <span class="o">|</span> <span class="n">L4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">C1</span> <span class="o">|</span> <span class="n">K1</span> <span class="o">|</span> <span class="n">C2</span> <span class="o">|</span> <span class="n">K2</span> <span class="o">|</span> <span class="n">C3</span> <span class="o">|</span> <span class="n">K3</span> <span class="o">|</span> <span class="n">C4</span> <span class="o">|</span> <span class="n">K4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">B1</span> <span class="o">|</span> <span class="n">J1</span> <span class="o">|</span> <span class="n">B2</span> <span class="o">|</span> <span class="n">J2</span> <span class="o">|</span> <span class="n">B3</span> <span class="o">|</span> <span class="n">J3</span> <span class="o">|</span> <span class="n">B4</span> <span class="o">|</span> <span class="n">J4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+  <span class="o">|</span> <span class="n">A1</span> <span class="o">|</span> <span class="n">I1</span> <span class="o">|</span> <span class="n">A2</span> <span class="o">|</span> <span class="n">I2</span> <span class="o">|</span> <span class="n">A3</span> <span class="o">|</span> <span class="n">I3</span> <span class="o">|</span> <span class="n">A4</span> <span class="o">|</span> <span class="n">I4</span> <span class="o">|</span>
+  <span class="o">-----------------------------------------</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.blob_to_aca_image_dict">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">blob_to_aca_image_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blob</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgnum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#blob_to_aca_image_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.blob_to_aca_image_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assemble ACA image MSIDs from a blob into a dictionary.</p>
+<p>This does to blobs what unpack_aca_telemetry does to frames, but for a single image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blob</strong> – </p></li>
+<li><p><strong>imgnum</strong> – </p></li>
+<li><p><strong>pea</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_aca_images">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch ACA image telemetry</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>astropy.table.Table</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_aca_packets">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_packets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adjust_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_packets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_packets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</p>
+<p>Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
+with complete ACA telemetry. Compare these to calls to the function:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;TEMPCCD&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMPHOUS&#39;</span><span class="p">]</span>
+<span class="go">&lt;Table masked=True length=4&gt;</span>
+<span class="go">     TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS</span>
+<span class="go">   float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16</span>
+<span class="go">------------- ------ ------ ------- ------- ------- ------- ------- ------- --------</span>
+<span class="go">684089001.869  78006     32       0       0       4     469    -332     -20       83</span>
+<span class="go">684089005.969  78006     48       0       0       4     469    -332     -20       83</span>
+<span class="go">684089010.069  78006     64       0       0       4     469    -332     -20       83</span>
+<span class="go">684089014.169  78006     80       0       0       4     469    -332     -20       83</span>
+</pre></div>
+</div>
+<p>Using combined=False, results in records with incomplete images. In this case, data can be
+missing from some records. For example, with 8X8 images, IMGROW0 and IMGCOL0 are present in the
+first ACA packet (image type 4) while the temperature is present in the second (image type 5):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;TEMPCCD&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMPHOUS&#39;</span><span class="p">]</span>
+<span class="go">    &lt;Table masked=True length=15&gt;</span>
+<span class="go">         TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS</span>
+<span class="go">       float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16</span>
+<span class="go">    ------------- ------ ------ ------- ------- ------- ------- ------- ------- --------</span>
+<span class="go">    684089000.844  78006     28       0       0       7      --      --      --       --</span>
+<span class="go">    684089001.869  78006     32       0       0       4     469    -332      --       --</span>
+<span class="go">    684089002.894  78006     36       0       0       5      --      --     -20       83</span>
+<span class="go">    684089003.919  78006     40       0       0       6      --      --      --       --</span>
+<span class="go">    684089004.944  78006     44       0       0       7      --      --      --       --</span>
+<span class="go">    684089005.969  78006     48       0       0       4     469    -332      --       --</span>
+<span class="go">    684089006.994  78006     52       0       0       5      --      --     -20       83</span>
+<span class="go">    684089008.019  78006     56       0       0       6      --      --      --       --</span>
+<span class="go">    684089009.044  78006     60       0       0       7      --      --      --       --</span>
+<span class="go">    684089010.069  78006     64       0       0       4     469    -332      --       --</span>
+<span class="go">    684089011.094  78006     68       0       0       5      --      --     -20       83</span>
+<span class="go">    684089012.119  78006     72       0       0       6      --      --      --       --</span>
+<span class="go">    684089013.144  78006     76       0       0       7      --      --      --       --</span>
+<span class="go">    684089014.169  78006     80       0       0       4     469    -332      --       --</span>
+<span class="go">    684089015.194  78006     84       0       0       5      --      --     -20       83</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[60.0 97.0 70.0 120.0 74.0 111.0 103.0 108.0]</span>
+<span class="go"> [67.0 90.0 144.0 96.0 88.0 306.0 82.0 67.0]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [76.0 81.0 160.0 486.0 449.0 215.0 88.0 156.0]</span>
+<span class="go"> [68.0 91.0 539.0 483.0 619.0 412.0 105.0 77.0]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [86.0 101.0 408.0 344.0 556.0 343.0 122.0 67.0]</span>
+<span class="go"> [196.0 195.0 114.0 321.0 386.0 115.0 69.0 189.0]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+<span class="go">Out[10]:</span>
+<span class="go">masked_BaseColumn(data =</span>
+<span class="go"> [[-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [-- -- -- -- -- -- -- --]</span>
+<span class="go"> [67.0 61.0 67.0 176.0 99.0 72.0 79.0 88.0]</span>
+<span class="go"> [70.0 62.0 101.0 149.0 163.0 89.0 60.0 76.0]],</span>
+<span class="go">                  mask =</span>
+<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [ True  True  True  True  True  True  True  True]</span>
+<span class="go"> [False False False False False False False False]</span>
+<span class="go"> [False False False False False False False False]],</span>
+<span class="go">            fill_value = 1e+20)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>level0</strong> – bool.
+Implies combine=True, adjust_time=True, calibrate=True</p></li>
+<li><p><strong>combine</strong> – bool.
+If True, multiple ACA packets are combined to form an image (depending on size),
+If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.</p></li>
+<li><p><strong>adjust_time</strong> – bool
+If True, half the integration time is subtracted</p></li>
+<li><p><strong>calibrate</strong> – bool
+If True, pixel values will be ‘value * imgscale / 32 - 50’ and temperature values will
+be: 0.4 * value + 273.15</p></li>
+<li><p><strong>blobs</strong> – bool or dict
+If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
+output of maude.get_blobs ({‘blobs’: … }).</p></li>
+<li><p><strong>frames</strong> – bool or dict
+If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
+output of maude.get_frames ({‘data’: … }).</p></li>
+<li><p><strong>dtype</strong> – np.dtype. Optional.
+the dtype to use when creating the resulting table. This is useful to add columns
+including MSIDs that are present in blobs. If used with frames, most probably you will get
+and empty column. This option is intended to augment the default dtype. If a more
+restrictive dtype is used, a KeyError can be raised.</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>astropy.table.Table</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_raw_aca_blobs">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_raw_aca_blobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maude_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_blobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_blobs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</p>
+<p>If the first minor frame in a group of four ACA packets is within (start, stop),
+the three following minor frames are included if present.</p>
+<p>returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
+These correspond to the minor frame time, minor frame count, major frame count,
+the list of packets, and flags returned by MAUDE respectively.</p>
+<p>This is to blobs what <cite>get_raw_aca_packets</cite> is to frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>maude_result</strong> – the result of calling maude.get_blobs. Optional.</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict
+{‘blobs’: [], ‘names’: np.array([]), ‘types’: np.array([])}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_raw_aca_packets">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_raw_aca_packets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maude_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_packets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_packets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</p>
+<p>If the first minor frame in a group of four ACA packets is within (start, stop),
+the three following minor frames are included if present.</p>
+<p>returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
+These correspond to the minor frame time, minor frame count, major frame count,
+the list of packets, and flags returned by MAUDE respectively.</p>
+<p>This function raises an exception if the VCDU frames in maude_result are not contiguous, which
+can also happen if the frames are corrupted in some way.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
+<li><p><strong>maude_result</strong> – the result of calling maude.get_frames. Optional.</p></li>
+<li><p><strong>maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>dict</p>
+<dl class="simple">
+<dt>{‘flags’: int, ‘packets’: [],</dt><dd><p>’TIME’: np.array([]), ‘MNF’: np.array([]), ‘MJF’: np.array([])}</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.unpack_aca_telemetry">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">unpack_aca_telemetry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#unpack_aca_telemetry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.unpack_aca_telemetry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpack ACA telemetry encoded in 225-byte packets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>packet</strong> – bytes</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of dict</p>
+</dd>
+</dl>
+<p>A list of length 8, one entry per slot, where each entry is a dictionary.</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">chandra_aca.maude_decom</a></li>
+</ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="centroid_resid.html"
+                        title="previous chapter">chandra_aca.centroid_resid</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="planets.html"
+                        title="next chapter">chandra_aca.planets</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/maude_decom.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<form action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="_sources/maude_decom.rst.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>
