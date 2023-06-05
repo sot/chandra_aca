@@ -760,8 +760,8 @@ def test_imgtype_dnld(source):
     """
     from cxotime import CxoTime
 
-    start = CxoTime("2023:047:02:58:13.213")
-    stop = CxoTime("2023:047:02:58:14.239")
+    start = CxoTime("2023:047:02:57")
+    stop = CxoTime("2023:047:02:58")
     if source == "blobs":
         maude_result = maude.get_blobs(start, stop, channel="FLIGHT")
         args = {"blobs": maude_result}
@@ -775,4 +775,5 @@ def test_imgtype_dnld(source):
 
     all_masked = np.array([np.all(row["IMG"].mask) for row in img])
     img_dnld = img["IMGTYPE"] == 3
+    assert img_dnld.shape[0] > 0
     assert np.all(all_masked == img_dnld)
