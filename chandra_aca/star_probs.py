@@ -18,8 +18,6 @@ The grid-floor-2020-02 model definition and fit values based on:
 - SSAWG review: 2020-01-29
 """
 
-import functools
-import os
 import re
 import warnings
 from pathlib import Path
@@ -420,7 +418,7 @@ def get_grid_axis_values(hdr, axis):
     return vals
 
 
-@functools.lru_cache
+@chandra_models.chandra_models_cache
 def get_grid_func_model(
     model: Optional[str] = None,
     version: Optional[str] = None,
@@ -443,6 +441,7 @@ def get_grid_func_model(
         "t_ccd_hi": upper bound of t_ccd axis
         "halfw_lo": lower bound of halfw axis
         "halfw_hi": upper bound of halfw axis
+        "info": dict of provenance info for model file
 
     :param model: Model name (optional)
     :param version: Version / tag / branch of ``chandra_models`` repository (optional)
@@ -553,11 +552,7 @@ def grid_model_acq_prob(
     """
     # Get the grid model function and model parameters from a FITS file. This function
     # call is cached.
-    gfm = get_grid_func_model(
-        model,
-        version=os.environ.get("CHANDRA_MODELS_DEFAULT_VERSION"),
-        repo_path=os.environ.get("CHANDRA_MODELS_REPO_PATH"),
-    )
+    gfm = get_grid_func_model(model)
 
     func_no_1p5 = gfm["func_no_1p5"]
     func_1p5 = gfm["func_1p5"]

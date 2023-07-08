@@ -14,6 +14,7 @@ from chandra_aca.star_probs import (
     binom_ppf,
     conf,
     get_default_acq_prob_model_info,
+    get_grid_func_model,
     grid_model_acq_prob,
     guide_count,
     mag_for_p_acq,
@@ -662,3 +663,16 @@ def test_md5_2020_02():
 def test_binom_ppf():
     vals = binom_ppf(4, 5, [0.17, 0.84])
     assert np.allclose(vals, [0.55463945, 0.87748177])
+
+
+def test_grid_model_3_48(monkeypatch):
+    """Test that we can adjust the chandra_models repo version and get the
+    expected file. For version 3.48 the most recent file is grid-floor-2020-02.fits.gz.
+    The grid-local-quadratic-2023-05.fits.gz file was added in version 3.49.
+    """
+    monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
+    gfm = get_grid_func_model(model="grid-*")
+    info = gfm["info"]
+    assert info["version"] == "3.48"
+    assert info["data_file_path"].endswith("grid-floor-2020-02.fits.gz")
+    assert info["commit"] == "68a58099a9b51bef52ef14fbd0f1971f950e6ba3"
