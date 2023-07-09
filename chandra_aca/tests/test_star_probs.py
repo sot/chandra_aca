@@ -6,12 +6,14 @@ import os
 import numpy as np
 import pytest
 from astropy.table import Table
+from ska_helpers import chandra_models
 from ska_helpers.paths import aca_acq_prob_models_path
 
 from chandra_aca.star_probs import (
     acq_success_prob,
     binom_ppf,
     conf,
+    get_default_acq_prob_model_info,
     grid_model_acq_prob,
     guide_count,
     mag_for_p_acq,
@@ -579,6 +581,34 @@ def test_default_acq_prob_model():
 
     # Should be identical to the bit because the same code is called.
     assert np.all(probs1 == probs2)
+
+
+def test_get_default_acq_prob_model_info(monkeypatch):
+    monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
+    info = get_default_acq_prob_model_info()
+
+    del info["data_file_path"]
+    del info["repo_path"]
+    del info["call_args"]["read_func"]
+    del info["call_args"]["read_func_kwargs"]
+
+    exp = {
+        "default_model": "grid-*",
+        "call_args": {
+            "file_path": "chandra_models/aca_acq_prob",
+            "version": None,
+            "repo_path": "None",
+            "require_latest_version": False,
+            "timeout": 5,
+        },
+        "version": "3.48",
+        "commit": "68a58099a9b51bef52ef14fbd0f1971f950e6ba3",
+        "md5": "3a47774392beeca2921b705e137338f4",
+    }
+    for name in chandra_models.ENV_VAR_NAMES:
+        exp[name] = os.environ.get(name)
+
+    assert info == exp
 
 
 def test_md5_2020_02():

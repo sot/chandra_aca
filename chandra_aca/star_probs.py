@@ -329,6 +329,39 @@ def acq_success_prob(
     return probs[0] if is_scalar else probs
 
 
+def get_default_acq_prob_model_info():
+    """Get info about the default acquisition probability model.
+
+    Example::
+
+        >>> from chandra_aca import star_probs
+        >>> star_probs.get_default_acq_prob_model_info()
+        {'default_model': 'grid-*',
+         'call_args': {'file_path': 'chandra_models/aca_acq_prob',
+          'version': None,
+          'repo_path': 'None',
+          'require_latest_version': False,
+          'timeout': 5,
+          'read_func': '<function _read_grid_func_model at 0x11a443b50>',
+          'read_func_kwargs': {'model_name': None}},
+         'version': '3.48',
+         'commit': '68a58099a9b51bef52ef14fbd0f1971f950e6ba3',
+         'data_file_path': '/Users/aldcroft/ska/data/chandra_models/chandra_models/aca_acq_prob/grid-floor-2020-02.fits.gz',
+         'repo_path': '/Users/aldcroft/ska/data/chandra_models',
+         'md5': '3a47774392beeca2921b705e137338f4',
+         'CHANDRA_MODELS_REPO_DIR': None,
+         'CHANDRA_MODELS_DEFAULT_VERSION': None,
+         'THERMAL_MODELS_DIR_FOR_MATLAB_TOOLS_SW': None}
+
+    :returns: dict of model info
+    """  # noqa: E501
+    info = {"default_model": conf.default_model}
+    if info["default_model"].startswith("grid-"):
+        gfm = get_grid_func_model()
+        info.update(gfm["info"])
+    return info
+
+
 def clip_and_warn(name, val, val_lo, val_hi, model):
     """
     Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a
