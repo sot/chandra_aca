@@ -583,9 +583,10 @@ def test_default_acq_prob_model():
     assert np.all(probs1 == probs2)
 
 
-def test_get_default_acq_prob_model_info(monkeypatch):
+def test_get_default_acq_prob_model_info_grid(monkeypatch):
     monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
-    info = get_default_acq_prob_model_info()
+    with conf.set_temp("default_model", "grid-*"):
+        info = get_default_acq_prob_model_info()
 
     del info["data_file_path"]
     del info["repo_path"]
@@ -609,6 +610,13 @@ def test_get_default_acq_prob_model_info(monkeypatch):
         exp[name] = os.environ.get(name)
 
     assert info == exp
+
+
+def test_get_default_acq_prob_model_info_sota():
+    with conf.set_temp("default_model", "sota"):
+        info = get_default_acq_prob_model_info()
+
+    assert info == {"default_model": "sota"}
 
 
 def test_md5_2020_02():
