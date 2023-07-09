@@ -329,7 +329,7 @@ def acq_success_prob(
     return probs[0] if is_scalar else probs
 
 
-def get_default_acq_prob_model_info():
+def get_default_acq_prob_model_info(verbose=True):
     """Get info about the default acquisition probability model.
 
     Example::
@@ -353,12 +353,22 @@ def get_default_acq_prob_model_info():
          'CHANDRA_MODELS_DEFAULT_VERSION': None,
          'THERMAL_MODELS_DIR_FOR_MATLAB_TOOLS_SW': None}
 
+    :param verbose: bool
+        If False then return trimmed version with no call_args and None values removed.
     :returns: dict of model info
     """  # noqa: E501
     info = {"default_model": conf.default_model}
     if info["default_model"].startswith("grid-"):
         gfm = get_grid_func_model()
         info.update(gfm["info"])
+
+    # Allow a trimmed down version (e.g. for proseco to avoid bloating the pickle)
+    if not verbose:
+        del info["call_args"]
+        for key, val in list(info.items()):
+            if val is None:
+                del info[key]
+
     return info
 
 

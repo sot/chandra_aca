@@ -612,6 +612,27 @@ def test_get_default_acq_prob_model_info_grid(monkeypatch):
     assert info == exp
 
 
+def test_get_default_acq_prob_model_info_grid_no_verbose(monkeypatch):
+    monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
+    with conf.set_temp("default_model", "grid-*"):
+        info = get_default_acq_prob_model_info(verbose=False)
+
+    del info["data_file_path"]
+    del info["repo_path"]
+
+    exp = {
+        "default_model": "grid-*",
+        "version": "3.48",
+        "commit": "68a58099a9b51bef52ef14fbd0f1971f950e6ba3",
+        "md5": "3a47774392beeca2921b705e137338f4",
+    }
+    for name in chandra_models.ENV_VAR_NAMES:
+        if val := os.environ.get(name):
+            exp[name] = val
+
+    assert info == exp
+
+
 def test_get_default_acq_prob_model_info_sota():
     with conf.set_temp("default_model", "sota"):
         info = get_default_acq_prob_model_info()
