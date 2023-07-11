@@ -329,6 +329,49 @@ def acq_success_prob(
     return probs[0] if is_scalar else probs
 
 
+def get_default_acq_prob_model_info(verbose=True):
+    """Get info about the default acquisition probability model.
+
+    Example::
+
+        >>> from chandra_aca import star_probs
+        >>> star_probs.get_default_acq_prob_model_info()
+        {'default_model': 'grid-*',
+         'call_args': {'file_path': 'chandra_models/aca_acq_prob',
+          'version': None,
+          'repo_path': 'None',
+          'require_latest_version': False,
+          'timeout': 5,
+          'read_func': '<function _read_grid_func_model at 0x11a443b50>',
+          'read_func_kwargs': {'model_name': None}},
+         'version': '3.48',
+         'commit': '68a58099a9b51bef52ef14fbd0f1971f950e6ba3',
+         'data_file_path': '/Users/aldcroft/ska/data/chandra_models/chandra_models/aca_acq_prob/grid-floor-2020-02.fits.gz',
+         'repo_path': '/Users/aldcroft/ska/data/chandra_models',
+         'md5': '3a47774392beeca2921b705e137338f4',
+         'CHANDRA_MODELS_REPO_DIR': None,
+         'CHANDRA_MODELS_DEFAULT_VERSION': None,
+         'THERMAL_MODELS_DIR_FOR_MATLAB_TOOLS_SW': None}
+
+    :param verbose: bool
+        If False then return trimmed version with no call_args and None values removed.
+    :returns: dict of model info
+    """  # noqa: E501
+    info = {"default_model": conf.default_model}
+    if info["default_model"].startswith("grid-"):
+        gfm = get_grid_func_model()
+        info.update(gfm["info"])
+
+    # Allow a trimmed down version (e.g. for proseco to avoid bloating the pickle)
+    if not verbose:
+        del info["call_args"]
+        for key, val in list(info.items()):
+            if val is None:
+                del info[key]
+
+    return info
+
+
 def clip_and_warn(name, val, val_lo, val_hi, model):
     """
     Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a
@@ -347,10 +390,8 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
     val = np.asarray(val)
     if np.any((val > val_hi) | (val < val_lo)):
         warnings.warn(
-            "\nModel {} computed between {} <= {} <= {}, "
-            "clipping input {}(s) outside that range.".format(
-                model, name, val_lo, val_hi, name
-            )
+            f"\nModel {model} computed between {val_lo} <= {name} <= {val_hi}, "
+            f"clipping input {name}(s) outside that range."
         )
         val = np.clip(val, val_lo, val_hi)
 
@@ -527,10 +568,12 @@ def grid_model_acq_prob(
     halfw_lo = gfm["halfw_lo"]
     halfw_hi = gfm["halfw_hi"]
 
+    model_filename = Path(gfm["info"]["data_file_path"]).name
+
     # Make sure inputs are within range of gridded model
-    mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model)
-    t_ccd = clip_and_warn("t_ccd", t_ccd, t_ccd_lo, t_ccd_hi, model)
-    halfwidth = clip_and_warn("halfw", halfwidth, halfw_lo, halfw_hi, model)
+    mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model_filename)
+    t_ccd = clip_and_warn("t_ccd", t_ccd, t_ccd_lo, t_ccd_hi, model_filename)
+    halfwidth = clip_and_warn("halfw", halfwidth, halfw_lo, halfw_hi, model_filename)
 
     # Broadcast all inputs to a common shape.  If they are all scalars
     # then shape=().  The returns values are flattened, so the final output
