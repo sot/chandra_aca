@@ -612,6 +612,16 @@ def test_get_default_acq_prob_model_info_grid(monkeypatch):
     assert info == exp
 
 
+def test_clip_warning(monkeypatch):
+    monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
+    with pytest.warns(
+        UserWarning,
+        match=r"Model grid-floor-2020-02.fits.gz computed between 5.0 <= mag <= 12.0",
+    ):
+        with conf.set_temp("default_model", "grid-floor-2020-02"):
+            acq_success_prob(mag=20)
+
+
 def test_get_default_acq_prob_model_info_grid_no_verbose(monkeypatch):
     monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
     with conf.set_temp("default_model", "grid-*"):

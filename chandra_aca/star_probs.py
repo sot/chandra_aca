@@ -390,10 +390,8 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
     val = np.asarray(val)
     if np.any((val > val_hi) | (val < val_lo)):
         warnings.warn(
-            "\nModel {} computed between {} <= {} <= {}, "
-            "clipping input {}(s) outside that range.".format(
-                model, name, val_lo, val_hi, name
-            )
+            f"\nModel {model} computed between {val_lo} <= {name} <= {val_hi}, "
+            f"clipping input {name}(s) outside that range."
         )
         val = np.clip(val, val_lo, val_hi)
 
@@ -570,10 +568,12 @@ def grid_model_acq_prob(
     halfw_lo = gfm["halfw_lo"]
     halfw_hi = gfm["halfw_hi"]
 
+    model_filename = Path(gfm["info"]["data_file_path"]).name
+
     # Make sure inputs are within range of gridded model
-    mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model)
-    t_ccd = clip_and_warn("t_ccd", t_ccd, t_ccd_lo, t_ccd_hi, model)
-    halfwidth = clip_and_warn("halfw", halfwidth, halfw_lo, halfw_hi, model)
+    mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model_filename)
+    t_ccd = clip_and_warn("t_ccd", t_ccd, t_ccd_lo, t_ccd_hi, model_filename)
+    halfwidth = clip_and_warn("halfw", halfwidth, halfw_lo, halfw_hi, model_filename)
 
     # Broadcast all inputs to a common shape.  If they are all scalars
     # then shape=().  The returns values are flattened, so the final output
