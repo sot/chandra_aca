@@ -447,6 +447,8 @@ def get_grid_func_model(
     :param repo_path: Path to ``chandra_models`` repository (optional)
     :returns: dict of model data
     """
+    if model is None:
+        model = conf.default_model
     return _get_grid_func_model(model, version, repo_path)
 
 
