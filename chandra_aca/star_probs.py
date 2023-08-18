@@ -418,7 +418,6 @@ def get_grid_axis_values(hdr, axis):
     return vals
 
 
-@chandra_models.chandra_models_cache
 def get_grid_func_model(
     model: Optional[str] = None,
     version: Optional[str] = None,
@@ -448,6 +447,11 @@ def get_grid_func_model(
     :param repo_path: Path to ``chandra_models`` repository (optional)
     :returns: dict of model data
     """
+    return _get_grid_func_model(model, version, repo_path)
+
+
+@chandra_models.chandra_models_cache
+def _get_grid_func_model(model, version, repo_path):
     data, info = chandra_models.get_data(
         file_path="chandra_models/aca_acq_prob",
         read_func=_read_grid_func_model,
@@ -553,8 +557,7 @@ def grid_model_acq_prob(
     # Get the grid model function and model parameters from a FITS file. This function
     # call is cached. If ``model is None``` then don't pass any args so that caching
     # matches the other in this module of ``get_grid_func_model()``.
-    args = (model,) if model is not None else ()
-    gfm = get_grid_func_model(*args)
+    gfm = get_grid_func_model(model)
 
     func_no_1p5 = gfm["func_no_1p5"]
     func_1p5 = gfm["func_1p5"]
