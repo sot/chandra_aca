@@ -442,11 +442,14 @@ def get_grid_func_model(
         "halfw_hi": upper bound of halfw axis
         "info": dict of provenance info for model file
 
-    :param model: Model name (optional)
+    :param model: Model name (optional), defaults to ``conf.default_model``
     :param version: Version / tag / branch of ``chandra_models`` repository (optional)
     :param repo_path: Path to ``chandra_models`` repository (optional)
     :returns: dict of model data
     """
+    if model is None:
+        model = conf.default_model
+
     return _get_grid_func_model(model, version, repo_path)
 
 
