@@ -34,7 +34,7 @@ def _compare_common_columns(t1, t2, keys=None, exclude=()):
     errors = []
     for name in keys:
         col_1, col_2 = t1[name], t2[name]
-        ok = type(col_1) == type(col_2)
+        ok = type(col_1) is type(col_2)
         if type(col_1) is table.MaskedColumn and type(col_1) is table.MaskedColumn:
             ok &= np.all(col_1.mask == col_2.mask)
         if np.issubdtype(col_1.dtype, np.inexact) or np.issubdtype(
