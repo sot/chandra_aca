@@ -551,8 +551,10 @@ def grid_model_acq_prob(
 
     """
     # Get the grid model function and model parameters from a FITS file. This function
-    # call is cached.
-    gfm = get_grid_func_model(model)
+    # call is cached. If ``model is None``` then don't pass any args so that caching
+    # matches the other in this module of ``get_grid_func_model()``.
+    args = (model,) if model is not None else ()
+    gfm = get_grid_func_model(*args)
 
     func_no_1p5 = gfm["func_no_1p5"]
     func_1p5 = gfm["func_1p5"]
