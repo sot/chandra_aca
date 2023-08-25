@@ -31,6 +31,9 @@ from chandra_aca import __version__  # noqa: E402
 # class' docstring
 numpydoc_show_class_members = False
 
+# Don't show type hints
+autodoc_typehints = "none"
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
