@@ -74,11 +74,18 @@ def dark_temp_scale(t_ccd, t_ccd_ref=-19.0, scale_4c=None):
       >>> dark_temp_scale(t_ccd=-18, t_ccd_ref=-10, scale_4c=2.0)
       4.0
 
-    :param t_ccd: actual temperature (degC)
-    :param t_ccd_ref: reference temperature (degC, default=-19.0)
-    :param scale_4c: increase in dark current per 4 degC increase (default=1.0 / 0.7)
+    Parameters
+    ----------
+    t_ccd
+        actual temperature (degC)
+    t_ccd_ref
+        reference temperature (degC, default=-19.0)
+    scale_4c
+        increase in dark current per 4 degC increase (default=1.0 / 0.7)
 
-    :returns: scale factor
+    Returns
+    -------
+    scale factor
     """
     if scale_4c is None:
         scale_4c = DARK_SCALE_4C
@@ -90,10 +97,16 @@ def get_dark_hist(date, t_ccd):
     """
     Return the dark current histogram corresponding to ``date`` and ``t_ccd``.
 
-    :param date: date in any DateTime format
-    :param t_ccd: CCD temperature (deg C)
+    Parameters
+    ----------
+    date
+        date in any DateTime format
+    t_ccd
+        CCD temperature (deg C)
 
-    :returns: bin_centers, bins, darkhist
+    Returns
+    -------
+    bin_centers, bins, darkhist
     """
     pars = get_sbp_pars(date)
     x = darkbins.bin_centers
@@ -193,8 +206,14 @@ def get_sbp_pars(dates):
 
     This is only accurate for dates > 2007.0.
 
-    :param dates: one or a list of date(s) in DateTime compatible format
-    :returns: one or a list of parameter lists [g1, g2, g3, x_b, ampl]
+    Parameters
+    ----------
+    dates
+        one or a list of date(s) in DateTime compatible format
+
+    Returns
+    -------
+    one or a list of parameter lists [g1, g2, g3, x_b, ampl]
     """
     dates, is_scalar = as_array(dates)
 
@@ -231,10 +250,18 @@ def get_warm_fracs(warm_threshold, date="2013:001:12:00:00", T_ccd=-19.0):
     Calculate fraction of pixels in modeled dark current distribution
     above warm threshold(s).
 
-    :param warm_threshold: scalar or list of threshold(s) in e-/sec
-    :param date: date to use for modeled dark current distribution/histogram
-    :param T_ccd: temperature (C) of modeled dark current distribution
-    :returns: list or scalar of warm fractions (depends on warm_threshold type)
+    Parameters
+    ----------
+    warm_threshold
+        scalar or list of threshold(s) in e-/sec
+    date
+        date to use for modeled dark current distribution/histogram
+    T_ccd
+        temperature (C) of modeled dark current distribution
+
+    Returns
+    -------
+    list or scalar of warm fractions (depends on warm_threshold type)
     """
 
     x, xbins, y = get_dark_hist(date, T_ccd)
@@ -268,8 +295,12 @@ def synthetic_dark_image(date, t_ccd_ref=None):
     Generate a synthetic dark current image corresponding to the specified
     ``date`` and ``t_ccd``.
 
-    :param date: (DateTime compatible)
-    :param t_ccd_ref: ACA CCD temperature
+    Parameters
+    ----------
+    date
+        (DateTime compatible)
+    t_ccd_ref
+        ACA CCD temperature
     """
 
     from mica.archive.aca_dark import get_dark_cal_image

@@ -115,18 +115,22 @@ def get_planet_angular_sep(
     - 'chandra' (reasonably accurate fast, requires fetching ephemeris)
     - 'chandra-horizons' (most accurate, slow, requires internet access)
 
-    :param body: str
+    Parameters
+    ----------
+    body : str
         Body name (lower case planet name)
-    :param ra: float
+    ra : float
         RA in degrees
-    :param dec: float
+    dec : float
         Dec in degrees
-    :param time: CxoTime-compatible object
+    time : CxoTime-compatible object
         Time or times of observation
-    :param observer_position: str
+    observer_position : str
         Observer position ('earth', 'chandra', or 'chandra-horizons')
 
-    :returns: angular separation (deg)
+    Returns
+    -------
+    angular separation (deg)
     """
     from agasc import sphere_dist
 
@@ -169,9 +173,16 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
     ``body`` must be one of "sun", "mercury", "venus", "earth-moon-barycenter", "earth",
     "moon", "mars", "jupiter", "saturn", "uranus", "neptune", or "pluto".
 
-    :param body: Body name (lower case planet name)
-    :param time: Time or times for returned position (default=NOW)
-    :returns: barycentric position (km) as (x, y, z) or N x (x, y, z)
+    Parameters
+    ----------
+    body
+        Body name (lower case planet name)
+    time
+        Time or times for returned position (default=NOW)
+
+    Returns
+    -------
+    barycentric position (km) as (x, y, z) or N x (x, y, z)
     """
     kernel = KERNEL.val
     if body not in BODY_NAME_TO_KERNEL_SPEC:
@@ -211,11 +222,19 @@ def get_planet_eci(
     - Jupiter: < 1 arcmin with peak around 0.5 arcmin
     - Saturn: < 0.5 arcmin with peak around 0.3 arcmin
 
-    :param body: Body name (lower case planet name)
-    :param time: Time or times for returned position (default=NOW)
-    :param pos_observer: Observer position (default=Earth)
-    :returns: Earth-Centered Inertial (ECI) position (km) as (x, y, z)
-        or N x (x, y, z)
+    Parameters
+    ----------
+    body
+        Body name (lower case planet name)
+    time
+        Time or times for returned position (default=NOW)
+    pos_observer
+        Observer position (default=Earth)
+
+    Returns
+    -------
+    Earth-Centered Inertial (ECI) position (km) as (x, y, z)
+    or N x (x, y, z)
     """
     time = CxoTime(time)
 
@@ -248,9 +267,16 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
     - Jupiter: < 0.8 arcsec
     - Saturn: < 0.5 arcsec
 
-    :param body: Body name
-    :param time: Time or times for returned position (default=NOW)
-    :returns: position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
+    Parameters
+    ----------
+    body
+        Body name
+    time
+        Time or times for returned position (default=NOW)
+
+    Returns
+    -------
+    position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
     """
     from cheta import fetch
 
@@ -322,15 +348,22 @@ def get_planet_chandra_horizons(
       2020:001:18:00:00.000 277.15181 -23.19347      34.51       2.03  -1.839         5.408    31.76
       2020:002:00:00:00.000 277.21454 -23.18970      34.69       2.51  -1.839         5.408    31.76
 
-    :param body: one of 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
+    Parameters
+    ----------
+    body : one of 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
         'uranus', 'neptune', or any other body that Horizons supports.
-    :param timestart: start time (any CxoTime-compatible time)
-    :param timestop: stop time (any CxoTime-compatible time)
-    :param n_times: number of time samples (inclusive, default=10)
-    :param timeout: timeout for query to Horizons (secs)
+    timestart
+        start time (any CxoTime-compatible time)
+    timestop
+        stop time (any CxoTime-compatible time)
+    n_times
+        number of time samples (inclusive, default=10)
+    timeout
+        timeout for query to Horizons (secs)
 
-    :returns: Table of information
-
+    Returns
+    -------
+    Table of information
     """
     import requests
 

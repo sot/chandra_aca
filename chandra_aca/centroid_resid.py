@@ -94,10 +94,16 @@ class CentroidResiduals(object):
 
         yag, zag, yag_times an zag_times can also be set directly without use of this method.
 
-        :param source: 'ground' | 'obc'
-        :param slot: ACA slot
-        :param alg: for ground processing, use centroids from this algorithm.
-        :param apply_dt: apply centroid time offsets via 'set_offsets'
+        Parameters
+        ----------
+        source
+            'ground' | 'obc'
+        slot
+            ACA slot
+        alg
+            for ground processing, use centroids from this algorithm.
+        apply_dt
+            apply centroid time offsets via 'set_offsets'
         """
         self.centroid_source = source
         self.centroid_dt = None

@@ -76,8 +76,14 @@ def get_box_delta(halfwidth):
     Transform from halfwidth (arcsec) to the box_delta value which gets added
     to failure probability (in probit space).
 
-    :param halfwidth: scalar or ndarray of box sizes (halfwidth, arcsec)
-    :returns: box deltas
+    Parameters
+    ----------
+    halfwidth
+        scalar or ndarray of box sizes (halfwidth, arcsec)
+
+    Returns
+    -------
+    box deltas
     """
     # Coefficents for dependence of probability on search box size (halfwidth).  From:
     # https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
@@ -132,18 +138,30 @@ def t_ccd_warm_limit(
      - Tuple (n, prob): computed probability of acquiring ``n`` or fewer stars
          must not exceed ``prob``.
 
-    :param mags: list of star ACA mags
-    :param date: observation date (any Chandra.Time valid format)
-    :param colors: list of star B-V colors (optional, default=0.0)
-    :param halfwidths: list of acq box halfwidths(optional, default=120)
-    :param min_n_acq: float or tuple (see above)
-    :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)
-    :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
-    :param model: probability model (see acq_success_prob() for allowed values, default)
+    Parameters
+    ----------
+    mags
+        list of star ACA mags
+    date
+        observation date (any Chandra.Time valid format)
+    colors
+        list of star B-V colors (optional, default=0.0)
+    halfwidths
+        list of acq box halfwidths(optional, default=120)
+    min_n_acq
+        float or tuple (see above)
+    cold_t_ccd
+        coldest CCD temperature to consider (default=-16 C)
+    warm_t_ccd
+        warmest CCD temperature to consider (default=-5 C)
+    model
+        probability model (see acq_success_prob() for allowed values, default)
 
-    :returns: (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit:
-              - number of expected ACQ stars at that temperature (scalar min_n_acq)
-              - probability of acquiring ``n`` or fewer stars (tuple min_n_acq)
+    Returns
+    -------
+    (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit:
+    - number of expected ACQ stars at that temperature (scalar min_n_acq)
+    - probability of acquiring ``n`` or fewer stars (tuple min_n_acq)
     """
 
     if isinstance(min_n_acq, tuple):
@@ -234,9 +252,10 @@ def prob_n_acq(star_probs):
     of length n_stars.  In addition the cumulative sum, which represents
     the probability of acquiring n_acq or fewer stars, is returned.
 
-    :param star_probs: array of star acq probabilities (list or ndarray)
-
-    :returns n_acq_probs, cum_n_acq_probs: tuple of ndarray, ndarray
+    Parameters
+    ----------
+    star_probs : array of star acq probabilities (list or ndarray)
+        :returns n_acq_probs, cum_n_acq_probs: tuple of ndarray, ndarray
     """
     star_probs = np.array(star_probs, dtype=np.float64)
     n_stars = len(star_probs)
@@ -376,14 +395,22 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
     warning if clipping occurs.  The ``name`` and ``model`` are just used in
     the warning.
 
-    :param name: Value name
-    :param val: Value
-    :param val_lo: Minimum
-    :param val_hi: Maximum
-    :param model: Model name
+    Parameters
+    ----------
+    name
+        Value name
+    val
+        Value
+    val_lo
+        Minimum
+    val_hi
+        Maximum
+    model
+        Model name
 
-    :returns: Clipped value
-
+    Returns
+    -------
+    Clipped value
     """
     val = np.asarray(val)
     if np.any((val > val_hi) | (val < val_lo)):
@@ -404,8 +431,12 @@ def get_grid_axis_values(hdr, axis):
 
         linspace(hdr[f"{axis}_lo"], hdr[f"{axis}_hi"], n_vals)
 
-    :param hdr: FITS header (dict-like)
-    :param axis: Axis name (e.g. "mag")
+    Parameters
+    ----------
+    hdr
+        FITS header (dict-like)
+    axis
+        Axis name (e.g. "mag")
     """
     n_vals = hdr[f"{axis}_n"]
     if all(f"{axis}_{ii}" in hdr for ii in range(n_vals)):
@@ -442,10 +473,18 @@ def get_grid_func_model(
         "halfw_hi": upper bound of halfw axis
         "info": dict of provenance info for model file
 
-    :param model: Model name (optional), defaults to ``conf.default_model``
-    :param version: Version / tag / branch of ``chandra_models`` repository (optional)
-    :param repo_path: Path to ``chandra_models`` repository (optional)
-    :returns: dict of model data
+    Parameters
+    ----------
+    model
+        Model name (optional), defaults to ``conf.default_model``
+    version
+        Version / tag / branch of ``chandra_models`` repository (optional)
+    repo_path
+        Path to ``chandra_models`` repository (optional)
+
+    Returns
+    -------
+    dict of model data
     """
     if model is None:
         model = conf.default_model
@@ -547,15 +586,24 @@ def grid_model_acq_prob(
     This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a
     pre-computed gridded model that is stored in a FITS file.
 
-    :param mag: ACA magnitude (float or np.ndarray)
-    :param t_ccd: CCD temperature (degC, float or ndarray)
-    :param color: B-V color to check for B-V=1.5 => red star (float or np.ndarray)
-    :param halfwidth: search box halfwidth (arcsec, default=120, float or ndarray)
-    :param probit: if True then return Probit(p_success). Default=False
-    :param model: Model name, e.g. 'grid-floor-2018-11'
+    Parameters
+    ----------
+    mag
+        ACA magnitude (float or np.ndarray)
+    t_ccd
+        CCD temperature (degC, float or ndarray)
+    color
+        B-V color to check for B-V=1.5 => red star (float or np.ndarray)
+    halfwidth
+        search box halfwidth (arcsec, default=120, float or ndarray)
+    probit
+        if True then return Probit(p_success). Default=False
+    model
+        Model name, e.g. 'grid-floor-2018-11'
 
-    :returns: Acquisition success probability(s)
-
+    Returns
+    -------
+    Acquisition success probability(s)
     """
     # Get the grid model function and model parameters from a FITS file. This function
     # call is cached.
@@ -779,12 +827,20 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
     https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
     https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb
 
-    :param mag: ACA magnitude (float or np.ndarray)
-    :param warm_frac: N100 warm fraction (float or np.ndarray)
-    :param color: B-V color to check for B-V=1.5 => red star (float or np.ndarray)
-    :param halfwidth: search box halfwidth (arcsec, default=120)
+    Parameters
+    ----------
+    mag
+        ACA magnitude (float or np.ndarray)
+    warm_frac
+        N100 warm fraction (float or np.ndarray)
+    color
+        B-V color to check for B-V=1.5 => red star (float or np.ndarray)
+    halfwidth
+        search box halfwidth (arcsec, default=120)
 
-    :returns: Acquisition success probability(s)
+    Returns
+    -------
+    Acquisition success probability(s)
     """
     #
     # NOTE: the "WITH_MS" are historical and no longer used in flight
@@ -877,12 +933,18 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
     acquisition probability of ``p_acq``.  Star magnitude is defined/limited
     to the range 5.0 - 12.0 mag.
 
-    :param p_acq: acquisition probability (0 to 1.0)
-    :param date: observation date (any Chandra.Time valid format)
-    :param t_ccd: ACA CCD temperature (deg C)
-    :param halfwidth: search box halfwidth (arcsec, default=120)
-    :param model: probability model (see acq_success_prob() for allowed values, default)
-    :returns mag: star magnitude
+    Parameters
+    ----------
+    p_acq
+        acquisition probability (0 to 1.0)
+    date
+        observation date (any Chandra.Time valid format)
+    t_ccd
+        ACA CCD temperature (deg C)
+    halfwidth
+        search box halfwidth (arcsec, default=120)
+    model : probability model (see acq_success_prob() for allowed values, default)
+        :returns mag: star magnitude
     """
 
     def prob_minus_p_acq(mag):
@@ -928,13 +990,18 @@ def guide_count(mags, t_ccd, count_9th=False):
     of guide_counts to two decimal places (``8 * 0.0005 = 0.004``), but helps with
     minimization.
 
-    :param mags: float, array
+    Parameters
+    ----------
+    mags : float, array
         Star magnitude(s)
-    :param t_ccds: float, array
+    t_ccds : float, array
         CCD temperature(s)
-    :param count_9th: bool
+    count_9th : bool
         Return fractional count of 9th mag or brighter stars
-    :returns: float, fractional count
+
+    Returns
+    -------
+    float, fractional count
     """
     mags = np.atleast_1d(mags)
     mags, t_ccds = np.broadcast_arrays(mags, t_ccd)
@@ -972,12 +1039,20 @@ def t_ccd_warm_limit_for_guide(
     cold end the result may be below ``min_n_acq``, in which case the star catalog
     may be rejected.
 
-    :param mags: list of star ACA mags
-    :param min_guide_count: float minimum fractional guide count
-    :param warm_t_ccd: warmest CCD temperature to consider (default=-5 C)
-    :param cold_t_ccd: coldest CCD temperature to consider (default=-16 C)
+    Parameters
+    ----------
+    mags
+        list of star ACA mags
+    min_guide_count
+        float minimum fractional guide count
+    warm_t_ccd
+        warmest CCD temperature to consider (default=-5 C)
+    cold_t_ccd
+        coldest CCD temperature to consider (default=-16 C)
 
-    :returns: t_ccd
+    Returns
+    -------
+    t_ccd
     """
     if guide_count(mags, warm_t_ccd) >= min_guide_count:
         return warm_t_ccd
@@ -1012,12 +1087,20 @@ def binom_ppf(k, n, conf, n_sample=1000):
       >>> binom_ppf(4, 5, [0.17, 0.84])
       array([ 0.55463945,  0.87748177])
 
-    :param k: int, number of successes (0 < k <= n)
-    :param n: int, number of trials
-    :param conf: float or array of floats, percent point values
-    :param n_sample: number of PMF samples for interpolation
+    Parameters
+    ----------
+    k
+        int, number of successes (0 < k <= n)
+    n
+        int, number of trials
+    conf
+        float or array of floats, percent point values
+    n_sample
+        number of PMF samples for interpolation
 
-    :return: percent point function values corresponding to ``conf``
+    Returns
+    -------
+    percent point function values corresponding to ``conf``
     """
     ps = np.linspace(0, 1, n_sample)  # Probability values
     pmfs = scipy.stats.binom.pmf(k=k, n=n, p=ps)
