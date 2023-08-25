@@ -233,8 +233,9 @@ def get_planet_eci(
 
     Returns
     -------
-    Earth-Centered Inertial (ECI) position (km) as (x, y, z)
-    or N x (x, y, z)
+    ndarray
+        Earth-Centered Inertial (ECI) position (km) as (x, y, z)
+        or N x (x, y, z)
     """
     time = CxoTime(time)
 
