@@ -87,10 +87,13 @@ def _plot_catalog_items(ax, catalog):
     Plot catalog items (guide, acq, bot, mon, fid) in yang and zang on the supplied
     axes object in place.
 
-    :param ax: matplotlib axes
-    :param catalog: data structure containing starcheck-style columns/attributes
-                    catalog records.  This can be anything that will work with
-                    astropy.table.Table(catalog).  A list of dicts is the convention.
+    Parameters
+    ----------
+    ax
+        matplotlib axes
+    catalog : data structure containing starcheck-style columns/attributes
+        catalog records.  This can be anything that will work with
+        astropy.table.Table(catalog).  A list of dicts is the convention.
     """
     cat = Table(catalog)
     cat["row"], cat["col"] = yagzag_to_pixels(cat["yang"], cat["zang"], allow_bad=True)
@@ -156,11 +159,18 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     Plot plot field stars in yang and zang on the supplied
     axes object in place.
 
-    :param ax: matplotlib axes
-    :param stars: astropy.table compatible set of records of agasc entries of stars
-    :param attitude: Quaternion-compatible attitude
-    :param red_mag_lim: faint limit
-    :param bad_stars: boolean mask of stars to be plotted in red
+    Parameters
+    ----------
+    ax
+        matplotlib axes
+    stars
+        astropy.table compatible set of records of agasc entries of stars
+    attitude
+        Quaternion-compatible attitude
+    red_mag_lim
+        faint limit
+    bad_stars
+        boolean mask of stars to be plotted in red
     """
     stars = Table(stars)
     quat = Quaternion.Quat(attitude)
@@ -248,29 +258,41 @@ def plot_stars(
     Plot a catalog, a star field, or both in a matplotlib figure.
     If supplying a star field, an attitude must also be supplied.
 
-    :param attitude: A Quaternion compatible attitude for the pointing
-    :param catalog: Records describing catalog.  Must be astropy table compatible.
+    Parameters
+    ----------
+    attitude
+        A Quaternion compatible attitude for the pointing
+    catalog : Records describing catalog.  Must be astropy table compatible.
         Required fields are ['idx', 'type', 'yang', 'zang', 'halfw']
-    :param stars: astropy table compatible set of agasc records of stars
+    stars : astropy table compatible set of agasc records of stars
         Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
         If bad_acq_stars will be called (bad_stars is None), additional required fields
         ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
         If stars is None, stars will be fetched from the AGASC for the
         supplied attitude.
-    :param title: string to be used as suptitle for the figure
-    :param starcat_time: DateTime-compatible time.  Used in ACASC fetch for proper
+    title
+        string to be used as suptitle for the figure
+    starcat_time : DateTime-compatible time.  Used in ACASC fetch for proper
         motion correction.  Not used if stars is not None.
-    :param red_mag_lim: faint limit for field star plotting.
-    :param quad_bound: boolean, plot inner quadrant boundaries
-    :param grid: boolean, plot axis grid
-    :param bad_stars: boolean mask on 'stars' of those that don't meet minimum requirements
+    red_mag_lim
+        faint limit for field star plotting.
+    quad_bound
+        boolean, plot inner quadrant boundaries
+    grid
+        boolean, plot axis grid
+    bad_stars : boolean mask on 'stars' of those that don't meet minimum requirements
         to be selected as acq stars.  If None, bad_stars will be set by a call
         to bad_acq_stars().
-    :param plot_keepout: plot CCD area to be avoided in star selection (default=False)
-    :param ax: matplotlib axes object to use (optional)
-    :param duration: duration (starting at ``starcat_time``) for plotting planets
+    plot_keepout
+        plot CCD area to be avoided in star selection (default=False)
+    ax
+        matplotlib axes object to use (optional)
+    duration : duration (starting at ``starcat_time``) for plotting planets
         (secs, default=0)
-    :returns: matplotlib figure
+
+    Returns
+    -------
+    matplotlib figure
     """
     if stars is None:
         quat = Quaternion.Quat(attitude)
@@ -373,21 +395,26 @@ def plot_stars(
 
 def _plot_planets(ax, att, date0, duration, lim0, lim1):
     """
-    :param ax: plt.Axes
+
+    Parameters
+    ----------
+    ax : plt.Axes
         Matplotlib axes object to use
-    :param att: Quat
+    att : Quat
         Attitude quaternion
-    :param date0: CxoTime-compatible
+    date0 : CxoTime-compatible
         Date of obs start
-    :param duration: float
+    duration : float
         Duration of plot (secs)
-    :param lim0: float
+    lim0 : float
         Lower limit on x, y axis (row)
-    :param lim1: float
+    lim1 : float
         Upper limit on x, y axis (col)
 
-    :returns: boolean
-        True if planets were plotted
+    Returns
+    -------
+    boolean
+    True if planets were plotted
     """
     if not isinstance(att, Quat):
         att = Quat(att)
@@ -452,9 +479,14 @@ def bad_acq_stars(stars):
     """
     Return mask of 'bad' stars, by evaluating AGASC star parameters.
 
-    :param stars: astropy table-compatible set of agasc records of stars. Required fields
-          are ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
-    :returns: boolean mask true for 'bad' stars
+    Parameters
+    ----------
+    stars : astropy table-compatible set of agasc records of stars. Required fields
+        are ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
+
+    Returns
+    -------
+    boolean mask true for 'bad' stars
     """
     return (
         (stars["CLASS"] != 0)
@@ -472,8 +504,14 @@ def plot_compass(roll):
     """
     Make a compass plot.
 
-    :param roll: Attitude roll for compass plot.
-    :returns: matplotlib figure
+    Parameters
+    ----------
+    roll
+        Attitude roll for compass plot.
+
+    Returns
+    -------
+    matplotlib figure
     """
     fig = plt.figure(figsize=(3, 3))
     ax = plt.subplot(polar=True)

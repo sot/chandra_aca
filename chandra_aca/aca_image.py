@@ -279,12 +279,18 @@ class ACAImage(np.ndarray):
         Note that the returned ``norm`` is the sum of the background-subtracted 6x6
         mousebitten image, not the entire image.
 
-        :param bgd: background to subtract, scalar or NxN ndarray (float)
-        :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
-        :param norm_clip: clip image norm at this min value (default is None and
-                          implies Exception for non-positive norm)
+        Parameters
+        ----------
+        bgd
+            background to subtract, scalar or NxN ndarray (float)
+        pix_zero_loc
+            row/col coords are integral at 'edge' or 'center'
+        norm_clip : clip image norm at this min value (default is None and
+            implies Exception for non-positive norm)
 
-        :returns: row, col, norm float
+        Returns
+        -------
+        row, col, norm float
         """
         row, col, norm = centroid_fm(
             self, bgd=bgd, pix_zero_loc=pix_zero_loc, norm_clip=norm_clip
@@ -364,10 +370,14 @@ class ACAImage(np.ndarray):
 
         The model was reviewed and approved at SS&AWG on 2019-05-22.
 
-        :param flicker_mean_time: mean flickering time (sec, default=10000)
-        :param flicker_scale: multiplicative factor beyond model default for
-               flickering amplitude (default=1.0)
-        :param seed: random seed for reproducibility (default=None => no seed)
+        Parameters
+        ----------
+        flicker_mean_time
+            mean flickering time (sec, default=10000)
+        flicker_scale : multiplicative factor beyond model default for
+            flickering amplitude (default=1.0)
+        seed
+            random seed for reproducibility (default=None => no seed)
         """
         if not hasattr(self, "flicker_cdf_bins"):
             self._read_flicker_cdfs()
@@ -424,8 +434,12 @@ class ACAImage(np.ndarray):
         to use the numba-based version which is about 6 times faster.  The
         vectorized version is left in for reference.
 
-        :param dt: time (secs) to propagate image
-        :param use_numba: use the numba version of updating (default=True)
+        Parameters
+        ----------
+        dt
+            time (secs) to propagate image
+        use_numba
+            use the numba version of updating (default=True)
         """
         if not hasattr(self, "flicker_times"):
             self.flicker_init()
@@ -603,13 +617,20 @@ def centroid_fm(img, bgd=None, pix_zero_loc="center", norm_clip=None):
     (0.0, 0.0) at the center (for pix_zero_loc='center') or the lower-left edge
     (for pix_zero_loc='edge').
 
-    :param img: NxN ndarray
-    :param bgd: background to subtract, float of NXN ndarray
-    :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
-    :param norm_clip: clip image norm at this min value (default is None and
-                      implies Exception for non-positive norm)
+    Parameters
+    ----------
+    img
+        NxN ndarray
+    bgd
+        background to subtract, float of NXN ndarray
+    pix_zero_loc
+        row/col coords are integral at 'edge' or 'center'
+    norm_clip : clip image norm at this min value (default is None and
+        implies Exception for non-positive norm)
 
-    :returns: row, col, norm float
+    Returns
+    -------
+    row, col, norm float
     """
     # Cast to an ndarray (without copying)
     img = img.view(np.ndarray)
@@ -707,14 +728,24 @@ class AcaPsfLibrary(object):
         Get interpolated ACA PSF image that corresponds to pixel location
         ``row``, ``col``.
 
-        :param row: (float) row value of PSF centroid
-        :param col: (float) col value of PSF centroid
-        :param norm: (float) summed intensity of PSF image
-        :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
-        :param interpolation: 'nearest' | 'bilinear' (default)
-        :param aca_image: return ACAImage if True, else return ndarray
+        Parameters
+        ----------
+        row
+            (float) row value of PSF centroid
+        col
+            (float) col value of PSF centroid
+        norm
+            (float) summed intensity of PSF image
+        pix_zero_loc
+            row/col coords are integral at 'edge' or 'center'
+        interpolation
+            'nearest' | 'bilinear' (default)
+        aca_image
+            return ACAImage if True, else return ndarray
 
-        :returns: ACAImage if (aca_image is True) else (ndarray image, row0, col0)
+        Returns
+        -------
+        ACAImage if (aca_image is True) else (ndarray image, row0, col0)
         """
         drc = self.drc
 

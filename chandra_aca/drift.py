@@ -122,9 +122,16 @@ class AcaDriftModel(object):
         SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via
         the scale factor 20.493 arcsec/mm.
 
-        :param times: array of times (CXC secs)
-        :param t_ccd: CCD temperatures (degC)
-        :returns: array of ASOL SIM DY/DZ (mm)
+        Parameters
+        ----------
+        times
+            array of times (CXC secs)
+        t_ccd
+            CCD temperatures (degC)
+
+        Returns
+        -------
+        array of ASOL SIM DY/DZ (mm)
         """
         # The drift model is calibrated assuming t_ccd is in degF, but we want inputs
         # in degC, so convert at this point.
@@ -164,14 +171,24 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
 
     The ``time`` and ``t_ccd`` inputs can be either scalars or arrays.
 
-    :param detector: one of ACIS-I, ACIS-S, HRC-I, HRC-S
-    :param chipx: zero-offset aimpoint CHIPX
-    :param chipy: zero-offset aimpoint CHIPY
-    :param chip_id: zero-offset aimpoint CHIP ID
-    :param time: time(s) of observation (any Chandra.Time compatible format)
-    :param t_ccd: ACA CCD temperature(s) (degC)
+    Parameters
+    ----------
+    detector
+        one of ACIS-I, ACIS-S, HRC-I, HRC-S
+    chipx
+        zero-offset aimpoint CHIPX
+    chipy
+        zero-offset aimpoint CHIPY
+    chip_id
+        zero-offset aimpoint CHIP ID
+    time
+        time(s) of observation (any Chandra.Time compatible format)
+    t_ccd
+        ACA CCD temperature(s) (degC)
 
-    :returns: aca_offset_y, aca_offset_z (arcsec)
+    Returns
+    -------
+    aca_offset_y, aca_offset_z (arcsec)
     """
     # Define model instances using calibrated parameters
     drift_y = AcaDriftModel(**DRIFT_PARS["dy"])
@@ -224,7 +241,9 @@ def get_default_zero_offset_table():
     Note the definitive source of this file is:
     https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt.
 
-    :returns: zero offset aimpoint table as astropy.Table
+    Returns
+    -------
+    zero offset aimpoint table as astropy.Table
     """
     try:
         path = (
@@ -247,14 +266,22 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
     """
     Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id
 
-    :param date: observation date
-    :param cycle: proposal cycle of observation
-    :param detector: target detector
-    :param too: boolean. If target is TOO use current cycle not proposal cycle.
-    :param zero_offset_able: table (astropy or numpy) of zero offset aimpoint table
-                             defaults to official SOT MP version if not supplied.
+    Parameters
+    ----------
+    date
+        observation date
+    cycle
+        proposal cycle of observation
+    detector
+        target detector
+    too
+        boolean. If target is TOO use current cycle not proposal cycle.
+    zero_offset_able : table (astropy or numpy) of zero offset aimpoint table
+        defaults to official SOT MP version if not supplied.
 
-    :returns: tuple of chipx, chipy, chip_id
+    Returns
+    -------
+    tuple of chipx, chipy, chip_id
     """
     if zero_offset_table is None:
         zero_offset_table = get_default_zero_offset_table()

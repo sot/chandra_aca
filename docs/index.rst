@@ -37,6 +37,14 @@ Centroid residuals
 
     centroid_resid.rst
 
+Dark model
+----------
+
+.. toctree::
+    :maxdepth: 2
+
+    dark_model.rst
+
 MAUDE Decom
 -----------
 

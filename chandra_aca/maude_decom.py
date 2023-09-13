@@ -387,8 +387,14 @@ class _AcaImageHeaderDecom:
         """
         Unpack ACA header 1 (ACA User Manual 5.3.2.2.1).
 
-        :param bits: bytes-like object of length 7
-        :return: dict
+        Parameters
+        ----------
+        bits
+            bytes-like object of length 7
+
+        Returns
+        -------
+        dict
         """
         bits = np.unpackbits(np.array(_unpack("BBBbbBB", bits), dtype=np.uint8))
         return {
@@ -413,8 +419,14 @@ class _AcaImageHeaderDecom:
         """
         Unpack ACA header 2 (ACA User Manual 5.3.2.2.2).
 
-        :param bits: bytes-like object of length 7
-        :return: dict
+        Parameters
+        ----------
+        bits
+            bytes-like object of length 7
+
+        Returns
+        -------
+        dict
         """
         bits = _unpack("BbbbbBB", bits)
         c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
@@ -437,8 +449,14 @@ class _AcaImageHeaderDecom:
         """
         Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).
 
-        :param bits: bytes-like object of length 7
-        :return: dict
+        Parameters
+        ----------
+        bits
+            bytes-like object of length 7
+
+        Returns
+        -------
+        dict
         """
         return {"DIAGNOSTIC": _unpack("BBBBBB", bits[1:])}
 
@@ -447,9 +465,14 @@ def unpack_aca_telemetry(packet):
     """
     Unpack ACA telemetry encoded in 225-byte packets.
 
-    :param packet: bytes
-    :return: list of dict
+    Parameters
+    ----------
+    packet
+        bytes
 
+    Returns
+    -------
+    list of dict
     A list of length 8, one entry per slot, where each entry is a dictionary.
     """
     s1, s2, s3 = _unpack("BBB", packet[5:8])
@@ -512,8 +535,14 @@ def _combine_aca_packets(aca_packets):
 
     This is intended to combine the two 6X6 packets or the four 8X8 packets.
 
-    :param aca_packets: list of dict
-    :return: dict
+    Parameters
+    ----------
+    aca_packets
+        list of dict
+
+    Returns
+    -------
+    dict
     """
     # note that they are reverse-sorted so the first frame overwrites the others if they collide
     aca_packets = sorted(aca_packets, key=lambda p: p["TIME"], reverse=True)
@@ -540,9 +569,16 @@ def _group_packets(packets, discard=True):
     Before decommuting an ACA package we group the ACA-related portion of VCDU frames to form the
     one 225-byte ACA packet.
 
-    :param packets: list of ACA sub-packets
-    :param discard: bool to discard incomplete ACA packets
-    :return: list of ACA packets
+    Parameters
+    ----------
+    packets
+        list of ACA sub-packets
+    discard
+        bool to discard incomplete ACA packets
+
+    Returns
+    -------
+    list of ACA packets
     """
     res = []
     n = None
@@ -579,14 +615,22 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     This function raises an exception if the VCDU frames in maude_result are not contiguous, which
     can also happen if the frames are corrupted in some way.
 
-    :param start: timestamp interpreted as a Chandra.Time.DateTime
-    :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param maude_result: the result of calling maude.get_frames. Optional.
-    :param maude_kwargs: keyword args passed to maude.get_frames()
-    :return: dict
+    Parameters
+    ----------
+    start
+        timestamp interpreted as a Chandra.Time.DateTime
+    stop
+        timestamp interpreted as a Chandra.Time.DateTime
+    maude_result
+        the result of calling maude.get_frames. Optional.
+    maude_kwargs
+        keyword args passed to maude.get_frames()
 
-        {'flags': int, 'packets': [],
-         'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
+    Returns
+    -------
+    dict
+    {'flags': int, 'packets': [],
+    'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
     """
     date_start, date_stop = DateTime(start), DateTime(
         stop
@@ -721,9 +765,16 @@ def _aca_packets_to_table(aca_packets, dtype=None):
     """
     Store ACA packets in a table.
 
-    :param aca_packets: list of dict
-    :param dtype: dtype to use in the resulting table. Optional.
-    :return: astropy.table.Table
+    Parameters
+    ----------
+    aca_packets
+        list of dict
+    dtype
+        dtype to use in the resulting table. Optional.
+
+    Returns
+    -------
+    astropy.table.Table
     """
     import copy
 
@@ -894,32 +945,39 @@ def get_aca_packets(
          [False False False False False False False False]],
                     fill_value = 1e+20)
 
-
-    :param start: timestamp interpreted as a Chandra.Time.DateTime
-    :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param level0: bool.
+    Parameters
+    ----------
+    start
+        timestamp interpreted as a Chandra.Time.DateTime
+    stop
+        timestamp interpreted as a Chandra.Time.DateTime
+    level0 : bool.
         Implies combine=True, adjust_time=True, calibrate=True
-    :param combine: bool.
+    combine : bool.
         If True, multiple ACA packets are combined to form an image (depending on size),
         If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.
-    :param adjust_time: bool
+    adjust_time : bool
         If True, half the integration time is subtracted
-    :param calibrate: bool
+    calibrate : bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
-    :param blobs: bool or dict
+    blobs : bool or dict
         If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
         output of maude.get_blobs ({'blobs': ... }).
-    :param frames: bool or dict
+    frames : bool or dict
         If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
         output of maude.get_frames ({'data': ... }).
-    :param dtype: np.dtype. Optional.
+    dtype : np.dtype. Optional.
         the dtype to use when creating the resulting table. This is useful to add columns
         including MSIDs that are present in blobs. If used with frames, most probably you will get
         and empty column. This option is intended to augment the default dtype. If a more
         restrictive dtype is used, a KeyError can be raised.
-    :param maude_kwargs: keyword args passed to maude
-    :return: astropy.table.Table
+    maude_kwargs
+        keyword args passed to maude
+
+    Returns
+    -------
+    astropy.table.Table
     """
     if not blobs and not frames:
         frames = True
@@ -1085,10 +1143,18 @@ def get_aca_images(start, stop, **maude_kwargs):
     """
     Fetch ACA image telemetry
 
-    :param start: timestamp interpreted as a Chandra.Time.DateTime
-    :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param maude_kwargs: keyword args passed to maude
-    :return: astropy.table.Table
+    Parameters
+    ----------
+    start
+        timestamp interpreted as a Chandra.Time.DateTime
+    stop
+        timestamp interpreted as a Chandra.Time.DateTime
+    maude_kwargs
+        keyword args passed to maude
+
+    Returns
+    -------
+    astropy.table.Table
     """
     return get_aca_packets(start, stop, level0=True, **maude_kwargs)
 
@@ -1111,12 +1177,21 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
 
     This is to blobs what `get_raw_aca_packets` is to frames.
 
-    :param start: timestamp interpreted as a Chandra.Time.DateTime
-    :param stop: timestamp interpreted as a Chandra.Time.DateTime
-    :param maude_result: the result of calling maude.get_blobs. Optional.
-    :param maude_kwargs: keyword args passed to maude.get_frames()
-    :return: dict
-        {'blobs': [], 'names': np.array([]), 'types': np.array([])}
+    Parameters
+    ----------
+    start
+        timestamp interpreted as a Chandra.Time.DateTime
+    stop
+        timestamp interpreted as a Chandra.Time.DateTime
+    maude_result
+        the result of calling maude.get_blobs. Optional.
+    maude_kwargs
+        keyword args passed to maude.get_frames()
+
+    Returns
+    -------
+    dict
+    {'blobs': [], 'names': np.array([]), 'types': np.array([])}
     """
     date_start, date_stop = DateTime(start), DateTime(
         stop
@@ -1172,10 +1247,18 @@ def blob_to_aca_image_dict(blob, imgnum, pea=1):
 
     This does to blobs what unpack_aca_telemetry does to frames, but for a single image.
 
-    :param blob:
-    :param imgnum:
-    :param pea:
-    :return:
+    Parameters
+    ----------
+    blob
+
+    imgnum
+
+    pea
+
+
+    Returns
+    -------
+
     """
     global_msids = ACA_MSID_LIST[pea]
     slot_msids = ACA_SLOT_MSID_LIST[pea][imgnum]

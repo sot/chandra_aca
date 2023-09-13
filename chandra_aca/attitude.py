@@ -32,13 +32,20 @@ def calc_roll(yag, zag, yag_obs, zag_obs, sigma=None):
     star inputs then one can supply an array of sigma values corresponding
     to each star.
 
-    :param yag: reference yag (list or array)
-    :param zag: reference zag (list or array)
-    :param yag_obs: observed yag (list or array)
-    :param zag_obs: observed zag (list or array)
+    Parameters
+    ----------
+    yag
+        reference yag (list or array)
+    zag
+        reference zag (list or array)
+    yag_obs
+        observed yag (list or array)
+    zag_obs
+        observed zag (list or array)
 
-    :returns: roll (deg)
-
+    Returns
+    -------
+    roll (deg)
     """
     yag = np.asarray(yag)
     zag = np.asarray(zag)
@@ -80,14 +87,22 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None):
     [[cos(th) -sin(th)], [sin(th), cos(th)]] to [[1, -th], [th, 1]].
     In practice anything below 1.0 degree is fine.
 
-    :param yag: reference yag (list or array, arcsec)
-    :param zag: reference zag (list or array, arcsec)
-    :param yag_obs: observed yag (list or array, arcsec)
-    :param zag_obs: observed zag (list or array, arcsec)
-    :param sigma: centroid uncertainties (None or list or array, arcsec)
+    Parameters
+    ----------
+    yag
+        reference yag (list or array, arcsec)
+    zag
+        reference zag (list or array, arcsec)
+    yag_obs
+        observed yag (list or array, arcsec)
+    zag_obs
+        observed zag (list or array, arcsec)
+    sigma
+        centroid uncertainties (None or list or array, arcsec)
 
-    :returns: roll, pitch, yaw (degrees)
-
+    Returns
+    -------
+    roll, pitch, yaw (degrees)
     """
     yag = np.array(yag)
     zag = np.array(zag)
@@ -208,15 +223,24 @@ def calc_att(att, yag, zag, yag_obs, zag_obs, sigma=None):
     [[cos(th) -sin(th)], [sin(th), cos(th)]] to [[1, -th], [th, 1]].
     In practice anything below 1.0 degree is fine.
 
-    :param att: reference attitude (Quat-compatible)
-    :param yag: reference yag (list or array, arcsec)
-    :param zag: reference zag (list or array, arcsec)
-    :param yag_obs: observed yag (list or array, arcsec)
-    :param zag_obs: observed zag (list or array, arcsec)
-    :param sigma: centroid uncertainties (None or list or array, arcsec)
+    Parameters
+    ----------
+    att
+        reference attitude (Quat-compatible)
+    yag
+        reference yag (list or array, arcsec)
+    zag
+        reference zag (list or array, arcsec)
+    yag_obs
+        observed yag (list or array, arcsec)
+    zag_obs
+        observed zag (list or array, arcsec)
+    sigma
+        centroid uncertainties (None or list or array, arcsec)
 
-    :returns: Quat or list of Quat
-
+    Returns
+    -------
+    Quat or list of Quat
     """
     from Quaternion import Quat
 

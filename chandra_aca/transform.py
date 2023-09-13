@@ -141,14 +141,24 @@ def pixels_to_yagzag(
     that is the default.  However, it is generally more convenient when doing
     centroids and other manipulations to use the center.
 
-    :param row: ACA pixel row (single value, list, or 1-d numpy array)
-    :param col: ACA pixel column (single value, list, or 1-d numpy array)
-    :param allow_bad: boolean switch.  If true, method will not throw errors
-                         if the row/col values are nominally off the ACA CCD.
-    :param flight: Use flight EEPROM coefficients instead of default ground values.
-    :param t_aca: ACA temperature (degC) for use with flight (default=20C)
-    :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
-    :rtype: (yang, zang) each vector of the same length as row/col
+    Parameters
+    ----------
+    row
+        ACA pixel row (single value, list, or 1-d numpy array)
+    col
+        ACA pixel column (single value, list, or 1-d numpy array)
+    allow_bad : boolean switch.  If true, method will not throw errors
+        if the row/col values are nominally off the ACA CCD.
+    flight
+        Use flight EEPROM coefficients instead of default ground values.
+    t_aca
+        ACA temperature (degC) for use with flight (default=20C)
+    pix_zero_loc
+        row/col coords are integral at 'edge' or 'center'
+
+    Returns
+    -------
+    (yang, zang) each vector of the same length as row/col
     """
     row = np.asarray(row)
     col = np.asarray(col)
@@ -184,12 +194,20 @@ def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc="edge"):
     that is the default.  However, it is generally more convenient when doing
     centroids and other manipulations to use ``pix_zero_loc='center'``.
 
-    :param yang: ACA y-angle (single value, list, or 1-d numpy array)
-    :param zang: ACA z-angle (single value, list, or 1-d numpy array)
-    :param allow_bad: boolean switch.  If true, method will not throw errors
-                         if the resulting row/col values are nominally off the ACA CCD.
-    :param pix_zero_loc: row/col coords are integral at 'edge' or 'center'
-    :rtype: (row, col) each vector of the same length as row/col
+    Parameters
+    ----------
+    yang
+        ACA y-angle (single value, list, or 1-d numpy array)
+    zang
+        ACA z-angle (single value, list, or 1-d numpy array)
+    allow_bad : boolean switch.  If true, method will not throw errors
+        if the resulting row/col values are nominally off the ACA CCD.
+    pix_zero_loc
+        row/col coords are integral at 'edge' or 'center'
+
+    Returns
+    -------
+    (row, col) each vector of the same length as row/col
     """
     yang = np.asarray(yang)
     zang = np.asarray(zang)
@@ -276,9 +294,16 @@ def radec_to_eci(ra, dec):
     arrays of length N in which case the output ``ECI`` will be an array with
     shape (N, 3). The N dimension can actually be any multidimensional shape.
 
-    :param ra: Right Ascension (degrees)
-    :param dec: Declination (degrees)
-    :returns: numpy array ECI (3-vector or N x 3 array)
+    Parameters
+    ----------
+    ra
+        Right Ascension (degrees)
+    dec
+        Declination (degrees)
+
+    Returns
+    -------
+    numpy array ECI (3-vector or N x 3 array)
     """
     r = np.deg2rad(ra)
     d = np.deg2rad(dec)
@@ -298,8 +323,14 @@ def eci_to_radec(eci):
     the output RA, Dec will be arrays of shape N. The N dimension can
     actually be any multidimensional shape.
 
-    :param eci: ECI as 3-vector or (N, 3) array
-    :rtype: scalar or array ra, dec (degrees)
+    Parameters
+    ----------
+    eci
+        ECI as 3-vector or (N, 3) array
+
+    Returns
+    -------
+    scalar or array ra, dec (degrees)
     """
     eci = np.asarray(eci)
     if eci.shape[-1] != 3:
@@ -335,8 +366,14 @@ def mag_to_count_rate(mag):
     columns mag0=10.32 and cnt_rate_mag0=5263.0.  To convert to raw telemetered
     counts (ADU), divide e- by the gain of 5.0 e-/ADU.
 
-    :param mag: star magnitude in ACA mag
-    :returns: count rate (e-/sec)
+    Parameters
+    ----------
+    mag
+        star magnitude in ACA mag
+
+    Returns
+    -------
+    count rate (e-/sec)
     """
     count_rate = ACA_CNT_RATE_MAG0 * 10.0 ** ((ACA_MAG0 - mag) / 2.5)
     return count_rate
@@ -349,8 +386,14 @@ def count_rate_to_mag(count_rate):
     Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
     columns mag0=10.32 and cnt_rate_mag0=5263.0.
 
-    :param count_rate: count rate (e-/sec)
-    :returns: magnitude (ACA mag)
+    Parameters
+    ----------
+    count_rate
+        count rate (e-/sec)
+
+    Returns
+    -------
+    magnitude (ACA mag)
     """
     mag = ACA_MAG0 - 2.5 * np.log10(count_rate / ACA_CNT_RATE_MAG0)
     return mag
@@ -376,16 +419,21 @@ def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
       counts(mag) = ACA_CNT_RATE_MAG0 * 10.0 ** ((ACA_MAG0 - mag) / 2.5)
       ref_mag = (t_ccd - ref_t_ccd) * np.log10(scale_4c) / 1.6
 
-    :param t_ccd: float, array
+    Parameters
+    ----------
+    t_ccd : float, array
         CCD temperature (degC)
-    :param ref_mag: float, array
+    ref_mag : float, array
         Reference magnitude (mag)
-    :param ref_t_ccd: float, array
+    ref_t_ccd : float, array
         Reference CCD temperature (degC)
-    :param scale_4c: float
+    scale_4c : float
         Scale factor for a 4 degC change in CCD temperature (defaults to DARK_SCALE_4C)
-    :returns: float, array
-        Magnitude(s) with the same expected signal to noise as ref_mag at ref_t_ccd
+
+    Returns
+    -------
+    float, array
+    Magnitude(s) with the same expected signal to noise as ref_mag at ref_t_ccd
     """
     # Allow array inputs
     t_ccd, ref_mag, ref_t_ccd = np.broadcast_arrays(t_ccd, ref_mag, ref_t_ccd)
@@ -400,12 +448,20 @@ def calc_aca_from_targ(targ, y_off, z_off, si_align=None):
     Calculate the PCAD (ACA) pointing attitude from target attitude and
     Y,Z offset (per OR-list).
 
-    :param targ: science target from OR/Obscat (Quat-compliant object)
-    :param y_off: Y offset (deg, sign per OR-list convention)
-    :param z_off: Z offset (deg, sign per OR-list convention)
-    :param si_align: SI ALIGN matrix (default=ODB_SI_ALIGN)
+    Parameters
+    ----------
+    targ
+        science target from OR/Obscat (Quat-compliant object)
+    y_off
+        Y offset (deg, sign per OR-list convention)
+    z_off
+        Z offset (deg, sign per OR-list convention)
+    si_align
+        SI ALIGN matrix (default=ODB_SI_ALIGN)
 
-    :rtype: q_aca (Quat)
+    Returns
+    -------
+    q_aca (Quat)
     """
     if si_align is None:
         si_align = ODB_SI_ALIGN
@@ -423,12 +479,20 @@ def calc_targ_from_aca(aca, y_off, z_off, si_align=None):
     Calculate the target attitude from ACA (PCAD) pointing attitude and
     Y,Z offset (per OR-list).
 
-    :param aca: ACA (PCAD) pointing attitude (any Quat-compliant object)
-    :param y_off: Y offset (deg, sign per OR-list convention)
-    :param z_off: Z offset (deg, sign per OR-list convention)
-    :param si_align: SI ALIGN matrix
+    Parameters
+    ----------
+    aca
+        ACA (PCAD) pointing attitude (any Quat-compliant object)
+    y_off
+        Y offset (deg, sign per OR-list convention)
+    z_off
+        Z offset (deg, sign per OR-list convention)
+    si_align
+        SI ALIGN matrix
 
-    :rtype: q_targ (Quat)
+    Returns
+    -------
+    q_targ (Quat)
     """
     if si_align is None:
         si_align = ODB_SI_ALIGN
@@ -447,12 +511,20 @@ def calc_target_offsets(aca, ra_targ, dec_targ, si_align=None):
     Calculates required Y and Z offsets (deg) required from a target RA, Dec to
     arrive at the desired PCAD pointing ``aca``.
 
-    :param aca: PCAD attitude (any Quat-compliant initializer)
-    :param ra_targ: RA of science target from OR/Obscat
-    :param dec_targ: Dec of science target from OR/Obscat
-    :param si_align: SI ALIGN matrix (default=ODB)
+    Parameters
+    ----------
+    aca
+        PCAD attitude (any Quat-compliant initializer)
+    ra_targ
+        RA of science target from OR/Obscat
+    dec_targ
+        Dec of science target from OR/Obscat
+    si_align
+        SI ALIGN matrix (default=ODB)
 
-    :rtype: tuple (y_off, z_off) degrees
+    Returns
+    -------
+    tuple (y_off, z_off) degrees
     """
     if si_align is None:
         si_align = ODB_SI_ALIGN
@@ -480,11 +552,18 @@ def radec_to_yagzag(ra, dec, q_att):
     input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
     ``yag`` and ``zag`` will be corresponding arrays of the same length.
 
-    :param ra: Right Ascension (degrees)
-    :param dec: Declination (degrees)
-    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)
+    Parameters
+    ----------
+    ra
+        Right Ascension (degrees)
+    dec
+        Declination (degrees)
+    q_att
+        ACA pointing quaternion (Quat or Quat-compatible input)
 
-    :returns:  yag, zag (arcsec)
+    Returns
+    -------
+    yag, zag (arcsec)
     """
     if not isinstance(q_att, Quat):
         q_att = Quat(q_att)
@@ -502,11 +581,18 @@ def yagzag_to_radec(yag, zag, q_att):
     input ``yag`` and ``zag`` values can be 1-d arrays in which case the output
     ``ra`` and ``dec`` will be corresponding arrays of the same length.
 
-    :param yag: ACA Y angle (arcsec)
-    :param zag: ACA Z angle (arcsec)
-    :param q_att: ACA pointing quaternion (Quat or Quat-compatible input)
+    Parameters
+    ----------
+    yag
+        ACA Y angle (arcsec)
+    zag
+        ACA Z angle (arcsec)
+    q_att
+        ACA pointing quaternion (Quat or Quat-compatible input)
 
-    :returns: ra, dec (degrees)
+    Returns
+    -------
+    ra, dec (degrees)
     """
     if not isinstance(q_att, Quat):
         q_att = Quat(q_att)
@@ -528,9 +614,16 @@ def normalize_vector(vec, ord=None):
     For an L x M x N input array, this normalizes over the N dimension
     using ``np.linalg.norm``.
 
-    :param vec: input vector or array of vectors
-    :param ord: ord parameter for np.linalg.norm (default=None => 2-norm)
-    :returns: normed array of vectors
+    Parameters
+    ----------
+    vec
+        input vector or array of vectors
+    ord
+        ord parameter for np.linalg.norm (default=None => 2-norm)
+
+    Returns
+    -------
+    normed array of vectors
     """
     norms = np.linalg.norm(vec, axis=-1, keepdims=True, ord=ord)
     return vec / norms
