@@ -4,16 +4,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.drift &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca.drift &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -60,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       
@@ -74,8 +73,122 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="chandra-aca-drift">
-<h1>chandra_aca.drift<a class="headerlink" href="#chandra-aca-drift" title="Permalink to this headline">¶</a></h1>
+  <section id="module-chandra_aca.drift">
+<span id="chandra-aca-drift"></span><h1>chandra_aca.drift<a class="headerlink" href="#module-chandra_aca.drift" title="Permalink to this heading">¶</a></h1>
+<p>Function(s) related to ACA alignment.</p>
+<p>In particular compute the dynamical pointing offset required to achieve
+a desired zero-offset target aimpoint.</p>
+<p>A key element of this module is the fitting analysis here:
+<a class="reference external" href="https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb">https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="chandra_aca.drift.AcaDriftModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">AcaDriftModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jumps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define a drift model for aspect solution SIM DY/DZ values as a function of
+time and ACA CCD temperature.  This expresses the model which is defined
+and fitted in the fit_aimpoint_drift notebook in this repo.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chandra_aca.drift.AcaDriftModel.calc">
+<span class="sig-name descname"><span class="pre">calc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel.calc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel.calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the drift model for aspect solution SIM DY/DZ values for input
+<code class="docutils literal notranslate"><span class="pre">times</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>.  The two arrays are broadcasted to match.</p>
+<p>The returned drifts are in arcsec and provide the expected aspect solution
+SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via
+the scale factor 20.493 arcsec/mm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>times</strong></dt><dd><p>array of times (CXC secs)</p>
+</dd>
+<dt><strong>t_ccd</strong></dt><dd><p>CCD temperatures (degC)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>array of ASOL SIM DY/DZ (mm)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.drift.get_aca_offsets">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_aca_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_aca_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_aca_offsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the dynamical ACA offset values for the provided inputs.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">time</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code> inputs can be either scalars or arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>detector</strong></dt><dd><p>one of ACIS-I, ACIS-S, HRC-I, HRC-S</p>
+</dd>
+<dt><strong>chipx</strong></dt><dd><p>zero-offset aimpoint CHIPX</p>
+</dd>
+<dt><strong>chipy</strong></dt><dd><p>zero-offset aimpoint CHIPY</p>
+</dd>
+<dt><strong>chip_id</strong></dt><dd><p>zero-offset aimpoint CHIP ID</p>
+</dd>
+<dt><strong>time</strong></dt><dd><p>time(s) of observation (any Chandra.Time compatible format)</p>
+</dd>
+<dt><strong>t_ccd</strong></dt><dd><p>ACA CCD temperature(s) (degC)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>aca_offset_y, aca_offset_z (arcsec)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.drift.get_default_zero_offset_table">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_default_zero_offset_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_default_zero_offset_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_default_zero_offset_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get official SOT MP zero offset aimpoint table.</p>
+<p>First try <code class="docutils literal notranslate"><span class="pre">/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt</span></code>.
+If that is not available use:
+<a class="reference external" href="https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt">https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt</a>.
+The web version is updated weekly on Sunday via a Ska cron job.</p>
+<p>Note the definitive source of this file is:
+<a class="reference external" href="https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt">https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>zero offset aimpoint table as astropy.Table</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.drift.get_target_aimpoint">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_target_aimpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">too</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_offset_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_target_aimpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_target_aimpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>date</strong></dt><dd><p>observation date</p>
+</dd>
+<dt><strong>cycle</strong></dt><dd><p>proposal cycle of observation</p>
+</dd>
+<dt><strong>detector</strong></dt><dd><p>target detector</p>
+</dd>
+<dt><strong>too</strong></dt><dd><p>boolean. If target is TOO use current cycle not proposal cycle.</p>
+</dd>
+<dt><strong>zero_offset_able</strong><span class="classifier">table (astropy or numpy) of zero offset aimpoint table</span></dt><dd><p>defaults to official SOT MP version if not supplied.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>tuple of chipx, chipy, chip_id</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -86,16 +199,29 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#">chandra_aca.drift</a></li>
+<li><a class="reference internal" href="#">chandra_aca.drift</a><ul>
+<li><a class="reference internal" href="#chandra_aca.drift.AcaDriftModel"><code class="docutils literal notranslate"><span class="pre">AcaDriftModel</span></code></a><ul>
+<li><a class="reference internal" href="#chandra_aca.drift.AcaDriftModel.calc"><code class="docutils literal notranslate"><span class="pre">AcaDriftModel.calc()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chandra_aca.drift.get_aca_offsets"><code class="docutils literal notranslate"><span class="pre">get_aca_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.drift.get_default_zero_offset_table"><code class="docutils literal notranslate"><span class="pre">get_default_zero_offset_table()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.drift.get_target_aimpoint"><code class="docutils literal notranslate"><span class="pre">get_target_aimpoint()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">chandra_aca</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="aca_image.html"
-                        title="next chapter">chandra_aca.aca_image</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">chandra_aca</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="aca_image.html"
+                          title="next chapter">chandra_aca.aca_image</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -119,7 +245,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

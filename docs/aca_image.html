@@ -4,16 +4,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca.aca_image &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -60,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       
@@ -75,7 +74,7 @@
           <div class="body" role="main">
             
   <section id="chandra-aca-aca-image">
-<h1>chandra_aca.aca_image<a class="headerlink" href="#chandra-aca-aca-image" title="Permalink to this headline">¶</a></h1>
+<h1>chandra_aca.aca_image<a class="headerlink" href="#chandra-aca-aca-image" title="Permalink to this heading">¶</a></h1>
 <p>The <cite>aca_image</cite> module contains classes and utilities related to ACA readout
 images.  This includes the <a class="reference internal" href="#acaimage-class">ACAImage class</a> for manipulating images in
 ACA coordinates, a first moment centroiding routine, and a library for
@@ -83,7 +82,7 @@ generating synthetic ACA images that have a high-fidelity point spread function
 (PSF).</p>
 <span class="target" id="module-chandra_aca.aca_image"></span><dl class="py class">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">ACAImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">ACAImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>ACAImage is an ndarray subclass that supports functionality for the Chandra
 ACA. Most importantly it allows image indexing and slicing in absolute
 “aca” coordinates, where the image lower left coordinate is specified
@@ -106,7 +105,7 @@ initialize from array data or create a new array of zeros.</p>
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>row0</strong> – row coordinate of lower left image pixel (int, default=0)</p></li>
 <li><p><strong>col0</strong> – col coordinate of lower left image pixel (int, default=0)</p></li>
@@ -118,7 +117,7 @@ initialize from array data or create a new array of zeros.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.aca">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">aca</span></span><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.aca" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aca</span></span><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.aca" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a light copy (same data) of self but with the _aca_coords
 attribute switched on so that indexing is absolute.</p>
 </dd></dl>
@@ -131,16 +130,20 @@ attribute switched on so that indexing is absolute.</p>
 <p>Note that the returned <code class="docutils literal notranslate"><span class="pre">norm</span></code> is the sum of the background-subtracted 6x6
 mousebitten image, not the entire image.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>bgd</strong> – background to subtract, scalar or NxN ndarray (float)</p></li>
-<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
-<li><p><strong>norm_clip</strong> – clip image norm at this min value (default is None and
-implies Exception for non-positive norm)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>bgd</strong></dt><dd><p>background to subtract, scalar or NxN ndarray (float)</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>row, col, norm float</p>
+<dt><strong>pix_zero_loc</strong></dt><dd><p>row/col coords are integral at ‘edge’ or ‘center’</p>
+</dd>
+<dt><strong>norm_clip</strong><span class="classifier">clip image norm at this min value (default is None and</span></dt><dd><p>implies Exception for non-positive norm)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>row, col, norm float</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -160,13 +163,15 @@ then it would be 1 / (1 + x) =&gt; 1 / (1 + x * flicker_scale).</p>
 /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-implementation.ipynb</p>
 <p>The model was reviewed and approved at SS&amp;AWG on 2019-05-22.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>flicker_mean_time</strong> – mean flickering time (sec, default=10000)</p></li>
-<li><p><strong>flicker_scale</strong> – multiplicative factor beyond model default for
-flickering amplitude (default=1.0)</p></li>
-<li><p><strong>seed</strong> – random seed for reproducibility (default=None =&gt; no seed)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flicker_mean_time</strong></dt><dd><p>mean flickering time (sec, default=10000)</p>
+</dd>
+<dt><strong>flicker_scale</strong><span class="classifier">multiplicative factor beyond model default for</span></dt><dd><p>flickering amplitude (default=1.0)</p>
+</dd>
+<dt><strong>seed</strong></dt><dd><p>random seed for reproducibility (default=None =&gt; no seed)</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -180,11 +185,13 @@ that have flickered during that interval.</p>
 to use the numba-based version which is about 6 times faster.  The
 vectorized version is left in for reference.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dt</strong> – time (secs) to propagate image</p></li>
-<li><p><strong>use_numba</strong> – use the numba version of updating (default=True)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt</strong></dt><dd><p>time (secs) to propagate image</p>
+</dd>
+<dt><strong>use_numba</strong></dt><dd><p>use the numba version of updating (default=True)</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -193,7 +200,7 @@ vectorized version is left in for reference.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.AcaPsfLibrary">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">AcaPsfLibrary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">AcaPsfLibrary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
 (pixelated) ACA PSF over a grid of subpixel locations.</p>
 <p>Example:</p>
@@ -213,10 +220,10 @@ vectorized version is left in for reference.</p>
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>filename</strong> – file name of ACA PSF library (default=built-in file)</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>AcaPsfLibrary object</p>
 </dd>
 </dl>
@@ -226,18 +233,26 @@ vectorized version is left in for reference.</p>
 <dd><p>Get interpolated ACA PSF image that corresponds to pixel location
 <code class="docutils literal notranslate"><span class="pre">row</span></code>, <code class="docutils literal notranslate"><span class="pre">col</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>row</strong> – (float) row value of PSF centroid</p></li>
-<li><p><strong>col</strong> – (float) col value of PSF centroid</p></li>
-<li><p><strong>norm</strong> – (float) summed intensity of PSF image</p></li>
-<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
-<li><p><strong>interpolation</strong> – ‘nearest’ | ‘bilinear’ (default)</p></li>
-<li><p><strong>aca_image</strong> – return ACAImage if True, else return ndarray</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>row</strong></dt><dd><p>(float) row value of PSF centroid</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>ACAImage if (aca_image is True) else (ndarray image, row0, col0)</p>
+<dt><strong>col</strong></dt><dd><p>(float) col value of PSF centroid</p>
+</dd>
+<dt><strong>norm</strong></dt><dd><p>(float) summed intensity of PSF image</p>
+</dd>
+<dt><strong>pix_zero_loc</strong></dt><dd><p>row/col coords are integral at ‘edge’ or ‘center’</p>
+</dd>
+<dt><strong>interpolation</strong></dt><dd><p>‘nearest’ | ‘bilinear’ (default)</p>
+</dd>
+<dt><strong>aca_image</strong></dt><dd><p>return ACAImage if True, else return ndarray</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ACAImage if (aca_image is True) else (ndarray image, row0, col0)</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -246,7 +261,7 @@ vectorized version is left in for reference.</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.EIGHT_LABELS">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">EIGHT_LABELS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">array([['A1',</span> <span class="pre">'B1',</span> <span class="pre">'C1',</span> <span class="pre">'D1',</span> <span class="pre">'E1',</span> <span class="pre">'F1',</span> <span class="pre">'G1',</span> <span class="pre">'H1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I1',</span> <span class="pre">'J1',</span> <span class="pre">'K1',</span> <span class="pre">'L1',</span> <span class="pre">'M1',</span> <span class="pre">'N1',</span> <span class="pre">'O1',</span> <span class="pre">'P1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A2',</span> <span class="pre">'B2',</span> <span class="pre">'C2',</span> <span class="pre">'D2',</span> <span class="pre">'E2',</span> <span class="pre">'F2',</span> <span class="pre">'G2',</span> <span class="pre">'H2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I2',</span> <span class="pre">'J2',</span> <span class="pre">'K2',</span> <span class="pre">'L2',</span> <span class="pre">'M2',</span> <span class="pre">'N2',</span> <span class="pre">'O2',</span> <span class="pre">'P2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A3',</span> <span class="pre">'B3',</span> <span class="pre">'C3',</span> <span class="pre">'D3',</span> <span class="pre">'E3',</span> <span class="pre">'F3',</span> <span class="pre">'G3',</span> <span class="pre">'H3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I3',</span> <span class="pre">'J3',</span> <span class="pre">'K3',</span> <span class="pre">'L3',</span> <span class="pre">'M3',</span> <span class="pre">'N3',</span> <span class="pre">'O3',</span> <span class="pre">'P3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A4',</span> <span class="pre">'B4',</span> <span class="pre">'C4',</span> <span class="pre">'D4',</span> <span class="pre">'E4',</span> <span class="pre">'F4',</span> <span class="pre">'G4',</span> <span class="pre">'H4'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I4',</span> <span class="pre">'J4',</span> <span class="pre">'K4',</span> <span class="pre">'L4',</span> <span class="pre">'M4',</span> <span class="pre">'N4',</span> <span class="pre">'O4',</span> <span class="pre">'P4']],</span> <span class="pre">dtype='&lt;U2')</span></em><a class="headerlink" href="#chandra_aca.aca_image.EIGHT_LABELS" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">EIGHT_LABELS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([['A1',</span> <span class="pre">'B1',</span> <span class="pre">'C1',</span> <span class="pre">'D1',</span> <span class="pre">'E1',</span> <span class="pre">'F1',</span> <span class="pre">'G1',</span> <span class="pre">'H1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I1',</span> <span class="pre">'J1',</span> <span class="pre">'K1',</span> <span class="pre">'L1',</span> <span class="pre">'M1',</span> <span class="pre">'N1',</span> <span class="pre">'O1',</span> <span class="pre">'P1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A2',</span> <span class="pre">'B2',</span> <span class="pre">'C2',</span> <span class="pre">'D2',</span> <span class="pre">'E2',</span> <span class="pre">'F2',</span> <span class="pre">'G2',</span> <span class="pre">'H2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I2',</span> <span class="pre">'J2',</span> <span class="pre">'K2',</span> <span class="pre">'L2',</span> <span class="pre">'M2',</span> <span class="pre">'N2',</span> <span class="pre">'O2',</span> <span class="pre">'P2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A3',</span> <span class="pre">'B3',</span> <span class="pre">'C3',</span> <span class="pre">'D3',</span> <span class="pre">'E3',</span> <span class="pre">'F3',</span> <span class="pre">'G3',</span> <span class="pre">'H3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I3',</span> <span class="pre">'J3',</span> <span class="pre">'K3',</span> <span class="pre">'L3',</span> <span class="pre">'M3',</span> <span class="pre">'N3',</span> <span class="pre">'O3',</span> <span class="pre">'P3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A4',</span> <span class="pre">'B4',</span> <span class="pre">'C4',</span> <span class="pre">'D4',</span> <span class="pre">'E4',</span> <span class="pre">'F4',</span> <span class="pre">'G4',</span> <span class="pre">'H4'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I4',</span> <span class="pre">'J4',</span> <span class="pre">'K4',</span> <span class="pre">'L4',</span> <span class="pre">'M4',</span> <span class="pre">'N4',</span> <span class="pre">'O4',</span> <span class="pre">'P4']],</span> <span class="pre">dtype='&lt;U2')</span></em><a class="headerlink" href="#chandra_aca.aca_image.EIGHT_LABELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constant for labeling ACA image pixels using the EQ-278 spec format.
 Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
 row and highest col; pixel I4 has the highest row and lowest column.</p>
@@ -260,23 +275,28 @@ row and highest col; pixel I4 has the highest row and lowest column.</p>
 (0.0, 0.0) at the center (for pix_zero_loc=’center’) or the lower-left edge
 (for pix_zero_loc=’edge’).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>img</strong> – NxN ndarray</p></li>
-<li><p><strong>bgd</strong> – background to subtract, float of NXN ndarray</p></li>
-<li><p><strong>pix_zero_loc</strong> – row/col coords are integral at ‘edge’ or ‘center’</p></li>
-<li><p><strong>norm_clip</strong> – clip image norm at this min value (default is None and
-implies Exception for non-positive norm)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>img</strong></dt><dd><p>NxN ndarray</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>row, col, norm float</p>
+<dt><strong>bgd</strong></dt><dd><p>background to subtract, float of NXN ndarray</p>
+</dd>
+<dt><strong>pix_zero_loc</strong></dt><dd><p>row/col coords are integral at ‘edge’ or ‘center’</p>
+</dd>
+<dt><strong>norm_clip</strong><span class="classifier">clip image norm at this min value (default is None and</span></dt><dd><p>implies Exception for non-positive norm)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>row, col, norm float</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
 
 <section id="acaimage-class">
-<h2>ACAImage class<a class="headerlink" href="#acaimage-class" title="Permalink to this headline">¶</a></h2>
+<h2>ACAImage class<a class="headerlink" href="#acaimage-class" title="Permalink to this heading">¶</a></h2>
 <p>ACAImage is an ndarray subclass that supports functionality for the Chandra
 ACA. Most importantly it allows image indexing and slicing in absolute
 “aca” coordinates, where the image lower left coordinate is specified
@@ -286,7 +306,7 @@ information.  Any keys which are all upper-case will be exposed as object
 attributes, e.g. <code class="docutils literal notranslate"><span class="pre">img.BGDAVG</span></code> &lt;=&gt; <code class="docutils literal notranslate"><span class="pre">img.meta['BGDAVG']</span></code>.  The <code class="docutils literal notranslate"><span class="pre">row0</span></code>
 attribute  is a proxy for <code class="docutils literal notranslate"><span class="pre">img.meta['IMGROW0']</span></code>, and likewise for <code class="docutils literal notranslate"><span class="pre">col0</span></code>.</p>
 <section id="creation">
-<h3>Creation<a class="headerlink" href="#creation" title="Permalink to this headline">¶</a></h3>
+<h3>Creation<a class="headerlink" href="#creation" title="Permalink to this heading">¶</a></h3>
 <p>When initializing an <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code>, additional <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> are
 used to try initializing via <code class="docutils literal notranslate"><span class="pre">np.array(*args,</span> <span class="pre">**kwargs)</span></code>.  If this fails
 then <code class="docutils literal notranslate"><span class="pre">np.zeros(*args,</span> <span class="pre">**kwargs)</span></code> is tried.  In this way one can either
@@ -324,7 +344,7 @@ point values are shown.</p>
 </div>
 </section>
 <section id="image-access-and-setting">
-<h3>Image access and setting<a class="headerlink" href="#image-access-and-setting" title="Permalink to this headline">¶</a></h3>
+<h3>Image access and setting<a class="headerlink" href="#image-access-and-setting" title="Permalink to this heading">¶</a></h3>
 <p>You can access array elements as usual, and in fact do any normal numpy array operations:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 <span class="go">15</span>
@@ -391,7 +411,7 @@ within the area of <code class="docutils literal notranslate"><span class="pre">
 </div>
 </section>
 <section id="image-arithmetic-operations">
-<h3>Image arithmetic operations<a class="headerlink" href="#image-arithmetic-operations" title="Permalink to this headline">¶</a></h3>
+<h3>Image arithmetic operations<a class="headerlink" href="#image-arithmetic-operations" title="Permalink to this heading">¶</a></h3>
 <p>In addition to doing image arithmetic operations using explicit slices
 as shown previously, one can also use normal arithmetic operators like
 <code class="docutils literal notranslate"><span class="pre">+</span></code> (for addition) or <code class="docutils literal notranslate"><span class="pre">+=</span></code> for in-place addition.</p>
@@ -472,15 +492,15 @@ shown in the examples below.  The supported operations for this are:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
 <span class="gt">Traceback (most recent call last):</span>
   File <span class="nb">&quot;&lt;ipython-input-19-f96fb8f649b6&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
-    <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+<span class="w">    </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
   File <span class="nb">&quot;chandra_aca/aca_image.py&quot;</span>, line <span class="m">68</span>, in <span class="n">_operator</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>  <span class="c1"># returns self for inplace ops</span>
+<span class="w">    </span><span class="n">out</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>  <span class="c1"># returns self for inplace ops</span>
 <span class="gr">ValueError</span>: <span class="n">operands could not be broadcast together with shapes (6,6) (4,4)</span>
 </pre></div>
 </div>
 </section>
 <section id="meta-data">
-<h3>Meta-data<a class="headerlink" href="#meta-data" title="Permalink to this headline">¶</a></h3>
+<h3>Meta-data<a class="headerlink" href="#meta-data" title="Permalink to this heading">¶</a></h3>
 <p>Finally, the <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code> object can store arbitrary metadata in the
 <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict attribute.  However, in order to make this convenient and
 distinct from native numpy attributes, the <code class="docutils literal notranslate"><span class="pre">meta</span></code> attributes should
@@ -514,6 +534,19 @@ as object attributes instead of going through the <code class="docutils literal 
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
 <li><a class="reference internal" href="#">chandra_aca.aca_image</a><ul>
+<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage"><code class="docutils literal notranslate"><span class="pre">ACAImage</span></code></a><ul>
+<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.aca"><code class="docutils literal notranslate"><span class="pre">ACAImage.aca</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.centroid_fm"><code class="docutils literal notranslate"><span class="pre">ACAImage.centroid_fm()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.flicker_init"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_init()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.flicker_update"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_update()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chandra_aca.aca_image.AcaPsfLibrary"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary</span></code></a><ul>
+<li><a class="reference internal" href="#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary.get_psf_image()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chandra_aca.aca_image.EIGHT_LABELS"><code class="docutils literal notranslate"><span class="pre">EIGHT_LABELS</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.aca_image.centroid_fm"><code class="docutils literal notranslate"><span class="pre">centroid_fm()</span></code></a></li>
 <li><a class="reference internal" href="#acaimage-class">ACAImage class</a><ul>
 <li><a class="reference internal" href="#creation">Creation</a></li>
 <li><a class="reference internal" href="#image-access-and-setting">Image access and setting</a></li>
@@ -526,12 +559,16 @@ as object attributes instead of going through the <code class="docutils literal 
 </ul>
 
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="drift.html"
-                        title="previous chapter">chandra_aca.drift</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="centroid_resid.html"
-                        title="next chapter">chandra_aca.centroid_resid</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="drift.html"
+                          title="previous chapter">chandra_aca.drift</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="centroid_resid.html"
+                          title="next chapter">chandra_aca.centroid_resid</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -555,7 +592,7 @@ as object attributes instead of going through the <code class="docutils literal 
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

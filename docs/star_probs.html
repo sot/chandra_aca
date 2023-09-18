@@ -4,16 +4,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.star_probs &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -60,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       
@@ -74,8 +73,551 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="chandra-aca-star-probs">
-<h1>chandra_aca.star_probs<a class="headerlink" href="#chandra-aca-star-probs" title="Permalink to this headline">¶</a></h1>
+  <section id="module-chandra_aca.star_probs">
+<span id="chandra-aca-star-probs"></span><h1>chandra_aca.star_probs<a class="headerlink" href="#module-chandra_aca.star_probs" title="Permalink to this heading">¶</a></h1>
+<p>Functions related to probabilities for star acquisition and guide tracking.</p>
+<p>Current default acquisition probability model: <code class="docutils literal notranslate"><span class="pre">grid-*</span></code> (latest grid model) This can
+be changed by setting the module configuration value <code class="docutils literal notranslate"><span class="pre">conf.default_model</span></code> to an
+available model or model glob in the <code class="docutils literal notranslate"><span class="pre">chandra_models</span></code> repository.</p>
+<p>The grid-local-quadratic-2023-05 model definition and fit values based on:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/sot/aca_stats/blob/master/fit_acq_model-2023-05-local-quadratic.ipynb">https://github.com/sot/aca_stats/blob/master/fit_acq_model-2023-05-local-quadratic.ipynb</a></p></li>
+<li><p><a class="reference external" href="https://github.com/sot/aca_stats/blob/master/validate-2023-05-local-quadratic.ipynb">https://github.com/sot/aca_stats/blob/master/validate-2023-05-local-quadratic.ipynb</a></p></li>
+<li><p>SS&amp;AWG review 2023-02-01</p></li>
+</ul>
+<p>The grid-floor-2020-02 model definition and fit values based on:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb">https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb</a></p></li>
+<li><p>SSAWG review: 2020-01-29</p></li>
+</ul>
+<dl class="py class">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.Conf">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">Conf</span></span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#Conf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.Conf" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.Conf.default_model">
+<span class="sig-name descname"><span class="pre">default_model</span></span><a class="headerlink" href="#chandra_aca.star_probs.Conf.default_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default acquisition probability model.  This can be a specific model name or a glob pattern (e.g. <code class="docutils literal notranslate"><span class="pre">'grid-*'</span></code> for latest grid model).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.ConfigItem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">ConfigItem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">defaultvalue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfgtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aliases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#ConfigItem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.ConfigItem" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.ConfigItem.rootname">
+<span class="sig-name descname"><span class="pre">rootname</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'chandra_aca.star_probs'</span></em><a class="headerlink" href="#chandra_aca.star_probs.ConfigItem.rootname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rootname sets the base path for all config files.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.acq_success_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">acq_success_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spoiler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#acq_success_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.acq_success_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return probability of acquisition success for given date, temperature, star
+properties and search box size.</p>
+<p>Any of the inputs can be scalars or arrays, with the output being the result of
+the broadcasted dimension of the inputs.</p>
+<p>The default probability model is defined by <code class="docutils literal notranslate"><span class="pre">conf.default_model</span></code> in this module.
+Allowed values for the <code class="docutils literal notranslate"><span class="pre">model</span></code> name are ‘sota’, ‘spline’, or a grid model
+specified by ‘grid-&lt;name&gt;-&lt;date&gt;’ (e.g. ‘grid-floor-2018-11’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> – Date(s) (scalar or np.ndarray, default=NOW)</p></li>
+<li><p><strong>t_ccd</strong> – CCD temperature(s) (degC, scalar or np.ndarray, default=-10C)</p></li>
+<li><p><strong>mag</strong> – Star magnitude(s) (scalar or np.ndarray, default=10.0)</p></li>
+<li><p><strong>color</strong> – Star color(s) (scalar or np.ndarray, default=0.6)</p></li>
+<li><p><strong>spoiler</strong> – Star spoiled (boolean or np.ndarray, default=False)</p></li>
+<li><p><strong>halfwidth</strong> – Search box halfwidth (arcsec, default=120)</p></li>
+<li><p><strong>model</strong> – probability model name: ‘sota’ | ‘spline’ | ‘grid-*’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Acquisition success probability(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.binom_ppf">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">binom_ppf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#binom_ppf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.binom_ppf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute percent point function (inverse of CDF) for binomial, where
+the percentage is with respect to the “p” (binomial probability) parameter
+not the “k” parameter.  The latter is what one gets with scipy.stats.binom.ppf().</p>
+<p>This function internally generates <code class="docutils literal notranslate"><span class="pre">n_sample</span></code> samples of the binomal PMF in
+order to compute the CDF and finally interpolate to get the PPF.</p>
+<p>The following example returns the 1-sigma (0.17 - 0.84) confidence interval
+on the true binomial probability for an experiment with 4 successes in 5 trials.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binom_ppf</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">])</span>
+<span class="go">array([ 0.55463945,  0.87748177])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>k</strong></dt><dd><p>int, number of successes (0 &lt; k &lt;= n)</p>
+</dd>
+<dt><strong>n</strong></dt><dd><p>int, number of trials</p>
+</dd>
+<dt><strong>conf</strong></dt><dd><p>float or array of floats, percent point values</p>
+</dd>
+<dt><strong>n_sample</strong></dt><dd><p>number of PMF samples for interpolation</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>percent point function values corresponding to <code class="docutils literal notranslate"><span class="pre">conf</span></code></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.clip_and_warn">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">clip_and_warn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_lo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_hi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#clip_and_warn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.clip_and_warn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clip <code class="docutils literal notranslate"><span class="pre">val</span></code> to be in the range <code class="docutils literal notranslate"><span class="pre">val_lo</span></code> to <code class="docutils literal notranslate"><span class="pre">val_hi</span></code> and issue a
+warning if clipping occurs.  The <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">model</span></code> are just used in
+the warning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong></dt><dd><p>Value name</p>
+</dd>
+<dt><strong>val</strong></dt><dd><p>Value</p>
+</dd>
+<dt><strong>val_lo</strong></dt><dd><p>Minimum</p>
+</dd>
+<dt><strong>val_hi</strong></dt><dd><p>Maximum</p>
+</dd>
+<dt><strong>model</strong></dt><dd><p>Model name</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Clipped value</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.get_box_delta">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">get_box_delta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#get_box_delta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.get_box_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform from halfwidth (arcsec) to the box_delta value which gets added
+to failure probability (in probit space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>halfwidth</strong></dt><dd><p>scalar or ndarray of box sizes (halfwidth, arcsec)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>box deltas</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.get_default_acq_prob_model_info">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">get_default_acq_prob_model_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#get_default_acq_prob_model_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.get_default_acq_prob_model_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get info about the default acquisition probability model.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">star_probs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">star_probs</span><span class="o">.</span><span class="n">get_default_acq_prob_model_info</span><span class="p">()</span>
+<span class="go">{&#39;default_model&#39;: &#39;grid-*&#39;,</span>
+<span class="go"> &#39;call_args&#39;: {&#39;file_path&#39;: &#39;chandra_models/aca_acq_prob&#39;,</span>
+<span class="go">  &#39;version&#39;: None,</span>
+<span class="go">  &#39;repo_path&#39;: &#39;None&#39;,</span>
+<span class="go">  &#39;require_latest_version&#39;: False,</span>
+<span class="go">  &#39;timeout&#39;: 5,</span>
+<span class="go">  &#39;read_func&#39;: &#39;&lt;function _read_grid_func_model at 0x11a443b50&gt;&#39;,</span>
+<span class="go">  &#39;read_func_kwargs&#39;: {&#39;model_name&#39;: None}},</span>
+<span class="go"> &#39;version&#39;: &#39;3.48&#39;,</span>
+<span class="go"> &#39;commit&#39;: &#39;68a58099a9b51bef52ef14fbd0f1971f950e6ba3&#39;,</span>
+<span class="go"> &#39;data_file_path&#39;: &#39;/Users/aldcroft/ska/data/chandra_models/chandra_models/aca_acq_prob/grid-floor-2020-02.fits.gz&#39;,</span>
+<span class="go"> &#39;repo_path&#39;: &#39;/Users/aldcroft/ska/data/chandra_models&#39;,</span>
+<span class="go"> &#39;md5&#39;: &#39;3a47774392beeca2921b705e137338f4&#39;,</span>
+<span class="go"> &#39;CHANDRA_MODELS_REPO_DIR&#39;: None,</span>
+<span class="go"> &#39;CHANDRA_MODELS_DEFAULT_VERSION&#39;: None,</span>
+<span class="go"> &#39;THERMAL_MODELS_DIR_FOR_MATLAB_TOOLS_SW&#39;: None}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>verbose</strong> – bool
+If False then return trimmed version with no call_args and None values removed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict of model info</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.get_grid_axis_values">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">get_grid_axis_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#get_grid_axis_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.get_grid_axis_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get grid model axis values from FITS header.</p>
+<p>This is an irregularly-spaced grid if <code class="docutils literal notranslate"><span class="pre">hdr</span></code> has <code class="docutils literal notranslate"><span class="pre">{axis}_0</span></code> .. <code class="docutils literal notranslate"><span class="pre">{axis}_&lt;N-1&gt;</span></code>.
+Otherwise it is a regularly-spaced grid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">linspace</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_lo&quot;</span><span class="p">],</span> <span class="n">hdr</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_hi&quot;</span><span class="p">],</span> <span class="n">n_vals</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>hdr</strong></dt><dd><p>FITS header (dict-like)</p>
+</dd>
+<dt><strong>axis</strong></dt><dd><p>Axis name (e.g. “mag”)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.get_grid_func_model">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">get_grid_func_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repo_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#get_grid_func_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.get_grid_func_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get grid model from the <code class="docutils literal notranslate"><span class="pre">model</span></code> name.</p>
+<p>This reads the model data from the FITS file in the <code class="docutils literal notranslate"><span class="pre">chandra_models</span></code> repository.
+The <code class="docutils literal notranslate"><span class="pre">model</span></code> name can be a glob pattern like <code class="docutils literal notranslate"><span class="pre">grid-*</span></code>, which will match the
+grid model with the most recent date. If not provided the <code class="docutils literal notranslate"><span class="pre">DEFAULT_MODEL</span></code> is used.</p>
+<p>The return value is a dict with necessary data to use the model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">filepath</span> <span class="p">(</span><span class="n">Path</span><span class="p">),</span>
+<span class="s2">&quot;func_no_1p5&quot;</span><span class="p">:</span> <span class="n">RegularGridInterpolator</span> <span class="k">for</span> <span class="n">stars</span> <span class="k">with</span> <span class="n">color</span> <span class="o">!=</span> <span class="mf">1.5</span> <span class="p">(</span><span class="n">common</span><span class="p">)</span>
+<span class="s2">&quot;func_1p5&quot;</span><span class="p">:</span> <span class="n">RegularGridInterpolator</span> <span class="k">for</span> <span class="n">stars</span> <span class="k">with</span> <span class="n">color</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="p">(</span><span class="n">less</span> <span class="n">common</span><span class="p">)</span>
+<span class="s2">&quot;mag_lo&quot;</span><span class="p">:</span> <span class="n">lower</span> <span class="n">bound</span> <span class="n">of</span> <span class="n">mag</span> <span class="n">axis</span>
+<span class="s2">&quot;mag_hi&quot;</span><span class="p">:</span> <span class="n">upper</span> <span class="n">bound</span> <span class="n">of</span> <span class="n">mag</span> <span class="n">axis</span>
+<span class="s2">&quot;t_ccd_lo&quot;</span><span class="p">:</span> <span class="n">lower</span> <span class="n">bound</span> <span class="n">of</span> <span class="n">t_ccd</span> <span class="n">axis</span>
+<span class="s2">&quot;t_ccd_hi&quot;</span><span class="p">:</span> <span class="n">upper</span> <span class="n">bound</span> <span class="n">of</span> <span class="n">t_ccd</span> <span class="n">axis</span>
+<span class="s2">&quot;halfw_lo&quot;</span><span class="p">:</span> <span class="n">lower</span> <span class="n">bound</span> <span class="n">of</span> <span class="n">halfw</span> <span class="n">axis</span>
+<span class="s2">&quot;halfw_hi&quot;</span><span class="p">:</span> <span class="n">upper</span> <span class="n">bound</span> <span class="n">of</span> <span class="n">halfw</span> <span class="n">axis</span>
+<span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="nb">dict</span> <span class="n">of</span> <span class="n">provenance</span> <span class="n">info</span> <span class="k">for</span> <span class="n">model</span> <span class="n">file</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>model</strong></dt><dd><p>Model name (optional), defaults to <code class="docutils literal notranslate"><span class="pre">conf.default_model</span></code></p>
+</dd>
+<dt><strong>version</strong></dt><dd><p>Version / tag / branch of <code class="docutils literal notranslate"><span class="pre">chandra_models</span></code> repository (optional)</p>
+</dd>
+<dt><strong>repo_path</strong></dt><dd><p>Path to <code class="docutils literal notranslate"><span class="pre">chandra_models</span></code> repository (optional)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dict of model data</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.grid_model_acq_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">grid_model_acq_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#grid_model_acq_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.grid_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a grid model probability of acquisition success for a star with
+specified mag, t_ccd, color, and search box halfwidth.</p>
+<p>This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a
+pre-computed gridded model that is stored in a FITS file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mag</strong></dt><dd><p>ACA magnitude (float or np.ndarray)</p>
+</dd>
+<dt><strong>t_ccd</strong></dt><dd><p>CCD temperature (degC, float or ndarray)</p>
+</dd>
+<dt><strong>color</strong></dt><dd><p>B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</p>
+</dd>
+<dt><strong>halfwidth</strong></dt><dd><p>search box halfwidth (arcsec, default=120, float or ndarray)</p>
+</dd>
+<dt><strong>probit</strong></dt><dd><p>if True then return Probit(p_success). Default=False</p>
+</dd>
+<dt><strong>model</strong></dt><dd><p>Model name, e.g. ‘grid-floor-2018-11’</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Acquisition success probability(s)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.guide_count">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">guide_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_9th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#guide_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.guide_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a guide star fractional count/metric using signal-to-noise scaled
+mag thresholds.</p>
+<p>This uses a modification of the guide star fractional counts that were
+suggested at the 7-Mar-2018 SSAWG and agreed upon at the 21-Mar-2018
+SSAWG.  The implementation here does a piecewise linear interpolation
+between the reference mag - fractional count points instead of the
+original “threshold interpolation” (nearest neighbor mag &lt;= reference
+mag).  Approved at 16-Jan-2019 SSAWG.</p>
+<p>One feature is the slight incline in the guide_count curve from 1.0005 at
+mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs
+of guide_counts to two decimal places (<code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">*</span> <span class="pre">0.0005</span> <span class="pre">=</span> <span class="pre">0.004</span></code>), but helps with
+minimization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mags</strong><span class="classifier">float, array</span></dt><dd><p>Star magnitude(s)</p>
+</dd>
+<dt><strong>t_ccds</strong><span class="classifier">float, array</span></dt><dd><p>CCD temperature(s)</p>
+</dd>
+<dt><strong>count_9th</strong><span class="classifier">bool</span></dt><dd><p>Return fractional count of 9th mag or brighter stars</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float, fractional count</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.mag_for_p_acq">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">mag_for_p_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p_acq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#mag_for_p_acq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.mag_for_p_acq" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given <code class="docutils literal notranslate"><span class="pre">date</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>, find the star magnitude that has an
+acquisition probability of <code class="docutils literal notranslate"><span class="pre">p_acq</span></code>.  Star magnitude is defined/limited
+to the range 5.0 - 12.0 mag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p_acq</strong></dt><dd><p>acquisition probability (0 to 1.0)</p>
+</dd>
+<dt><strong>date</strong></dt><dd><p>observation date (any Chandra.Time valid format)</p>
+</dd>
+<dt><strong>t_ccd</strong></dt><dd><p>ACA CCD temperature (deg C)</p>
+</dd>
+<dt><strong>halfwidth</strong></dt><dd><p>search box halfwidth (arcsec, default=120)</p>
+</dd>
+<dt><strong>model</strong><span class="classifier">probability model (see acq_success_prob() for allowed values, default)</span></dt><dd><dl class="field-list simple">
+<dt class="field-odd">returns mag<span class="colon">:</span></dt>
+<dd class="field-odd"><p>star magnitude</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.model_acq_success_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">model_acq_success_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#model_acq_success_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.model_acq_success_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call sota_model_acq_prob() with same params.  This is retained purely
+for back-compatibility but use is deprecated.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.prob_n_acq">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">prob_n_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_probs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#prob_n_acq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.prob_n_acq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an input array of star acquisition probabilities <code class="docutils literal notranslate"><span class="pre">star_probs</span></code>,
+return the probabilities of acquiring exactly n_acq stars, where n_acq
+is evaluated at values 0 to n_stars.  This is returned as an array
+of length n_stars.  In addition the cumulative sum, which represents
+the probability of acquiring n_acq or fewer stars, is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>star_probs</strong><span class="classifier">array of star acq probabilities (list or ndarray)</span></dt><dd><dl class="field-list simple">
+<dt class="field-odd">returns n_acq_probs, cum_n_acq_probs<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of ndarray, ndarray</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.set_acq_model_ms_filter">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">set_acq_model_ms_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ms_enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#set_acq_model_ms_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.set_acq_model_ms_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choose one of two sets of acquisition model fit parameters based
+on <code class="docutils literal notranslate"><span class="pre">ms_enabled</span></code>.  The default is <code class="docutils literal notranslate"><span class="pre">False</span></code>:</p>
+<ul class="simple">
+<li><p>True: MS filtering enabled (prior to FEB0816 loads), where stars would
+be rejected if MS flag was set</p></li>
+<li><p>False: MS filtering disabled (including and after FEB0816 loads)</p></li>
+</ul>
+<p>The selected fit parameters are global/module-wide.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.sota_model_acq_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">sota_model_acq_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#sota_model_acq_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.sota_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate raw SOTA model probability of acquisition success.</p>
+<p>This is for a star with <code class="docutils literal notranslate"><span class="pre">mag</span></code> magnitude and a CCD warm fraction <code class="docutils literal notranslate"><span class="pre">warm_frac</span></code>.
+This is not typically used directly since it does not account for star properties
+like spoiled or color=0.7.</p>
+<p>Uses the empirical relation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">P_fail_probit</span> <span class="o">=</span> <span class="n">offset</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span> <span class="o">+</span> <span class="n">scale</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span> <span class="o">*</span> <span class="n">warm_frac</span> <span class="o">+</span> <span class="n">box_delta</span><span class="p">(</span><span class="n">halfwidth</span><span class="p">)</span>
+<span class="n">P_acq_fail</span> <span class="o">=</span> <span class="n">Normal_CDF</span><span class="p">()</span>
+<span class="n">P_acq_success</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">P_acq_fail</span>
+</pre></div>
+</div>
+<p>This is based on the dark model and acquisition success model presented in the State
+of the ACA 2013, and subsequently updated to use a Probit transform and separately
+fit B-V=1.5 stars.  It was updated in 2017 to include a fitted dependence on the
+search box halfwidth.  See:</p>
+<p><a class="reference external" href="https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb">https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb</a>
+<a class="reference external" href="https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb">https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mag</strong></dt><dd><p>ACA magnitude (float or np.ndarray)</p>
+</dd>
+<dt><strong>warm_frac</strong></dt><dd><p>N100 warm fraction (float or np.ndarray)</p>
+</dd>
+<dt><strong>color</strong></dt><dd><p>B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</p>
+</dd>
+<dt><strong>halfwidth</strong></dt><dd><p>search box halfwidth (arcsec, default=120)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Acquisition success probability(s)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.spline_model_acq_prob">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">spline_model_acq_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#spline_model_acq_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.spline_model_acq_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate poly-spline-tccd model (aka ‘spline’ model) probability of acquisition
+success for a star with specified mag, t_ccd, color, and search box halfwidth.</p>
+<p>The model definition and fit values based on:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb">https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb</a></p></li>
+</ul>
+<p>See also:</p>
+<ul class="simple">
+<li><p>Description of the motivation and initial model development.
+<a class="reference external" href="https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11">https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11</a></p></li>
+<li><p>Final review and approval.
+<a class="reference external" href="https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18">https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18</a></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag</strong> – ACA magnitude (float or np.ndarray)</p></li>
+<li><p><strong>t_ccd</strong> – CCD temperature (degC, float or ndarray)</p></li>
+<li><p><strong>color</strong> – B-V color to check for B-V=1.5 =&gt; red star (float or np.ndarray)</p></li>
+<li><p><strong>halfwidth</strong> – search box halfwidth (arcsec, default=120, float or ndarray)</p></li>
+<li><p><strong>probit</strong> – if True then return Probit(p_success). Default=False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Acquisition success probability(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.t_ccd_warm_limit">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">t_ccd_warm_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halfwidths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_n_acq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cold_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the warmest CCD temperature which meets the <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code> acquisition stars
+criterion.  This returns a value between <code class="docutils literal notranslate"><span class="pre">cold_t_ccd</span></code> and <code class="docutils literal notranslate"><span class="pre">warm_t_ccd</span></code>.  At the
+cold end the result may be below <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code>, in which case the star catalog
+may be rejected.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code> argument can be specified in one of two ways:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>Scalar float value: expected number of acquired stars must exceed threshold.</dt><dd><p>Expected number is the sum of the individual probabilities.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Tuple (n, prob): computed probability of acquiring <code class="docutils literal notranslate"><span class="pre">n</span></code> or fewer stars</dt><dd><p>must not exceed <code class="docutils literal notranslate"><span class="pre">prob</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mags</strong></dt><dd><p>list of star ACA mags</p>
+</dd>
+<dt><strong>date</strong></dt><dd><p>observation date (any Chandra.Time valid format)</p>
+</dd>
+<dt><strong>colors</strong></dt><dd><p>list of star B-V colors (optional, default=0.0)</p>
+</dd>
+<dt><strong>halfwidths</strong></dt><dd><p>list of acq box halfwidths(optional, default=120)</p>
+</dd>
+<dt><strong>min_n_acq</strong></dt><dd><p>float or tuple (see above)</p>
+</dd>
+<dt><strong>cold_t_ccd</strong></dt><dd><p>coldest CCD temperature to consider (default=-16 C)</p>
+</dd>
+<dt><strong>warm_t_ccd</strong></dt><dd><p>warmest CCD temperature to consider (default=-5 C)</p>
+</dd>
+<dt><strong>model</strong></dt><dd><p>probability model (see acq_success_prob() for allowed values, default)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>(t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit:</dt><dd></dd>
+</dl>
+<ul class="simple">
+<li><dl class="simple">
+<dt>number of expected ACQ stars at that temperature (scalar min_n_acq)</dt><dd></dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>probability of acquiring <code class="docutils literal notranslate"><span class="pre">n</span></code> or fewer stars (tuple min_n_acq)</dt><dd></dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.star_probs.t_ccd_warm_limit_for_guide">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">t_ccd_warm_limit_for_guide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_guide_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cold_t_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-16.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#t_ccd_warm_limit_for_guide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.t_ccd_warm_limit_for_guide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve for the warmest temperature that still gets the min_guide_count.
+This returns a value between <code class="docutils literal notranslate"><span class="pre">cold_t_ccd</span></code> and <code class="docutils literal notranslate"><span class="pre">warm_t_ccd</span></code>.  At the
+cold end the result may be below <code class="docutils literal notranslate"><span class="pre">min_n_acq</span></code>, in which case the star catalog
+may be rejected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mags</strong></dt><dd><p>list of star ACA mags</p>
+</dd>
+<dt><strong>min_guide_count</strong></dt><dd><p>float minimum fractional guide count</p>
+</dd>
+<dt><strong>warm_t_ccd</strong></dt><dd><p>warmest CCD temperature to consider (default=-5 C)</p>
+</dd>
+<dt><strong>cold_t_ccd</strong></dt><dd><p>coldest CCD temperature to consider (default=-16 C)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>t_ccd</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -86,16 +628,47 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#">chandra_aca.star_probs</a></li>
+<li><a class="reference internal" href="#">chandra_aca.star_probs</a><ul>
+<li><a class="reference internal" href="#chandra_aca.star_probs.Conf"><code class="docutils literal notranslate"><span class="pre">Conf</span></code></a><ul>
+<li><a class="reference internal" href="#chandra_aca.star_probs.Conf.default_model"><code class="docutils literal notranslate"><span class="pre">Conf.default_model</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.ConfigItem"><code class="docutils literal notranslate"><span class="pre">ConfigItem</span></code></a><ul>
+<li><a class="reference internal" href="#chandra_aca.star_probs.ConfigItem.rootname"><code class="docutils literal notranslate"><span class="pre">ConfigItem.rootname</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.acq_success_prob"><code class="docutils literal notranslate"><span class="pre">acq_success_prob()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.binom_ppf"><code class="docutils literal notranslate"><span class="pre">binom_ppf()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.clip_and_warn"><code class="docutils literal notranslate"><span class="pre">clip_and_warn()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.get_box_delta"><code class="docutils literal notranslate"><span class="pre">get_box_delta()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.get_default_acq_prob_model_info"><code class="docutils literal notranslate"><span class="pre">get_default_acq_prob_model_info()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.get_grid_axis_values"><code class="docutils literal notranslate"><span class="pre">get_grid_axis_values()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.get_grid_func_model"><code class="docutils literal notranslate"><span class="pre">get_grid_func_model()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.grid_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">grid_model_acq_prob()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.guide_count"><code class="docutils literal notranslate"><span class="pre">guide_count()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.mag_for_p_acq"><code class="docutils literal notranslate"><span class="pre">mag_for_p_acq()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.model_acq_success_prob"><code class="docutils literal notranslate"><span class="pre">model_acq_success_prob()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.prob_n_acq"><code class="docutils literal notranslate"><span class="pre">prob_n_acq()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.set_acq_model_ms_filter"><code class="docutils literal notranslate"><span class="pre">set_acq_model_ms_filter()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.sota_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">sota_model_acq_prob()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.spline_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">spline_model_acq_prob()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.t_ccd_warm_limit"><code class="docutils literal notranslate"><span class="pre">t_ccd_warm_limit()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.star_probs.t_ccd_warm_limit_for_guide"><code class="docutils literal notranslate"><span class="pre">t_ccd_warm_limit_for_guide()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="plot.html"
-                        title="previous chapter">chandra_aca.plot</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="transform.html"
-                        title="next chapter">chandra_aca.transform</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="plot.html"
+                          title="previous chapter">chandra_aca.plot</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="transform.html"
+                          title="next chapter">chandra_aca.transform</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -119,7 +692,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

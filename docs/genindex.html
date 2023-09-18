@@ -5,14 +5,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>Index &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="#" />
@@ -46,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       
@@ -67,6 +66,7 @@
  <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
@@ -75,6 +75,7 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#Y"><strong>Y</strong></a>
  
@@ -84,11 +85,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="aca_image.html#chandra_aca.aca_image.ACAImage.aca">aca (chandra_aca.aca_image.ACAImage property)</a>
 </li>
+      <li><a href="drift.html#chandra_aca.drift.AcaDriftModel">AcaDriftModel (class in chandra_aca.drift)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="aca_image.html#chandra_aca.aca_image.ACAImage">ACAImage (class in chandra_aca.aca_image)</a>
 </li>
       <li><a href="aca_image.html#chandra_aca.aca_image.AcaPsfLibrary">AcaPsfLibrary (class in chandra_aca.aca_image)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.acq_success_prob">acq_success_prob() (in module chandra_aca.star_probs)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -98,10 +103,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="plot.html#chandra_aca.plot.bad_acq_stars">bad_acq_stars() (in module chandra_aca.plot)</a>
 </li>
-      <li><a href="maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict">blob_to_aca_image_dict() (in module chandra_aca.maude_decom)</a>
+      <li><a href="star_probs.html#chandra_aca.star_probs.binom_ppf">binom_ppf() (in module chandra_aca.star_probs)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict">blob_to_aca_image_dict() (in module chandra_aca.maude_decom)</a>
+</li>
       <li><a href="transform.html#chandra_aca.transform.broadcast_arrays">broadcast_arrays() (in module chandra_aca.transform)</a>
 </li>
       <li><a href="transform.html#chandra_aca.transform.broadcast_arrays_flatten">broadcast_arrays_flatten() (in module chandra_aca.transform)</a>
@@ -112,7 +119,11 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="drift.html#chandra_aca.drift.AcaDriftModel.calc">calc() (chandra_aca.drift.AcaDriftModel method)</a>
+</li>
       <li><a href="transform.html#chandra_aca.transform.calc_aca_from_targ">calc_aca_from_targ() (in module chandra_aca.transform)</a>
+</li>
+      <li><a href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals.calc_residuals">calc_residuals() (chandra_aca.centroid_resid.CentroidResiduals method)</a>
 </li>
       <li><a href="transform.html#chandra_aca.transform.calc_targ_from_aca">calc_targ_from_aca() (in module chandra_aca.transform)</a>
 </li>
@@ -124,6 +135,8 @@
         <li><a href="aca_image.html#chandra_aca.aca_image.centroid_fm">(in module chandra_aca.aca_image)</a>
 </li>
       </ul></li>
+      <li><a href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals">CentroidResiduals (class in chandra_aca.centroid_resid)</a>
+</li>
       <li>
     chandra_aca.aca_image
 
@@ -132,14 +145,35 @@
 </li>
       </ul></li>
       <li>
+    chandra_aca.centroid_resid
+
+      <ul>
+        <li><a href="centroid_resid.html#module-chandra_aca.centroid_resid">module</a>
+</li>
+      </ul></li>
+      <li>
+    chandra_aca.dark_model
+
+      <ul>
+        <li><a href="dark_model.html#module-chandra_aca.dark_model">module</a>
+</li>
+      </ul></li>
+      <li>
+    chandra_aca.drift
+
+      <ul>
+        <li><a href="drift.html#module-chandra_aca.drift">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     chandra_aca.maude_decom
 
       <ul>
         <li><a href="maude_decom.html#module-chandra_aca.maude_decom">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     chandra_aca.planets
 
@@ -155,13 +189,38 @@
 </li>
       </ul></li>
       <li>
+    chandra_aca.star_probs
+
+      <ul>
+        <li><a href="star_probs.html#module-chandra_aca.star_probs">module</a>
+</li>
+      </ul></li>
+      <li>
     chandra_aca.transform
 
       <ul>
         <li><a href="transform.html#module-chandra_aca.transform">module</a>
 </li>
       </ul></li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.clip_and_warn">clip_and_warn() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.Conf">Conf (class in chandra_aca.star_probs)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.ConfigItem">ConfigItem (class in chandra_aca.star_probs)</a>
+</li>
       <li><a href="transform.html#chandra_aca.transform.count_rate_to_mag">count_rate_to_mag() (in module chandra_aca.transform)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dark_model.html#chandra_aca.dark_model.dark_temp_scale">dark_temp_scale() (in module chandra_aca.dark_model)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="star_probs.html#chandra_aca.star_probs.Conf.default_model">default_model (chandra_aca.star_probs.Conf attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -195,16 +254,30 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="maude_decom.html#chandra_aca.maude_decom.get_aca_images">get_aca_images() (in module chandra_aca.maude_decom)</a>
 </li>
+      <li><a href="drift.html#chandra_aca.drift.get_aca_offsets">get_aca_offsets() (in module chandra_aca.drift)</a>
+</li>
       <li><a href="maude_decom.html#chandra_aca.maude_decom.get_aca_packets">get_aca_packets() (in module chandra_aca.maude_decom)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.get_box_delta">get_box_delta() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="dark_model.html#chandra_aca.dark_model.get_dark_hist">get_dark_hist() (in module chandra_aca.dark_model)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.get_default_acq_prob_model_info">get_default_acq_prob_model_info() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="drift.html#chandra_aca.drift.get_default_zero_offset_table">get_default_zero_offset_table() (in module chandra_aca.drift)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.get_grid_axis_values">get_grid_axis_values() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.get_grid_func_model">get_grid_func_model() (in module chandra_aca.star_probs)</a>
 </li>
       <li><a href="planets.html#chandra_aca.planets.get_planet_angular_sep">get_planet_angular_sep() (in module chandra_aca.planets)</a>
 </li>
       <li><a href="planets.html#chandra_aca.planets.get_planet_barycentric">get_planet_barycentric() (in module chandra_aca.planets)</a>
 </li>
-      <li><a href="planets.html#chandra_aca.planets.get_planet_chandra">get_planet_chandra() (in module chandra_aca.planets)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="planets.html#chandra_aca.planets.get_planet_chandra">get_planet_chandra() (in module chandra_aca.planets)</a>
+</li>
       <li><a href="planets.html#chandra_aca.planets.get_planet_chandra_horizons">get_planet_chandra_horizons() (in module chandra_aca.planets)</a>
 </li>
       <li><a href="planets.html#chandra_aca.planets.get_planet_eci">get_planet_eci() (in module chandra_aca.planets)</a>
@@ -215,13 +288,27 @@
 </li>
       <li><a href="maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets">get_raw_aca_packets() (in module chandra_aca.maude_decom)</a>
 </li>
+      <li><a href="dark_model.html#chandra_aca.dark_model.get_sbp_pars">get_sbp_pars() (in module chandra_aca.dark_model)</a>
+</li>
+      <li><a href="drift.html#chandra_aca.drift.get_target_aimpoint">get_target_aimpoint() (in module chandra_aca.drift)</a>
+</li>
+      <li><a href="dark_model.html#chandra_aca.dark_model.get_warm_fracs">get_warm_fracs() (in module chandra_aca.dark_model)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.grid_model_acq_prob">grid_model_acq_prob() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.guide_count">guide_count() (in module chandra_aca.star_probs)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="star_probs.html#chandra_aca.star_probs.mag_for_p_acq">mag_for_p_acq() (in module chandra_aca.star_probs)</a>
+</li>
       <li><a href="transform.html#chandra_aca.transform.mag_to_count_rate">mag_to_count_rate() (in module chandra_aca.transform)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.model_acq_success_prob">model_acq_success_prob() (in module chandra_aca.star_probs)</a>
 </li>
       <li>
     module
@@ -229,11 +316,19 @@
       <ul>
         <li><a href="aca_image.html#module-chandra_aca.aca_image">chandra_aca.aca_image</a>
 </li>
+        <li><a href="centroid_resid.html#module-chandra_aca.centroid_resid">chandra_aca.centroid_resid</a>
+</li>
+        <li><a href="dark_model.html#module-chandra_aca.dark_model">chandra_aca.dark_model</a>
+</li>
+        <li><a href="drift.html#module-chandra_aca.drift">chandra_aca.drift</a>
+</li>
         <li><a href="maude_decom.html#module-chandra_aca.maude_decom">chandra_aca.maude_decom</a>
 </li>
         <li><a href="planets.html#module-chandra_aca.planets">chandra_aca.planets</a>
 </li>
         <li><a href="plot.html#module-chandra_aca.plot">chandra_aca.plot</a>
+</li>
+        <li><a href="star_probs.html#module-chandra_aca.star_probs">chandra_aca.star_probs</a>
 </li>
         <li><a href="transform.html#module-chandra_aca.transform">chandra_aca.transform</a>
 </li>
@@ -258,11 +353,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="transform.html#chandra_aca.transform.pixels_to_yagzag">pixels_to_yagzag() (in module chandra_aca.transform)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="plot.html#chandra_aca.plot.plot_compass">plot_compass() (in module chandra_aca.plot)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="plot.html#chandra_aca.plot.plot_stars">plot_stars() (in module chandra_aca.plot)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.prob_n_acq">prob_n_acq() (in module chandra_aca.star_probs)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -276,13 +373,51 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="transform.html#chandra_aca.transform.radec_to_yagzag">radec_to_yagzag() (in module chandra_aca.transform)</a>
 </li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.ConfigItem.rootname">rootname (chandra_aca.star_probs.ConfigItem attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="star_probs.html#chandra_aca.star_probs.set_acq_model_ms_filter">set_acq_model_ms_filter() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals.set_atts">set_atts() (chandra_aca.centroid_resid.CentroidResiduals method)</a>
+</li>
+      <li><a href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals.set_centroids">set_centroids() (chandra_aca.centroid_resid.CentroidResiduals method)</a>
+</li>
+      <li><a href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals.set_offsets">set_offsets() (chandra_aca.centroid_resid.CentroidResiduals method)</a>
+</li>
+      <li><a href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals.set_star">set_star() (chandra_aca.centroid_resid.CentroidResiduals method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dark_model.html#chandra_aca.dark_model.smooth_broken_pow">smooth_broken_pow() (in module chandra_aca.dark_model)</a>
+</li>
+      <li><a href="dark_model.html#chandra_aca.dark_model.smooth_twice_broken_pow">smooth_twice_broken_pow() (in module chandra_aca.dark_model)</a>
+</li>
       <li><a href="transform.html#chandra_aca.transform.snr_mag_for_t_ccd">snr_mag_for_t_ccd() (in module chandra_aca.transform)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.sota_model_acq_prob">sota_model_acq_prob() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="star_probs.html#chandra_aca.star_probs.spline_model_acq_prob">spline_model_acq_prob() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="dark_model.html#chandra_aca.dark_model.synthetic_dark_image">synthetic_dark_image() (in module chandra_aca.dark_model)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit">t_ccd_warm_limit() (in module chandra_aca.star_probs)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit_for_guide">t_ccd_warm_limit_for_guide() (in module chandra_aca.star_probs)</a>
+</li>
+      <li><a href="dark_model.html#chandra_aca.dark_model.temp_scalefac">temp_scalefac() (in module chandra_aca.dark_model)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -331,7 +466,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

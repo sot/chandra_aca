@@ -1,0 +1,434 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chandra_aca.dark_model &#8212; chandra_aca 4.42.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script type="text/javascript" src="../../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
+        <span id="logotext1">ska</span><span id="logotext2">tools</span>
+    </a></li>
+    <li><a title="General Index" href="../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../index.html">chandra_aca 4.42.0 documentation</a>
+	 &#187;
+      </li>
+      <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for chandra_aca.dark_model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Routines related to the canonical Chandra ACA dark current model.</span>
+
+<span class="sd">The model is based on smoothed twice-broken power-law fits of</span>
+<span class="sd">dark current histograms from Jan-2007 though Aug-2017.  This analysis</span>
+<span class="sd">was done entirely with dark current maps scaled to -14 C.</span>
+
+<span class="sd">See: /proj/sot/ska/analysis/dark_current_model/dark_model.ipynb</span>
+<span class="sd">and other files in that directory.</span>
+
+<span class="sd">Alternatively:</span>
+<span class="sd">http://nbviewer.ipython.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model.ipynb</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+
+<span class="c1"># Define a common fixed binning of dark current distribution</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">darkbins</span>
+
+<span class="c1"># Global cache (e.g. for initial dark current in synthetic_dark_image</span>
+<span class="n">CACHE</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="c1"># Some constants and globals.  Done this way to support sherpa fitting.</span>
+<span class="c1"># Needs to be re-worked to be nicer.</span>
+
+<span class="c1"># Fixed gaussian for smoothing the broken power law</span>
+<span class="n">dx</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.30</span>  <span class="c1"># Gaussian sigma in log space</span>
+<span class="n">xg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">,</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">yg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">xg</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">yg</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yg</span><span class="p">)</span>
+
+<span class="n">NPIX</span> <span class="o">=</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Fixed</span>
+<span class="n">xbins</span> <span class="o">=</span> <span class="n">darkbins</span><span class="o">.</span><span class="n">bins</span>
+<span class="n">xall</span> <span class="o">=</span> <span class="n">darkbins</span><span class="o">.</span><span class="n">bin_centers</span>
+<span class="n">imin</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">imax</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xall</span><span class="p">)</span>
+
+<span class="c1"># Warm threshold used in fitting acq prob model.  This constant is</span>
+<span class="c1"># not used in any configured code, but leave here just in case.</span>
+<span class="n">warm_threshold</span> <span class="o">=</span> <span class="mf">100.0</span>
+
+<span class="c1"># Increase in dark current per 4 degC increase in T_ccd</span>
+<span class="n">DARK_SCALE_4C</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">0.70</span>
+
+
+<div class="viewcode-block" id="dark_temp_scale"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.dark_temp_scale">[docs]</a><span class="k">def</span> <span class="nf">dark_temp_scale</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="o">=-</span><span class="mf">19.0</span><span class="p">,</span> <span class="n">scale_4c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the multiplicative scale factor to convert a CCD dark map</span>
+<span class="sd">    or dark current value from temperature ``t_ccd`` to temperature</span>
+<span class="sd">    ``t_ccd_ref``::</span>
+
+<span class="sd">      scale = scale_4c ** ((t_ccd_ref - t_ccd) / 4.0)</span>
+
+<span class="sd">    In other words, if you have a dark current value that corresponds to ``t_ccd``</span>
+<span class="sd">    and need the value at a different temperature ``t_ccd_ref`` then use the</span>
+<span class="sd">    the following.  Do not be misled by the misleading parameter names.</span>
+
+<span class="sd">      &gt;&gt;&gt; from chandra_aca.dark_scale import dark_temp_scale</span>
+<span class="sd">      &gt;&gt;&gt; scale = dark_temp_scale(t_ccd, t_ccd_ref, scale_4c)</span>
+<span class="sd">      &gt;&gt;&gt; dark_curr_at_t_ccd_ref = scale * dark_curr_at_t_ccd</span>
+
+<span class="sd">    The default value for ``scale_4c`` is 1.0 / 0.7.  It is written this way</span>
+<span class="sd">    because the equation was previously expressed using 1 / scale_4c with a</span>
+<span class="sd">    value of 0.7. This value is based on best global fit for dark current model</span>
+<span class="sd">    in `plot_predicted_warmpix.py`.  This represents the multiplicative change</span>
+<span class="sd">    in dark current for each 4 degC increase::</span>
+
+<span class="sd">      &gt;&gt;&gt; dark_temp_scale(t_ccd=-18, t_ccd_ref=-10, scale_4c=2.0)</span>
+<span class="sd">      4.0</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_ccd</span>
+<span class="sd">        actual temperature (degC)</span>
+<span class="sd">    t_ccd_ref</span>
+<span class="sd">        reference temperature (degC, default=-19.0)</span>
+<span class="sd">    scale_4c</span>
+<span class="sd">        increase in dark current per 4 degC increase (default=1.0 / 0.7)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scale factor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">scale_4c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scale_4c</span> <span class="o">=</span> <span class="n">DARK_SCALE_4C</span>
+
+    <span class="k">return</span> <span class="n">scale_4c</span> <span class="o">**</span> <span class="p">((</span><span class="n">t_ccd_ref</span> <span class="o">-</span> <span class="n">t_ccd</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_dark_hist"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_dark_hist">[docs]</a><span class="k">def</span> <span class="nf">get_dark_hist</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the dark current histogram corresponding to ``date`` and ``t_ccd``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    date</span>
+<span class="sd">        date in any DateTime format</span>
+<span class="sd">    t_ccd</span>
+<span class="sd">        CCD temperature (deg C)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bin_centers, bins, darkhist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">get_sbp_pars</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">darkbins</span><span class="o">.</span><span class="n">bin_centers</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">smooth_twice_broken_pow</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Model params are calibrated using reference temp. -14 C</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">dark_temp_scale</span><span class="p">(</span><span class="o">-</span><span class="mi">14</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+    <span class="n">xbins</span> <span class="o">=</span> <span class="n">darkbins</span><span class="o">.</span><span class="n">bins</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">xbins</span><span class="p">,</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="smooth_broken_pow"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.smooth_broken_pow">[docs]</a><span class="k">def</span> <span class="nf">smooth_broken_pow</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):</span>
+<span class="sd">    1: gamma1</span>
+<span class="sd">    2: gamma2</span>
+<span class="sd">    3: x_b (break point)</span>
+<span class="sd">    4: x_r (normalization reference point)</span>
+<span class="sd">    5: ampl1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">gamma1</span><span class="p">,</span> <span class="n">gamma2</span><span class="p">,</span> <span class="n">x_b</span><span class="p">,</span> <span class="n">x_r</span><span class="p">,</span> <span class="n">ampl1</span><span class="p">)</span> <span class="o">=</span> <span class="n">pars</span>
+    <span class="n">ampl2</span> <span class="o">=</span> <span class="n">ampl1</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_b</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">gamma2</span> <span class="o">-</span> <span class="n">gamma1</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">xall</span> <span class="o">&gt;</span> <span class="n">x_b</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">ampl1</span> <span class="o">*</span> <span class="p">(</span><span class="n">xall</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">gamma1</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span> <span class="o">=</span> <span class="n">ampl2</span> <span class="o">*</span> <span class="p">(</span><span class="n">xall</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">gamma2</span><span class="p">)</span>
+    <span class="n">imin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xall</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="n">imax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xall</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">yg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)[</span><span class="n">imin</span><span class="p">:</span><span class="n">imax</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="smooth_twice_broken_pow"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.smooth_twice_broken_pow">[docs]</a><span class="k">def</span> <span class="nf">smooth_twice_broken_pow</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):</span>
+<span class="sd">    1: gamma1</span>
+<span class="sd">    2: gamma2</span>
+<span class="sd">    3: gamma3</span>
+<span class="sd">    4: x_b (break point)</span>
+<span class="sd">    5: ampl1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_b2</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">x_r</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="p">(</span><span class="n">gamma1</span><span class="p">,</span> <span class="n">gamma2</span><span class="p">,</span> <span class="n">gamma3</span><span class="p">,</span> <span class="n">x_b</span><span class="p">,</span> <span class="n">ampl1</span><span class="p">)</span> <span class="o">=</span> <span class="n">pars</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">ampl1</span> <span class="o">*</span> <span class="p">(</span><span class="n">xall</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">gamma1</span><span class="p">)</span>
+
+    <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xall</span><span class="p">,</span> <span class="p">[</span><span class="n">x_b</span><span class="p">,</span> <span class="n">x_b2</span><span class="p">])</span>
+    <span class="n">ampl2</span> <span class="o">=</span> <span class="n">ampl1</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_b</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">gamma2</span> <span class="o">-</span> <span class="n">gamma1</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ampl2</span> <span class="o">*</span> <span class="p">(</span><span class="n">xall</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">gamma2</span><span class="p">)</span>
+
+    <span class="n">i1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xall</span><span class="p">,</span> <span class="n">x_b2</span><span class="p">)</span>
+    <span class="n">ampl3</span> <span class="o">=</span> <span class="n">ampl2</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_b2</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">gamma3</span> <span class="o">-</span> <span class="n">gamma2</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">i1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">ampl3</span> <span class="o">*</span> <span class="p">(</span><span class="n">xall</span><span class="p">[</span><span class="n">i1</span><span class="p">:]</span> <span class="o">/</span> <span class="n">x_r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">gamma3</span><span class="p">)</span>
+
+    <span class="n">imin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xall</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="n">imax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xall</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">yg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)[</span><span class="n">imin</span><span class="p">:</span><span class="n">imax</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="temp_scalefac"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.temp_scalefac">[docs]</a><span class="k">def</span> <span class="nf">temp_scalefac</span><span class="p">(</span><span class="n">T_ccd</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the multiplicative scale factor to convert a CCD dark map from</span>
+<span class="sd">    the nominal -19C temperature to the temperature T.  Based on best global fit for</span>
+<span class="sd">    dark current model in plot_predicted_warmpix.py.  Previous value was 0.62 instead</span>
+<span class="sd">    of 0.70.</span>
+
+<span class="sd">    If attempting to reproduce previous analysis, be aware that this is now calling</span>
+<span class="sd">    chandra_aca.dark_model.dark_temp_scale and the value will be determined using the</span>
+<span class="sd">    module DARK_SCALE_4C value which may differ from previous values of 1.0/0.70 or 1.0/0.62.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;temp_scalefac is deprecated.  See chandra_aca.dark_model.dark_temp_scale.&quot;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">dark_temp_scale</span><span class="p">(</span><span class="o">-</span><span class="mi">19</span><span class="p">,</span> <span class="n">T_ccd</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">as_array</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">is_scalar</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">vals</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">is_scalar</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">vals</span><span class="p">,</span> <span class="n">is_scalar</span>
+
+
+<div class="viewcode-block" id="get_sbp_pars"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_sbp_pars">[docs]</a><span class="k">def</span> <span class="nf">get_sbp_pars</span><span class="p">(</span><span class="n">dates</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return smooth broken powerlaw parameters set(s) at ``dates``.</span>
+
+<span class="sd">    This is based on the sbp fits for the darkhist_zodi_m14 histograms in</span>
+<span class="sd">    /proj/sot/ska/analysis/dark_current_model/dark_model.ipynb.</span>
+
+<span class="sd">    The actual bi-linear fits (as a function of year) to the g1, g2, g3, x_b, and ampl</span>
+<span class="sd">    parameters are derived from fits and by-hand inspection of fit trending.</span>
+
+<span class="sd">    This is only accurate for dates &gt; 2007.0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dates</span>
+<span class="sd">        one or a list of date(s) in DateTime compatible format</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    one or a list of parameter lists [g1, g2, g3, x_b, ampl]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dates</span><span class="p">,</span> <span class="n">is_scalar</span> <span class="o">=</span> <span class="n">as_array</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span>
+
+    <span class="n">mid_year</span> <span class="o">=</span> <span class="mf">2012.0</span>  <span class="c1"># Fixed in dark_model.ipynb notebook</span>
+    <span class="n">years</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span><span class="o">.</span><span class="n">frac_year</span>
+    <span class="n">dyears</span> <span class="o">=</span> <span class="n">years</span> <span class="o">-</span> <span class="n">mid_year</span>
+
+    <span class="c1"># Poly fit parameter for pre-2012 and post-2012.  Vals here are:</span>
+    <span class="c1"># y_mid, slope_pre, slope_post</span>
+    <span class="n">par_fits</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="mf">0.075</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00692</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0207</span><span class="p">),</span>  <span class="c1"># g1</span>
+        <span class="p">(</span><span class="mf">3.32</span><span class="p">,</span> <span class="mf">0.0203</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="mf">0.0047</span><span class="p">),</span>  <span class="c1"># g2</span>
+        <span class="p">(</span><span class="mf">2.40</span><span class="p">,</span> <span class="mf">0.061</span><span class="p">,</span> <span class="mf">0.061</span><span class="p">),</span>  <span class="c1"># g3</span>
+        <span class="p">(</span><span class="mi">192</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>  <span class="c1"># x_b</span>
+        <span class="p">(</span><span class="mi">18400</span><span class="p">,</span> <span class="mf">1.45e3</span><span class="p">,</span> <span class="mi">742</span><span class="p">),</span>  <span class="c1"># ampl</span>
+    <span class="p">)</span>
+
+    <span class="n">pars_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">dyear</span> <span class="ow">in</span> <span class="n">dyears</span><span class="p">:</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">y_mid</span><span class="p">,</span> <span class="n">slope_pre</span><span class="p">,</span> <span class="n">slope_post</span> <span class="ow">in</span> <span class="n">par_fits</span><span class="p">:</span>
+            <span class="n">slope</span> <span class="o">=</span> <span class="n">slope_pre</span> <span class="k">if</span> <span class="n">dyear</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">slope_post</span>
+            <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_mid</span> <span class="o">+</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">dyear</span><span class="p">)</span>
+        <span class="n">pars_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="n">pars_list</span> <span class="o">=</span> <span class="n">pars_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">pars_list</span></div>
+
+
+<div class="viewcode-block" id="get_warm_fracs"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_warm_fracs">[docs]</a><span class="k">def</span> <span class="nf">get_warm_fracs</span><span class="p">(</span><span class="n">warm_threshold</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="s2">&quot;2013:001:12:00:00&quot;</span><span class="p">,</span> <span class="n">T_ccd</span><span class="o">=-</span><span class="mf">19.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate fraction of pixels in modeled dark current distribution</span>
+<span class="sd">    above warm threshold(s).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    warm_threshold</span>
+<span class="sd">        scalar or list of threshold(s) in e-/sec</span>
+<span class="sd">    date</span>
+<span class="sd">        date to use for modeled dark current distribution/histogram</span>
+<span class="sd">    T_ccd</span>
+<span class="sd">        temperature (C) of modeled dark current distribution</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list or scalar of warm fractions (depends on warm_threshold type)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">xbins</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">get_dark_hist</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">T_ccd</span><span class="p">)</span>
+    <span class="n">warm_thresholds</span><span class="p">,</span> <span class="n">is_scalar</span> <span class="o">=</span> <span class="n">as_array</span><span class="p">(</span><span class="n">warm_threshold</span><span class="p">)</span>
+
+    <span class="n">warmpixes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">warm_threshold</span> <span class="ow">in</span> <span class="n">warm_thresholds</span><span class="p">:</span>
+        <span class="c1"># First get the full bins to right of warm_threshold</span>
+        <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xbins</span><span class="p">,</span> <span class="n">warm_threshold</span><span class="p">)</span>
+        <span class="n">warmpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">:])</span>
+        <span class="n">lx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">warm_threshold</span><span class="p">)</span>
+        <span class="n">lx0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">xbins</span><span class="p">[</span><span class="n">ii</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">lx1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">xbins</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+        <span class="n">ly0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">ii</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">ly1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">ly1</span> <span class="o">-</span> <span class="n">ly0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">lx1</span> <span class="o">-</span> <span class="n">lx0</span><span class="p">)</span>
+        <span class="n">partial_bin</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">lx1</span><span class="o">**</span><span class="n">m</span> <span class="o">-</span> <span class="n">lx</span><span class="o">**</span><span class="n">m</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">lx1</span><span class="o">**</span><span class="n">m</span> <span class="o">-</span> <span class="n">lx0</span><span class="o">**</span><span class="n">m</span><span class="p">)</span>
+        <span class="n">warmpix</span> <span class="o">+=</span> <span class="n">partial_bin</span>
+        <span class="n">warmpixes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warmpix</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">warmpixes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">warmpixes</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1024.0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="synthetic_dark_image"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.synthetic_dark_image">[docs]</a><span class="k">def</span> <span class="nf">synthetic_dark_image</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a synthetic dark current image corresponding to the specified</span>
+<span class="sd">    ``date`` and ``t_ccd``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    date</span>
+<span class="sd">        (DateTime compatible)</span>
+<span class="sd">    t_ccd_ref</span>
+<span class="sd">        ACA CCD temperature</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">mica.archive.aca_dark</span> <span class="kn">import</span> <span class="n">get_dark_cal_image</span>
+
+    <span class="k">if</span> <span class="s2">&quot;dark_1999223&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">CACHE</span><span class="p">:</span>
+        <span class="n">dark</span> <span class="o">=</span> <span class="n">get_dark_cal_image</span><span class="p">(</span>
+            <span class="s2">&quot;1999:223:12:00:00&quot;</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="o">=-</span><span class="mi">14</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">CACHE</span><span class="p">[</span><span class="s2">&quot;dark_1999223&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dark</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dark</span> <span class="o">=</span> <span class="n">CACHE</span><span class="p">[</span><span class="s2">&quot;dark_1999223&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Fill any pixels above 40 e-/sec with a random sampling from a cool</span>
+    <span class="c1"># pixel below 40 e-/sec</span>
+    <span class="n">warm</span> <span class="o">=</span> <span class="n">dark</span> <span class="o">&gt;</span> <span class="mi">40</span>
+    <span class="n">warm_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">warm</span><span class="p">)</span>
+    <span class="n">not_warm_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="o">~</span><span class="n">warm</span><span class="p">)</span>
+    <span class="n">fill_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">not_warm_idx</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">warm_idx</span><span class="p">))</span>
+    <span class="n">dark</span><span class="p">[</span><span class="n">warm_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">dark</span><span class="p">[</span><span class="n">fill_idx</span><span class="p">]</span>
+
+    <span class="n">darkmodel</span> <span class="o">=</span> <span class="n">smooth_twice_broken_pow</span><span class="p">(</span><span class="n">get_sbp_pars</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="n">xall</span><span class="p">)</span>
+
+    <span class="n">darkran</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">darkmodel</span><span class="p">)</span>
+
+    <span class="n">nn</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">npix</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">darkran</span><span class="p">):</span>
+        <span class="c1"># Generate n log-uniform variates within bin</span>
+        <span class="k">if</span> <span class="n">npix</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logdark</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">xbins</span><span class="p">[</span><span class="n">ii</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">xbins</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">npix</span><span class="p">)</span>
+            <span class="n">dark</span><span class="p">[</span><span class="n">nn</span> <span class="p">:</span> <span class="n">nn</span> <span class="o">+</span> <span class="n">npix</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logdark</span><span class="p">)</span>
+            <span class="n">nn</span> <span class="o">+=</span> <span class="n">npix</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">dark</span><span class="p">)</span>
+    <span class="n">dark</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">t_ccd_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dark</span> <span class="o">*=</span> <span class="n">dark_temp_scale</span><span class="p">(</span><span class="o">-</span><span class="mi">14</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dark</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>

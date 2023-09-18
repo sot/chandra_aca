@@ -5,14 +5,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca.aca_image &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -46,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -92,7 +91,7 @@
 
 
 <span class="k">def</span> <span class="nf">_operator_factory</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate data model methods like __add__(self, other) and</span>
 <span class="sd">    __iadd__(self, other).  These always operate in the coordinate</span>
 <span class="sd">    system of the left and right operands.  If both are in ACA</span>
@@ -148,7 +147,7 @@
 
 
 <div class="viewcode-block" id="ACAImage"><a class="viewcode-back" href="../../aca_image.html#chandra_aca.aca_image.ACAImage">[docs]</a><span class="k">class</span> <span class="nc">ACAImage</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ACAImage is an ndarray subclass that supports functionality for the Chandra</span>
 <span class="sd">    ACA. Most importantly it allows image indexing and slicing in absolute</span>
 <span class="sd">    &quot;aca&quot; coordinates, where the image lower left coordinate is specified</span>
@@ -182,7 +181,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">aca</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a light copy (same data) of self but with the _aca_coords</span>
 <span class="sd">        attribute switched on so that indexing is absolute.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -246,7 +245,7 @@
     <span class="fm">__ipow__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;ipow&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_adjust_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This is the money method that does all the work of manipulating</span>
 <span class="sd">        an item and subsequent row0/col0 when accessing and slicing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -336,19 +335,25 @@
             <span class="nb">super</span><span class="p">(</span><span class="n">ACAImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ACAImage.centroid_fm"><a class="viewcode-back" href="../../aca_image.html#chandra_aca.aca_image.ACAImage.centroid_fm">[docs]</a>    <span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        First moment centroid of ``self`` using 6x6 mousebitten image for input</span>
 <span class="sd">        6x6 or 8x8 images.</span>
 
 <span class="sd">        Note that the returned ``norm`` is the sum of the background-subtracted 6x6</span>
 <span class="sd">        mousebitten image, not the entire image.</span>
 
-<span class="sd">        :param bgd: background to subtract, scalar or NxN ndarray (float)</span>
-<span class="sd">        :param pix_zero_loc: row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
-<span class="sd">        :param norm_clip: clip image norm at this min value (default is None and</span>
-<span class="sd">                          implies Exception for non-positive norm)</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bgd</span>
+<span class="sd">            background to subtract, scalar or NxN ndarray (float)</span>
+<span class="sd">        pix_zero_loc</span>
+<span class="sd">            row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
+<span class="sd">        norm_clip : clip image norm at this min value (default is None and</span>
+<span class="sd">            implies Exception for non-positive norm)</span>
 
-<span class="sd">        :returns: row, col, norm float</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        row, col, norm float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">centroid_fm</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="n">bgd</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="n">pix_zero_loc</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="n">norm_clip</span>
@@ -380,7 +385,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_read_flicker_cdfs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read flickering pixel model cumulative distribution functions</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read flickering pixel model cumulative distribution functions</span>
 <span class="sd">        and associated metadata.  Set up class variables accordingly.</span>
 
 <span class="sd">        The flicker_cdf file here was created using:</span>
@@ -412,7 +417,7 @@
             <span class="bp">cls</span><span class="o">.</span><span class="n">flicker_cdf_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cdf_bins</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ACAImage.flicker_init"><a class="viewcode-back" href="../../aca_image.html#chandra_aca.aca_image.ACAImage.flicker_init">[docs]</a>    <span class="k">def</span> <span class="nf">flicker_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flicker_mean_time</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">flicker_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize instance variables to allow for flickering pixel updates.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize instance variables to allow for flickering pixel updates.</span>
 
 <span class="sd">        The ``flicker_scale`` can be interpreted as follows: if the pixel</span>
 <span class="sd">        was going to flicker by a multiplicative factor of (1 + x), now</span>
@@ -428,10 +433,14 @@
 
 <span class="sd">        The model was reviewed and approved at SS&amp;AWG on 2019-05-22.</span>
 
-<span class="sd">        :param flicker_mean_time: mean flickering time (sec, default=10000)</span>
-<span class="sd">        :param flicker_scale: multiplicative factor beyond model default for</span>
-<span class="sd">               flickering amplitude (default=1.0)</span>
-<span class="sd">        :param seed: random seed for reproducibility (default=None =&gt; no seed)</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        flicker_mean_time</span>
+<span class="sd">            mean flickering time (sec, default=10000)</span>
+<span class="sd">        flicker_scale : multiplicative factor beyond model default for</span>
+<span class="sd">            flickering amplitude (default=1.0)</span>
+<span class="sd">        seed</span>
+<span class="sd">            random seed for reproducibility (default=None =&gt; no seed)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;flicker_cdf_bins&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_read_flicker_cdfs</span><span class="p">()</span>
@@ -481,15 +490,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">flicker_times</span> <span class="o">=</span> <span class="n">t_flicker</span> <span class="o">*</span> <span class="n">phase</span></div>
 
 <div class="viewcode-block" id="ACAImage.flicker_update"><a class="viewcode-back" href="../../aca_image.html#chandra_aca.aca_image.ACAImage.flicker_update">[docs]</a>    <span class="k">def</span> <span class="nf">flicker_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">use_numba</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Propagate the image forward by ``dt`` seconds and update any pixels</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Propagate the image forward by ``dt`` seconds and update any pixels</span>
 <span class="sd">        that have flickered during that interval.</span>
 
 <span class="sd">        This has the option to use one of two implementations.  The default is</span>
 <span class="sd">        to use the numba-based version which is about 6 times faster.  The</span>
 <span class="sd">        vectorized version is left in for reference.</span>
 
-<span class="sd">        :param dt: time (secs) to propagate image</span>
-<span class="sd">        :param use_numba: use the numba version of updating (default=True)</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dt</span>
+<span class="sd">            time (secs) to propagate image</span>
+<span class="sd">        use_numba</span>
+<span class="sd">            use the numba version of updating (default=True)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;flicker_times&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flicker_init</span><span class="p">()</span>
@@ -571,7 +584,7 @@
     <span class="n">flicker_scale</span><span class="p">,</span>
     <span class="n">flicker_mean_time</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Propagate the image forward by ``dt`` seconds and update any pixels</span>
 <span class="sd">    that have flickered during that interval.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -639,7 +652,7 @@
 
 
 <span class="k">def</span> <span class="nf">_prep_6x6</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Subtract background and in case of 8x8 image</span>
 <span class="sd">    cut and return the 6x6 inner section.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -660,20 +673,27 @@
 
 
 <div class="viewcode-block" id="centroid_fm"><a class="viewcode-back" href="../../aca_image.html#chandra_aca.aca_image.centroid_fm">[docs]</a><span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    First moment centroid of ``img``.</span>
 
 <span class="sd">    Return FM centroid in coords where lower left pixel of image has value</span>
 <span class="sd">    (0.0, 0.0) at the center (for pix_zero_loc=&#39;center&#39;) or the lower-left edge</span>
 <span class="sd">    (for pix_zero_loc=&#39;edge&#39;).</span>
 
-<span class="sd">    :param img: NxN ndarray</span>
-<span class="sd">    :param bgd: background to subtract, float of NXN ndarray</span>
-<span class="sd">    :param pix_zero_loc: row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
-<span class="sd">    :param norm_clip: clip image norm at this min value (default is None and</span>
-<span class="sd">                      implies Exception for non-positive norm)</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img</span>
+<span class="sd">        NxN ndarray</span>
+<span class="sd">    bgd</span>
+<span class="sd">        background to subtract, float of NXN ndarray</span>
+<span class="sd">    pix_zero_loc</span>
+<span class="sd">        row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
+<span class="sd">    norm_clip : clip image norm at this min value (default is None and</span>
+<span class="sd">        implies Exception for non-positive norm)</span>
 
-<span class="sd">    :returns: row, col, norm float</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    row, col, norm float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Cast to an ndarray (without copying)</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
@@ -710,7 +730,7 @@
 
 
 <div class="viewcode-block" id="AcaPsfLibrary"><a class="viewcode-back" href="../../aca_image.html#chandra_aca.aca_image.AcaPsfLibrary">[docs]</a><span class="k">class</span> <span class="nc">AcaPsfLibrary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Access the ACA PSF library, whch is a library of 8x8 images providing the integrated</span>
 <span class="sd">    (pixelated) ACA PSF over a grid of subpixel locations.</span>
 
@@ -767,18 +787,28 @@
         <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
         <span class="n">aca_image</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get interpolated ACA PSF image that corresponds to pixel location</span>
 <span class="sd">        ``row``, ``col``.</span>
 
-<span class="sd">        :param row: (float) row value of PSF centroid</span>
-<span class="sd">        :param col: (float) col value of PSF centroid</span>
-<span class="sd">        :param norm: (float) summed intensity of PSF image</span>
-<span class="sd">        :param pix_zero_loc: row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
-<span class="sd">        :param interpolation: &#39;nearest&#39; | &#39;bilinear&#39; (default)</span>
-<span class="sd">        :param aca_image: return ACAImage if True, else return ndarray</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        row</span>
+<span class="sd">            (float) row value of PSF centroid</span>
+<span class="sd">        col</span>
+<span class="sd">            (float) col value of PSF centroid</span>
+<span class="sd">        norm</span>
+<span class="sd">            (float) summed intensity of PSF image</span>
+<span class="sd">        pix_zero_loc</span>
+<span class="sd">            row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
+<span class="sd">        interpolation</span>
+<span class="sd">            &#39;nearest&#39; | &#39;bilinear&#39; (default)</span>
+<span class="sd">        aca_image</span>
+<span class="sd">            return ACAImage if True, else return ndarray</span>
 
-<span class="sd">        :returns: ACAImage if (aca_image is True) else (ndarray image, row0, col0)</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ACAImage if (aca_image is True) else (ndarray image, row0, col0)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">drc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drc</span>
 
@@ -866,7 +896,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

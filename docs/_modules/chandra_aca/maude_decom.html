@@ -5,14 +5,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -46,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -423,7 +422,7 @@
 
 
 <span class="k">class</span> <span class="nc">_AcaImageHeaderDecom</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to decommute ACA image telemtry headers.</span>
 
 <span class="sd">    These methods are grouped into a class because header 3 packet is split into up to 8 parts.</span>
@@ -448,11 +447,17 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_aca_header_1</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unpack ACA header 1 (ACA User Manual 5.3.2.2.1).</span>
 
-<span class="sd">        :param bits: bytes-like object of length 7</span>
-<span class="sd">        :return: dict</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bits</span>
+<span class="sd">            bytes-like object of length 7</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unpackbits</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBBbbBB&quot;</span><span class="p">,</span> <span class="n">bits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -474,11 +479,17 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_aca_header_2</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unpack ACA header 2 (ACA User Manual 5.3.2.2.2).</span>
 
-<span class="sd">        :param bits: bytes-like object of length 7</span>
-<span class="sd">        :return: dict</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bits</span>
+<span class="sd">            bytes-like object of length 7</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">bits</span> <span class="o">=</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BbbbbBB&quot;</span><span class="p">,</span> <span class="n">bits</span><span class="p">)</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unpackbits</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bits</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
@@ -498,22 +509,33 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_aca_header_3</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).</span>
 
-<span class="sd">        :param bits: bytes-like object of length 7</span>
-<span class="sd">        :return: dict</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bits</span>
+<span class="sd">            bytes-like object of length 7</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;DIAGNOSTIC&quot;</span><span class="p">:</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBBBBB&quot;</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:])}</span>
 
 
 <div class="viewcode-block" id="unpack_aca_telemetry"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.unpack_aca_telemetry">[docs]</a><span class="k">def</span> <span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Unpack ACA telemetry encoded in 225-byte packets.</span>
 
-<span class="sd">    :param packet: bytes</span>
-<span class="sd">    :return: list of dict</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    packet</span>
+<span class="sd">        bytes</span>
 
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of dict</span>
 <span class="sd">    A list of length 8, one entry per slot, where each entry is a dictionary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span> <span class="o">=</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBB&quot;</span><span class="p">,</span> <span class="n">packet</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span>
@@ -571,13 +593,19 @@
 
 
 <span class="k">def</span> <span class="nf">_combine_aca_packets</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Combine a list of ACA packets into a single record.</span>
 
 <span class="sd">    This is intended to combine the two 6X6 packets or the four 8X8 packets.</span>
 
-<span class="sd">    :param aca_packets: list of dict</span>
-<span class="sd">    :return: dict</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    aca_packets</span>
+<span class="sd">        list of dict</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># note that they are reverse-sorted so the first frame overwrites the others if they collide</span>
     <span class="n">aca_packets</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -599,14 +627,21 @@
 
 
 <span class="k">def</span> <span class="nf">_group_packets</span><span class="p">(</span><span class="n">packets</span><span class="p">,</span> <span class="n">discard</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ACA telemetry is packed in packets of 225 bytes. Each of these is split in four VCDU frames.</span>
 <span class="sd">    Before decommuting an ACA package we group the ACA-related portion of VCDU frames to form the</span>
 <span class="sd">    one 225-byte ACA packet.</span>
 
-<span class="sd">    :param packets: list of ACA sub-packets</span>
-<span class="sd">    :param discard: bool to discard incomplete ACA packets</span>
-<span class="sd">    :return: list of ACA packets</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    packets</span>
+<span class="sd">        list of ACA sub-packets</span>
+<span class="sd">    discard</span>
+<span class="sd">        bool to discard incomplete ACA packets</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of ACA packets</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">n</span> <span class="o">=</span> <span class="kc">None</span>
@@ -630,7 +665,7 @@
 
 
 <div class="viewcode-block" id="get_raw_aca_packets"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</span>
 
 <span class="sd">    If the first minor frame in a group of four ACA packets is within (start, stop),</span>
@@ -643,14 +678,22 @@
 <span class="sd">    This function raises an exception if the VCDU frames in maude_result are not contiguous, which</span>
 <span class="sd">    can also happen if the frames are corrupted in some way.</span>
 
-<span class="sd">    :param start: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param stop: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param maude_result: the result of calling maude.get_frames. Optional.</span>
-<span class="sd">    :param maude_kwargs: keyword args passed to maude.get_frames()</span>
-<span class="sd">    :return: dict</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    stop</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    maude_result</span>
+<span class="sd">        the result of calling maude.get_frames. Optional.</span>
+<span class="sd">    maude_kwargs</span>
+<span class="sd">        keyword args passed to maude.get_frames()</span>
 
-<span class="sd">        {&#39;flags&#39;: int, &#39;packets&#39;: [],</span>
-<span class="sd">         &#39;TIME&#39;: np.array([]), &#39;MNF&#39;: np.array([]), &#39;MJF&#39;: np.array([])}</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">    {&#39;flags&#39;: int, &#39;packets&#39;: [],</span>
+<span class="sd">    &#39;TIME&#39;: np.array([]), &#39;MNF&#39;: np.array([]), &#39;MJF&#39;: np.array([])}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">DateTime</span><span class="p">(</span>
         <span class="n">stop</span>
@@ -782,12 +825,19 @@
 
 
 <span class="k">def</span> <span class="nf">_aca_packets_to_table</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Store ACA packets in a table.</span>
 
-<span class="sd">    :param aca_packets: list of dict</span>
-<span class="sd">    :param dtype: dtype to use in the resulting table. Optional.</span>
-<span class="sd">    :return: astropy.table.Table</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    aca_packets</span>
+<span class="sd">        list of dict</span>
+<span class="sd">    dtype</span>
+<span class="sd">        dtype to use in the resulting table. Optional.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    astropy.table.Table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">copy</span>
 
@@ -824,7 +874,7 @@
     <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</span>
 
 <span class="sd">    Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records</span>
@@ -958,32 +1008,39 @@
 <span class="sd">         [False False False False False False False False]],</span>
 <span class="sd">                    fill_value = 1e+20)</span>
 
-
-<span class="sd">    :param start: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param stop: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param level0: bool.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    stop</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    level0 : bool.</span>
 <span class="sd">        Implies combine=True, adjust_time=True, calibrate=True</span>
-<span class="sd">    :param combine: bool.</span>
+<span class="sd">    combine : bool.</span>
 <span class="sd">        If True, multiple ACA packets are combined to form an image (depending on size),</span>
 <span class="sd">        If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.</span>
-<span class="sd">    :param adjust_time: bool</span>
+<span class="sd">    adjust_time : bool</span>
 <span class="sd">        If True, half the integration time is subtracted</span>
-<span class="sd">    :param calibrate: bool</span>
+<span class="sd">    calibrate : bool</span>
 <span class="sd">        If True, pixel values will be &#39;value * imgscale / 32 - 50&#39; and temperature values will</span>
 <span class="sd">        be: 0.4 * value + 273.15</span>
-<span class="sd">    :param blobs: bool or dict</span>
+<span class="sd">    blobs : bool or dict</span>
 <span class="sd">        If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the</span>
 <span class="sd">        output of maude.get_blobs ({&#39;blobs&#39;: ... }).</span>
-<span class="sd">    :param frames: bool or dict</span>
+<span class="sd">    frames : bool or dict</span>
 <span class="sd">        If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the</span>
 <span class="sd">        output of maude.get_frames ({&#39;data&#39;: ... }).</span>
-<span class="sd">    :param dtype: np.dtype. Optional.</span>
+<span class="sd">    dtype : np.dtype. Optional.</span>
 <span class="sd">        the dtype to use when creating the resulting table. This is useful to add columns</span>
 <span class="sd">        including MSIDs that are present in blobs. If used with frames, most probably you will get</span>
 <span class="sd">        and empty column. This option is intended to augment the default dtype. If a more</span>
 <span class="sd">        restrictive dtype is used, a KeyError can be raised.</span>
-<span class="sd">    :param maude_kwargs: keyword args passed to maude</span>
-<span class="sd">    :return: astropy.table.Table</span>
+<span class="sd">    maude_kwargs</span>
+<span class="sd">        keyword args passed to maude</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    astropy.table.Table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">blobs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">frames</span><span class="p">:</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1002,7 +1059,7 @@
     <span class="p">)</span>  <span class="c1"># ensure input is proper date</span>
     <span class="k">if</span> <span class="mi">24</span> <span class="o">*</span> <span class="p">(</span><span class="n">date_stop</span> <span class="o">-</span> <span class="n">date_start</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Requested </span><span class="si">{</span><span class="mi">24</span> <span class="o">*</span> <span class="p">(</span><span class="n">date_stop</span> <span class="o">-</span> <span class="n">date_start</span><span class="p">)</span><span class="si">}</span><span class="s2"> hours of telemetry. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Requested </span><span class="si">{</span><span class="mi">24</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">date_stop</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">date_start</span><span class="p">)</span><span class="si">}</span><span class="s2"> hours of telemetry. &quot;</span>
             <span class="s2">&quot;Maximum allowed is 3 hours at a time&quot;</span>
         <span class="p">)</span>
 
@@ -1069,7 +1126,7 @@
     <span class="n">blobs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is a convenience function that splits get_aca_packets for testing without MAUDE.</span>
 <span class="sd">    Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.</span>
 
@@ -1146,13 +1203,21 @@
 
 
 <div class="viewcode-block" id="get_aca_images"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_images">[docs]</a><span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch ACA image telemetry</span>
 
-<span class="sd">    :param start: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param stop: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param maude_kwargs: keyword args passed to maude</span>
-<span class="sd">    :return: astropy.table.Table</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    stop</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    maude_kwargs</span>
+<span class="sd">        keyword args passed to maude</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    astropy.table.Table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">get_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">level0</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">)</span></div>
 
@@ -1163,7 +1228,7 @@
 
 
 <div class="viewcode-block" id="get_raw_aca_blobs"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_blobs">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</span>
 
 <span class="sd">    If the first minor frame in a group of four ACA packets is within (start, stop),</span>
@@ -1175,12 +1240,21 @@
 
 <span class="sd">    This is to blobs what `get_raw_aca_packets` is to frames.</span>
 
-<span class="sd">    :param start: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param stop: timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    :param maude_result: the result of calling maude.get_blobs. Optional.</span>
-<span class="sd">    :param maude_kwargs: keyword args passed to maude.get_frames()</span>
-<span class="sd">    :return: dict</span>
-<span class="sd">        {&#39;blobs&#39;: [], &#39;names&#39;: np.array([]), &#39;types&#39;: np.array([])}</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    stop</span>
+<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    maude_result</span>
+<span class="sd">        the result of calling maude.get_blobs. Optional.</span>
+<span class="sd">    maude_kwargs</span>
+<span class="sd">        keyword args passed to maude.get_frames()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">    {&#39;blobs&#39;: [], &#39;names&#39;: np.array([]), &#39;types&#39;: np.array([])}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">DateTime</span><span class="p">(</span>
         <span class="n">stop</span>
@@ -1231,15 +1305,23 @@
 
 
 <div class="viewcode-block" id="blob_to_aca_image_dict"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict">[docs]</a><span class="k">def</span> <span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assemble ACA image MSIDs from a blob into a dictionary.</span>
 
 <span class="sd">    This does to blobs what unpack_aca_telemetry does to frames, but for a single image.</span>
 
-<span class="sd">    :param blob:</span>
-<span class="sd">    :param imgnum:</span>
-<span class="sd">    :param pea:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    blob</span>
+
+<span class="sd">    imgnum</span>
+
+<span class="sd">    pea</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">global_msids</span> <span class="o">=</span> <span class="n">ACA_MSID_LIST</span><span class="p">[</span><span class="n">pea</span><span class="p">]</span>
     <span class="n">slot_msids</span> <span class="o">=</span> <span class="n">ACA_SLOT_MSID_LIST</span><span class="p">[</span><span class="n">pea</span><span class="p">][</span><span class="n">imgnum</span><span class="p">]</span>
@@ -1402,7 +1484,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

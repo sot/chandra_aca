@@ -4,16 +4,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.planets &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -60,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       
@@ -75,7 +74,7 @@
           <div class="body" role="main">
             
   <section id="module-chandra_aca.planets">
-<span id="chandra-aca-planets"></span><h1>chandra_aca.planets<a class="headerlink" href="#module-chandra_aca.planets" title="Permalink to this headline">¶</a></h1>
+<span id="chandra-aca-planets"></span><h1>chandra_aca.planets<a class="headerlink" href="#module-chandra_aca.planets" title="Permalink to this heading">¶</a></h1>
 <p>Functions for planet position relative to Chandra, Earth, or Solar System
 Barycenter.</p>
 <p>Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
@@ -105,13 +104,13 @@ Horizons positions are used as the “truth”.</p>
 <p>See the <code class="docutils literal notranslate"><span class="pre">validation/planet-accuracy.ipynb</span></code> notebook for details.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="chandra_aca.planets.NoEphemerisError">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">NoEphemerisError</span></span><a class="reference internal" href="_modules/chandra_aca/planets.html#NoEphemerisError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.NoEphemerisError" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">NoEphemerisError</span></span><a class="reference internal" href="_modules/chandra_aca/planets.html#NoEphemerisError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.NoEphemerisError" title="Permalink to this definition">¶</a></dt>
 <dd><p>If there is no Chandra orbital ephemeris available</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.planets.get_planet_angular_sep">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_angular_sep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ra</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observer_position</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'earth'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_angular_sep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_angular_sep" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_angular_sep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observer_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'earth'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_angular_sep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_angular_sep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get angular separation between planet <code class="docutils literal notranslate"><span class="pre">body</span></code> and target <code class="docutils literal notranslate"><span class="pre">ra</span></code>, <code class="docutils literal notranslate"><span class="pre">dec</span></code>.</p>
 <p>Valid values for the <code class="docutils literal notranslate"><span class="pre">observer_position</span></code> argument are:</p>
 <ul class="simple">
@@ -120,49 +119,55 @@ Horizons positions are used as the “truth”.</p>
 <li><p>‘chandra-horizons’ (most accurate, slow, requires internet access)</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>body</strong> – str
-Body name (lower case planet name)</p></li>
-<li><p><strong>ra</strong> – float
-RA in degrees</p></li>
-<li><p><strong>dec</strong> – float
-Dec in degrees</p></li>
-<li><p><strong>time</strong> – CxoTime-compatible object
-Time or times of observation</p></li>
-<li><p><strong>observer_position</strong> – str
-Observer position (‘earth’, ‘chandra’, or ‘chandra-horizons’)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>body</strong><span class="classifier">str</span></dt><dd><p>Body name (lower case planet name)</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>angular separation (deg)</p>
+<dt><strong>ra</strong><span class="classifier">float</span></dt><dd><p>RA in degrees</p>
+</dd>
+<dt><strong>dec</strong><span class="classifier">float</span></dt><dd><p>Dec in degrees</p>
+</dd>
+<dt><strong>time</strong><span class="classifier">CxoTime-compatible object</span></dt><dd><p>Time or times of observation</p>
+</dd>
+<dt><strong>observer_position</strong><span class="classifier">str</span></dt><dd><p>Observer position (‘earth’, ‘chandra’, or ‘chandra-horizons’)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>angular separation (deg)</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.planets.get_planet_barycentric">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_barycentric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">cxotime.cxotime.CxoTime</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.typing._array_like._SupportsArray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_barycentric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_barycentric" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_barycentric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_barycentric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_barycentric" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get barycentric position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem.</p>
 <p><code class="docutils literal notranslate"><span class="pre">body</span></code> must be one of “sun”, “mercury”, “venus”, “earth-moon-barycenter”, “earth”,
 “moon”, “mars”, “jupiter”, “saturn”, “uranus”, “neptune”, or “pluto”.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>body</strong> – Body name (lower case planet name)</p></li>
-<li><p><strong>time</strong> – Time or times for returned position (default=NOW)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>body</strong></dt><dd><p>Body name (lower case planet name)</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>barycentric position (km) as (x, y, z) or N x (x, y, z)</p>
+<dt><strong>time</strong></dt><dd><p>Time or times for returned position (default=NOW)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>barycentric position (km) as (x, y, z) or N x (x, y, z)</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.planets.get_planet_chandra">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">cxotime.cxotime.CxoTime</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.typing._array_like._SupportsArray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code> relative to Chandra.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem, along with
 the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
@@ -178,21 +183,25 @@ follows, where the JPL Horizons positions are used as the “truth”.</p>
 <li><p>Saturn: &lt; 0.5 arcsec</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>body</strong> – Body name</p></li>
-<li><p><strong>time</strong> – Time or times for returned position (default=NOW)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>body</strong></dt><dd><p>Body name</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>position relative to Chandra (km) as (x, y, z) or N x (x, y, z)</p>
+<dt><strong>time</strong></dt><dd><p>Time or times for returned position (default=NOW)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>position relative to Chandra (km) as (x, y, z) or N x (x, y, z)</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.planets.get_planet_chandra_horizons">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra_horizons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestart</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">cxotime.cxotime.CxoTime</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.typing._array_like._SupportsArray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">cxotime.cxotime.CxoTime</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.typing._array_like._SupportsArray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_times</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra_horizons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra_horizons" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra_horizons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestart</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_chandra_horizons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra_horizons" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get body position and other info as seen from Chandra using JPL Horizons.</p>
 <p>In addition to the planet names, the <code class="docutils literal notranslate"><span class="pre">body</span></code> argument can be any identifier that
 Horizon supports, e.g. <code class="docutils literal notranslate"><span class="pre">sun</span></code> or <code class="docutils literal notranslate"><span class="pre">geo</span></code> (Earth geocenter).</p>
@@ -220,25 +229,31 @@ of the Horizons response and a <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>body</strong> – one of ‘mercury’, ‘venus’, ‘mars’, ‘jupiter’, ‘saturn’,
-‘uranus’, ‘neptune’, or any other body that Horizons supports.</p></li>
-<li><p><strong>timestart</strong> – start time (any CxoTime-compatible time)</p></li>
-<li><p><strong>timestop</strong> – stop time (any CxoTime-compatible time)</p></li>
-<li><p><strong>n_times</strong> – number of time samples (inclusive, default=10)</p></li>
-<li><p><strong>timeout</strong> – timeout for query to Horizons (secs)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>body</strong><span class="classifier">one of ‘mercury’, ‘venus’, ‘mars’, ‘jupiter’, ‘saturn’,</span></dt><dd><p>‘uranus’, ‘neptune’, or any other body that Horizons supports.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Table of information</p>
+<dt><strong>timestart</strong></dt><dd><p>start time (any CxoTime-compatible time)</p>
+</dd>
+<dt><strong>timestop</strong></dt><dd><p>stop time (any CxoTime-compatible time)</p>
+</dd>
+<dt><strong>n_times</strong></dt><dd><p>number of time samples (inclusive, default=10)</p>
+</dd>
+<dt><strong>timeout</strong></dt><dd><p>timeout for query to Horizons (secs)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Table of information</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.planets.get_planet_eci">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_eci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">cxotime.cxotime.CxoTime</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.generic</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.typing._array_like._SupportsArray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_observer</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_eci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_eci" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_eci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_observer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_planet_eci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_planet_eci" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get ECI apparent position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 <p>This uses the built-in JPL ephemeris file DE432s and jplephem. The position
 is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from the
@@ -256,16 +271,22 @@ position is Earth (default).</p>
 <li><p>Saturn: &lt; 0.5 arcmin with peak around 0.3 arcmin</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>body</strong> – Body name (lower case planet name)</p></li>
-<li><p><strong>time</strong> – Time or times for returned position (default=NOW)</p></li>
-<li><p><strong>pos_observer</strong> – Observer position (default=Earth)</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>body</strong></dt><dd><p>Body name (lower case planet name)</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Earth-Centered Inertial (ECI) position (km) as (x, y, z)
+<dt><strong>time</strong></dt><dd><p>Time or times for returned position (default=NOW)</p>
+</dd>
+<dt><strong>pos_observer</strong></dt><dd><p>Observer position (default=Earth)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ndarray</dt><dd><p>Earth-Centered Inertial (ECI) position (km) as (x, y, z)
 or N x (x, y, z)</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -280,16 +301,28 @@ or N x (x, y, z)</p>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#">chandra_aca.planets</a></li>
+<li><a class="reference internal" href="#">chandra_aca.planets</a><ul>
+<li><a class="reference internal" href="#chandra_aca.planets.NoEphemerisError"><code class="docutils literal notranslate"><span class="pre">NoEphemerisError</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.planets.get_planet_angular_sep"><code class="docutils literal notranslate"><span class="pre">get_planet_angular_sep()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.planets.get_planet_barycentric"><code class="docutils literal notranslate"><span class="pre">get_planet_barycentric()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.planets.get_planet_chandra"><code class="docutils literal notranslate"><span class="pre">get_planet_chandra()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.planets.get_planet_chandra_horizons"><code class="docutils literal notranslate"><span class="pre">get_planet_chandra_horizons()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.planets.get_planet_eci"><code class="docutils literal notranslate"><span class="pre">get_planet_eci()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="maude_decom.html"
-                        title="previous chapter">chandra_aca.maude_decom</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="plot.html"
-                        title="next chapter">chandra_aca.plot</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="maude_decom.html"
+                          title="previous chapter">chandra_aca.maude_decom</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="plot.html"
+                          title="next chapter">chandra_aca.plot</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -313,7 +346,7 @@ or N x (x, y, z)</p>
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

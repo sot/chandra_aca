@@ -4,16 +4,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -53,7 +52,7 @@
 	</a>
       </li>
       <li>
-	<a href="#">chandra_aca 4.41.0 documentation</a>
+	<a href="#">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       
@@ -68,24 +67,43 @@
           <div class="body" role="main">
             
   <section id="chandra-aca">
-<h1>chandra_aca<a class="headerlink" href="#chandra-aca" title="Permalink to this headline">¶</a></h1>
+<h1>chandra_aca<a class="headerlink" href="#chandra-aca" title="Permalink to this heading">¶</a></h1>
 <p>The chandra_aca package provides functionality related to the Chandra Aspect
 Camera Assembly and associated aspect functionality.</p>
 <div class="toctree-wrapper compound">
 </div>
 <section id="aca-alignment-drift">
-<h2>ACA alignment drift<a class="headerlink" href="#aca-alignment-drift" title="Permalink to this headline">¶</a></h2>
+<h2>ACA alignment drift<a class="headerlink" href="#aca-alignment-drift" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="drift.html">chandra_aca.drift</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drift.html">chandra_aca.drift</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.AcaDriftModel"><code class="docutils literal notranslate"><span class="pre">AcaDriftModel</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.get_aca_offsets"><code class="docutils literal notranslate"><span class="pre">get_aca_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.get_default_zero_offset_table"><code class="docutils literal notranslate"><span class="pre">get_default_zero_offset_table()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.get_target_aimpoint"><code class="docutils literal notranslate"><span class="pre">get_target_aimpoint()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="aca-images">
-<h2>ACA images<a class="headerlink" href="#aca-images" title="Permalink to this headline">¶</a></h2>
+<h2>ACA images<a class="headerlink" href="#aca-images" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="aca_image.html">chandra_aca.aca_image</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage"><code class="docutils literal notranslate"><span class="pre">ACAImage</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.aca"><code class="docutils literal notranslate"><span class="pre">ACAImage.aca</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.centroid_fm"><code class="docutils literal notranslate"><span class="pre">ACAImage.centroid_fm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.flicker_init"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.flicker_update"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.AcaPsfLibrary"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary.get_psf_image()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.EIGHT_LABELS"><code class="docutils literal notranslate"><span class="pre">EIGHT_LABELS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.centroid_fm"><code class="docutils literal notranslate"><span class="pre">centroid_fm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="aca_image.html#acaimage-class">ACAImage class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="aca_image.html#creation">Creation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aca_image.html#image-access-and-setting">Image access and setting</a></li>
@@ -99,50 +117,130 @@ Camera Assembly and associated aspect functionality.</p>
 </div>
 </section>
 <section id="centroid-residuals">
-<h2>Centroid residuals<a class="headerlink" href="#centroid-residuals" title="Permalink to this headline">¶</a></h2>
+<h2>Centroid residuals<a class="headerlink" href="#centroid-residuals" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="centroid_resid.html">chandra_aca.centroid_resid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="centroid_resid.html">chandra_aca.centroid_resid</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals"><code class="docutils literal notranslate"><span class="pre">CentroidResiduals</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="dark-model">
+<h2>Dark model<a class="headerlink" href="#dark-model" title="Permalink to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dark_model.html">chandra_aca.dark_model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.dark_temp_scale"><code class="docutils literal notranslate"><span class="pre">dark_temp_scale()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.get_dark_hist"><code class="docutils literal notranslate"><span class="pre">get_dark_hist()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.get_sbp_pars"><code class="docutils literal notranslate"><span class="pre">get_sbp_pars()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.get_warm_fracs"><code class="docutils literal notranslate"><span class="pre">get_warm_fracs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.smooth_broken_pow"><code class="docutils literal notranslate"><span class="pre">smooth_broken_pow()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.smooth_twice_broken_pow"><code class="docutils literal notranslate"><span class="pre">smooth_twice_broken_pow()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.synthetic_dark_image"><code class="docutils literal notranslate"><span class="pre">synthetic_dark_image()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.temp_scalefac"><code class="docutils literal notranslate"><span class="pre">temp_scalefac()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="maude-decom">
-<h2>MAUDE Decom<a class="headerlink" href="#maude-decom" title="Permalink to this headline">¶</a></h2>
+<h2>MAUDE Decom<a class="headerlink" href="#maude-decom" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="maude_decom.html">chandra_aca.maude_decom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maude_decom.html">chandra_aca.maude_decom</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict"><code class="docutils literal notranslate"><span class="pre">blob_to_aca_image_dict()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_aca_packets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_raw_aca_blobs"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_blobs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_packets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.unpack_aca_telemetry"><code class="docutils literal notranslate"><span class="pre">unpack_aca_telemetry()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="planet-positions">
-<h2>Planet Positions<a class="headerlink" href="#planet-positions" title="Permalink to this headline">¶</a></h2>
+<h2>Planet Positions<a class="headerlink" href="#planet-positions" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="planets.html">chandra_aca.planets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="planets.html">chandra_aca.planets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.NoEphemerisError"><code class="docutils literal notranslate"><span class="pre">NoEphemerisError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_angular_sep"><code class="docutils literal notranslate"><span class="pre">get_planet_angular_sep()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_barycentric"><code class="docutils literal notranslate"><span class="pre">get_planet_barycentric()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_chandra"><code class="docutils literal notranslate"><span class="pre">get_planet_chandra()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_chandra_horizons"><code class="docutils literal notranslate"><span class="pre">get_planet_chandra_horizons()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_eci"><code class="docutils literal notranslate"><span class="pre">get_planet_eci()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="plotting">
-<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h2>
+<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="plot.html">chandra_aca.plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">chandra_aca.plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="plot.html#chandra_aca.plot.bad_acq_stars"><code class="docutils literal notranslate"><span class="pre">bad_acq_stars()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot.html#chandra_aca.plot.plot_compass"><code class="docutils literal notranslate"><span class="pre">plot_compass()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot.html#chandra_aca.plot.plot_stars"><code class="docutils literal notranslate"><span class="pre">plot_stars()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="star-probabilities">
-<h2>Star probabilities<a class="headerlink" href="#star-probabilities" title="Permalink to this headline">¶</a></h2>
+<h2>Star probabilities<a class="headerlink" href="#star-probabilities" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="star_probs.html">chandra_aca.star_probs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="star_probs.html">chandra_aca.star_probs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.Conf"><code class="docutils literal notranslate"><span class="pre">Conf</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.ConfigItem"><code class="docutils literal notranslate"><span class="pre">ConfigItem</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.acq_success_prob"><code class="docutils literal notranslate"><span class="pre">acq_success_prob()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.binom_ppf"><code class="docutils literal notranslate"><span class="pre">binom_ppf()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.clip_and_warn"><code class="docutils literal notranslate"><span class="pre">clip_and_warn()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_box_delta"><code class="docutils literal notranslate"><span class="pre">get_box_delta()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_default_acq_prob_model_info"><code class="docutils literal notranslate"><span class="pre">get_default_acq_prob_model_info()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_grid_axis_values"><code class="docutils literal notranslate"><span class="pre">get_grid_axis_values()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_grid_func_model"><code class="docutils literal notranslate"><span class="pre">get_grid_func_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.grid_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">grid_model_acq_prob()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.guide_count"><code class="docutils literal notranslate"><span class="pre">guide_count()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.mag_for_p_acq"><code class="docutils literal notranslate"><span class="pre">mag_for_p_acq()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.model_acq_success_prob"><code class="docutils literal notranslate"><span class="pre">model_acq_success_prob()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.prob_n_acq"><code class="docutils literal notranslate"><span class="pre">prob_n_acq()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.set_acq_model_ms_filter"><code class="docutils literal notranslate"><span class="pre">set_acq_model_ms_filter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.sota_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">sota_model_acq_prob()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.spline_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">spline_model_acq_prob()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit"><code class="docutils literal notranslate"><span class="pre">t_ccd_warm_limit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit_for_guide"><code class="docutils literal notranslate"><span class="pre">t_ccd_warm_limit_for_guide()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="transformations">
-<h2>Transformations<a class="headerlink" href="#transformations" title="Permalink to this headline">¶</a></h2>
+<h2>Transformations<a class="headerlink" href="#transformations" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="transform.html">chandra_aca.transform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transform.html">chandra_aca.transform</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.broadcast_arrays"><code class="docutils literal notranslate"><span class="pre">broadcast_arrays()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.broadcast_arrays_flatten"><code class="docutils literal notranslate"><span class="pre">broadcast_arrays_flatten()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.calc_aca_from_targ"><code class="docutils literal notranslate"><span class="pre">calc_aca_from_targ()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.calc_targ_from_aca"><code class="docutils literal notranslate"><span class="pre">calc_targ_from_aca()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.calc_target_offsets"><code class="docutils literal notranslate"><span class="pre">calc_target_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.count_rate_to_mag"><code class="docutils literal notranslate"><span class="pre">count_rate_to_mag()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.eci_to_radec"><code class="docutils literal notranslate"><span class="pre">eci_to_radec()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.mag_to_count_rate"><code class="docutils literal notranslate"><span class="pre">mag_to_count_rate()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.normalize_vector"><code class="docutils literal notranslate"><span class="pre">normalize_vector()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.pixels_to_yagzag"><code class="docutils literal notranslate"><span class="pre">pixels_to_yagzag()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.radec_to_eci"><code class="docutils literal notranslate"><span class="pre">radec_to_eci()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.radec_to_yagzag"><code class="docutils literal notranslate"><span class="pre">radec_to_yagzag()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.snr_mag_for_t_ccd"><code class="docutils literal notranslate"><span class="pre">snr_mag_for_t_ccd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.yagzag_to_pixels"><code class="docutils literal notranslate"><span class="pre">yagzag_to_pixels()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.yagzag_to_radec"><code class="docutils literal notranslate"><span class="pre">yagzag_to_radec()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
@@ -160,6 +258,7 @@ Camera Assembly and associated aspect functionality.</p>
 <li><a class="reference internal" href="#aca-alignment-drift">ACA alignment drift</a></li>
 <li><a class="reference internal" href="#aca-images">ACA images</a></li>
 <li><a class="reference internal" href="#centroid-residuals">Centroid residuals</a></li>
+<li><a class="reference internal" href="#dark-model">Dark model</a></li>
 <li><a class="reference internal" href="#maude-decom">MAUDE Decom</a></li>
 <li><a class="reference internal" href="#planet-positions">Planet Positions</a></li>
 <li><a class="reference internal" href="#plotting">Plotting</a></li>
@@ -170,9 +269,11 @@ Camera Assembly and associated aspect functionality.</p>
 </ul>
 
 
-  <h4>Next topic</h4>
-  <p class="topless"><a href="drift.html"
-                        title="next chapter">chandra_aca.drift</a></p>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="drift.html"
+                          title="next chapter">chandra_aca.drift</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -196,7 +297,7 @@ Camera Assembly and associated aspect functionality.</p>
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>

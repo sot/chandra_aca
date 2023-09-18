@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chandra_aca.drift &#8212; chandra_aca 4.42.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script type="text/javascript" src="../../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
+        <span id="logotext1">ska</span><span id="logotext2">tools</span>
+    </a></li>
+    <li><a title="General Index" href="../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../index.html">chandra_aca 4.42.0 documentation</a>
+	 &#187;
+      </li>
+      <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for chandra_aca.drift</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Function(s) related to ACA alignment.</span>
+
+<span class="sd">In particular compute the dynamical pointing offset required to achieve</span>
+<span class="sd">a desired zero-offset target aimpoint.</span>
+
+<span class="sd">A key element of this module is the fitting analysis here:</span>
+<span class="sd">https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">astropy.utils.data</span> <span class="kn">import</span> <span class="n">download_file</span>
+<span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+<span class="kn">from</span> <span class="nn">ska_helpers</span> <span class="kn">import</span> <span class="n">chandra_models</span>
+<span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyDict</span>
+
+
+<span class="k">def</span> <span class="nf">load_drift_pars</span><span class="p">():</span>
+    <span class="n">pars_txt</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">chandra_models</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span>
+        <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;chandra_models&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;aca_drift&quot;</span> <span class="o">/</span> <span class="s2">&quot;aca_drift_model.json&quot;</span>
+    <span class="p">)</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">pars_txt</span><span class="p">)</span>
+    <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+    <span class="k">return</span> <span class="n">pars</span>
+
+
+<span class="n">DRIFT_PARS</span> <span class="o">=</span> <span class="n">LazyDict</span><span class="p">(</span><span class="n">load_drift_pars</span><span class="p">)</span>
+
+<span class="c1"># Define transform from aspect solution DY, DZ (mm) to CHIPX, CHIPY for</span>
+<span class="c1"># nominal target position.  This uses the transform:</span>
+<span class="c1"># CHIPX, CHIPY = c0 + cyz * [DY, DZ]  (dot product)</span>
+<span class="c1"># These values come from the aimpoint_mon/asol_to_chip_transforms notebook:</span>
+<span class="c1"># https://github.com/sot/aimpoint_mon/blob/cebe5010/asol_to_chip_transforms.ipynb</span>
+<span class="n">ASOL_TO_CHIP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-I&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1100.806</span><span class="p">,</span> <span class="mf">1110.299</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">41.742</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">41.742</span><span class="p">,</span> <span class="mf">0.105</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-I&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">76.208</span><span class="p">,</span> <span class="mf">962.413</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">0.001</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.742</span><span class="p">],</span> <span class="p">[</span><span class="mf">41.741</span><span class="p">,</span> <span class="mf">0.104</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-I&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">54.468</span><span class="p">,</span> <span class="mf">1110.197</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">41.742</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">41.742</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.105</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-I&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">970.795</span><span class="p">,</span> <span class="mf">961.857</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">0.001</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.742</span><span class="p">],</span> <span class="p">[</span><span class="mf">41.742</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.104</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-S&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3382.364</span><span class="p">,</span> <span class="mf">520.024</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">41.695</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.021</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.021</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.689</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-S&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2338.96</span><span class="p">,</span> <span class="mf">519.15</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">41.691</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.031</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.037</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.689</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-S&quot;</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1296.05</span><span class="p">,</span> <span class="mf">519.532</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">41.69</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.031</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.036</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.689</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-S&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">251.607</span><span class="p">,</span> <span class="mf">519.818</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">41.689</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.022</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.022</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.689</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-S&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">790.204</span><span class="p">,</span> <span class="mf">519.784</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">41.69</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.689</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;ACIS-S&quot;</span><span class="p">,</span> <span class="mi">9</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">1832.423</span><span class="p">,</span> <span class="mf">519.546</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">41.693</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.017</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.017</span><span class="p">,</span> <span class="o">-</span><span class="mf">41.689</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;HRC-I&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">7635.787</span><span class="p">,</span> <span class="mf">7697.627</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="o">-</span><span class="mf">109.98</span><span class="p">,</span> <span class="mf">109.98</span><span class="p">],</span> <span class="p">[</span><span class="mf">109.98</span><span class="p">,</span> <span class="mf">109.98</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;HRC-S&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2196.931</span><span class="p">,</span> <span class="mf">25300.796</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">0.188</span><span class="p">,</span> <span class="o">-</span><span class="mf">155.535</span><span class="p">],</span> <span class="p">[</span><span class="mf">155.584</span><span class="p">,</span> <span class="mf">0.19</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;HRC-S&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2197.753</span><span class="p">,</span> <span class="mf">8842.306</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">155.535</span><span class="p">],</span> <span class="p">[</span><span class="mf">155.535</span><span class="p">,</span> <span class="mf">0.184</span><span class="p">]],</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="s2">&quot;HRC-S&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="p">{</span>
+        <span class="s2">&quot;c0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2196.638</span><span class="p">,</span> <span class="o">-</span><span class="mf">7615.26</span><span class="p">],</span>
+        <span class="s2">&quot;cyz&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">155.535</span><span class="p">],</span> <span class="p">[</span><span class="mf">155.571</span><span class="p">,</span> <span class="mf">0.184</span><span class="p">]],</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">SIM_MM_TO_ARCSEC</span> <span class="o">=</span> <span class="mf">20.493</span>
+
+
+<div class="viewcode-block" id="AcaDriftModel"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel">[docs]</a><span class="k">class</span> <span class="nc">AcaDriftModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Define a drift model for aspect solution SIM DY/DZ values as a function of</span>
+<span class="sd">    time and ACA CCD temperature.  This expresses the model which is defined</span>
+<span class="sd">    and fitted in the fit_aimpoint_drift notebook in this repo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">trend</span><span class="p">,</span> <span class="n">jumps</span><span class="p">,</span> <span class="n">year0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trend</span> <span class="o">=</span> <span class="n">trend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jumps</span> <span class="o">=</span> <span class="n">jumps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">year0</span> <span class="o">=</span> <span class="n">year0</span>
+
+<div class="viewcode-block" id="AcaDriftModel.calc"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel.calc">[docs]</a>    <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the drift model for aspect solution SIM DY/DZ values for input</span>
+<span class="sd">        ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.</span>
+
+<span class="sd">        The returned drifts are in arcsec and provide the expected aspect solution</span>
+<span class="sd">        SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via</span>
+<span class="sd">        the scale factor 20.493 arcsec/mm.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        times</span>
+<span class="sd">            array of times (CXC secs)</span>
+<span class="sd">        t_ccd</span>
+<span class="sd">            CCD temperatures (degC)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array of ASOL SIM DY/DZ (mm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The drift model is calibrated assuming t_ccd is in degF, but we want inputs</span>
+        <span class="c1"># in degC, so convert at this point.</span>
+        <span class="n">t_ccd_degF</span> <span class="o">=</span> <span class="n">t_ccd</span> <span class="o">*</span> <span class="mf">1.8</span> <span class="o">+</span> <span class="mf">32.0</span>
+
+        <span class="n">times</span><span class="p">,</span> <span class="n">t_ccd_degF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">t_ccd_degF</span><span class="p">)</span>
+        <span class="n">is_scalar</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">t_ccd_degF</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">))</span><span class="o">.</span><span class="n">secs</span>
+        <span class="n">t_ccd_degF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">t_ccd_degF</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">times</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">t_ccd_degF</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;times and t_ccd args must match in shape&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;times arg must be monotonically increasing&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">DateTime</span><span class="p">(</span><span class="s2">&quot;2012:001:12:00:00&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;model is not applicable before 2012&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Years from model `year0`</span>
+        <span class="n">dyears</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;secs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">frac_year</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">year0</span>
+
+        <span class="c1"># Raw offsets without jumps</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_ccd_degF</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">+</span> <span class="n">dyears</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">trend</span>
+
+        <span class="c1"># Put in the step function jumps</span>
+        <span class="k">for</span> <span class="n">jump_date</span><span class="p">,</span> <span class="n">jump</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jumps</span><span class="p">:</span>
+            <span class="n">jump_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">jump_date</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">jump_idx</span><span class="p">:]</span> <span class="o">+=</span> <span class="n">jump</span>
+
+        <span class="k">return</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">out</span></div></div>
+
+
+<div class="viewcode-block" id="get_aca_offsets"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_aca_offsets">[docs]</a><span class="k">def</span> <span class="nf">get_aca_offsets</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">,</span> <span class="n">chipx</span><span class="p">,</span> <span class="n">chipy</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the dynamical ACA offset values for the provided inputs.</span>
+
+<span class="sd">    The ``time`` and ``t_ccd`` inputs can be either scalars or arrays.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    detector</span>
+<span class="sd">        one of ACIS-I, ACIS-S, HRC-I, HRC-S</span>
+<span class="sd">    chipx</span>
+<span class="sd">        zero-offset aimpoint CHIPX</span>
+<span class="sd">    chipy</span>
+<span class="sd">        zero-offset aimpoint CHIPY</span>
+<span class="sd">    chip_id</span>
+<span class="sd">        zero-offset aimpoint CHIP ID</span>
+<span class="sd">    time</span>
+<span class="sd">        time(s) of observation (any Chandra.Time compatible format)</span>
+<span class="sd">    t_ccd</span>
+<span class="sd">        ACA CCD temperature(s) (degC)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    aca_offset_y, aca_offset_z (arcsec)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define model instances using calibrated parameters</span>
+    <span class="n">drift_y</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_PARS</span><span class="p">[</span><span class="s2">&quot;dy&quot;</span><span class="p">])</span>
+    <span class="n">drift_z</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_PARS</span><span class="p">[</span><span class="s2">&quot;dz&quot;</span><span class="p">])</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">asol_to_chip</span> <span class="o">=</span> <span class="n">ASOL_TO_CHIP</span><span class="p">[</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+            <span class="s2">&quot;Detector and chip combination </span><span class="si">{}</span><span class="s2"> not in allow values: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ASOL_TO_CHIP</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Compute the asol DY/DZ that would be required for the aimpoint to be</span>
+    <span class="c1"># exactly at the desired CHIPX/Y values.  Uses the geometrical transform</span>
+    <span class="c1"># computed via dmcoords in the asol_to_chip_transform notebook in this repo.</span>
+    <span class="c1"># CHIPX, CHIPY = c0 + cyz * [DY, DZ]  (dot product)</span>
+    <span class="n">chip_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">chipx</span><span class="p">,</span> <span class="n">chipy</span><span class="p">])</span>
+    <span class="n">cyz_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">asol_to_chip</span><span class="p">[</span><span class="s2">&quot;cyz&quot;</span><span class="p">])</span>
+    <span class="n">dy_chip</span><span class="p">,</span> <span class="n">dz_chip</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">cyz_inv</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">chip_xy</span> <span class="o">-</span> <span class="n">asol_to_chip</span><span class="p">[</span><span class="s2">&quot;c0&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="n">SIM_MM_TO_ARCSEC</span>
+    <span class="p">)</span>  <span class="c1"># arcsec</span>
+
+    <span class="c1"># Compute the predicted asol DY/DZ based on time and ACA CCD temperature</span>
+    <span class="c1"># via the predictive model calibrated in the fit_aimpoint_drift notebook</span>
+    <span class="c1"># in this repo.</span>
+    <span class="n">dy_pred</span> <span class="o">=</span> <span class="n">drift_y</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+    <span class="n">dz_pred</span> <span class="o">=</span> <span class="n">drift_z</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+
+    <span class="c1"># The difference is the dynamic ACA offset that must be applied to the attitude.</span>
+    <span class="c1"># This has the same sign convention as the user-supplied TARGET OFFSET in the</span>
+    <span class="c1"># ObsCat / OR-list.</span>
+    <span class="n">ddy</span> <span class="o">=</span> <span class="n">dy_chip</span> <span class="o">-</span> <span class="n">dy_pred</span>
+    <span class="n">ddz</span> <span class="o">=</span> <span class="n">dz_chip</span> <span class="o">-</span> <span class="n">dz_pred</span>
+
+    <span class="k">return</span> <span class="n">ddy</span><span class="p">,</span> <span class="n">ddz</span></div>
+
+
+<div class="viewcode-block" id="get_default_zero_offset_table"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_default_zero_offset_table">[docs]</a><span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
+<span class="k">def</span> <span class="nf">get_default_zero_offset_table</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get official SOT MP zero offset aimpoint table.</span>
+
+<span class="sd">    First try ``/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt``.</span>
+<span class="sd">    If that is not available use:</span>
+<span class="sd">    https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt.</span>
+<span class="sd">    The web version is updated weekly on Sunday via a Ska cron job.</span>
+
+<span class="sd">    Note the definitive source of this file is:</span>
+<span class="sd">    https://icxc.harvard.edu/mp/html/aimpoint_table/zero_offset_aimpoints.txt.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    zero offset aimpoint table as astropy.Table</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SKA&quot;</span><span class="p">])</span>
+            <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
+            <span class="o">/</span> <span class="s2">&quot;mpcrit1&quot;</span>
+            <span class="o">/</span> <span class="s2">&quot;aimpoint_table&quot;</span>
+            <span class="o">/</span> <span class="s2">&quot;zero_offset_aimpoints.txt&quot;</span>
+        <span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://cxc.harvard.edu/mta/ASPECT/drift/zero_offset_aimpoints.txt&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">download_file</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="get_target_aimpoint"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_target_aimpoint">[docs]</a><span class="k">def</span> <span class="nf">get_target_aimpoint</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">too</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">zero_offset_table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    date</span>
+<span class="sd">        observation date</span>
+<span class="sd">    cycle</span>
+<span class="sd">        proposal cycle of observation</span>
+<span class="sd">    detector</span>
+<span class="sd">        target detector</span>
+<span class="sd">    too</span>
+<span class="sd">        boolean. If target is TOO use current cycle not proposal cycle.</span>
+<span class="sd">    zero_offset_able : table (astropy or numpy) of zero offset aimpoint table</span>
+<span class="sd">        defaults to official SOT MP version if not supplied.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of chipx, chipy, chip_id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">zero_offset_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">zero_offset_table</span> <span class="o">=</span> <span class="n">get_default_zero_offset_table</span><span class="p">()</span>
+    <span class="n">zero_offset_table</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s2">&quot;date_effective&quot;</span><span class="p">,</span> <span class="s2">&quot;cycle_effective&quot;</span><span class="p">])</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">iso</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+    <span class="c1"># Entries for this detector before the &#39;date&#39; given</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="p">(</span><span class="n">zero_offset_table</span><span class="p">[</span><span class="s2">&quot;detector&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">detector</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+        <span class="n">zero_offset_table</span><span class="p">[</span><span class="s2">&quot;date_effective&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">date</span>
+    <span class="p">)</span>
+    <span class="c1"># If a regular observation, the entry must also be before or equal to proposal cycle</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">too</span><span class="p">:</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">zero_offset_table</span><span class="p">[</span><span class="s2">&quot;cycle_effective&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">cycle</span><span class="p">)</span>
+    <span class="n">filtered_table</span> <span class="o">=</span> <span class="n">zero_offset_table</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
+    <span class="c1"># Return the desired keys in the most recent [-1] row that matches</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">filtered_table</span><span class="p">[[</span><span class="s2">&quot;chipx&quot;</span><span class="p">,</span> <span class="s2">&quot;chipy&quot;</span><span class="p">,</span> <span class="s2">&quot;chip_id&quot;</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>

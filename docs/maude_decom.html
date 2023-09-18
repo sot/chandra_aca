@@ -4,22 +4,21 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.41.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.42.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="chandra_aca.planets" href="planets.html" />
-    <link rel="prev" title="chandra_aca.centroid_resid" href="centroid_resid.html" />
+    <link rel="prev" title="chandra_aca.dark_model" href="dark_model.html" />
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
 
   </head><body>
@@ -54,13 +53,13 @@
 	</a>
       </li>
       <li class="right">
-	<a href="centroid_resid.html" title="chandra_aca.centroid_resid">
+	<a href="dark_model.html" title="chandra_aca.dark_model">
 	  &laquo; previous
 	</a>
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.41.0 documentation</a>
+	<a href="index.html">chandra_aca 4.42.0 documentation</a>
 	 &#187;
       </li>
       
@@ -75,7 +74,7 @@
           <div class="body" role="main">
             
   <section id="module-chandra_aca.maude_decom">
-<span id="chandra-aca-maude-decom"></span><h1>chandra_aca.maude_decom<a class="headerlink" href="#module-chandra_aca.maude_decom" title="Permalink to this headline">¶</a></h1>
+<span id="chandra-aca-maude-decom"></span><h1>chandra_aca.maude_decom<a class="headerlink" href="#module-chandra_aca.maude_decom" title="Permalink to this heading">¶</a></h1>
 <p>Classes and functions to help fetching ACA telemetry data using MAUDE.
 These include the following global variables</p>
 <blockquote>
@@ -158,16 +157,15 @@ In the following tables, column index increases to the right and row index incre
 <dd><p>Assemble ACA image MSIDs from a blob into a dictionary.</p>
 <p>This does to blobs what unpack_aca_telemetry does to frames, but for a single image.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>blob</strong> – </p></li>
-<li><p><strong>imgnum</strong> – </p></li>
-<li><p><strong>pea</strong> – </p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>blob</strong></dt><dd></dd>
+<dt><strong>imgnum</strong></dt><dd></dd>
+<dt><strong>pea</strong></dt><dd></dd>
+</dl>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"></dd>
 </dl>
 </dd></dl>
 
@@ -176,15 +174,20 @@ In the following tables, column index increases to the right and row index incre
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch ACA image telemetry</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>maude_kwargs</strong> – keyword args passed to maude</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>astropy.table.Table</p>
+<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+</dd>
+<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>astropy.table.Table</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -329,36 +332,41 @@ first ACA packet (image type 4) while the temperature is present in the second (
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>level0</strong> – bool.
-Implies combine=True, adjust_time=True, calibrate=True</p></li>
-<li><p><strong>combine</strong> – bool.
-If True, multiple ACA packets are combined to form an image (depending on size),
-If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.</p></li>
-<li><p><strong>adjust_time</strong> – bool
-If True, half the integration time is subtracted</p></li>
-<li><p><strong>calibrate</strong> – bool
-If True, pixel values will be ‘value * imgscale / 32 - 50’ and temperature values will
-be: 0.4 * value + 273.15</p></li>
-<li><p><strong>blobs</strong> – bool or dict
-If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
-output of maude.get_blobs ({‘blobs’: … }).</p></li>
-<li><p><strong>frames</strong> – bool or dict
-If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
-output of maude.get_frames ({‘data’: … }).</p></li>
-<li><p><strong>dtype</strong> – np.dtype. Optional.
-the dtype to use when creating the resulting table. This is useful to add columns
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+</dd>
+<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+</dd>
+<dt><strong>level0</strong><span class="classifier">bool.</span></dt><dd><p>Implies combine=True, adjust_time=True, calibrate=True</p>
+</dd>
+<dt><strong>combine</strong><span class="classifier">bool.</span></dt><dd><p>If True, multiple ACA packets are combined to form an image (depending on size),
+If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.</p>
+</dd>
+<dt><strong>adjust_time</strong><span class="classifier">bool</span></dt><dd><p>If True, half the integration time is subtracted</p>
+</dd>
+<dt><strong>calibrate</strong><span class="classifier">bool</span></dt><dd><p>If True, pixel values will be ‘value * imgscale / 32 - 50’ and temperature values will
+be: 0.4 * value + 273.15</p>
+</dd>
+<dt><strong>blobs</strong><span class="classifier">bool or dict</span></dt><dd><p>If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
+output of maude.get_blobs ({‘blobs’: … }).</p>
+</dd>
+<dt><strong>frames</strong><span class="classifier">bool or dict</span></dt><dd><p>If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
+output of maude.get_frames ({‘data’: … }).</p>
+</dd>
+<dt><strong>dtype</strong><span class="classifier">np.dtype. Optional.</span></dt><dd><p>the dtype to use when creating the resulting table. This is useful to add columns
 including MSIDs that are present in blobs. If used with frames, most probably you will get
 and empty column. This option is intended to augment the default dtype. If a more
-restrictive dtype is used, a KeyError can be raised.</p></li>
-<li><p><strong>maude_kwargs</strong> – keyword args passed to maude</p></li>
-</ul>
+restrictive dtype is used, a KeyError can be raised.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>astropy.table.Table</p>
+<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>astropy.table.Table</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -374,17 +382,23 @@ These correspond to the minor frame time, minor frame count, major frame count,
 the list of packets, and flags returned by MAUDE respectively.</p>
 <p>This is to blobs what <cite>get_raw_aca_packets</cite> is to frames.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>maude_result</strong> – the result of calling maude.get_blobs. Optional.</p></li>
-<li><p><strong>maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>dict
-{‘blobs’: [], ‘names’: np.array([]), ‘types’: np.array([])}</p>
+<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+</dd>
+<dt><strong>maude_result</strong></dt><dd><p>the result of calling maude.get_blobs. Optional.</p>
+</dd>
+<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dict</dt><dd></dd>
+<dt>{‘blobs’: [], ‘names’: np.array([]), ‘types’: np.array([])}</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -401,21 +415,24 @@ the list of packets, and flags returned by MAUDE respectively.</p>
 <p>This function raises an exception if the VCDU frames in maude_result are not contiguous, which
 can also happen if the frames are corrupted in some way.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>stop</strong> – timestamp interpreted as a Chandra.Time.DateTime</p></li>
-<li><p><strong>maude_result</strong> – the result of calling maude.get_frames. Optional.</p></li>
-<li><p><strong>maude_kwargs</strong> – keyword args passed to maude.get_frames()</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>dict</p>
-<dl class="simple">
-<dt>{‘flags’: int, ‘packets’: [],</dt><dd><p>’TIME’: np.array([]), ‘MNF’: np.array([]), ‘MJF’: np.array([])}</p>
+<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+</dd>
+<dt><strong>maude_result</strong></dt><dd><p>the result of calling maude.get_frames. Optional.</p>
+</dd>
+<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
 </dd>
 </dl>
-</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dict</dt><dd></dd>
+<dt>{‘flags’: int, ‘packets’: [],</dt><dd></dd>
+<dt>‘TIME’: np.array([]), ‘MNF’: np.array([]), ‘MJF’: np.array([])}</dt><dd></dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -425,14 +442,19 @@ can also happen if the frames are corrupted in some way.</p>
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">unpack_aca_telemetry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#unpack_aca_telemetry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.unpack_aca_telemetry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unpack ACA telemetry encoded in 225-byte packets.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>packet</strong> – bytes</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>list of dict</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>packet</strong></dt><dd><p>bytes</p>
 </dd>
 </dl>
-<p>A list of length 8, one entry per slot, where each entry is a dictionary.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>list of dict</dt><dd></dd>
+<dt>A list of length 8, one entry per slot, where each entry is a dictionary.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -445,16 +467,28 @@ can also happen if the frames are corrupted in some way.</p>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#">chandra_aca.maude_decom</a></li>
+<li><a class="reference internal" href="#">chandra_aca.maude_decom</a><ul>
+<li><a class="reference internal" href="#chandra_aca.maude_decom.blob_to_aca_image_dict"><code class="docutils literal notranslate"><span class="pre">blob_to_aca_image_dict()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.maude_decom.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.maude_decom.get_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_aca_packets()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.maude_decom.get_raw_aca_blobs"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_blobs()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.maude_decom.get_raw_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_packets()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.maude_decom.unpack_aca_telemetry"><code class="docutils literal notranslate"><span class="pre">unpack_aca_telemetry()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="centroid_resid.html"
-                        title="previous chapter">chandra_aca.centroid_resid</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="planets.html"
-                        title="next chapter">chandra_aca.planets</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="dark_model.html"
+                          title="previous chapter">chandra_aca.dark_model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="planets.html"
+                          title="next chapter">chandra_aca.planets</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -478,7 +512,7 @@ can also happen if the frames are corrupted in some way.</p>
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
   </p>
 </footer>
   </body>
