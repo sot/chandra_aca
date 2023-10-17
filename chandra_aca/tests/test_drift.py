@@ -67,3 +67,31 @@ def test_get_aca_offsets(kwargs, monkeypatch):
     # 3.9 arcsec/C. Also up to 0.005 arcsec error in the stored aca_offset_y/z values.
     assert abs(dy) < 0.03
     assert abs(dz) < 0.02
+
+
+def test_get_fid_offset():
+    """
+    Test that the get_fid_offset function returns expected values for a few inputs.
+    """
+
+    # Show that the offsets are reasonable for a few inputs in the different epochs
+    # of the drift model. Dates picked to be before and after jumps
+    t1 = "2018:284"
+    t2 = "2018:286"
+    t3 = "2022:293"
+    t4 = "2022:295"
+
+    t_ccd = -10
+
+    expected_dy_1, expected_dz_1 = drift.get_fid_offset(t1, t_ccd)
+    expected_dy_2, expected_dz_2 = drift.get_fid_offset(t2, t_ccd)
+    expected_dy_3, expected_dz_3 = drift.get_fid_offset(t3, t_ccd)
+    expected_dy_4, expected_dz_4 = drift.get_fid_offset(t4, t_ccd)
+
+    assert np.isclose(expected_dy_1, -6.79, atol=0.01)
+    assert np.isclose(expected_dy_2 - expected_dy_1, 12.5, atol=0.1)
+    assert np.isclose(expected_dy_4 - expected_dy_3, 7.97, atol=0.1)
+
+    assert np.isclose(expected_dz_1, -5.10, atol=0.01)
+    assert np.isclose(expected_dz_2 - expected_dz_1, 6.05, atol=0.1)
+    assert np.isclose(expected_dz_4 - expected_dz_3, 1.51, atol=0.1)
