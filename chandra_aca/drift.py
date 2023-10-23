@@ -168,6 +168,9 @@ class AcaDriftModel(object):
 def get_fid_offset(time, t_ccd):
     """
     Compute the fid light offset values for the provided inputs.
+    The y_offset and z_offset values in this function were calibrated against the
+    2022-11 aimpoint drift model and the FEB07 fid characteristics.
+    See https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb
     """
 
     # Define model instances using calibrated parameters
