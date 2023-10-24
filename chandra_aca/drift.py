@@ -119,8 +119,8 @@ class AcaDriftModel(object):
         ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.
 
         The returned drifts are in arcsec and provide the expected aspect solution
-        SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via
-        the scale factor 20.493 arcsec/mm.
+        SIM DY or DZ values in arcsec.  This can be converted to a drift in mm
+        (corresponding to units in an ASOL file) via the scale factor 20.493 arcsec/mm.
 
         Parameters
         ----------
@@ -131,7 +131,7 @@ class AcaDriftModel(object):
 
         Returns
         -------
-        array of ASOL SIM DY/DZ (mm)
+        array of ASOL SIM DY/DZ (arcsec)
         """
         # The drift model is calibrated assuming t_ccd is in degF, but we want inputs
         # in degC, so convert at this point.
