@@ -207,8 +207,8 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
 
     # Apply internal offset that places the fid lights at ~zero position
     # offset during the 2022:094 to 2023:044.
-    y_offset = 20.3
-    z_offset = 20.3
+    y_offset = 19.6
+    z_offset = 20.1
     return dy_pred + y_offset, dz_pred + z_offset
 
 

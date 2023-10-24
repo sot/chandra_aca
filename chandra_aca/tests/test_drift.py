@@ -88,10 +88,10 @@ def test_get_fid_offset():
     expected_dy_3, expected_dz_3 = drift.get_fid_offset(t3, t_ccd)
     expected_dy_4, expected_dz_4 = drift.get_fid_offset(t4, t_ccd)
 
-    assert np.isclose(expected_dy_1, -6.79, atol=0.01)
+    assert np.isclose(expected_dy_1, -7.50, atol=0.01)
     assert np.isclose(expected_dy_2 - expected_dy_1, 12.5, atol=0.1)
     assert np.isclose(expected_dy_4 - expected_dy_3, 7.97, atol=0.1)
 
-    assert np.isclose(expected_dz_1, -5.10, atol=0.01)
+    assert np.isclose(expected_dz_1, -5.30, atol=0.01)
     assert np.isclose(expected_dz_2 - expected_dz_1, 6.05, atol=0.1)
     assert np.isclose(expected_dz_4 - expected_dz_3, 1.51, atol=0.1)
