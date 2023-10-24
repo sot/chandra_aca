@@ -119,7 +119,7 @@ class AcaDriftModel(object):
         ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.
 
         The returned drifts are in arcsec and provide the expected aspect solution
-        SIM DY or DZ values in arcsec.  This can be converted to a drift in mm 
+        SIM DY or DZ values in arcsec.  This can be converted to a drift in mm
         (corresponding to units in an ASOL file) via the scale factor 20.493 arcsec/mm.
 
         Parameters
