@@ -779,3 +779,15 @@ def test_imgtype_dnld(source):
     img_dnld = img["IMGTYPE"] == 3
     assert img_dnld.shape[0] > 0
     assert np.all(all_masked == img_dnld)
+
+
+def test_repeated_frames():
+    import pickle
+
+    with open(
+        os.path.join(os.path.dirname(__file__), "data", "repeat_frames.pkl"), "rb"
+    ) as fh:
+        frames = pickle.load(fh)
+    maude_decom.get_aca_packets(
+        start="2023:297:12:00:00", stop="2023:297:12:02:00", frames=frames
+    )
