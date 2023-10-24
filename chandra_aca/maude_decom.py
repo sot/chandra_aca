@@ -669,6 +669,15 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     n = major_counter.max() + 1 if len(major_counter) > 0 else 1
     # only unpack complete ACA frames in the original range:
     aca_frame_entries = np.ma.masked_all((n, 4), dtype=int)
+    if len(frames) == 0:
+        return {
+            "flags": 0,
+            "packets": [],
+            "TIME": [],
+            "MNF": [],
+            "MJF": [],
+            "VCDUCTR": [],
+        }
     aca_frame_entries[major_counter, sub] = np.arange(vcdu_times.shape[0])
     aca_frame_times = np.ma.masked_all((n, 4))
     aca_frame_times[major_counter, sub] = vcdu_times
