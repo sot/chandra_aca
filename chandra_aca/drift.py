@@ -185,10 +185,10 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
 
     Notes
     -----
-    The apparent fid light positions change in accordance with the ACA alignment drift as a function
-    of time and temperature. This is captured in the ACA aimpoint drift model. This function uses that
-    model to provide the offsets in y-angle and z-angle (arcsec) to apply additively to the nominal
-    fid positions.
+    The apparent fid light positions change in accordance with the ACA alignment drift as a
+    function of time and temperature. This is captured in the ACA aimpoint drift model. This
+    function uses that model to provide the offsets in y-angle and z-angle (arcsec) to apply
+    additively to the nominal fid positions.
 
     The y_offset and z_offset values in this function were calibrated using the
     2022-11 aimpoint drift model and the FEB07 fid characteristics.
