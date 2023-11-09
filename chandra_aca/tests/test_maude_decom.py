@@ -788,6 +788,52 @@ def test_repeated_frames():
         os.path.join(os.path.dirname(__file__), "data", "repeat_frames.pkl"), "rb"
     ) as fh:
         frames = pickle.load(fh)
-    maude_decom.get_aca_packets(
+    # this has repeated frames
+    packets = maude_decom.get_aca_packets(
         start="2023:297:12:00:00", stop="2023:297:12:02:00", frames=frames
     )
+    assert len(packets) == 40
+
+    # and removing one VCDU frame results in one ACA packet missing (eight slots)
+    frames["data"]["frames"] = (
+        frames["data"]["frames"][:7] + frames["data"]["frames"][7 + 1 :]
+    )
+    packets = maude_decom.get_aca_packets(
+        start="2023:297:12:00:00", stop="2023:297:12:02:00", frames=frames
+    )
+    assert len(packets) == 32
+
+    # the following checks the underlying function used to filter out repeated/missing frames
+    reference = {
+        0: np.array([False, False, False, True, True, True, True, False, False]),
+        1: np.array([False, False, False, True, True, True, True, False, False]),
+        2: np.array([False, False, False, True, True, True, True, False, False]),
+        3: np.array([False, False, False, True, True, True, True, False, False]),
+        4: np.array([True, True, True, True, False, False, False, False, False]),
+        5: np.array([True, True, True, True, False, False, False, False, False]),
+        6: np.array([True, True, True, True, False, False, False, False, False]),
+        7: np.array([True, True, True, True, False, False, False, False, False]),
+        8: np.array([True, True, True, True, True, True, True, True, False]),
+        9: np.array([True, True, True, True, True, True, True, True, False]),
+        (0, 1): np.array([False, False, True, True, True, True, False, False]),
+        (1, 2): np.array([False, False, True, True, True, True, False, False]),
+        (2, 3): np.array([False, False, True, True, True, True, False, False]),
+        (3, 4): np.array([False, False, False, False, False, False, False, False]),
+        (4, 5): np.array([True, True, True, True, False, False, False, False]),
+        (5, 6): np.array([True, True, True, True, False, False, False, False]),
+        (6, 7): np.array([True, True, True, True, False, False, False, False]),
+        (7, 8): np.array([True, True, True, True, False, False, False, False]),
+        (8, 9): np.array([True, True, True, True, True, True, True, True]),
+    }
+
+    counters = list(range(10))
+    for i in range(10):
+        b = counters.copy()
+        del b[i]
+        assert np.all(maude_decom.filter_vcdu_jumps(b) == reference[i])
+
+    for i in range(9):
+        b = counters.copy()
+        del b[i + 1]
+        del b[i]
+        assert np.all(maude_decom.filter_vcdu_jumps(b) == reference[(i, i + 1)])

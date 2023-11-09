@@ -601,6 +601,29 @@ def _group_packets(packets, discard=True):
         yield res
 
 
+def filter_vcdu_jumps(vcdu_counters):
+    """
+    Return a boolean mas to filter VCDU counters that are not continuous.
+
+    The returned mask ensures that::
+
+        - VCDU counters are a strictly monotonic sequence.
+        - VCDU counters come in packets of four, with each group starting with a multiple of 4.
+    """
+    current_packet = []  # to group in fours
+    last_frame = 0  # for monotonicity check
+    selected = np.zeros(len(vcdu_counters), dtype=bool)
+    for i, vcdu_counter in enumerate(vcdu_counters):
+        if last_frame > vcdu_counter:
+            continue
+        if vcdu_counter % 4 == 0:
+            current_packet = []
+        current_packet.append(i)
+        if vcdu_counter % 4 == 3 and len(current_packet) == 4:
+            selected[current_packet] = True
+    return selected
+
+
 def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     """
     Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.
@@ -647,18 +670,24 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     flags = frames["f"]
     frames = frames["frames"]
 
-    # Getting major and minor frames to figure out which is the first ACA packet in a group
+    # ACA telemetry data is split into four frames. Each frame has a counter, and the first frame
+    # in each group of four has a counter that is a multiple of 4. The following unpacks
+    # the VCDU counter from the front matter of each frame.
     # The VCDU counter is stored in 24 bits, and struct.unpack does not have a 24-bit format code.
     # We therefore decom the bytes separately and combine them into a single integer using the
     # following weights:
-    w = np.array([1, 2**8, 2**16])[::-1]
-    vcdu_times = np.array([frame["t"] for frame in frames])
+    weights = np.array([1 << 16, 1 << 8, 1 << 0])
     vcdu = np.array(
-        [np.sum(w * _unpack("BBB", frame["bytes"][2:5])) for frame in frames]
+        [np.sum(weights * _unpack("BBB", frame["bytes"][2:5])) for frame in frames]
     )
 
-    if np.any(np.diff(vcdu) != 1):
-        raise Exception("VCDU frames are not contiguous")  # a sanity check
+    # the following ensures that:
+    #  - VCDU numbers are a strictly monotonic sequence
+    #  - Frames come in packets of four. A missing frame would cause the packet to be dropped.
+    selected = filter_vcdu_jumps(vcdu)
+    vcdu = vcdu[selected]
+    frames = [frame for frame, sel in zip(frames, selected) if sel]
+    vcdu_times = np.array([frame["t"] for frame in frames])
 
     sub = vcdu % 4  # the minor frame index within each ACA update
 
