@@ -17,7 +17,7 @@ import numpy as np
 from astropy.table import Table
 from astropy.utils.data import download_file
 from Chandra.Time import DateTime
-from cxotime import CxoTimeLike
+from cxotime import CxoTime, CxoTimeLike
 from ska_helpers import chandra_models
 from ska_helpers.utils import LazyDict
 
@@ -170,6 +170,8 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
     """
     Compute the fid light offset values for a given time and temperature.
 
+    The ``time`` and ``t_ccd`` inputs can be either scalars or arrays.
+
     Parameters
     ----------
     time : CxoTimeLike format
@@ -194,6 +196,14 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
     2022-11 aimpoint drift model and the FEB07 fid characteristics.
     See https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb
     """
+
+    # Clip the time to the minimum time in the drift model
+    # Handle scalar and array cases
+    if np.isscalar(time):
+        time = np.max([CxoTime(time).secs, CxoTime("2012:001:12:00:00").secs])
+    else:
+        # Clip the time array to the minimum time in the model
+        time = CxoTime(time).secs.clip(CxoTime("2012:001:12:00:00").secs, None)
 
     # Define model instances using calibrated parameters
     drift_y = AcaDriftModel(**DRIFT_PARS["dy"])

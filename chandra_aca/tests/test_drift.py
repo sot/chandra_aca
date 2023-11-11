@@ -69,29 +69,76 @@ def test_get_aca_offsets(kwargs, monkeypatch):
     assert abs(dz) < 0.02
 
 
-def test_get_fid_offset():
+@pytest.mark.parametrize(
+    "t, t_ccd, expected_dy, expected_dz",
+    [
+        ("2018:284", -10.0, -7.50, -5.30),
+        ("2018:286", -10.0, 5.01, 0.75),
+        ("2022:293", -10, 9.46, 1.39),
+        ("2022:295", -10, 17.44, 2.90),
+    ],
+)
+def test_get_fid_offset(t, t_ccd, expected_dy, expected_dz):
     """
     Test that the get_fid_offset function returns expected values for a few inputs.
     """
+    dy, dz = drift.get_fid_offset(t, t_ccd)
+    assert np.isclose(dy, expected_dy, atol=0.01)
+    assert np.isclose(dz, expected_dz, atol=0.01)
 
-    # Show that the offsets are reasonable for a few inputs in the different epochs
-    # of the drift model. Dates picked to be before and after jumps
-    t1 = "2018:284"
-    t2 = "2018:286"
-    t3 = "2022:293"
-    t4 = "2022:295"
 
-    t_ccd = -10
+@pytest.mark.parametrize(
+    "t, t_ccd, expected_dy, expected_dz",
+    [
+        (
+            np.array(["2018:284", "2018:286", "2022:293", "2022:295"]),
+            -10,
+            [-7.49, 5.01, 9.46, 17.44],
+            [-5.30, 0.75, 1.39, 2.90],
+        ),
+        (
+            np.array(["2018:284", "2018:286", "2022:293", "2022:295"]),
+            np.array([-14.0, -18.0, -5.0, 0]),
+            [7.96, 35.92, -9.85, -21.2],
+            [1.92, 15.21, -7.65, -15.16],
+        ),
+    ],
+)
+def test_fid_offset_array(t, t_ccd, expected_dy, expected_dz):
+    """
+    Test that the get_fid_offset function returns expected values when given
+    arrays of inputs.
+    """
+    dy, dz = drift.get_fid_offset(t, t_ccd)
+    assert np.allclose(dy, expected_dy, atol=0.01)
+    assert np.allclose(dz, expected_dz, atol=0.01)
 
-    expected_dy_1, expected_dz_1 = drift.get_fid_offset(t1, t_ccd)
-    expected_dy_2, expected_dz_2 = drift.get_fid_offset(t2, t_ccd)
-    expected_dy_3, expected_dz_3 = drift.get_fid_offset(t3, t_ccd)
-    expected_dy_4, expected_dz_4 = drift.get_fid_offset(t4, t_ccd)
 
-    assert np.isclose(expected_dy_1, -7.50, atol=0.01)
-    assert np.isclose(expected_dy_2 - expected_dy_1, 12.5, atol=0.1)
-    assert np.isclose(expected_dy_4 - expected_dy_3, 7.97, atol=0.1)
-
-    assert np.isclose(expected_dz_1, -5.30, atol=0.01)
-    assert np.isclose(expected_dz_2 - expected_dz_1, 6.05, atol=0.1)
-    assert np.isclose(expected_dz_4 - expected_dz_3, 1.51, atol=0.1)
+@pytest.mark.parametrize(
+    "t, t_ccd, expected_dy, expected_dz",
+    [
+        ("2002:001", -10, -27.79, -10.62),
+        ("2012:001", -10, -27.79, -10.62),
+        (
+            np.array(
+                [
+                    "2002:001",
+                    "2012:001",
+                    "2012:001:12:00:00.000",
+                    "2012:001:11:59:59.999",
+                ]
+            ),
+            np.array([-10.0, -10.0, -10.0, -10.0]),
+            [-27.79, -27.79, -27.79, -27.79],
+            [-10.62, -10.62, -10.62, -10.62],
+        ),
+    ],
+)
+def test_fid_offset_before_2012(t, t_ccd, expected_dy, expected_dz):
+    """
+    Test that the get_fid_offset function returns something reasonable for times
+    before the drift model starts.
+    """
+    dy, dz = drift.get_fid_offset(t, t_ccd)
+    assert np.allclose(dy, expected_dy, atol=0.01)
+    assert np.allclose(dz, expected_dz, atol=0.01)
