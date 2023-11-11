@@ -17,6 +17,7 @@ import numpy as np
 from astropy.table import Table
 from astropy.utils.data import download_file
 from Chandra.Time import DateTime
+from cxotime import CxoTimeLike
 from ska_helpers import chandra_models
 from ska_helpers.utils import LazyDict
 
@@ -163,6 +164,52 @@ class AcaDriftModel(object):
             out[jump_idx:] += jump
 
         return out[0] if is_scalar else out
+
+
+def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
+    """
+    Compute the fid light offset values for a given time and temperature.
+
+    Parameters
+    ----------
+    time : CxoTimeLike format
+        Time for offset calculation.
+    t_ccd : float
+        ACA CCD temperature in degrees Celsius.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the y-angle and z-angle offsets (in arcseconds) to apply
+        additively to the nominal (FEB07) fid positions.
+
+    Notes
+    -----
+    The apparent fid light positions change in accordance with the ACA alignment drift as a
+    function of time and temperature. This is captured in the ACA aimpoint drift model. This
+    function uses that model to provide the offsets in y-angle and z-angle (arcsec) to apply
+    additively to the nominal fid positions.
+
+    The y_offset and z_offset values in this function were calibrated using the
+    2022-11 aimpoint drift model and the FEB07 fid characteristics.
+    See https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb
+    """
+
+    # Define model instances using calibrated parameters
+    drift_y = AcaDriftModel(**DRIFT_PARS["dy"])
+    drift_z = AcaDriftModel(**DRIFT_PARS["dz"])
+
+    # Compute the predicted asol DY/DZ based on time and ACA CCD temperature
+    # via the predictive model calibrated in the fit_aimpoint_drift notebook
+    # in this repo.  And flip the signs.
+    dy_pred = -1.0 * drift_y.calc(time, t_ccd)
+    dz_pred = -1.0 * drift_z.calc(time, t_ccd)
+
+    # Apply internal offset that places the fid lights at ~zero position
+    # offset during the 2022:094 to 2023:044.
+    y_offset = 19.6
+    z_offset = 20.1
+    return dy_pred + y_offset, dz_pred + z_offset
 
 
 def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
