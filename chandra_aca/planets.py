@@ -27,8 +27,7 @@ from typing import Optional, Union
 import astropy.units as u
 import numpy as np
 from astropy.io import ascii
-from Chandra.Time import DateTime
-from cxotime import CxoTime, CxoTimeLike
+from cxotime import CxoTime, CxoTimeLike, convert_time_format
 from ska_helpers.utils import LazyVal
 
 from chandra_aca.transform import eci_to_radec
@@ -141,7 +140,7 @@ def get_planet_angular_sep(
         eci = get_planet_chandra(body, time)
         body_ra, body_dec = eci_to_radec(eci)
     elif observer_position == "chandra-horizons":
-        time_secs = CxoTime(time).secs
+        time_secs = convert_time_format(time, "secs")
 
         if time_secs.shape == ():
             time_secs = [time_secs, time_secs + 1000]
@@ -192,9 +191,7 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
         )
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
-    # NOTE: DateTime(time).jd is about 10 times faster than CxoTime(time).jd.
-    # TODO: Use a faster built-in from cxotime when available.
-    time_jd = DateTime(time).jd
+    time_jd = convert_time_format(time, "jd")
     pos = kernel[spk_pairs[0]].compute(time_jd)
     for spk_pair in spk_pairs[1:]:
         pos += kernel[spk_pair].compute(time_jd)
@@ -239,7 +236,7 @@ def get_planet_eci(
         Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
-    time_sec = DateTime(time).secs
+    time_sec = convert_time_format(time, "secs")
 
     pos_planet = get_planet_barycentric(body, time_sec)
     if pos_observer is None:
