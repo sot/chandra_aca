@@ -198,12 +198,7 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
     """
 
     # Clip the time to the minimum time in the drift model
-    # Handle scalar and array cases
-    if np.isscalar(time):
-        time = np.max([CxoTime(time).secs, CxoTime("2012:001:12:00:00").secs])
-    else:
-        # Clip the time array to the minimum time in the model
-        time = CxoTime(time).secs.clip(CxoTime("2012:001:12:00:00").secs, None)
+    time = CxoTime(time).secs.clip(CxoTime("2012:001:12:00:00.000").secs, None)
 
     # Define model instances using calibrated parameters
     drift_y = AcaDriftModel(**DRIFT_PARS["dy"])
