@@ -319,6 +319,8 @@ def test_vcdu_vs_level0():
             os.path.join(
                 os.path.dirname(__file__), "data", f"test_level0_{slot}.fits.gz"
             ),
+            # Undocumented way to stop UnitsWarning 'DN' did not parse warning. See
+            # https://github.com/astropy/astropy/issues/14330#issuecomment-1406538512
             unit_parse_strict="silent",
         )
         td = l0_test_data[
