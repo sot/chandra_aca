@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.planets &#8212; chandra_aca 4.42.0 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.43.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -45,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.42.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.43.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -87,11 +87,10 @@
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">astropy.constants</span> <span class="k">as</span> <span class="nn">const</span>
 <span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">ascii</span>
-<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
+<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">convert_time_format</span>
 <span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyVal</span>
 
 <span class="kn">from</span> <span class="nn">chandra_aca.transform</span> <span class="kn">import</span> <span class="n">eci_to_radec</span>
@@ -197,9 +196,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">agasc</span> <span class="kn">import</span> <span class="n">sphere_dist</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">CxoTime</span><span class="p">):</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s2">&quot;earth&quot;</span><span class="p">:</span>
         <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
         <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
@@ -207,12 +203,16 @@
         <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_chandra</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
         <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s2">&quot;chandra-horizons&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">time</span> <span class="o">+</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">])</span>
+        <span class="n">time_secs</span> <span class="o">=</span> <span class="n">convert_time_format</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;secs&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">time_secs</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+            <span class="n">time_secs</span> <span class="o">=</span> <span class="p">[</span><span class="n">time_secs</span><span class="p">,</span> <span class="n">time_secs</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">]</span>
             <span class="n">is_scalar</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">is_scalar</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">pos</span> <span class="o">=</span> <span class="n">get_planet_chandra_horizons</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_times</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">get_planet_chandra_horizons</span><span class="p">(</span>
+            <span class="n">body</span><span class="p">,</span> <span class="n">time_secs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">time_secs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_times</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">time_secs</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="n">body_ra</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="s2">&quot;ra&quot;</span><span class="p">]</span>
         <span class="n">body_dec</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="s2">&quot;dec&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
@@ -254,8 +254,7 @@
         <span class="p">)</span>
 
     <span class="n">spk_pairs</span> <span class="o">=</span> <span class="n">BODY_NAME_TO_KERNEL_SPEC</span><span class="p">[</span><span class="n">body</span><span class="p">]</span>
-    <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-    <span class="n">time_jd</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">jd</span>
+    <span class="n">time_jd</span> <span class="o">=</span> <span class="n">convert_time_format</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;jd&quot;</span><span class="p">)</span>
     <span class="n">pos</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">[</span><span class="n">spk_pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">time_jd</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">spk_pair</span> <span class="ow">in</span> <span class="n">spk_pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
         <span class="n">pos</span> <span class="o">+=</span> <span class="n">kernel</span><span class="p">[</span><span class="n">spk_pair</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">time_jd</span><span class="p">)</span>
@@ -300,16 +299,17 @@
 <span class="sd">        Earth-Centered Inertial (ECI) position (km) as (x, y, z)</span>
 <span class="sd">        or N x (x, y, z)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+    <span class="n">time_sec</span> <span class="o">=</span> <span class="n">convert_time_format</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;secs&quot;</span><span class="p">)</span>
 
-    <span class="n">pos_planet</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+    <span class="n">pos_planet</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time_sec</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pos_observer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">pos_observer</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
 
-    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_observer</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span>
-    <span class="n">light_travel_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">dist</span> <span class="o">/</span> <span class="n">const</span><span class="o">.</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_observer</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># km</span>
+    <span class="c1"># Divide distance by the speed of light in km/s</span>
+    <span class="n">light_travel_time</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">/</span> <span class="mf">299792.458</span>  <span class="c1"># s</span>
 
-    <span class="n">pos_planet</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span> <span class="o">-</span> <span class="n">light_travel_time</span><span class="p">)</span>
+    <span class="n">pos_planet</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time_sec</span> <span class="o">-</span> <span class="n">light_travel_time</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_observer</span></div>
 

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.drift &#8212; chandra_aca 4.42.0 documentation</title>
+    <title>chandra_aca.drift &#8212; chandra_aca 4.43.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
@@ -59,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.42.0 documentation</a>
+	<a href="index.html">chandra_aca 4.43.0 documentation</a>
 	 &#187;
       </li>
       
@@ -92,8 +92,8 @@ and fitted in the fit_aimpoint_drift notebook in this repo.</p>
 <dd><p>Calculate the drift model for aspect solution SIM DY/DZ values for input
 <code class="docutils literal notranslate"><span class="pre">times</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>.  The two arrays are broadcasted to match.</p>
 <p>The returned drifts are in arcsec and provide the expected aspect solution
-SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via
-the scale factor 20.493 arcsec/mm.</p>
+SIM DY or DZ values in arcsec.  This can be converted to a drift in mm
+(corresponding to units in an ASOL file) via the scale factor 20.493 arcsec/mm.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -105,7 +105,7 @@ the scale factor 20.493 arcsec/mm.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>array of ASOL SIM DY/DZ (mm)</dt><dd></dd>
+<dt>array of ASOL SIM DY/DZ (arcsec)</dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -163,6 +163,38 @@ The web version is updated weekly on Sunday via a Ska cron job.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.drift.get_fid_offset">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_fid_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_fid_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_fid_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the fid light offset values for a given time and temperature.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">time</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code> inputs can be either scalars or arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>time</strong><span class="classifier">CxoTimeLike format</span></dt><dd><p>Time for offset calculation.</p>
+</dd>
+<dt><strong>t_ccd</strong><span class="classifier">float</span></dt><dd><p>ACA CCD temperature in degrees Celsius.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>tuple</dt><dd><p>A tuple containing the y-angle and z-angle offsets (in arcseconds) to apply
+additively to the nominal (FEB07) fid positions.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The apparent fid light positions change in accordance with the ACA alignment drift as a
+function of time and temperature. This is captured in the ACA aimpoint drift model. This
+function uses that model to provide the offsets in y-angle and z-angle (arcsec) to apply
+additively to the nominal fid positions.</p>
+<p>The y_offset and z_offset values in this function were calibrated using the
+2022-11 aimpoint drift model and the FEB07 fid characteristics.
+See <a class="reference external" href="https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb">https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb</a></p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.drift.get_target_aimpoint">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_target_aimpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">too</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_offset_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_target_aimpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_target_aimpoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id</p>
@@ -206,6 +238,7 @@ The web version is updated weekly on Sunday via a Ska cron job.</p>
 </li>
 <li><a class="reference internal" href="#chandra_aca.drift.get_aca_offsets"><code class="docutils literal notranslate"><span class="pre">get_aca_offsets()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.drift.get_default_zero_offset_table"><code class="docutils literal notranslate"><span class="pre">get_default_zero_offset_table()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.drift.get_fid_offset"><code class="docutils literal notranslate"><span class="pre">get_fid_offset()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.drift.get_target_aimpoint"><code class="docutils literal notranslate"><span class="pre">get_target_aimpoint()</span></code></a></li>
 </ul>
 </li>

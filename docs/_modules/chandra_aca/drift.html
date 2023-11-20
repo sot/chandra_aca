@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.drift &#8212; chandra_aca 4.42.0 documentation</title>
+    <title>chandra_aca.drift &#8212; chandra_aca 4.43.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -45,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.42.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.43.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -80,6 +80,7 @@
 <span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
 <span class="kn">from</span> <span class="nn">astropy.utils.data</span> <span class="kn">import</span> <span class="n">download_file</span>
 <span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
 <span class="kn">from</span> <span class="nn">ska_helpers</span> <span class="kn">import</span> <span class="n">chandra_models</span>
 <span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyDict</span>
 
@@ -182,8 +183,8 @@
 <span class="sd">        ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.</span>
 
 <span class="sd">        The returned drifts are in arcsec and provide the expected aspect solution</span>
-<span class="sd">        SIM DY or DZ values in mm.  This can be converted to a drift in arcsec via</span>
-<span class="sd">        the scale factor 20.493 arcsec/mm.</span>
+<span class="sd">        SIM DY or DZ values in arcsec.  This can be converted to a drift in mm</span>
+<span class="sd">        (corresponding to units in an ASOL file) via the scale factor 20.493 arcsec/mm.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -194,7 +195,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        array of ASOL SIM DY/DZ (mm)</span>
+<span class="sd">        array of ASOL SIM DY/DZ (arcsec)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># The drift model is calibrated assuming t_ccd is in degF, but we want inputs</span>
         <span class="c1"># in degC, so convert at this point.</span>
@@ -226,6 +227,57 @@
             <span class="n">out</span><span class="p">[</span><span class="n">jump_idx</span><span class="p">:]</span> <span class="o">+=</span> <span class="n">jump</span>
 
         <span class="k">return</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">out</span></div></div>
+
+
+<div class="viewcode-block" id="get_fid_offset"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_fid_offset">[docs]</a><span class="k">def</span> <span class="nf">get_fid_offset</span><span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the fid light offset values for a given time and temperature.</span>
+
+<span class="sd">    The ``time`` and ``t_ccd`` inputs can be either scalars or arrays.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time : CxoTimeLike format</span>
+<span class="sd">        Time for offset calculation.</span>
+<span class="sd">    t_ccd : float</span>
+<span class="sd">        ACA CCD temperature in degrees Celsius.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        A tuple containing the y-angle and z-angle offsets (in arcseconds) to apply</span>
+<span class="sd">        additively to the nominal (FEB07) fid positions.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The apparent fid light positions change in accordance with the ACA alignment drift as a</span>
+<span class="sd">    function of time and temperature. This is captured in the ACA aimpoint drift model. This</span>
+<span class="sd">    function uses that model to provide the offsets in y-angle and z-angle (arcsec) to apply</span>
+<span class="sd">    additively to the nominal fid positions.</span>
+
+<span class="sd">    The y_offset and z_offset values in this function were calibrated using the</span>
+<span class="sd">    2022-11 aimpoint drift model and the FEB07 fid characteristics.</span>
+<span class="sd">    See https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Clip the time to the minimum time in the drift model</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">CxoTime</span><span class="p">(</span><span class="s2">&quot;2012:001:12:00:00.000&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Define model instances using calibrated parameters</span>
+    <span class="n">drift_y</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_PARS</span><span class="p">[</span><span class="s2">&quot;dy&quot;</span><span class="p">])</span>
+    <span class="n">drift_z</span> <span class="o">=</span> <span class="n">AcaDriftModel</span><span class="p">(</span><span class="o">**</span><span class="n">DRIFT_PARS</span><span class="p">[</span><span class="s2">&quot;dz&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Compute the predicted asol DY/DZ based on time and ACA CCD temperature</span>
+    <span class="c1"># via the predictive model calibrated in the fit_aimpoint_drift notebook</span>
+    <span class="c1"># in this repo.  And flip the signs.</span>
+    <span class="n">dy_pred</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">drift_y</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+    <span class="n">dz_pred</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">drift_z</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">)</span>
+
+    <span class="c1"># Apply internal offset that places the fid lights at ~zero position</span>
+    <span class="c1"># offset during the 2022:094 to 2023:044.</span>
+    <span class="n">y_offset</span> <span class="o">=</span> <span class="mf">19.6</span>
+    <span class="n">z_offset</span> <span class="o">=</span> <span class="mf">20.1</span>
+    <span class="k">return</span> <span class="n">dy_pred</span> <span class="o">+</span> <span class="n">y_offset</span><span class="p">,</span> <span class="n">dz_pred</span> <span class="o">+</span> <span class="n">z_offset</span></div>
 
 
 <div class="viewcode-block" id="get_aca_offsets"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_aca_offsets">[docs]</a><span class="k">def</span> <span class="nf">get_aca_offsets</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">,</span> <span class="n">chipx</span><span class="p">,</span> <span class="n">chipy</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
