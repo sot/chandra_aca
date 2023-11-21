@@ -391,9 +391,9 @@ def get_default_acq_prob_model_info(verbose=True):
 
 def clip_and_warn(name, val, val_lo, val_hi, model, tol_lo=0.0, tol_hi=0.0):
     """
-    Clip ``val`` to be in the range ``val_lo`` to ``val_hi + tol_hi`` and issue a
-    warning if clipping occurs.  The ``name`` and ``model`` are just used in
-    the warning.
+    Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a
+    warning if clipping occurs, subject to ``tol_lo`` and ``tol_hi`` expansions.
+    The ``name`` and ``model`` are just used in the warning.
 
     Parameters
     ----------
