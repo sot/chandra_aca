@@ -389,11 +389,11 @@ def get_default_acq_prob_model_info(verbose=True):
     return info
 
 
-def clip_and_warn(name, val, val_lo, val_hi, model):
+def clip_and_warn(name, val, val_lo, val_hi, model, tol_lo=0.0, tol_hi=0.0):
     """
     Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a
-    warning if clipping occurs.  The ``name`` and ``model`` are just used in
-    the warning.
+    warning if clipping occurs, subject to ``tol_lo`` and ``tol_hi`` expansions.
+    The ``name`` and ``model`` are just used in the warning.
 
     Parameters
     ----------
@@ -407,17 +407,26 @@ def clip_and_warn(name, val, val_lo, val_hi, model):
         Maximum
     model
         Model name
+    tol_lo
+        Tolerance below ``val_lo`` for issuing a warning (default=0.0)
+    tol_hi
+        Tolerance above ``val_hi`` for issuing a warning (default=0.0)
 
     Returns
     -------
     Clipped value
     """
     val = np.asarray(val)
-    if np.any((val > val_hi) | (val < val_lo)):
+
+    # Provide a tolerance for emitting a warning clipping
+    if np.any((val > val_hi + tol_hi) | (val < val_lo - tol_lo)):
         warnings.warn(
             f"\nModel {model} computed between {val_lo} <= {name} <= {val_hi}, "
             f"clipping input {name}(s) outside that range."
         )
+
+    # Now clip to the actual limits
+    if np.any((val > val_hi) | (val < val_lo)):
         val = np.clip(val, val_lo, val_hi)
 
     return val
@@ -621,7 +630,8 @@ def grid_model_acq_prob(
     model_filename = Path(gfm["info"]["data_file_path"]).name
 
     # Make sure inputs are within range of gridded model
-    mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model_filename)
+    # TODO: run additional test cases on ASVT, make a new model, remove tol_hi for mag.
+    mag = clip_and_warn("mag", mag, mag_lo, mag_hi, model_filename, tol_hi=0.25)
     t_ccd = clip_and_warn("t_ccd", t_ccd, t_ccd_lo, t_ccd_hi, model_filename)
     halfwidth = clip_and_warn("halfw", halfwidth, halfw_lo, halfw_hi, model_filename)
 

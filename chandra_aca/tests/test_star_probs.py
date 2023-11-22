@@ -12,6 +12,7 @@ from ska_helpers.paths import aca_acq_prob_models_path
 from chandra_aca.star_probs import (
     acq_success_prob,
     binom_ppf,
+    clip_and_warn,
     conf,
     get_default_acq_prob_model_info,
     get_grid_func_model,
@@ -676,3 +677,29 @@ def test_grid_model_3_48(monkeypatch):
     assert info["version"] == "3.48"
     assert info["data_file_path"].endswith("grid-floor-2020-02.fits.gz")
     assert info["commit"] == "68a58099a9b51bef52ef14fbd0f1971f950e6ba3"
+
+
+def test_clip_and_warn():
+    """Test that we get a warning when clipping occurs"""
+    name = "mag"
+    model = "grid-floor"
+    val_lo = 5.0
+    val_hi = 11.75
+
+    # No warnings
+    clip_and_warn(name, 11.75, val_lo, val_hi, model)
+    clip_and_warn(name, 5.0, val_lo, val_hi, model)
+    clip_and_warn(name, 12.0, val_lo, val_hi, model, tol_hi=0.25)
+    clip_and_warn(name, 4.75, val_lo, val_hi, model, tol_lo=0.25)
+
+    # Expected warnings
+    match_re = rf"{model} computed between 5.0 <= {name} <= 11.75"
+    for val, tol_hi, tol_lo in [
+        (12.01, 0.25, 0.0),
+        (4.74, 0.0, 0.25),
+        ([4.74, 7.0, 12.01], 0.25, 0.25),
+    ]:
+        with pytest.warns(UserWarning, match=match_re):
+            clip_and_warn(
+                name, val, val_lo, val_hi, model, tol_hi=tol_hi, tol_lo=tol_lo
+            )
