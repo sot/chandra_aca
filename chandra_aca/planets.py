@@ -218,7 +218,7 @@ def get_planet_angular_sep(
     sep = sphere_dist(ra, dec, body_ra, body_dec)
     return sep
 
-@numba.njit()
+@numba.njit(cache=True)
 def _spk_compute_scalar(tdb, init, intlen, coefficients, n):
     index, offset = divmod((tdb - JPLEPHEM_T0) * JPLEPHEM_S_PER_DAY - init, intlen)
     index = int(index)
