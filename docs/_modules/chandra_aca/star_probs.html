@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.star_probs &#8212; chandra_aca 4.43.0 documentation</title>
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.44.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -45,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.43.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.44.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -452,11 +452,11 @@
     <span class="k">return</span> <span class="n">info</span></div>
 
 
-<div class="viewcode-block" id="clip_and_warn"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.clip_and_warn">[docs]</a><span class="k">def</span> <span class="nf">clip_and_warn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<div class="viewcode-block" id="clip_and_warn"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.clip_and_warn">[docs]</a><span class="k">def</span> <span class="nf">clip_and_warn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tol_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tol_hi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a</span>
-<span class="sd">    warning if clipping occurs.  The ``name`` and ``model`` are just used in</span>
-<span class="sd">    the warning.</span>
+<span class="sd">    warning if clipping occurs, subject to ``tol_lo`` and ``tol_hi`` expansions.</span>
+<span class="sd">    The ``name`` and ``model`` are just used in the warning.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -470,17 +470,26 @@
 <span class="sd">        Maximum</span>
 <span class="sd">    model</span>
 <span class="sd">        Model name</span>
+<span class="sd">    tol_lo</span>
+<span class="sd">        Tolerance below ``val_lo`` for issuing a warning (default=0.0)</span>
+<span class="sd">    tol_hi</span>
+<span class="sd">        Tolerance above ``val_hi`` for issuing a warning (default=0.0)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    Clipped value</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="n">val</span> <span class="o">&gt;</span> <span class="n">val_hi</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">val_lo</span><span class="p">)):</span>
+
+    <span class="c1"># Provide a tolerance for emitting a warning clipping</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="n">val</span> <span class="o">&gt;</span> <span class="n">val_hi</span> <span class="o">+</span> <span class="n">tol_hi</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">val_lo</span> <span class="o">-</span> <span class="n">tol_lo</span><span class="p">)):</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Model </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> computed between </span><span class="si">{</span><span class="n">val_lo</span><span class="si">}</span><span class="s2"> &lt;= </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;= </span><span class="si">{</span><span class="n">val_hi</span><span class="si">}</span><span class="s2">, &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;clipping input </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">(s) outside that range.&quot;</span>
         <span class="p">)</span>
+
+    <span class="c1"># Now clip to the actual limits</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="n">val</span> <span class="o">&gt;</span> <span class="n">val_hi</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">val_lo</span><span class="p">)):</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">val</span></div>
@@ -684,7 +693,8 @@
     <span class="n">model_filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">gfm</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="s2">&quot;data_file_path&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">name</span>
 
     <span class="c1"># Make sure inputs are within range of gridded model</span>
-    <span class="n">mag</span> <span class="o">=</span> <span class="n">clip_and_warn</span><span class="p">(</span><span class="s2">&quot;mag&quot;</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="n">mag_lo</span><span class="p">,</span> <span class="n">mag_hi</span><span class="p">,</span> <span class="n">model_filename</span><span class="p">)</span>
+    <span class="c1"># TODO: run additional test cases on ASVT, make a new model, remove tol_hi for mag.</span>
+    <span class="n">mag</span> <span class="o">=</span> <span class="n">clip_and_warn</span><span class="p">(</span><span class="s2">&quot;mag&quot;</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="n">mag_lo</span><span class="p">,</span> <span class="n">mag_hi</span><span class="p">,</span> <span class="n">model_filename</span><span class="p">,</span> <span class="n">tol_hi</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
     <span class="n">t_ccd</span> <span class="o">=</span> <span class="n">clip_and_warn</span><span class="p">(</span><span class="s2">&quot;t_ccd&quot;</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">t_ccd_lo</span><span class="p">,</span> <span class="n">t_ccd_hi</span><span class="p">,</span> <span class="n">model_filename</span><span class="p">)</span>
     <span class="n">halfwidth</span> <span class="o">=</span> <span class="n">clip_and_warn</span><span class="p">(</span><span class="s2">&quot;halfw&quot;</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">,</span> <span class="n">halfw_lo</span><span class="p">,</span> <span class="n">halfw_hi</span><span class="p">,</span> <span class="n">model_filename</span><span class="p">)</span>
 

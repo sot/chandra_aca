@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.star_probs &#8212; chandra_aca 4.43.0 documentation</title>
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.44.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
@@ -59,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.43.0 documentation</a>
+	<a href="index.html">chandra_aca 4.44.0 documentation</a>
 	 &#187;
       </li>
       
@@ -178,10 +178,10 @@ on the true binomial probability for an experiment with 4 successes in 5 trials.
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.star_probs.clip_and_warn">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">clip_and_warn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_lo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_hi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#clip_and_warn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.clip_and_warn" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.star_probs.</span></span><span class="sig-name descname"><span class="pre">clip_and_warn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_lo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_hi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_lo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_hi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/star_probs.html#clip_and_warn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.star_probs.clip_and_warn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clip <code class="docutils literal notranslate"><span class="pre">val</span></code> to be in the range <code class="docutils literal notranslate"><span class="pre">val_lo</span></code> to <code class="docutils literal notranslate"><span class="pre">val_hi</span></code> and issue a
-warning if clipping occurs.  The <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">model</span></code> are just used in
-the warning.</p>
+warning if clipping occurs, subject to <code class="docutils literal notranslate"><span class="pre">tol_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">tol_hi</span></code> expansions.
+The <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">model</span></code> are just used in the warning.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -194,6 +194,10 @@ the warning.</p>
 <dt><strong>val_hi</strong></dt><dd><p>Maximum</p>
 </dd>
 <dt><strong>model</strong></dt><dd><p>Model name</p>
+</dd>
+<dt><strong>tol_lo</strong></dt><dd><p>Tolerance below <code class="docutils literal notranslate"><span class="pre">val_lo</span></code> for issuing a warning (default=0.0)</p>
+</dd>
+<dt><strong>tol_hi</strong></dt><dd><p>Tolerance above <code class="docutils literal notranslate"><span class="pre">val_hi</span></code> for issuing a warning (default=0.0)</p>
 </dd>
 </dl>
 </dd>
