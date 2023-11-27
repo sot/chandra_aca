@@ -25,6 +25,8 @@ from pathlib import Path
 from typing import Optional, Union
 
 import astropy.units as u
+import jplephem.spk
+import numba
 import numpy as np
 from astropy.io import ascii
 from cxotime import CxoTime, CxoTimeLike, convert_time_format
@@ -64,15 +66,13 @@ class NoEphemerisError(Exception):
 
 
 def load_kernel():
-    from jplephem.spk import SPK
-
     kernel_path = Path(__file__).parent / "data" / "de432s.bsp"
     if not kernel_path.exists():
         raise FileNotFoundError(
             f"kernel data file {kernel_path} not found, "
             'run "python setup.py build" to install it locally'
         )
-    kernel = SPK.open(kernel_path)
+    kernel = jplephem.spk.SPK.open(kernel_path)
     import atexit
 
     atexit.register(_close_kernel)
@@ -83,6 +83,8 @@ def _close_kernel():
     KERNEL.val.close()
 
 
+JPLEPHEM_T0 = jplephem.spk.T0
+JPLEPHEM_S_PER_DAY = jplephem.spk.S_PER_DAY
 KERNEL = LazyVal(load_kernel)
 BODY_NAME_TO_KERNEL_SPEC = dict(
     [
@@ -101,6 +103,56 @@ BODY_NAME_TO_KERNEL_SPEC = dict(
     ]
 )
 URL_HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api?"
+
+
+def secs2jd_approx(secs):
+    """Convert seconds since 1998.0 (TT) to Julian date (TDB) (approximate)
+
+    This is accurate to about 1 ms.
+
+    Parameters
+    ----------
+    secs : float
+        Seconds since 1998.0 (TT)
+
+    Returns
+    -------
+    jd : float
+        Julian date (TDB)
+    """
+    jd = 2450814.5 + secs / 86400.0
+    return jd
+
+
+def convert_time_format_fast(time, fmt_out):
+    """Faster version of convert_time_format for jd and secs output formats.
+
+    This is faster only for float (secs) input and "secs" or "jd" output formats.
+
+    This is suitable for using in planet position calculations since it is good
+    to about 1 ms.
+    """
+    if fmt_out not in ("jd", "secs"):
+        return convert_time_format(time, fmt_out)
+
+    # float input must be seconds since 1998.0 (TT)
+    not_secs = True
+    if isinstance(time, float):
+        not_secs = False
+    else:
+        time = np.asarray(time)
+        if time.dtype.kind == "f":
+            not_secs = False
+
+    if not_secs:
+        out = convert_time_format(time, fmt_out)
+    elif fmt_out == "jd":
+        out = secs2jd_approx(time)
+    else:
+        # fmt_out == 'secs' and time is secs
+        out = time
+
+    return out
 
 
 def get_planet_angular_sep(
@@ -133,14 +185,16 @@ def get_planet_angular_sep(
     """
     from agasc import sphere_dist
 
+    time_secs = convert_time_format_fast(time, "secs")
+
     if observer_position == "earth":
-        eci = get_planet_eci(body, time)
+        eci = get_planet_eci(body, time_secs)
         body_ra, body_dec = eci_to_radec(eci)
     elif observer_position == "chandra":
-        eci = get_planet_chandra(body, time)
+        eci = get_planet_chandra(body, time_secs)
         body_ra, body_dec = eci_to_radec(eci)
     elif observer_position == "chandra-horizons":
-        time_secs = convert_time_format(time, "secs")
+        time_secs = np.asarray(time_secs)
 
         if time_secs.shape == ():
             time_secs = [time_secs, time_secs + 1000]
@@ -163,6 +217,49 @@ def get_planet_angular_sep(
 
     sep = sphere_dist(ra, dec, body_ra, body_dec)
     return sep
+
+@numba.njit()
+def _spk_compute_scalar(tdb, init, intlen, coefficients, n):
+    index, offset = divmod((tdb - JPLEPHEM_T0) * JPLEPHEM_S_PER_DAY - init, intlen)
+    index = int(index)
+
+    if index < 0 or index >= n:
+        raise ValueError("time out of range")
+
+    coefficients = coefficients[:, :, index]
+
+    # Chebyshev polynomial.
+
+    s = 2.0 * offset / intlen - 1.0
+    s2 = 2.0 * s
+
+    w0 = w1 = 0.0 * coefficients[0]
+
+    for coefficient in coefficients[:-1]:
+        w2 = w1
+        w1 = w0
+        w0 = coefficient + (s2 * w1 - w2)
+
+    components = coefficients[-1] + (s * w0 - w1)
+    return components
+
+
+def spk_compute_scalar(segment, tdb):
+    """Generate components and differentials for time `tdb` plus `tdb2`.
+
+    Most uses will simply want to call the `compute()` method or the
+    `compute_differentials()` method, for convenience.  But in those
+    cases (see Skyfield) where you want to compute a position and
+    examine it before deciding whether to proceed with the velocity,
+    but without losing all of the work that it took to get to that
+    point, this generator lets you get them as two separate steps.
+
+    """
+
+    init, intlen, coefficients = segment._data
+    n = coefficients.shape[2]
+
+    return _spk_compute_scalar(tdb, init, intlen, coefficients, n)
 
 
 def get_planet_barycentric(body: str, time: CxoTimeLike = None):
@@ -191,10 +288,14 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
         )
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
-    time_jd = convert_time_format(time, "jd")
-    pos = kernel[spk_pairs[0]].compute(time_jd)
-    for spk_pair in spk_pairs[1:]:
-        pos += kernel[spk_pair].compute(time_jd)
+    time_jd = convert_time_format_fast(time, "jd")
+    scalar = isinstance(time_jd, float)
+    kernel_pairs = (kernel[spk_pair] for spk_pair in spk_pairs)
+    pos_iter = (
+        (spk_compute_scalar(kp, time_jd) if scalar else kp.compute(time_jd))
+        for kp in kernel_pairs
+    )
+    pos = np.sum(pos_iter, axis=0)
 
     return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
 
@@ -236,7 +337,7 @@ def get_planet_eci(
         Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
-    time_sec = convert_time_format(time, "secs")
+    time_sec = convert_time_format_fast(time, "secs")
 
     pos_planet = get_planet_barycentric(body, time_sec)
     if pos_observer is None:
