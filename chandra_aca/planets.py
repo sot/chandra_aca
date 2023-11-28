@@ -218,6 +218,7 @@ def get_planet_angular_sep(
     sep = sphere_dist(ra, dec, body_ra, body_dec)
     return sep
 
+
 @numba.njit(cache=True)
 def _spk_compute_scalar(tdb, init, intlen, coefficients, n):
     index, offset = divmod((tdb - JPLEPHEM_T0) * JPLEPHEM_S_PER_DAY - init, intlen)
@@ -244,7 +245,45 @@ def _spk_compute_scalar(tdb, init, intlen, coefficients, n):
     return components
 
 
-def spk_compute_scalar(segment, tdb):
+@numba.njit(cache=True)
+def _spk_compute_array(tdb, init, intlen, coefficients, n):
+    """Generate components and differentials for time `tdb` plus `tdb2`.
+
+    Most uses will simply want to call the `compute()` method or the
+    `compute_differentials()` method, for convenience.  But in those
+    cases (see Skyfield) where you want to compute a position and
+    examine it before deciding whether to proceed with the velocity,
+    but without losing all of the work that it took to get to that
+    point, this generator lets you get them as two separate steps.
+
+    """
+    index_float, offset = np.divmod(
+        (tdb - JPLEPHEM_T0) * JPLEPHEM_S_PER_DAY - init, intlen
+    )
+    index = index_float.astype(np.int64)
+
+    if (index < 0).any() or (index >= n).any():
+        raise ValueError("time out of range")
+
+    coefficients = coefficients[:, :, index]
+
+    # Chebyshev polynomial.
+
+    s = 2.0 * offset / intlen - 1.0
+    s2 = 2.0 * s
+
+    w0 = w1 = 0.0 * coefficients[0]
+
+    for coefficient in coefficients[:-1]:
+        w2 = w1
+        w1 = w0
+        w0 = coefficient + (s2 * w1 - w2)
+
+    components = coefficients[-1] + (s * w0 - w1)
+    return components
+
+
+def spk_compute(segment, tdb):
     """Generate components and differentials for time `tdb` plus `tdb2`.
 
     Most uses will simply want to call the `compute()` method or the
@@ -259,7 +298,8 @@ def spk_compute_scalar(segment, tdb):
     init, intlen, coefficients = segment._data
     n = coefficients.shape[2]
 
-    return _spk_compute_scalar(tdb, init, intlen, coefficients, n)
+    func = _spk_compute_array if getattr(tdb, "shape", 0) else _spk_compute_scalar
+    return func(tdb, init, intlen, coefficients, n)
 
 
 def get_planet_barycentric(body: str, time: CxoTimeLike = None):
@@ -289,12 +329,8 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
     time_jd = convert_time_format_fast(time, "jd")
-    scalar = isinstance(time_jd, float)
     kernel_pairs = (kernel[spk_pair] for spk_pair in spk_pairs)
-    pos_iter = (
-        (spk_compute_scalar(kp, time_jd) if scalar else kp.compute(time_jd))
-        for kp in kernel_pairs
-    )
+    pos_iter = (spk_compute(kp, time_jd) for kp in kernel_pairs)
     pos = np.sum(pos_iter, axis=0)
 
     return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
