@@ -29,7 +29,7 @@ import jplephem.spk
 import numba
 import numpy as np
 from astropy.io import ascii
-from cxotime import CxoTime, CxoTimeLike, convert_time_format
+from cxotime import CxoTime, CxoTimeLike
 from ska_helpers.utils import LazyVal
 
 from chandra_aca.transform import eci_to_radec
@@ -109,18 +109,35 @@ URL_HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api?"
 JD_CXCSEC0_TDB = CxoTime(0.0).tdb.jd
 
 
-def convert_time_format_fast(time, fmt_out):
-    """Faster version of convert_time_format for jd and secs output formats.
+def convert_time_format_spk(time, fmt_out):
+    """Fast version of convert_time_format for use with JPLEPHEM SPK.
 
-    This is faster for float (secs) input and "secs" or "jd" output formats.
+    For use with JPLEPHEM SPK, which requires JD in TDB.
 
-    This is suitable for using in planet position calculations since it is good
+    This is much faster for float (secs) input and "secs" or "jd" output formats.
+
+    For "jd" and formats other than "secs", the output is in TDB. For "secs" the output
+    is in seconds since 1998.0 (TT), which is unaffected by the time scale.
+
+    This function is suitable for using in planet position calculations since it is good
     to about 1 ms.
+
+    Parameters
+    ----------
+    time : CxoTimeLike
+        Time or times
+    fmt_out : str
+        Output format (any supported CxoTime format)
+
+    Returns
+    -------
+    ndarray or numpy scalar
+        Converted time or times
     """
     if fmt_out not in ("jd", "secs"):
         return getattr(CxoTime(time).tdb, fmt_out)
 
-    # float input must be seconds since 1998.0 (TT)
+    # Check if input is in "secs" by determining if it is a float type scalar or array
     not_secs = True
     if isinstance(time, float):
         not_secs = False
@@ -130,11 +147,11 @@ def convert_time_format_fast(time, fmt_out):
             not_secs = False
 
     if not_secs:
-        out = getattr(CxoTime(time).tdb, fmt_out) # convert_time_format(time, fmt_out)
+        out = getattr(CxoTime(time).tdb, fmt_out)
     elif fmt_out == "jd":
         out = JD_CXCSEC0_TDB + time / 86400.0
     else:
-        # At this point fmt_out == 'secs' and input time format is secs so we're done
+        # fmt_out == 'secs' and input time format is secs so no conversion is needed.
         out = time
 
     return out
@@ -170,7 +187,7 @@ def get_planet_angular_sep(
     """
     from agasc import sphere_dist
 
-    time_secs = convert_time_format_fast(time, "secs")
+    time_secs = convert_time_format_spk(time, "secs")
 
     if observer_position == "earth":
         eci = get_planet_eci(body, time_secs)
@@ -276,7 +293,7 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
         )
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
-    time_jd = convert_time_format_fast(time, "jd")
+    time_jd = convert_time_format_spk(time, "jd")
     kernel_pairs = (kernel[spk_pair] for spk_pair in spk_pairs)
     pos_list = [spk_compute(kp, time_jd) for kp in kernel_pairs]
     pos = np.sum(pos_list, axis=0)
@@ -321,7 +338,7 @@ def get_planet_eci(
         Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
-    time_sec = convert_time_format_fast(time, "secs")
+    time_sec = convert_time_format_spk(time, "secs")
 
     pos_planet = get_planet_barycentric(body, time_sec)
     if pos_observer is None:
