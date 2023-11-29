@@ -53,11 +53,11 @@ def test_venus_position1():
     ra, dec = eci_to_radec(eci)
     yag, zag = radec_to_yagzag(ra, dec, q_att)
     # Confirm yag value is on "left side" of CCD, opposite all stars in 18695
-    assert np.isclose(yag, 210.20, rtol=0, atol=0.01)
-    assert np.isclose(zag, 69.45, rtol=0, atol=0.01)
+    assert np.isclose(yag, 209.70, rtol=0, atol=0.01)
+    assert np.isclose(zag, 72.48, rtol=0, atol=0.01)
 
     dist = sphere_dist(ra, dec, sc.ra.to_value(u.deg), sc.dec.to_value(u.deg)) * 3600
-    assert np.all(dist < 4.0)
+    assert np.all(dist < 0.2)
 
 
 def test_venus_position2():
@@ -169,7 +169,7 @@ def test_get_chandra_planet_horizons_non_planet():
 
 @pytest.mark.skipif(not HAS_INTERNET, reason="Requires network access")
 @pytest.mark.parametrize(
-    "obs_pos,exp_sep", [("chandra-horizons", 0.0), ("chandra", 0.74), ("earth", 23.02)]
+    "obs_pos,exp_sep", [("chandra-horizons", 0.0), ("chandra", 0.09), ("earth", 23.25)]
 )
 def test_get_planet_ang_separation_scalar(obs_pos, exp_sep):
     # Position of Jupiter at time0
@@ -184,8 +184,8 @@ def test_get_planet_ang_separation_scalar(obs_pos, exp_sep):
     "obs_pos,exp_sep",
     [
         ("chandra-horizons", [0.0, 33.98]),
-        ("chandra", [0.74, 33.25]),
-        ("earth", [23.02, 47.07]),
+        ("chandra", [0.09, 33.90]),
+        ("earth", [23.25, 47.66]),
     ],
 )
 def test_get_planet_ang_separation_array(obs_pos, exp_sep):
