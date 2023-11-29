@@ -104,36 +104,21 @@ BODY_NAME_TO_KERNEL_SPEC = dict(
 )
 URL_HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api?"
 
-
-def secs2jd_approx(secs):
-    """Convert seconds since 1998.0 (TT) to Julian date (TDB) (approximate)
-
-    This is accurate to about 1 ms.
-
-    Parameters
-    ----------
-    secs : float
-        Seconds since 1998.0 (TT)
-
-    Returns
-    -------
-    jd : float
-        Julian date (TDB)
-    """
-    jd = 2450814.5 + secs / 86400.0
-    return jd
+# NOTE: using TDB scale is important because the JPL ephemeris requires JD in TDB.
+# Without that CxoTime(0.0).jd is the JD in UTC which is different by 63.184 s.
+JD_CXCSEC0_TDB = CxoTime(0.0).tdb.jd
 
 
 def convert_time_format_fast(time, fmt_out):
     """Faster version of convert_time_format for jd and secs output formats.
 
-    This is faster only for float (secs) input and "secs" or "jd" output formats.
+    This is faster for float (secs) input and "secs" or "jd" output formats.
 
     This is suitable for using in planet position calculations since it is good
     to about 1 ms.
     """
     if fmt_out not in ("jd", "secs"):
-        return convert_time_format(time, fmt_out)
+        return getattr(CxoTime(time).tdb, fmt_out)
 
     # float input must be seconds since 1998.0 (TT)
     not_secs = True
@@ -145,11 +130,11 @@ def convert_time_format_fast(time, fmt_out):
             not_secs = False
 
     if not_secs:
-        out = convert_time_format(time, fmt_out)
+        out = getattr(CxoTime(time).tdb, fmt_out) # convert_time_format(time, fmt_out)
     elif fmt_out == "jd":
-        out = secs2jd_approx(time)
+        out = JD_CXCSEC0_TDB + time / 86400.0
     else:
-        # fmt_out == 'secs' and time is secs
+        # At this point fmt_out == 'secs' and input time format is secs so we're done
         out = time
 
     return out
@@ -293,8 +278,8 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
     time_jd = convert_time_format_fast(time, "jd")
     kernel_pairs = (kernel[spk_pair] for spk_pair in spk_pairs)
-    pos_iter = (spk_compute(kp, time_jd) for kp in kernel_pairs)
-    pos = np.sum(pos_iter, axis=0)
+    pos_list = [spk_compute(kp, time_jd) for kp in kernel_pairs]
+    pos = np.sum(pos_list, axis=0)
 
     return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
 
@@ -340,7 +325,7 @@ def get_planet_eci(
 
     pos_planet = get_planet_barycentric(body, time_sec)
     if pos_observer is None:
-        pos_observer = get_planet_barycentric("earth", time)
+        pos_observer = get_planet_barycentric("earth", time_sec)
 
     dist = np.sqrt(np.sum((pos_planet - pos_observer) ** 2, axis=-1))  # km
     # Divide distance by the speed of light in km/s
@@ -397,15 +382,18 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
         raise NoEphemerisError("Chandra ephemeris not available")
 
     times = np.atleast_1d(time.secs)
-    dat.interpolate(times=times)
+    ephem = {
+        key: np.interp(times, dat[key].times, dat[key].vals)
+        for key in dat
+    }
 
     pos_earth = get_planet_barycentric("earth", time)
 
     # Chandra position in km
     chandra_eci = np.zeros_like(pos_earth)
-    chandra_eci[..., 0] = dat["orbitephem0_x"].vals.reshape(time.shape) / 1000
-    chandra_eci[..., 1] = dat["orbitephem0_y"].vals.reshape(time.shape) / 1000
-    chandra_eci[..., 2] = dat["orbitephem0_z"].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 0] = ephem["orbitephem0_x"].reshape(time.shape) / 1000
+    chandra_eci[..., 1] = ephem["orbitephem0_y"].reshape(time.shape) / 1000
+    chandra_eci[..., 2] = ephem["orbitephem0_z"].reshape(time.shape) / 1000
     planet_chandra = get_planet_eci(body, time, pos_observer=pos_earth + chandra_eci)
 
     return planet_chandra
