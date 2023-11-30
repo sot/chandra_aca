@@ -238,6 +238,7 @@ def _spk_compute_array(tdb, init, intlen, coefficients):
     index = index_float.astype(np.int64)
     return _compute_components(intlen, coefficients, offset, index)
 
+
 @numba.njit(cache=True)
 def _compute_components(intlen, coefficients, offset, index):
     coefficients = coefficients[:, :, index]
@@ -399,10 +400,7 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
         raise NoEphemerisError("Chandra ephemeris not available")
 
     times = np.atleast_1d(time.secs)
-    ephem = {
-        key: np.interp(times, dat[key].times, dat[key].vals)
-        for key in dat
-    }
+    ephem = {key: np.interp(times, dat[key].times, dat[key].vals) for key in dat}
 
     pos_earth = get_planet_barycentric("earth", time)
 
