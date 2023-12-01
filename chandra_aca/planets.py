@@ -257,12 +257,31 @@ def _compute_components(intlen, coefficients, offset, index):
     return components
 
 
-def spk_compute(segment, tdb):
+def spk_compute(segment: jplephem.spk.Segment, tdb: float | np.ndarray):
+    """Compute position for JD time ``tdb`` using ``segment`` from JPLEPHEM SPK.
+
+    This is a slimmed down version of the ``spk.Segment.compute`` function which uses
+    numba to speed up the computation. It is about 10x faster than the original
+    ``spk.Segment.compute`` function.
+
+    This removes support for the ``tdb2`` argument (high time precision) and
+    out-of-bounds handling for times (it will still raise an exception but not as
+    helpful).
+
+    Parameters
+    ----------
+    segment : SPK segment
+        SPK segment from JPLEPHEM SPK Kernel
+    tdb : float or ndarray
+        Time or times in JD (TDB scale)
+    """
     init, intlen, coefficients = segment._data
 
-    # is_array = bool(getattr(tdb, "shape", ()))
+    # Handle scalar and array cases separately. I could not figure out a way to convert
+    # float to int in numba for both cases.
     is_array = isinstance(tdb, np.ndarray)
     func = _spk_compute_array if is_array else _spk_compute_scalar
+
     out = func(tdb, init, intlen, coefficients)
 
     return out
@@ -326,16 +345,16 @@ def get_planet_eci(
 
     Parameters
     ----------
-    body
+    body : str
         Body name (lower case planet name)
-    time
+    time : CxoTimeLike, optional
         Time or times for returned position (default=NOW)
-    pos_observer
+    pos_observer : str, optional
         Observer position (default=Earth)
 
     Returns
     -------
-    ndarray
+    ndarray (float)
         Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
@@ -373,14 +392,15 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
 
     Parameters
     ----------
-    body
+    body : str
         Body name
-    time
+    time : CxoTimeLike
         Time or times for returned position (default=NOW)
 
     Returns
     -------
-    position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
+    ndarray (float)
+        Position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
     """
     from cheta import fetch
 
@@ -454,8 +474,9 @@ def get_planet_chandra_horizons(
 
     Parameters
     ----------
-    body : one of 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
-        'uranus', 'neptune', or any other body that Horizons supports.
+    body : str
+        One of 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
+        or any other body that Horizons supports.
     timestart
         start time (any CxoTime-compatible time)
     timestop
