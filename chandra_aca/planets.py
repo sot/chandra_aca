@@ -7,10 +7,10 @@ Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
 Horizons positions are used as the "truth".
 
 - `get_planet_chandra` errors:
-    - Venus: < 4 arcsec with a peak around 3.5
-    - Mars: < 3 arcsec with a peak around 2.0
-    - Jupiter: < 0.8 arcsec
-    - Saturn: < 0.5 arcsec
+    - Venus: < 0.25 arcsec with a peak around 0.02
+    - Mars: < 0.45 arcsec with a peak around 0.1
+    - Jupiter: < 0.2 arcsec with a peak around 0.1
+    - Saturn: < 0.2 arcsec with a peak around 0.1
 
 - `get_planet_eci` errors:
     - Venus: < 12 arcmin with peak around 2 arcmin
@@ -385,10 +385,10 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
     Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
     follows, where the JPL Horizons positions are used as the "truth".
 
-    - Venus: < 4 arcsec with a peak around 3.5
-    - Mars: < 3 arcsec with a peak around 2.0
-    - Jupiter: < 0.8 arcsec
-    - Saturn: < 0.5 arcsec
+    - Venus: < 0.25 arcsec with a peak around 0.02
+    - Mars: < 0.45 arcsec with a peak around 0.1
+    - Jupiter: < 0.2 arcsec with a peak around 0.1
+    - Saturn: < 0.2 arcsec with a peak around 0.1
 
     Parameters
     ----------
