@@ -7,10 +7,10 @@ Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
 Horizons positions are used as the "truth".
 
 - `get_planet_chandra` errors:
-    - Venus: < 4 arcsec with a peak around 3.5
-    - Mars: < 3 arcsec with a peak around 2.0
-    - Jupiter: < 0.8 arcsec
-    - Saturn: < 0.5 arcsec
+    - Venus: < 0.25 arcsec with a peak around 0.02
+    - Mars: < 0.45 arcsec with a peak around 0.1
+    - Jupiter: < 0.2 arcsec with a peak around 0.1
+    - Saturn: < 0.2 arcsec with a peak around 0.1
 
 - `get_planet_eci` errors:
     - Venus: < 12 arcmin with peak around 2 arcmin
@@ -25,9 +25,11 @@ from pathlib import Path
 from typing import Optional, Union
 
 import astropy.units as u
+import jplephem.spk
+import numba
 import numpy as np
 from astropy.io import ascii
-from cxotime import CxoTime, CxoTimeLike, convert_time_format
+from cxotime import CxoTime, CxoTimeLike
 from ska_helpers.utils import LazyVal
 
 from chandra_aca.transform import eci_to_radec
@@ -64,15 +66,13 @@ class NoEphemerisError(Exception):
 
 
 def load_kernel():
-    from jplephem.spk import SPK
-
     kernel_path = Path(__file__).parent / "data" / "de432s.bsp"
     if not kernel_path.exists():
         raise FileNotFoundError(
             f"kernel data file {kernel_path} not found, "
             'run "python setup.py build" to install it locally'
         )
-    kernel = SPK.open(kernel_path)
+    kernel = jplephem.spk.SPK.open(kernel_path)
     import atexit
 
     atexit.register(_close_kernel)
@@ -83,6 +83,8 @@ def _close_kernel():
     KERNEL.val.close()
 
 
+JPLEPHEM_T0 = jplephem.spk.T0
+JPLEPHEM_S_PER_DAY = jplephem.spk.S_PER_DAY
 KERNEL = LazyVal(load_kernel)
 BODY_NAME_TO_KERNEL_SPEC = dict(
     [
@@ -101,6 +103,58 @@ BODY_NAME_TO_KERNEL_SPEC = dict(
     ]
 )
 URL_HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api?"
+
+# NOTE: using TDB scale is important because the JPL ephemeris requires JD in TDB.
+# Without that CxoTime(0.0).jd is the JD in UTC which is different by 63.184 s.
+JD_CXCSEC0_TDB = CxoTime(0.0).tdb.jd
+
+
+def convert_time_format_spk(time, fmt_out):
+    """Fast version of convert_time_format for use with JPLEPHEM SPK.
+
+    For use with JPLEPHEM SPK, which requires JD in TDB.
+
+    This is much faster for float (secs) input and "secs" or "jd" output formats.
+
+    For "jd" and formats other than "secs", the output is in TDB. For "secs" the output
+    is in seconds since 1998.0 (TT), which is unaffected by the time scale.
+
+    This function is suitable for using in planet position calculations since it is good
+    to about 1 ms.
+
+    Parameters
+    ----------
+    time : CxoTimeLike
+        Time or times
+    fmt_out : str
+        Output format (any supported CxoTime format)
+
+    Returns
+    -------
+    ndarray or numpy scalar
+        Converted time or times
+    """
+    if fmt_out not in ("jd", "secs"):
+        return getattr(CxoTime(time).tdb, fmt_out)
+
+    # Check if input is in "secs" by determining if it is a float type scalar or array
+    not_secs = True
+    if isinstance(time, float):
+        not_secs = False
+    else:
+        time = np.asarray(time)
+        if time.dtype.kind == "f":
+            not_secs = False
+
+    if not_secs:
+        out = getattr(CxoTime(time).tdb, fmt_out)
+    elif fmt_out == "jd":
+        out = JD_CXCSEC0_TDB + time / 86400.0
+    else:
+        # fmt_out == 'secs' and input time format is secs so no conversion is needed.
+        out = time
+
+    return out
 
 
 def get_planet_angular_sep(
@@ -133,14 +187,16 @@ def get_planet_angular_sep(
     """
     from agasc import sphere_dist
 
+    time_secs = convert_time_format_spk(time, "secs")
+
     if observer_position == "earth":
-        eci = get_planet_eci(body, time)
+        eci = get_planet_eci(body, time_secs)
         body_ra, body_dec = eci_to_radec(eci)
     elif observer_position == "chandra":
-        eci = get_planet_chandra(body, time)
+        eci = get_planet_chandra(body, time_secs)
         body_ra, body_dec = eci_to_radec(eci)
     elif observer_position == "chandra-horizons":
-        time_secs = convert_time_format(time, "secs")
+        time_secs = np.asarray(time_secs)
 
         if time_secs.shape == ():
             time_secs = [time_secs, time_secs + 1000]
@@ -163,6 +219,72 @@ def get_planet_angular_sep(
 
     sep = sphere_dist(ra, dec, body_ra, body_dec)
     return sep
+
+
+@numba.njit(cache=True)
+def _spk_compute_scalar(tdb, init, intlen, coefficients):
+    index_float, offset = np.divmod(
+        (tdb - JPLEPHEM_T0) * JPLEPHEM_S_PER_DAY - init, intlen
+    )
+    index = int(index_float)
+    return _compute_components(intlen, coefficients, offset, index)
+
+
+@numba.njit(cache=True)
+def _spk_compute_array(tdb, init, intlen, coefficients):
+    index_float, offset = np.divmod(
+        (tdb - JPLEPHEM_T0) * JPLEPHEM_S_PER_DAY - init, intlen
+    )
+    index = index_float.astype(np.int64)
+    return _compute_components(intlen, coefficients, offset, index)
+
+
+@numba.njit(cache=True)
+def _compute_components(intlen, coefficients, offset, index):
+    coefficients = coefficients[:, :, index]
+
+    # Chebyshev polynomial.
+    s = 2.0 * offset / intlen - 1.0
+    s2 = 2.0 * s
+
+    w0 = w1 = 0.0 * coefficients[0]
+    for coefficient in coefficients[:-1]:
+        w2 = w1
+        w1 = w0
+        w0 = coefficient + (s2 * w1 - w2)
+
+    components = coefficients[-1] + (s * w0 - w1)
+    return components
+
+
+def spk_compute(segment: jplephem.spk.Segment, tdb: float | np.ndarray):
+    """Compute position for JD time ``tdb`` using ``segment`` from JPLEPHEM SPK.
+
+    This is a slimmed down version of the ``spk.Segment.compute`` function which uses
+    numba to speed up the computation. It is about 10x faster than the original
+    ``spk.Segment.compute`` function.
+
+    This removes support for the ``tdb2`` argument (high time precision) and
+    out-of-bounds handling for times (it will still raise an exception but not as
+    helpful).
+
+    Parameters
+    ----------
+    segment : SPK segment
+        SPK segment from JPLEPHEM SPK Kernel
+    tdb : float or ndarray
+        Time or times in JD (TDB scale)
+    """
+    init, intlen, coefficients = segment._data
+
+    # Handle scalar and array cases separately. I could not figure out a way to convert
+    # float to int in numba for both cases.
+    is_array = isinstance(tdb, np.ndarray)
+    func = _spk_compute_array if is_array else _spk_compute_scalar
+
+    out = func(tdb, init, intlen, coefficients)
+
+    return out
 
 
 def get_planet_barycentric(body: str, time: CxoTimeLike = None):
@@ -191,10 +313,10 @@ def get_planet_barycentric(body: str, time: CxoTimeLike = None):
         )
 
     spk_pairs = BODY_NAME_TO_KERNEL_SPEC[body]
-    time_jd = convert_time_format(time, "jd")
-    pos = kernel[spk_pairs[0]].compute(time_jd)
-    for spk_pair in spk_pairs[1:]:
-        pos += kernel[spk_pair].compute(time_jd)
+    time_jd = convert_time_format_spk(time, "jd")
+    kernel_pairs = (kernel[spk_pair] for spk_pair in spk_pairs)
+    pos_list = [spk_compute(kp, time_jd) for kp in kernel_pairs]
+    pos = np.sum(pos_list, axis=0)
 
     return pos.transpose()  # SPK returns (3, N) but we need (N, 3)
 
@@ -223,24 +345,24 @@ def get_planet_eci(
 
     Parameters
     ----------
-    body
+    body : str
         Body name (lower case planet name)
-    time
+    time : CxoTimeLike, optional
         Time or times for returned position (default=NOW)
-    pos_observer
+    pos_observer : str, optional
         Observer position (default=Earth)
 
     Returns
     -------
-    ndarray
+    ndarray (float)
         Earth-Centered Inertial (ECI) position (km) as (x, y, z)
         or N x (x, y, z)
     """
-    time_sec = convert_time_format(time, "secs")
+    time_sec = convert_time_format_spk(time, "secs")
 
     pos_planet = get_planet_barycentric(body, time_sec)
     if pos_observer is None:
-        pos_observer = get_planet_barycentric("earth", time)
+        pos_observer = get_planet_barycentric("earth", time_sec)
 
     dist = np.sqrt(np.sum((pos_planet - pos_observer) ** 2, axis=-1))  # km
     # Divide distance by the speed of light in km/s
@@ -263,21 +385,22 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
     Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
     follows, where the JPL Horizons positions are used as the "truth".
 
-    - Venus: < 4 arcsec with a peak around 3.5
-    - Mars: < 3 arcsec with a peak around 2.0
-    - Jupiter: < 0.8 arcsec
-    - Saturn: < 0.5 arcsec
+    - Venus: < 0.25 arcsec with a peak around 0.02
+    - Mars: < 0.45 arcsec with a peak around 0.1
+    - Jupiter: < 0.2 arcsec with a peak around 0.1
+    - Saturn: < 0.2 arcsec with a peak around 0.1
 
     Parameters
     ----------
-    body
+    body : str
         Body name
-    time
+    time : CxoTimeLike
         Time or times for returned position (default=NOW)
 
     Returns
     -------
-    position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
+    ndarray (float)
+        Position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
     """
     from cheta import fetch
 
@@ -297,15 +420,15 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
         raise NoEphemerisError("Chandra ephemeris not available")
 
     times = np.atleast_1d(time.secs)
-    dat.interpolate(times=times)
+    ephem = {key: np.interp(times, dat[key].times, dat[key].vals) for key in dat}
 
     pos_earth = get_planet_barycentric("earth", time)
 
     # Chandra position in km
     chandra_eci = np.zeros_like(pos_earth)
-    chandra_eci[..., 0] = dat["orbitephem0_x"].vals.reshape(time.shape) / 1000
-    chandra_eci[..., 1] = dat["orbitephem0_y"].vals.reshape(time.shape) / 1000
-    chandra_eci[..., 2] = dat["orbitephem0_z"].vals.reshape(time.shape) / 1000
+    chandra_eci[..., 0] = ephem["orbitephem0_x"].reshape(time.shape) / 1000
+    chandra_eci[..., 1] = ephem["orbitephem0_y"].reshape(time.shape) / 1000
+    chandra_eci[..., 2] = ephem["orbitephem0_z"].reshape(time.shape) / 1000
     planet_chandra = get_planet_eci(body, time, pos_observer=pos_earth + chandra_eci)
 
     return planet_chandra
@@ -351,8 +474,9 @@ def get_planet_chandra_horizons(
 
     Parameters
     ----------
-    body : one of 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
-        'uranus', 'neptune', or any other body that Horizons supports.
+    body : str
+        One of 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
+        or any other body that Horizons supports.
     timestart
         start time (any CxoTime-compatible time)
     timestop
