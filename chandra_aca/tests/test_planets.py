@@ -9,6 +9,7 @@ from cxotime import CxoTime
 from testr.test_helper import has_internet
 
 from chandra_aca.planets import (
+    convert_time_format_spk,
     get_planet_angular_sep,
     get_planet_barycentric,
     get_planet_chandra,
@@ -194,3 +195,11 @@ def test_get_planet_ang_separation_array(obs_pos, exp_sep):
     ra0, dec0 = 304.89116, -20.08328
     sep = get_planet_angular_sep("jupiter", ra0, dec0, times, observer_position=obs_pos)
     assert np.allclose(sep * 3600, exp_sep, atol=1e-2, rtol=0)
+
+
+def test_convert_time_format_spk_none():
+    """Test bug fix where convert_time_format_spk failed when time was None"""
+    time0 = convert_time_format_spk(None, "secs")
+    time1 = CxoTime(None).secs
+    # Times within 10 seconds
+    assert np.isclose(time0, time1, atol=10, rtol=0)
