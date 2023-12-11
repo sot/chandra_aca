@@ -803,37 +803,42 @@ def test_repeated_frames():
     )
     assert len(packets) == 32
 
-    # the following checks the underlying function used to filter out repeated/missing frames
-    reference = {
-        0: np.array([False, False, False, True, True, True, True, False, False]),
-        1: np.array([False, False, False, True, True, True, True, False, False]),
-        2: np.array([False, False, False, True, True, True, True, False, False]),
-        3: np.array([False, False, False, True, True, True, True, False, False]),
-        4: np.array([True, True, True, True, False, False, False, False, False]),
-        5: np.array([True, True, True, True, False, False, False, False, False]),
-        6: np.array([True, True, True, True, False, False, False, False, False]),
-        7: np.array([True, True, True, True, False, False, False, False, False]),
-        8: np.array([True, True, True, True, True, True, True, True, False]),
-        9: np.array([True, True, True, True, True, True, True, True, False]),
-        (0, 1): np.array([False, False, True, True, True, True, False, False]),
-        (1, 2): np.array([False, False, True, True, True, True, False, False]),
-        (2, 3): np.array([False, False, True, True, True, True, False, False]),
-        (3, 4): np.array([False, False, False, False, False, False, False, False]),
-        (4, 5): np.array([True, True, True, True, False, False, False, False]),
-        (5, 6): np.array([True, True, True, True, False, False, False, False]),
-        (6, 7): np.array([True, True, True, True, False, False, False, False]),
-        (7, 8): np.array([True, True, True, True, False, False, False, False]),
-        (8, 9): np.array([True, True, True, True, True, True, True, True]),
-    }
 
-    counters = list(range(10))
-    for i in range(10):
-        b = counters.copy()
-        del b[i]
-        assert np.all(maude_decom.filter_vcdu_jumps(b) == reference[i])
+def test_filter_vcdu_jumps():
+    filter_vcdu_test_cases = [
+        {"inp": np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {"inp": np.array([0, 2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {"inp": np.array([0, 1, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {"inp": np.array([0, 1, 2, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {"inp": np.array([0, 1, 2, 3, 5, 6, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {"inp": np.array([0, 1, 2, 3, 4, 6, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {"inp": np.array([0, 1, 2, 3, 4, 5, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {"inp": np.array([0, 1, 2, 3, 4, 5, 6, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7, 9]),
+            "exp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7, 8]),
+            "exp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+        },
+        {"inp": np.array([2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {"inp": np.array([0, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {"inp": np.array([0, 1, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {
+            "inp": np.array([0, 1, 2, 5, 6, 7, 8, 9]),
+            "exp": np.array([], dtype=np.int64),
+        },
+        {"inp": np.array([0, 1, 2, 3, 6, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {"inp": np.array([0, 1, 2, 3, 4, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {"inp": np.array([0, 1, 2, 3, 4, 5, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {"inp": np.array([0, 1, 2, 3, 4, 5, 6, 9]), "exp": np.array([0, 1, 2, 3])},
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+            "exp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+        },
+    ]
 
-    for i in range(9):
-        b = counters.copy()
-        del b[i + 1]
-        del b[i]
-        assert np.all(maude_decom.filter_vcdu_jumps(b) == reference[(i, i + 1)])
+    for case in filter_vcdu_test_cases:
+        idx = maude_decom.filter_vcdu_jumps(case["inp"])
+        assert np.all(case["inp"][idx] == case["exp"])
