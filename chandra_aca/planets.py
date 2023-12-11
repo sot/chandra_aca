@@ -134,7 +134,7 @@ def convert_time_format_spk(time, fmt_out):
     ndarray or numpy scalar
         Converted time or times
     """
-    if fmt_out not in ("jd", "secs"):
+    if fmt_out not in ("jd", "secs") or time is None:
         return getattr(CxoTime(time).tdb, fmt_out)
 
     # Check if input is in "secs" by determining if it is a float type scalar or array
