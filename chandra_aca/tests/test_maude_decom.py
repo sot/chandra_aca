@@ -806,6 +806,10 @@ def test_repeated_frames():
 
 def test_filter_vcdu_jumps():
     filter_vcdu_test_cases = [
+        {
+            "inp": np.array([1, 2, 3, 4, 5, 6, 6, 7, 8, 9]),
+            "exp": np.array([4, 5, 6, 7]),
+        },
         {"inp": np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
         {"inp": np.array([0, 2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
         {"inp": np.array([0, 1, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},

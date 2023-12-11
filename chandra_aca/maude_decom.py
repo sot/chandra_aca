@@ -611,11 +611,13 @@ def filter_vcdu_jumps(vcdu_counters):
         - VCDU counters come in packets of four, with each group starting with a multiple of 4.
     """
     current_packet = []  # to group in fours
-    last_frame = 0  # for monotonicity check
+    last_frame = -1  # for monotonicity check
     selected = np.zeros(len(vcdu_counters), dtype=bool)
     for i, vcdu_counter in enumerate(vcdu_counters):
-        if last_frame > vcdu_counter:
+        if last_frame >= vcdu_counter:
+            last_frame = vcdu_counter
             continue
+        last_frame = vcdu_counter
         if vcdu_counter % 4 == 0:
             current_packet = []
         current_packet.append(i)
