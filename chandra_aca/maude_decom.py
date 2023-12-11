@@ -614,7 +614,14 @@ def filter_vcdu_jumps(vcdu_counters):
     last_frame = -1  # for monotonicity check
     selected = np.zeros(len(vcdu_counters), dtype=bool)
     for i, vcdu_counter in enumerate(vcdu_counters):
-        if last_frame >= vcdu_counter:
+        # major frame counter rolls over at 2**17, and minor counter at 2**7
+        # The VCDU counter (which includes both) rolls over at 2**24 (16777216).
+        # The VCDU counter must increase or roll over (in which case it jumps by a large negative
+        # number) In the worse case, it rolls over _and_ 3600*4 frames are missing
+        if not (
+            last_frame < vcdu_counter
+            or (vcdu_counter - last_frame) <= -(16777215 - 3600 * 4)
+        ):
             last_frame = vcdu_counter
             continue
         last_frame = vcdu_counter
