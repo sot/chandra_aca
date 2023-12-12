@@ -563,6 +563,68 @@ def test_vcdu_packet_combination():
     [None for _ in maude_decom._group_packets(packets[:1], False)]
     [None for _ in maude_decom._group_packets(packets[:1], True)]
 
+    # VCDU counter rolls over
+    pkts = [
+        {"MJF": 131071, "MNF": 68, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 72, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 76, "IMGTYPE": 5},
+        {"MJF": 131071, "MNF": 80, "IMGTYPE": 6},
+        {"MJF": 131071, "MNF": 84, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 88, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 92, "IMGTYPE": 5},
+        {"MJF": 131071, "MNF": 96, "IMGTYPE": 6},
+        {"MJF": 131071, "MNF": 100, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 104, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 108, "IMGTYPE": 5},
+        {"MJF": 131071, "MNF": 112, "IMGTYPE": 6},
+        {"MJF": 131071, "MNF": 116, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 120, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 124, "IMGTYPE": 5},
+        {"MJF": 0, "MNF": 0, "IMGTYPE": 6},
+        {"MJF": 0, "MNF": 4, "IMGTYPE": 7},
+        {"MJF": 0, "MNF": 8, "IMGTYPE": 4},
+        {"MJF": 0, "MNF": 12, "IMGTYPE": 5},
+        {"MJF": 0, "MNF": 16, "IMGTYPE": 6},
+        {"MJF": 0, "MNF": 20, "IMGTYPE": 7},
+        {"MJF": 0, "MNF": 24, "IMGTYPE": 4},
+        {"MJF": 0, "MNF": 28, "IMGTYPE": 5},
+    ]
+
+    ref_g_pkts = [
+        [
+            {"MJF": 131071, "MNF": 72, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 76, "IMGTYPE": 5},
+            {"MJF": 131071, "MNF": 80, "IMGTYPE": 6},
+            {"MJF": 131071, "MNF": 84, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 131071, "MNF": 88, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 92, "IMGTYPE": 5},
+            {"MJF": 131071, "MNF": 96, "IMGTYPE": 6},
+            {"MJF": 131071, "MNF": 100, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 131071, "MNF": 104, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 108, "IMGTYPE": 5},
+            {"MJF": 131071, "MNF": 112, "IMGTYPE": 6},
+            {"MJF": 131071, "MNF": 116, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 131071, "MNF": 120, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 124, "IMGTYPE": 5},
+            {"MJF": 0, "MNF": 0, "IMGTYPE": 6},
+            {"MJF": 0, "MNF": 4, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 0, "MNF": 8, "IMGTYPE": 4},
+            {"MJF": 0, "MNF": 12, "IMGTYPE": 5},
+            {"MJF": 0, "MNF": 16, "IMGTYPE": 6},
+            {"MJF": 0, "MNF": 20, "IMGTYPE": 7},
+        ],
+    ]
+    g_pkts = list(maude_decom._group_packets(pkts))
+    assert g_pkts == ref_g_pkts
+
 
 def test_row_col():
     # this tests consistency between different row/col references
@@ -779,6 +841,20 @@ def test_imgtype_dnld(source):
     img_dnld = img["IMGTYPE"] == 3
     assert img_dnld.shape[0] > 0
     assert np.all(all_masked == img_dnld)
+
+
+def test_vcdu_rollover():
+    start = "2023:296:22:20:26"
+    stop = "2023:296:22:20:50"
+    middle = "2023:296:22:20:35.250"
+    middle_2 = "2023:296:22:20:41.750"
+    images_1 = maude_decom.get_aca_images(start, middle)
+    images_2 = maude_decom.get_aca_images(middle_2, stop)
+    images = maude_decom.get_aca_images(start, stop)
+
+    assert images["TIME"].min() == images_1["TIME"].min()
+    assert images["TIME"].max() != images_1["TIME"].max()
+    assert images["TIME"].max() == images_2["TIME"].max()
 
 
 def test_repeated_frames():

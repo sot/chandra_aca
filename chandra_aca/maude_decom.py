@@ -583,8 +583,13 @@ def _group_packets(packets, discard=True):
     res = []
     n = None
     s = None
-    for packet in packets:
-        if res and (packet["MJF"] * 128 + packet["MNF"] > n):
+    rollover = 0
+    for i, packet in enumerate(packets):
+        vcdu = packet["MJF"] * 128 + packet["MNF"]
+        if i > 0 and packets[i - 1]["MJF"] * 128 + packets[i - 1]["MNF"] > vcdu:
+            rollover += 1
+        vcdu += rollover * 1 << 24
+        if res and (vcdu > n):
             if not discard or len(res) == s:
                 yield res
             res = []
@@ -595,7 +600,7 @@ def _group_packets(packets, discard=True):
             remaining = {0: 0, 1: 1, 2: 0, 3: 0, 4: 3, 5: 2, 6: 1, 7: 0}[
                 int(packet["IMGTYPE"])
             ]
-            n = packet["MJF"] * 128 + packet["MNF"] + 4 * remaining
+            n = vcdu + 4 * remaining
         res.append(packet)
     if res and (not discard or len(res) == s):
         yield res
