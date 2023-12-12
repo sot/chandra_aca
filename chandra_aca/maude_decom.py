@@ -565,9 +565,24 @@ def _combine_aca_packets(aca_packets):
 
 def _group_packets(packets, discard=True):
     """
-    ACA telemetry is packed in packets of 225 bytes. Each of these is split in four VCDU frames.
-    Before decommuting an ACA package we group the ACA-related portion of VCDU frames to form the
-    one 225-byte ACA packet.
+    Group ACA image telemetry packets to form full images.
+
+    ACA telemetry is packed in packets of 225 bytes, and each of these is split in four VCDU frames.
+    Each ACA telemetry packet includes pixel telemetry for 16 pixels in each of the 8 slots.
+    A 4x4 image is complete in one packet, whereas 6x6 and 8x8 images are split into two and four
+    packets respectively.
+
+    This function takes a list of dictionaries, with each dictionary containing the pixel
+    telemetry for one slot in a VCDU frame. Each dictionary must have the keys 'MJF', 'MNF'
+    and 'IMGTYPE'. It returns a list of lists of dicts, where each list of dicts contains the pixel
+    telemetry for a full image.
+
+    The function assumes:
+    - all entries correspond to the same slot
+    - the entries are ordered by increasing VCDU counter
+    - missing/repeated VCDU counters have been removed
+
+    If this is not the case, the results will be incorrect.
 
     Parameters
     ----------
@@ -608,7 +623,7 @@ def _group_packets(packets, discard=True):
 
 def filter_vcdu_jumps(vcdu_counters):
     """
-    Return a boolean mas to filter VCDU counters that are not continuous.
+    Return a boolean mask to filter VCDU counters that are not continuous.
 
     The returned mask ensures that::
 
