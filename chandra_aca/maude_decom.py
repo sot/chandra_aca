@@ -596,16 +596,16 @@ def _group_packets(packets, discard=True):
     list of ACA packets
     """
     res = []
-    n = None
-    s = None
+    n = -1
+    s = -1
     rollover = 0
     for i, packet in enumerate(packets):
         vcdu = packet["MJF"] * 128 + packet["MNF"]
         if i > 0 and packets[i - 1]["MJF"] * 128 + packets[i - 1]["MNF"] > vcdu:
             rollover += 1
         vcdu += rollover * 1 << 24
-        if res and (vcdu > n):
-            if not discard or len(res) == s:
+        if vcdu > n:
+            if res and not discard:
                 yield res
             res = []
         if not res:
@@ -617,7 +617,10 @@ def _group_packets(packets, discard=True):
             ]
             n = vcdu + 4 * remaining
         res.append(packet)
-    if res and (not discard or len(res) == s):
+        if vcdu == n and len(res) == s:
+            yield res
+            res = []
+    if res and not discard:
         yield res
 
 

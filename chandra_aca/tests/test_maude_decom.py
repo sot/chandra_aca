@@ -884,40 +884,102 @@ def test_filter_vcdu_jumps():
     filter_vcdu_test_cases = [
         {
             "inp": np.array([1, 2, 3, 4, 5, 6, 6, 7, 8, 9]),
-            "exp": np.array([4, 5, 6, 7]),
+            "exp": np.array(
+                [False, False, False, True, True, True, False, True, False, False]
+            ),
         },
-        {"inp": np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
-        {"inp": np.array([0, 2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
-        {"inp": np.array([0, 1, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
-        {"inp": np.array([0, 1, 2, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
-        {"inp": np.array([0, 1, 2, 3, 5, 6, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
-        {"inp": np.array([0, 1, 2, 3, 4, 6, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
-        {"inp": np.array([0, 1, 2, 3, 4, 5, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
-        {"inp": np.array([0, 1, 2, 3, 4, 5, 6, 8, 9]), "exp": np.array([0, 1, 2, 3])},
+        {
+            "inp": np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 2, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 6, 7, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 7, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
         {
             "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7, 9]),
-            "exp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+            "exp": np.array([True, True, True, True, True, True, True, True, False]),
         },
         {
             "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7, 8]),
-            "exp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+            "exp": np.array([True, True, True, True, True, True, True, True, False]),
         },
-        {"inp": np.array([2, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
-        {"inp": np.array([0, 3, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
-        {"inp": np.array([0, 1, 4, 5, 6, 7, 8, 9]), "exp": np.array([4, 5, 6, 7])},
+        {
+            "inp": np.array([2, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array([False, False, True, True, True, True, False, False]),
+        },
+        {
+            "inp": np.array([0, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array([False, False, True, True, True, True, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array([False, False, True, True, True, True, False, False]),
+        },
         {
             "inp": np.array([0, 1, 2, 5, 6, 7, 8, 9]),
-            "exp": np.array([], dtype=np.int64),
+            "exp": np.array([False, False, False, False, False, False, False, False]),
         },
-        {"inp": np.array([0, 1, 2, 3, 6, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
-        {"inp": np.array([0, 1, 2, 3, 4, 7, 8, 9]), "exp": np.array([0, 1, 2, 3])},
-        {"inp": np.array([0, 1, 2, 3, 4, 5, 8, 9]), "exp": np.array([0, 1, 2, 3])},
-        {"inp": np.array([0, 1, 2, 3, 4, 5, 6, 9]), "exp": np.array([0, 1, 2, 3])},
+        {
+            "inp": np.array([0, 1, 2, 3, 6, 7, 8, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 7, 8, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 8, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
         {
             "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
-            "exp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+            "exp": np.array([True, True, True, True, True, True, True, True]),
         },
-        # VCDU roll over
         {
             "inp": np.array(
                 [
@@ -945,30 +1007,29 @@ def test_filter_vcdu_jumps():
             ),
             "exp": np.array(
                 [
-                    16777204,
-                    16777205,
-                    16777206,
-                    16777207,
-                    16777208,
-                    16777209,
-                    16777210,
-                    16777211,
-                    16777212,
-                    16777213,
-                    16777214,
-                    16777215,
-                    0,
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
                 ]
             ),
         },
-        # VCDU roll over and missing VCDUs
         {
             "inp": np.array(
                 [
@@ -996,30 +1057,29 @@ def test_filter_vcdu_jumps():
             ),
             "exp": np.array(
                 [
-                    16777204,
-                    16777205,
-                    16777206,
-                    16777207,
-                    16777208,
-                    16777209,
-                    16777210,
-                    16777211,
-                    16777212,
-                    16777213,
-                    16777214,
-                    16777215,
-                    14400,
-                    14401,
-                    14402,
-                    14403,
-                    14404,
-                    14405,
-                    14406,
-                    14407,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
                 ]
             ),
         },
-        # VCDU roll over and missing VCDUs
         {
             "inp": np.array(
                 [
@@ -1047,30 +1107,29 @@ def test_filter_vcdu_jumps():
             ),
             "exp": np.array(
                 [
-                    16762804,
-                    16762805,
-                    16762806,
-                    16762807,
-                    16762808,
-                    16762809,
-                    16762810,
-                    16762811,
-                    16762812,
-                    16762813,
-                    16762814,
-                    16762815,
-                    0,
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
                 ]
             ),
         },
-        # VCDU roll over and missing VCDUs
         {
             "inp": np.array(
                 [
@@ -1098,26 +1157,26 @@ def test_filter_vcdu_jumps():
             ),
             "exp": np.array(
                 [
-                    16770004,
-                    16770005,
-                    16770006,
-                    16770007,
-                    16770008,
-                    16770009,
-                    16770010,
-                    16770011,
-                    16770012,
-                    16770013,
-                    16770014,
-                    16770015,
-                    7200,
-                    7201,
-                    7202,
-                    7203,
-                    7204,
-                    7205,
-                    7206,
-                    7207,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
                 ]
             ),
         },
@@ -1125,4 +1184,4 @@ def test_filter_vcdu_jumps():
 
     for case in filter_vcdu_test_cases:
         idx = maude_decom.filter_vcdu_jumps(case["inp"])
-        assert np.all(case["inp"][idx] == case["exp"])
+        assert np.all(idx == case["exp"])
