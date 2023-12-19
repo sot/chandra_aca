@@ -563,6 +563,68 @@ def test_vcdu_packet_combination():
     [None for _ in maude_decom._group_packets(packets[:1], False)]
     [None for _ in maude_decom._group_packets(packets[:1], True)]
 
+    # VCDU counter rolls over
+    pkts = [
+        {"MJF": 131071, "MNF": 68, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 72, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 76, "IMGTYPE": 5},
+        {"MJF": 131071, "MNF": 80, "IMGTYPE": 6},
+        {"MJF": 131071, "MNF": 84, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 88, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 92, "IMGTYPE": 5},
+        {"MJF": 131071, "MNF": 96, "IMGTYPE": 6},
+        {"MJF": 131071, "MNF": 100, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 104, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 108, "IMGTYPE": 5},
+        {"MJF": 131071, "MNF": 112, "IMGTYPE": 6},
+        {"MJF": 131071, "MNF": 116, "IMGTYPE": 7},
+        {"MJF": 131071, "MNF": 120, "IMGTYPE": 4},
+        {"MJF": 131071, "MNF": 124, "IMGTYPE": 5},
+        {"MJF": 0, "MNF": 0, "IMGTYPE": 6},
+        {"MJF": 0, "MNF": 4, "IMGTYPE": 7},
+        {"MJF": 0, "MNF": 8, "IMGTYPE": 4},
+        {"MJF": 0, "MNF": 12, "IMGTYPE": 5},
+        {"MJF": 0, "MNF": 16, "IMGTYPE": 6},
+        {"MJF": 0, "MNF": 20, "IMGTYPE": 7},
+        {"MJF": 0, "MNF": 24, "IMGTYPE": 4},
+        {"MJF": 0, "MNF": 28, "IMGTYPE": 5},
+    ]
+
+    ref_g_pkts = [
+        [
+            {"MJF": 131071, "MNF": 72, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 76, "IMGTYPE": 5},
+            {"MJF": 131071, "MNF": 80, "IMGTYPE": 6},
+            {"MJF": 131071, "MNF": 84, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 131071, "MNF": 88, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 92, "IMGTYPE": 5},
+            {"MJF": 131071, "MNF": 96, "IMGTYPE": 6},
+            {"MJF": 131071, "MNF": 100, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 131071, "MNF": 104, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 108, "IMGTYPE": 5},
+            {"MJF": 131071, "MNF": 112, "IMGTYPE": 6},
+            {"MJF": 131071, "MNF": 116, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 131071, "MNF": 120, "IMGTYPE": 4},
+            {"MJF": 131071, "MNF": 124, "IMGTYPE": 5},
+            {"MJF": 0, "MNF": 0, "IMGTYPE": 6},
+            {"MJF": 0, "MNF": 4, "IMGTYPE": 7},
+        ],
+        [
+            {"MJF": 0, "MNF": 8, "IMGTYPE": 4},
+            {"MJF": 0, "MNF": 12, "IMGTYPE": 5},
+            {"MJF": 0, "MNF": 16, "IMGTYPE": 6},
+            {"MJF": 0, "MNF": 20, "IMGTYPE": 7},
+        ],
+    ]
+    g_pkts = list(maude_decom._group_packets(pkts))
+    assert g_pkts == ref_g_pkts
+
 
 def test_row_col():
     # this tests consistency between different row/col references
@@ -779,3 +841,347 @@ def test_imgtype_dnld(source):
     img_dnld = img["IMGTYPE"] == 3
     assert img_dnld.shape[0] > 0
     assert np.all(all_masked == img_dnld)
+
+
+def test_vcdu_rollover():
+    start = "2023:296:22:20:26"
+    stop = "2023:296:22:20:50"
+    middle = "2023:296:22:20:35.250"
+    middle_2 = "2023:296:22:20:41.750"
+    images_1 = maude_decom.get_aca_images(start, middle)
+    images_2 = maude_decom.get_aca_images(middle_2, stop)
+    images = maude_decom.get_aca_images(start, stop)
+
+    assert images["TIME"].min() == images_1["TIME"].min()
+    assert images["TIME"].max() != images_1["TIME"].max()
+    assert images["TIME"].max() == images_2["TIME"].max()
+
+
+def test_repeated_frames():
+    import pickle
+
+    with open(
+        os.path.join(os.path.dirname(__file__), "data", "repeat_frames.pkl"), "rb"
+    ) as fh:
+        frames = pickle.load(fh)
+    # this has repeated frames
+    packets = maude_decom.get_aca_packets(
+        start="2023:297:12:00:00", stop="2023:297:12:02:00", frames=frames
+    )
+    assert len(packets) == 40
+
+    # and removing one VCDU frame results in one ACA packet missing (eight slots)
+    frames["data"]["frames"] = (
+        frames["data"]["frames"][:7] + frames["data"]["frames"][7 + 1 :]
+    )
+    packets = maude_decom.get_aca_packets(
+        start="2023:297:12:00:00", stop="2023:297:12:02:00", frames=frames
+    )
+    assert len(packets) == 32
+
+
+def test_filter_vcdu_jumps():
+    filter_vcdu_test_cases = [
+        {
+            "inp": np.array([1, 2, 3, 4, 5, 6, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, False, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 2, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [False, False, False, True, True, True, True, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 5, 6, 7, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 6, 7, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 7, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 8, 9]),
+            "exp": np.array(
+                [True, True, True, True, False, False, False, False, False]
+            ),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7, 9]),
+            "exp": np.array([True, True, True, True, True, True, True, True, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7, 8]),
+            "exp": np.array([True, True, True, True, True, True, True, True, False]),
+        },
+        {
+            "inp": np.array([2, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array([False, False, True, True, True, True, False, False]),
+        },
+        {
+            "inp": np.array([0, 3, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array([False, False, True, True, True, True, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 4, 5, 6, 7, 8, 9]),
+            "exp": np.array([False, False, True, True, True, True, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 5, 6, 7, 8, 9]),
+            "exp": np.array([False, False, False, False, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 6, 7, 8, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 7, 8, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 8, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 9]),
+            "exp": np.array([True, True, True, True, False, False, False, False]),
+        },
+        {
+            "inp": np.array([0, 1, 2, 3, 4, 5, 6, 7]),
+            "exp": np.array([True, True, True, True, True, True, True, True]),
+        },
+        {
+            "inp": np.array(
+                [
+                    16777204,
+                    16777205,
+                    16777206,
+                    16777207,
+                    16777208,
+                    16777209,
+                    16777210,
+                    16777211,
+                    16777212,
+                    16777213,
+                    16777214,
+                    16777215,
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                ]
+            ),
+            "exp": np.array(
+                [
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                ]
+            ),
+        },
+        {
+            "inp": np.array(
+                [
+                    16777204,
+                    16777205,
+                    16777206,
+                    16777207,
+                    16777208,
+                    16777209,
+                    16777210,
+                    16777211,
+                    16777212,
+                    16777213,
+                    16777214,
+                    16777215,
+                    14400,
+                    14401,
+                    14402,
+                    14403,
+                    14404,
+                    14405,
+                    14406,
+                    14407,
+                ]
+            ),
+            "exp": np.array(
+                [
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                ]
+            ),
+        },
+        {
+            "inp": np.array(
+                [
+                    16762804,
+                    16762805,
+                    16762806,
+                    16762807,
+                    16762808,
+                    16762809,
+                    16762810,
+                    16762811,
+                    16762812,
+                    16762813,
+                    16762814,
+                    16762815,
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                ]
+            ),
+            "exp": np.array(
+                [
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                ]
+            ),
+        },
+        {
+            "inp": np.array(
+                [
+                    16770004,
+                    16770005,
+                    16770006,
+                    16770007,
+                    16770008,
+                    16770009,
+                    16770010,
+                    16770011,
+                    16770012,
+                    16770013,
+                    16770014,
+                    16770015,
+                    7200,
+                    7201,
+                    7202,
+                    7203,
+                    7204,
+                    7205,
+                    7206,
+                    7207,
+                ]
+            ),
+            "exp": np.array(
+                [
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                ]
+            ),
+        },
+    ]
+
+    for case in filter_vcdu_test_cases:
+        idx = maude_decom.filter_vcdu_jumps(case["inp"])
+        assert np.all(idx == case["exp"])

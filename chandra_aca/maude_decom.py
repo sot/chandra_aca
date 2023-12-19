@@ -565,9 +565,24 @@ def _combine_aca_packets(aca_packets):
 
 def _group_packets(packets, discard=True):
     """
-    ACA telemetry is packed in packets of 225 bytes. Each of these is split in four VCDU frames.
-    Before decommuting an ACA package we group the ACA-related portion of VCDU frames to form the
-    one 225-byte ACA packet.
+    Group ACA image telemetry packets to form full images.
+
+    ACA telemetry is packed in packets of 225 bytes, and each of these is split in four VCDU frames.
+    Each ACA telemetry packet includes pixel telemetry for 16 pixels in each of the 8 slots.
+    A 4x4 image is complete in one packet, whereas 6x6 and 8x8 images are split into two and four
+    packets respectively.
+
+    This function takes a list of dictionaries, with each dictionary containing the pixel
+    telemetry for one slot in a VCDU frame. Each dictionary must have the keys 'MJF', 'MNF'
+    and 'IMGTYPE'. It returns a list of lists of dicts, where each list of dicts contains the pixel
+    telemetry for a full image.
+
+    The function assumes:
+    - all entries correspond to the same slot
+    - the entries are ordered by increasing VCDU counter
+    - missing/repeated VCDU counters have been removed
+
+    If this is not the case, the results will be incorrect.
 
     Parameters
     ----------
@@ -581,11 +596,16 @@ def _group_packets(packets, discard=True):
     list of ACA packets
     """
     res = []
-    n = None
-    s = None
-    for packet in packets:
-        if res and (packet["MJF"] * 128 + packet["MNF"] > n):
-            if not discard or len(res) == s:
+    n = -1
+    s = -1
+    rollover = 0
+    for i, packet in enumerate(packets):
+        vcdu = packet["MJF"] * 128 + packet["MNF"]
+        if i > 0 and packets[i - 1]["MJF"] * 128 + packets[i - 1]["MNF"] > vcdu:
+            rollover += 1
+        vcdu += rollover * 1 << 24
+        if vcdu > n:
+            if res and not discard:
                 yield res
             res = []
         if not res:
@@ -595,10 +615,45 @@ def _group_packets(packets, discard=True):
             remaining = {0: 0, 1: 1, 2: 0, 3: 0, 4: 3, 5: 2, 6: 1, 7: 0}[
                 int(packet["IMGTYPE"])
             ]
-            n = packet["MJF"] * 128 + packet["MNF"] + 4 * remaining
+            n = vcdu + 4 * remaining
         res.append(packet)
-    if res and (not discard or len(res) == s):
+        if vcdu == n and len(res) == s:
+            yield res
+            res = []
+    if res and not discard:
         yield res
+
+
+def filter_vcdu_jumps(vcdu_counters):
+    """
+    Return a boolean mask to filter VCDU counters that are not continuous.
+
+    The returned mask ensures that::
+
+        - VCDU counters are a strictly monotonic sequence.
+        - VCDU counters come in packets of four, with each group starting with a multiple of 4.
+    """
+    current_packet = []  # to group in fours
+    last_frame = -1  # for monotonicity check
+    selected = np.zeros(len(vcdu_counters), dtype=bool)
+    for i, vcdu_counter in enumerate(vcdu_counters):
+        # major frame counter rolls over at 2**17, and minor counter at 2**7
+        # The VCDU counter (which includes both) rolls over at 2**24 (16777216).
+        # The VCDU counter must increase or roll over (in which case it jumps by a large negative
+        # number) In the worse case, it rolls over _and_ 3600*4 frames are missing
+        if not (
+            last_frame < vcdu_counter
+            or (vcdu_counter - last_frame) <= -(16777215 - 3600 * 4)
+        ):
+            last_frame = vcdu_counter
+            continue
+        last_frame = vcdu_counter
+        if vcdu_counter % 4 == 0:
+            current_packet = []
+        current_packet.append(i)
+        if vcdu_counter % 4 == 3 and len(current_packet) == 4:
+            selected[current_packet] = True
+    return selected
 
 
 def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
@@ -647,18 +702,24 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     flags = frames["f"]
     frames = frames["frames"]
 
-    # Getting major and minor frames to figure out which is the first ACA packet in a group
+    # ACA telemetry data is split into four frames. Each frame has a counter, and the first frame
+    # in each group of four has a counter that is a multiple of 4. The following unpacks
+    # the VCDU counter from the front matter of each frame.
     # The VCDU counter is stored in 24 bits, and struct.unpack does not have a 24-bit format code.
     # We therefore decom the bytes separately and combine them into a single integer using the
     # following weights:
-    w = np.array([1, 2**8, 2**16])[::-1]
-    vcdu_times = np.array([frame["t"] for frame in frames])
+    weights = np.array([1 << 16, 1 << 8, 1 << 0])
     vcdu = np.array(
-        [np.sum(w * _unpack("BBB", frame["bytes"][2:5])) for frame in frames]
+        [np.sum(weights * _unpack("BBB", frame["bytes"][2:5])) for frame in frames]
     )
 
-    if np.any(np.diff(vcdu) != 1):
-        raise Exception("VCDU frames are not contiguous")  # a sanity check
+    # the following ensures that:
+    #  - VCDU numbers are a strictly monotonic sequence
+    #  - Frames come in packets of four. A missing frame would cause the packet to be dropped.
+    selected = filter_vcdu_jumps(vcdu)
+    vcdu = vcdu[selected]
+    frames = [frame for frame, sel in zip(frames, selected) if sel]
+    vcdu_times = np.array([frame["t"] for frame in frames])
 
     sub = vcdu % 4  # the minor frame index within each ACA update
 
@@ -669,6 +730,15 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     n = major_counter.max() + 1 if len(major_counter) > 0 else 1
     # only unpack complete ACA frames in the original range:
     aca_frame_entries = np.ma.masked_all((n, 4), dtype=int)
+    if len(frames) == 0:
+        return {
+            "flags": 0,
+            "packets": [],
+            "TIME": [],
+            "MNF": [],
+            "MJF": [],
+            "VCDUCTR": [],
+        }
     aca_frame_entries[major_counter, sub] = np.arange(vcdu_times.shape[0])
     aca_frame_times = np.ma.masked_all((n, 4))
     aca_frame_times[major_counter, sub] = vcdu_times
