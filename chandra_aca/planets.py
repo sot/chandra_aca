@@ -40,6 +40,7 @@ __all__ = (
     "get_planet_eci",
     "get_planet_chandra_horizons",
     "get_planet_angular_sep",
+    "get_earth_boresight_angle",
     "NoEphemerisError",
     "GET_PLANET_ECI_ERRORS",
     "GET_PLANET_CHANDRA_ERRORS",
@@ -586,3 +587,69 @@ def get_planet_chandra_horizons(
     del dat["null3"]
 
     return dat
+
+
+def get_earth_boresight_angle(start, stop):
+    """Calculate Earth boresight angle from Chandra.
+
+    Parameters
+    ----------
+    start : CxoTime-compatible
+        Start time
+    stop : CxoTime-compatible
+        Stop time
+
+    Returns
+    -------
+    dict
+        Dictionary with keys:
+        - times: CxoTime array (cxosec)
+        - earth_limb_angle: Earth limb angle ndarray (deg)
+        - earth_open_angle: Earth open angle ndarray (deg)
+        - earth_center_angle: Earth center angle ndarray (deg)
+    """
+    from cheta import fetch
+
+    RAD_EARTH = 6371000.0  # m
+    start = CxoTime(start)
+    stop = CxoTime(stop)
+
+    msids_ephem = fetch.MSIDset(
+        ["orbitephem0_x", "orbitephem0_y", "orbitephem0_z"],
+        start - 15 * u.min,
+        stop + 15 * u.min,
+    )
+
+    msid_q_att = fetch.Msid("quat_aoattqt", start, stop)
+
+    q_att = msid_q_att.vals
+    q_att_times = msid_q_att.times
+
+    ephem_times = msids_ephem["orbitephem0_x"].times
+    p_chandra_eci = np.array(
+        [
+            np.interp(
+                x=q_att_times,
+                xp=ephem_times,
+                fp=msids_ephem[f"orbitephem0_{axis}"].vals,
+            )
+            for axis in ["x", "y", "z"]
+        ]
+    ).transpose()
+
+    q_att_inv = q_att.transform.swapaxes(1, 2)
+    p_earth_body = np.einsum("ijk,ik->ij", q_att_inv, -p_chandra_eci)
+
+    open_angle = np.arcsin(RAD_EARTH / np.linalg.norm(p_earth_body, axis=1))
+
+    earth_center_angle = np.arctan2(
+        np.hypot(p_earth_body[:, 1], p_earth_body[:, 2]), p_earth_body[:, 0]
+    )
+
+    out = {
+        "times": q_att_times,
+        "earth_limb_angle": np.rad2deg(earth_center_angle - open_angle),
+        "earth_open_angle": np.rad2deg(open_angle),
+        "earth_center_angle": np.rad2deg(earth_center_angle),
+    }
+    return out
