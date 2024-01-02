@@ -718,8 +718,5 @@ def get_earth_blocks(
     from cheta.utils import logical_intervals
 
     eba = get_earth_boresight_angle(start, stop)
-    blocks = logical_intervals(
-        eba.times.secs, eba.earth_limb_angle < min_limb_angle
-    )
+    blocks = logical_intervals(eba.times.secs, eba.earth_limb_angle < min_limb_angle)
     return blocks
-
