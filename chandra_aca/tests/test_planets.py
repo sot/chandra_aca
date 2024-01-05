@@ -15,7 +15,7 @@ from chandra_aca.planets import (
     get_planet_chandra,
     get_planet_chandra_horizons,
     get_planet_eci,
-    get_earth_boresight_angle,
+    get_earth_blocks,
 )
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 
@@ -207,14 +207,13 @@ def test_convert_time_format_spk_none():
 
 
 def test_earth_boresight():
-    """Find Earth blocks in 2023:290:00:00:00 to 2023:310:00:00:00"""
+    """Find Earth blocks in 2023:290:00:00:00 to 2023:310:00:00:00.
+
+    This calls get_earth_boresight_angle() so that function is implicitly tested.
+    """
     start = "2023:290"
     stop = "2023:310"
 
-    from cheta.utils import logical_intervals
-
-    angles = get_earth_boresight_angle(start, stop)
-    blocks = logical_intervals(angles.times.secs, angles.earth_limb_angle < 10.0)
     # The two long blocks are in perigee and correspond to Earth blocks seen in ACA
     # image data and manually excluded from monitor window processing:
     # EARTH_BLOCKS = [
@@ -234,4 +233,6 @@ def test_earth_boresight():
         "2023:309:03:33:42.369 2023:309:03:39:28.819  346.450",
         "2023:309:11:26:53.845 2023:309:11:31:18.295  264.450",
     ]
+
+    blocks = get_earth_blocks(start, stop, min_limb_angle=10.0)
     assert blocks["datestart", "datestop", "duration"].pformat_all() == exp

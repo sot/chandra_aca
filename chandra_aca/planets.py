@@ -615,11 +615,17 @@ class EarthBoresightAngles:
     earth_center_angle: np.ndarray
 
 
-def get_earth_boresight_angle(start: CxoTimeLike, stop: CxoTimeLike):
+def get_earth_boresight_angle(
+    start: CxoTimeLike,
+    stop: CxoTimeLike,
+) -> EarthBoresightAngles:
     """Calculate Earth boresight angle from Chandra.
 
-    The key calculations were adapted from acis_taco.calc_earth_vis() so there is some
-    heritage.
+    The boresight angle is the angle from the ACA boresight to the Earth limb or center.
+    This assumes that the Earth is spherical with radius 6371 km. The Earth position
+    relative to Chandra is interpolated from cheta's ``orbitephem0``.
+
+    The opening angle is the angle from the Earth center to limb as viewed from Chandra.
 
     Parameters
     ----------
@@ -640,6 +646,7 @@ def get_earth_boresight_angle(start: CxoTimeLike, stop: CxoTimeLike):
     """
     from cheta import fetch
 
+    # The key calculations here were adapted from acis_taco.calc_earth_vis().
     RAD_EARTH = 6371000.0  # m
     start = CxoTime(start)
     stop = CxoTime(stop)
@@ -656,6 +663,8 @@ def get_earth_boresight_angle(start: CxoTimeLike, stop: CxoTimeLike):
     q_att_times = msid_q_att.times
 
     ephem_times = msids_ephem["orbitephem0_x"].times
+
+    # (N, 3) of Chandra position relative to Earth in m
     p_chandra_eci = np.array(
         [
             np.interp(
@@ -667,11 +676,18 @@ def get_earth_boresight_angle(start: CxoTimeLike, stop: CxoTimeLike):
         ]
     ).transpose()
 
+    # Compute Earth position relative to Chandra to the Chandra body frame:
+    #   -p_chandra_eci: position of Chandra relative to Earth in the Earth frame.
+    #   q_att^-1 * -p_chandra_eci: position of Earth relative to Chandra in body frame.
+    #   einsum: dot product of q_att^-1 * -p_chandra_eci with each row of q_att^-1.
+    #     (N, 3, 3) . (N, 3) -> (N, 3)
     q_att_inv = q_att.transform.swapaxes(1, 2)
     p_earth_body = np.einsum("ijk,ik->ij", q_att_inv, -p_chandra_eci)
 
+    # This equation is evident by drawing a circle and a tangent line.
     open_angle = np.arcsin(RAD_EARTH / np.linalg.norm(p_earth_body, axis=1))
 
+    # p_earth_body[:, 0] is along the ACA boresight axis (body x).
     earth_center_angle = np.arctan2(
         np.hypot(p_earth_body[:, 1], p_earth_body[:, 2]), p_earth_body[:, 0]
     )
@@ -688,6 +704,7 @@ def get_earth_boresight_angle(start: CxoTimeLike, stop: CxoTimeLike):
 def get_earth_blocks(
     start: CxoTimeLike,
     stop: CxoTimeLike = None,
+    *,
     min_limb_angle: float = 10.0,
 ) -> Table:
     """Get intervals of Earth blocks in ``start`` to ``stop`` time interval.
