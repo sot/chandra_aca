@@ -15,6 +15,7 @@ from chandra_aca.planets import (
     get_planet_chandra,
     get_planet_chandra_horizons,
     get_planet_eci,
+    get_earth_blocks,
 )
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 
@@ -203,3 +204,35 @@ def test_convert_time_format_spk_none():
     time1 = CxoTime(None).secs
     # Times within 10 seconds
     assert np.isclose(time0, time1, atol=10, rtol=0)
+
+
+def test_earth_boresight():
+    """Find Earth blocks in 2023:290:00:00:00 to 2023:310:00:00:00.
+
+    This calls get_earth_boresight_angle() so that function is implicitly tested.
+    """
+    start = "2023:290"
+    stop = "2023:310"
+
+    # The two long blocks are in perigee and correspond to Earth blocks seen in ACA
+    # image data and manually excluded from monitor window processing:
+    # EARTH_BLOCKS = [
+    #   ("2023:297:12:23:00", "2023:297:12:48:37"),
+    #   ("2023:300:03:49:00", "2023:300:04:16:40"),
+    # ]
+    exp = [
+        "      datestart              datestop       duration",
+        "--------------------- --------------------- --------",
+        "2023:297:12:21:06.304 2023:297:12:49:59.579 1733.275",  # perigee
+        "2023:298:20:54:50.436 2023:298:20:59:39.486  289.050",
+        "2023:300:03:47:33.744 2023:300:04:16:31.119 1737.375",  # perigee
+        "2023:300:17:11:19.997 2023:300:17:17:38.222  378.225",
+        "2023:301:00:38:35.523 2023:301:00:43:43.023  307.500",
+        "2023:305:21:35:24.050 2023:305:21:40:39.750  315.700",
+        "2023:307:06:10:18.908 2023:307:06:15:29.483  310.575",
+        "2023:309:03:33:42.369 2023:309:03:39:28.819  346.450",
+        "2023:309:11:26:53.845 2023:309:11:31:18.295  264.450",
+    ]
+
+    blocks = get_earth_blocks(start, stop, min_limb_angle=10.0)
+    assert blocks["datestart", "datestop", "duration"].pformat_all() == exp
