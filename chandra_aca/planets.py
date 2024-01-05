@@ -677,7 +677,7 @@ def get_earth_boresight_angle(
     ).transpose()
 
     # Compute Earth position relative to Chandra to the Chandra body frame:
-    #   -p_chandra_eci: position of Chandra relative to Earth in the Earth frame.
+    #   -p_chandra_eci: position of Earth relative to Chandra in the Earth frame.
     #   q_att^-1 * -p_chandra_eci: position of Earth relative to Chandra in body frame.
     #   einsum: dot product of q_att^-1 * -p_chandra_eci with each row of q_att^-1.
     #     (N, 3, 3) . (N, 3) -> (N, 3)
