@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.planets &#8212; chandra_aca 4.44.0 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.45.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
@@ -59,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.44.0 documentation</a>
+	<a href="index.html">chandra_aca 4.45.0 documentation</a>
 	 &#187;
       </li>
       
@@ -82,10 +82,10 @@ Horizons positions are used as the “truth”.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt><cite>get_planet_chandra</cite> errors:</dt><dd><ul>
-<li><p>Venus: &lt; 4 arcsec with a peak around 3.5</p></li>
-<li><p>Mars: &lt; 3 arcsec with a peak around 2.0</p></li>
-<li><p>Jupiter: &lt; 0.8 arcsec</p></li>
-<li><p>Saturn: &lt; 0.5 arcsec</p></li>
+<li><p>Venus: &lt; 0.25 arcsec with a peak around 0.02</p></li>
+<li><p>Mars: &lt; 0.45 arcsec with a peak around 0.1</p></li>
+<li><p>Jupiter: &lt; 0.2 arcsec with a peak around 0.1</p></li>
+<li><p>Saturn: &lt; 0.2 arcsec with a peak around 0.1</p></li>
 </ul>
 </dd>
 </dl>
@@ -102,10 +102,95 @@ Horizons positions are used as the “truth”.</p>
 </li>
 </ul>
 <p>See the <code class="docutils literal notranslate"><span class="pre">validation/planet-accuracy.ipynb</span></code> notebook for details.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="chandra_aca.planets.EarthBoresightAngles">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">EarthBoresightAngles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_limb_angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_open_angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_center_angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#EarthBoresightAngles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.EarthBoresightAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Earth boresight angles from Chandra</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>times</strong><span class="classifier">CxoTime</span></dt><dd><p>Times</p>
+</dd>
+<dt><strong>earth_limb_angle</strong><span class="classifier">ndarray</span></dt><dd><p>Earth limb angle (deg)</p>
+</dd>
+<dt><strong>earth_open_angle</strong><span class="classifier">ndarray</span></dt><dd><p>Earth opening angle (deg)</p>
+</dd>
+<dt><strong>earth_center_angle</strong><span class="classifier">ndarray</span></dt><dd><p>Earth center angle (deg)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py exception">
 <dt class="sig sig-object py" id="chandra_aca.planets.NoEphemerisError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">NoEphemerisError</span></span><a class="reference internal" href="_modules/chandra_aca/planets.html#NoEphemerisError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.NoEphemerisError" title="Permalink to this definition">¶</a></dt>
 <dd><p>If there is no Chandra orbital ephemeris available</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.planets.get_earth_blocks">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_earth_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_limb_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_earth_blocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_earth_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get intervals of Earth blocks in <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">stop</span></code> time interval.</p>
+<p>An “Earth block” is when the Earth limb is within <code class="docutils literal notranslate"><span class="pre">min_limb_angle</span></code> of the Chandra
+ACA boresight.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong><span class="classifier">CxoTime-compatible</span></dt><dd><p>Start time</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">CxoTime-compatible, optional</span></dt><dd><p>Stop time (default=NOW)</p>
+</dd>
+<dt><strong>min_limb_angle</strong><span class="classifier">float, optional</span></dt><dd><p>Minimum limb angle (deg) for block (default=10)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Table</dt><dd><p>Table of Earth blocks with columns:</p>
+<ul class="simple">
+<li><p>datestart</p></li>
+<li><p>datestop</p></li>
+<li><p>duration</p></li>
+<li><p>tstart</p></li>
+<li><p>tstop</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.planets.get_earth_boresight_angle">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_earth_boresight_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/planets.html#get_earth_boresight_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.planets.get_earth_boresight_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Earth boresight angle from Chandra.</p>
+<p>The boresight angle is the angle from the ACA boresight to the Earth limb or center.
+This assumes that the Earth is spherical with radius 6371 km. The Earth position
+relative to Chandra is interpolated from cheta’s <code class="docutils literal notranslate"><span class="pre">orbitephem0</span></code>.</p>
+<p>The opening angle is the angle from the Earth center to limb as viewed from Chandra.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong><span class="classifier">CxoTime-compatible</span></dt><dd><p>Start time</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">CxoTime-compatible</span></dt><dd><p>Stop time</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>EarthBoresightAngles</dt><dd><p>Dataclass with attributes:</p>
+<ul class="simple">
+<li><p>times (CxoTime)</p></li>
+<li><p>earth_limb_angle (deg)</p></li>
+<li><p>earth_open_angle (deg)</p></li>
+<li><p>earth_center_angle (deg)</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -177,23 +262,24 @@ Chandra to <code class="docutils literal notranslate"><span class="pre">body</sp
 <p>Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
 follows, where the JPL Horizons positions are used as the “truth”.</p>
 <ul class="simple">
-<li><p>Venus: &lt; 4 arcsec with a peak around 3.5</p></li>
-<li><p>Mars: &lt; 3 arcsec with a peak around 2.0</p></li>
-<li><p>Jupiter: &lt; 0.8 arcsec</p></li>
-<li><p>Saturn: &lt; 0.5 arcsec</p></li>
+<li><p>Venus: &lt; 0.25 arcsec with a peak around 0.02</p></li>
+<li><p>Mars: &lt; 0.45 arcsec with a peak around 0.1</p></li>
+<li><p>Jupiter: &lt; 0.2 arcsec with a peak around 0.1</p></li>
+<li><p>Saturn: &lt; 0.2 arcsec with a peak around 0.1</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>body</strong></dt><dd><p>Body name</p>
+<dt><strong>body</strong><span class="classifier">str</span></dt><dd><p>Body name</p>
 </dd>
-<dt><strong>time</strong></dt><dd><p>Time or times for returned position (default=NOW)</p>
+<dt><strong>time</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Time or times for returned position (default=NOW)</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>position relative to Chandra (km) as (x, y, z) or N x (x, y, z)</dt><dd></dd>
+<dt>ndarray (float)</dt><dd><p>Position relative to Chandra (km) as (x, y, z) or N x (x, y, z)</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -231,7 +317,8 @@ of the Horizons response and a <code class="docutils literal notranslate"><span 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>body</strong><span class="classifier">one of ‘mercury’, ‘venus’, ‘mars’, ‘jupiter’, ‘saturn’,</span></dt><dd><p>‘uranus’, ‘neptune’, or any other body that Horizons supports.</p>
+<dt><strong>body</strong><span class="classifier">str</span></dt><dd><p>One of ‘mercury’, ‘venus’, ‘mars’, ‘jupiter’, ‘saturn’, ‘uranus’, ‘neptune’,
+or any other body that Horizons supports.</p>
 </dd>
 <dt><strong>timestart</strong></dt><dd><p>start time (any CxoTime-compatible time)</p>
 </dd>
@@ -273,17 +360,17 @@ position is Earth (default).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>body</strong></dt><dd><p>Body name (lower case planet name)</p>
+<dt><strong>body</strong><span class="classifier">str</span></dt><dd><p>Body name (lower case planet name)</p>
 </dd>
-<dt><strong>time</strong></dt><dd><p>Time or times for returned position (default=NOW)</p>
+<dt><strong>time</strong><span class="classifier">CxoTimeLike, optional</span></dt><dd><p>Time or times for returned position (default=NOW)</p>
 </dd>
-<dt><strong>pos_observer</strong></dt><dd><p>Observer position (default=Earth)</p>
+<dt><strong>pos_observer</strong><span class="classifier">str, optional</span></dt><dd><p>Observer position (default=Earth)</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>ndarray</dt><dd><p>Earth-Centered Inertial (ECI) position (km) as (x, y, z)
+<dt>ndarray (float)</dt><dd><p>Earth-Centered Inertial (ECI) position (km) as (x, y, z)
 or N x (x, y, z)</p>
 </dd>
 </dl>
@@ -302,7 +389,10 @@ or N x (x, y, z)</p>
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
 <li><a class="reference internal" href="#">chandra_aca.planets</a><ul>
+<li><a class="reference internal" href="#chandra_aca.planets.EarthBoresightAngles"><code class="docutils literal notranslate"><span class="pre">EarthBoresightAngles</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.planets.NoEphemerisError"><code class="docutils literal notranslate"><span class="pre">NoEphemerisError</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.planets.get_earth_blocks"><code class="docutils literal notranslate"><span class="pre">get_earth_blocks()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.planets.get_earth_boresight_angle"><code class="docutils literal notranslate"><span class="pre">get_earth_boresight_angle()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.planets.get_planet_angular_sep"><code class="docutils literal notranslate"><span class="pre">get_planet_angular_sep()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.planets.get_planet_barycentric"><code class="docutils literal notranslate"><span class="pre">get_planet_barycentric()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.planets.get_planet_chandra"><code class="docutils literal notranslate"><span class="pre">get_planet_chandra()</span></code></a></li>

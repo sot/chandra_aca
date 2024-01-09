@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.planets &#8212; chandra_aca 4.44.0 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.45.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -45,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.44.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.45.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -70,10 +70,10 @@
 <span class="sd">Horizons positions are used as the &quot;truth&quot;.</span>
 
 <span class="sd">- `get_planet_chandra` errors:</span>
-<span class="sd">    - Venus: &lt; 4 arcsec with a peak around 3.5</span>
-<span class="sd">    - Mars: &lt; 3 arcsec with a peak around 2.0</span>
-<span class="sd">    - Jupiter: &lt; 0.8 arcsec</span>
-<span class="sd">    - Saturn: &lt; 0.5 arcsec</span>
+<span class="sd">    - Venus: &lt; 0.25 arcsec with a peak around 0.02</span>
+<span class="sd">    - Mars: &lt; 0.45 arcsec with a peak around 0.1</span>
+<span class="sd">    - Jupiter: &lt; 0.2 arcsec with a peak around 0.1</span>
+<span class="sd">    - Saturn: &lt; 0.2 arcsec with a peak around 0.1</span>
 
 <span class="sd">- `get_planet_eci` errors:</span>
 <span class="sd">    - Venus: &lt; 12 arcmin with peak around 2 arcmin</span>
@@ -83,14 +83,18 @@
 
 <span class="sd">See the ``validation/planet-accuracy.ipynb`` notebook for details.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
+<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">import</span> <span class="nn">jplephem.spk</span>
+<span class="kn">import</span> <span class="nn">numba</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">ascii</span>
-<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">convert_time_format</span>
+<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
 <span class="kn">from</span> <span class="nn">ska_helpers.utils</span> <span class="kn">import</span> <span class="n">LazyVal</span>
 
 <span class="kn">from</span> <span class="nn">chandra_aca.transform</span> <span class="kn">import</span> <span class="n">eci_to_radec</span>
@@ -101,6 +105,9 @@
     <span class="s2">&quot;get_planet_eci&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_planet_chandra_horizons&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_planet_angular_sep&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_earth_boresight_angle&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_earth_blocks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EarthBoresightAngles&quot;</span><span class="p">,</span>
     <span class="s2">&quot;NoEphemerisError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;GET_PLANET_ECI_ERRORS&quot;</span><span class="p">,</span>
     <span class="s2">&quot;GET_PLANET_CHANDRA_ERRORS&quot;</span><span class="p">,</span>
@@ -127,15 +134,13 @@
 
 
 <span class="k">def</span> <span class="nf">load_kernel</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">jplephem.spk</span> <span class="kn">import</span> <span class="n">SPK</span>
-
     <span class="n">kernel_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;de432s.bsp&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">kernel_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;kernel data file </span><span class="si">{</span><span class="n">kernel_path</span><span class="si">}</span><span class="s2"> not found, &quot;</span>
             <span class="s1">&#39;run &quot;python setup.py build&quot; to install it locally&#39;</span>
         <span class="p">)</span>
-    <span class="n">kernel</span> <span class="o">=</span> <span class="n">SPK</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">kernel_path</span><span class="p">)</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">jplephem</span><span class="o">.</span><span class="n">spk</span><span class="o">.</span><span class="n">SPK</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">kernel_path</span><span class="p">)</span>
     <span class="kn">import</span> <span class="nn">atexit</span>
 
     <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">_close_kernel</span><span class="p">)</span>
@@ -146,6 +151,8 @@
     <span class="n">KERNEL</span><span class="o">.</span><span class="n">val</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
+<span class="n">JPLEPHEM_T0</span> <span class="o">=</span> <span class="n">jplephem</span><span class="o">.</span><span class="n">spk</span><span class="o">.</span><span class="n">T0</span>
+<span class="n">JPLEPHEM_S_PER_DAY</span> <span class="o">=</span> <span class="n">jplephem</span><span class="o">.</span><span class="n">spk</span><span class="o">.</span><span class="n">S_PER_DAY</span>
 <span class="n">KERNEL</span> <span class="o">=</span> <span class="n">LazyVal</span><span class="p">(</span><span class="n">load_kernel</span><span class="p">)</span>
 <span class="n">BODY_NAME_TO_KERNEL_SPEC</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
     <span class="p">[</span>
@@ -164,6 +171,58 @@
     <span class="p">]</span>
 <span class="p">)</span>
 <span class="n">URL_HORIZONS</span> <span class="o">=</span> <span class="s2">&quot;https://ssd.jpl.nasa.gov/api/horizons.api?&quot;</span>
+
+<span class="c1"># NOTE: using TDB scale is important because the JPL ephemeris requires JD in TDB.</span>
+<span class="c1"># Without that CxoTime(0.0).jd is the JD in UTC which is different by 63.184 s.</span>
+<span class="n">JD_CXCSEC0_TDB</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">tdb</span><span class="o">.</span><span class="n">jd</span>
+
+
+<span class="k">def</span> <span class="nf">convert_time_format_spk</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">fmt_out</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fast version of convert_time_format for use with JPLEPHEM SPK.</span>
+
+<span class="sd">    For use with JPLEPHEM SPK, which requires JD in TDB.</span>
+
+<span class="sd">    This is much faster for float (secs) input and &quot;secs&quot; or &quot;jd&quot; output formats.</span>
+
+<span class="sd">    For &quot;jd&quot; and formats other than &quot;secs&quot;, the output is in TDB. For &quot;secs&quot; the output</span>
+<span class="sd">    is in seconds since 1998.0 (TT), which is unaffected by the time scale.</span>
+
+<span class="sd">    This function is suitable for using in planet position calculations since it is good</span>
+<span class="sd">    to about 1 ms.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time : CxoTimeLike</span>
+<span class="sd">        Time or times</span>
+<span class="sd">    fmt_out : str</span>
+<span class="sd">        Output format (any supported CxoTime format)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray or numpy scalar</span>
+<span class="sd">        Converted time or times</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">fmt_out</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;jd&quot;</span><span class="p">,</span> <span class="s2">&quot;secs&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">tdb</span><span class="p">,</span> <span class="n">fmt_out</span><span class="p">)</span>
+
+    <span class="c1"># Check if input is in &quot;secs&quot; by determining if it is a float type scalar or array</span>
+    <span class="n">not_secs</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">not_secs</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span><span class="p">:</span>
+            <span class="n">not_secs</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">not_secs</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">CxoTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">tdb</span><span class="p">,</span> <span class="n">fmt_out</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">fmt_out</span> <span class="o">==</span> <span class="s2">&quot;jd&quot;</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">JD_CXCSEC0_TDB</span> <span class="o">+</span> <span class="n">time</span> <span class="o">/</span> <span class="mf">86400.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># fmt_out == &#39;secs&#39; and input time format is secs so no conversion is needed.</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">time</span>
+
+    <span class="k">return</span> <span class="n">out</span>
 
 
 <div class="viewcode-block" id="get_planet_angular_sep"><a class="viewcode-back" href="../../planets.html#chandra_aca.planets.get_planet_angular_sep">[docs]</a><span class="k">def</span> <span class="nf">get_planet_angular_sep</span><span class="p">(</span>
@@ -196,14 +255,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">agasc</span> <span class="kn">import</span> <span class="n">sphere_dist</span>
 
+    <span class="n">time_secs</span> <span class="o">=</span> <span class="n">convert_time_format_spk</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;secs&quot;</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s2">&quot;earth&quot;</span><span class="p">:</span>
-        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time_secs</span><span class="p">)</span>
         <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s2">&quot;chandra&quot;</span><span class="p">:</span>
-        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_chandra</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="n">eci</span> <span class="o">=</span> <span class="n">get_planet_chandra</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time_secs</span><span class="p">)</span>
         <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span> <span class="o">=</span> <span class="n">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">observer_position</span> <span class="o">==</span> <span class="s2">&quot;chandra-horizons&quot;</span><span class="p">:</span>
-        <span class="n">time_secs</span> <span class="o">=</span> <span class="n">convert_time_format</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;secs&quot;</span><span class="p">)</span>
+        <span class="n">time_secs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_secs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">time_secs</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
             <span class="n">time_secs</span> <span class="o">=</span> <span class="p">[</span><span class="n">time_secs</span><span class="p">,</span> <span class="n">time_secs</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">]</span>
@@ -226,6 +287,72 @@
 
     <span class="n">sep</span> <span class="o">=</span> <span class="n">sphere_dist</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">body_ra</span><span class="p">,</span> <span class="n">body_dec</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">sep</span></div>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_spk_compute_scalar</span><span class="p">(</span><span class="n">tdb</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">intlen</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">):</span>
+    <span class="n">index_float</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divmod</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tdb</span> <span class="o">-</span> <span class="n">JPLEPHEM_T0</span><span class="p">)</span> <span class="o">*</span> <span class="n">JPLEPHEM_S_PER_DAY</span> <span class="o">-</span> <span class="n">init</span><span class="p">,</span> <span class="n">intlen</span>
+    <span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index_float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_compute_components</span><span class="p">(</span><span class="n">intlen</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_spk_compute_array</span><span class="p">(</span><span class="n">tdb</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">intlen</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">):</span>
+    <span class="n">index_float</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divmod</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tdb</span> <span class="o">-</span> <span class="n">JPLEPHEM_T0</span><span class="p">)</span> <span class="o">*</span> <span class="n">JPLEPHEM_S_PER_DAY</span> <span class="o">-</span> <span class="n">init</span><span class="p">,</span> <span class="n">intlen</span>
+    <span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">index_float</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_compute_components</span><span class="p">(</span><span class="n">intlen</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_compute_components</span><span class="p">(</span><span class="n">intlen</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">coefficients</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">index</span><span class="p">]</span>
+
+    <span class="c1"># Chebyshev polynomial.</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">offset</span> <span class="o">/</span> <span class="n">intlen</span> <span class="o">-</span> <span class="mf">1.0</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">s</span>
+
+    <span class="n">w0</span> <span class="o">=</span> <span class="n">w1</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">coefficient</span> <span class="ow">in</span> <span class="n">coefficients</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">w2</span> <span class="o">=</span> <span class="n">w1</span>
+        <span class="n">w1</span> <span class="o">=</span> <span class="n">w0</span>
+        <span class="n">w0</span> <span class="o">=</span> <span class="n">coefficient</span> <span class="o">+</span> <span class="p">(</span><span class="n">s2</span> <span class="o">*</span> <span class="n">w1</span> <span class="o">-</span> <span class="n">w2</span><span class="p">)</span>
+
+    <span class="n">components</span> <span class="o">=</span> <span class="n">coefficients</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">s</span> <span class="o">*</span> <span class="n">w0</span> <span class="o">-</span> <span class="n">w1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">components</span>
+
+
+<span class="k">def</span> <span class="nf">spk_compute</span><span class="p">(</span><span class="n">segment</span><span class="p">:</span> <span class="n">jplephem</span><span class="o">.</span><span class="n">spk</span><span class="o">.</span><span class="n">Segment</span><span class="p">,</span> <span class="n">tdb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute position for JD time ``tdb`` using ``segment`` from JPLEPHEM SPK.</span>
+
+<span class="sd">    This is a slimmed down version of the ``spk.Segment.compute`` function which uses</span>
+<span class="sd">    numba to speed up the computation. It is about 10x faster than the original</span>
+<span class="sd">    ``spk.Segment.compute`` function.</span>
+
+<span class="sd">    This removes support for the ``tdb2`` argument (high time precision) and</span>
+<span class="sd">    out-of-bounds handling for times (it will still raise an exception but not as</span>
+<span class="sd">    helpful).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    segment : SPK segment</span>
+<span class="sd">        SPK segment from JPLEPHEM SPK Kernel</span>
+<span class="sd">    tdb : float or ndarray</span>
+<span class="sd">        Time or times in JD (TDB scale)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">init</span><span class="p">,</span> <span class="n">intlen</span><span class="p">,</span> <span class="n">coefficients</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">_data</span>
+
+    <span class="c1"># Handle scalar and array cases separately. I could not figure out a way to convert</span>
+    <span class="c1"># float to int in numba for both cases.</span>
+    <span class="n">is_array</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tdb</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">_spk_compute_array</span> <span class="k">if</span> <span class="n">is_array</span> <span class="k">else</span> <span class="n">_spk_compute_scalar</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">tdb</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">intlen</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span>
 
 
 <div class="viewcode-block" id="get_planet_barycentric"><a class="viewcode-back" href="../../planets.html#chandra_aca.planets.get_planet_barycentric">[docs]</a><span class="k">def</span> <span class="nf">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">CxoTimeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -254,10 +381,10 @@
         <span class="p">)</span>
 
     <span class="n">spk_pairs</span> <span class="o">=</span> <span class="n">BODY_NAME_TO_KERNEL_SPEC</span><span class="p">[</span><span class="n">body</span><span class="p">]</span>
-    <span class="n">time_jd</span> <span class="o">=</span> <span class="n">convert_time_format</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;jd&quot;</span><span class="p">)</span>
-    <span class="n">pos</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">[</span><span class="n">spk_pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">time_jd</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">spk_pair</span> <span class="ow">in</span> <span class="n">spk_pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-        <span class="n">pos</span> <span class="o">+=</span> <span class="n">kernel</span><span class="p">[</span><span class="n">spk_pair</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">time_jd</span><span class="p">)</span>
+    <span class="n">time_jd</span> <span class="o">=</span> <span class="n">convert_time_format_spk</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;jd&quot;</span><span class="p">)</span>
+    <span class="n">kernel_pairs</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel</span><span class="p">[</span><span class="n">spk_pair</span><span class="p">]</span> <span class="k">for</span> <span class="n">spk_pair</span> <span class="ow">in</span> <span class="n">spk_pairs</span><span class="p">)</span>
+    <span class="n">pos_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">spk_compute</span><span class="p">(</span><span class="n">kp</span><span class="p">,</span> <span class="n">time_jd</span><span class="p">)</span> <span class="k">for</span> <span class="n">kp</span> <span class="ow">in</span> <span class="n">kernel_pairs</span><span class="p">]</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pos_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">pos</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>  <span class="c1"># SPK returns (3, N) but we need (N, 3)</span></div>
 
@@ -286,24 +413,24 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    body</span>
+<span class="sd">    body : str</span>
 <span class="sd">        Body name (lower case planet name)</span>
-<span class="sd">    time</span>
+<span class="sd">    time : CxoTimeLike, optional</span>
 <span class="sd">        Time or times for returned position (default=NOW)</span>
-<span class="sd">    pos_observer</span>
+<span class="sd">    pos_observer : str, optional</span>
 <span class="sd">        Observer position (default=Earth)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    ndarray</span>
+<span class="sd">    ndarray (float)</span>
 <span class="sd">        Earth-Centered Inertial (ECI) position (km) as (x, y, z)</span>
 <span class="sd">        or N x (x, y, z)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">time_sec</span> <span class="o">=</span> <span class="n">convert_time_format</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;secs&quot;</span><span class="p">)</span>
+    <span class="n">time_sec</span> <span class="o">=</span> <span class="n">convert_time_format_spk</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">&quot;secs&quot;</span><span class="p">)</span>
 
     <span class="n">pos_planet</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time_sec</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pos_observer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">pos_observer</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="n">pos_observer</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span> <span class="n">time_sec</span><span class="p">)</span>
 
     <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">pos_planet</span> <span class="o">-</span> <span class="n">pos_observer</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># km</span>
     <span class="c1"># Divide distance by the speed of light in km/s</span>
@@ -326,21 +453,22 @@
 <span class="sd">    Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as</span>
 <span class="sd">    follows, where the JPL Horizons positions are used as the &quot;truth&quot;.</span>
 
-<span class="sd">    - Venus: &lt; 4 arcsec with a peak around 3.5</span>
-<span class="sd">    - Mars: &lt; 3 arcsec with a peak around 2.0</span>
-<span class="sd">    - Jupiter: &lt; 0.8 arcsec</span>
-<span class="sd">    - Saturn: &lt; 0.5 arcsec</span>
+<span class="sd">    - Venus: &lt; 0.25 arcsec with a peak around 0.02</span>
+<span class="sd">    - Mars: &lt; 0.45 arcsec with a peak around 0.1</span>
+<span class="sd">    - Jupiter: &lt; 0.2 arcsec with a peak around 0.1</span>
+<span class="sd">    - Saturn: &lt; 0.2 arcsec with a peak around 0.1</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    body</span>
+<span class="sd">    body : str</span>
 <span class="sd">        Body name</span>
-<span class="sd">    time</span>
+<span class="sd">    time : CxoTimeLike</span>
 <span class="sd">        Time or times for returned position (default=NOW)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    position relative to Chandra (km) as (x, y, z) or N x (x, y, z)</span>
+<span class="sd">    ndarray (float)</span>
+<span class="sd">        Position relative to Chandra (km) as (x, y, z) or N x (x, y, z)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">cheta</span> <span class="kn">import</span> <span class="n">fetch</span>
 
@@ -360,15 +488,15 @@
         <span class="k">raise</span> <span class="n">NoEphemerisError</span><span class="p">(</span><span class="s2">&quot;Chandra ephemeris not available&quot;</span><span class="p">)</span>
 
     <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">secs</span><span class="p">)</span>
-    <span class="n">dat</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+    <span class="n">ephem</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dat</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">dat</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dat</span><span class="p">}</span>
 
     <span class="n">pos_earth</span> <span class="o">=</span> <span class="n">get_planet_barycentric</span><span class="p">(</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
 
     <span class="c1"># Chandra position in km</span>
     <span class="n">chandra_eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pos_earth</span><span class="p">)</span>
-    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;orbitephem0_x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
-    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;orbitephem0_y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
-    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;orbitephem0_z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ephem</span><span class="p">[</span><span class="s2">&quot;orbitephem0_x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ephem</span><span class="p">[</span><span class="s2">&quot;orbitephem0_y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="n">chandra_eci</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">ephem</span><span class="p">[</span><span class="s2">&quot;orbitephem0_z&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
     <span class="n">planet_chandra</span> <span class="o">=</span> <span class="n">get_planet_eci</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">pos_observer</span><span class="o">=</span><span class="n">pos_earth</span> <span class="o">+</span> <span class="n">chandra_eci</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">planet_chandra</span></div>
@@ -414,8 +542,9 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    body : one of &#39;mercury&#39;, &#39;venus&#39;, &#39;mars&#39;, &#39;jupiter&#39;, &#39;saturn&#39;,</span>
-<span class="sd">        &#39;uranus&#39;, &#39;neptune&#39;, or any other body that Horizons supports.</span>
+<span class="sd">    body : str</span>
+<span class="sd">        One of &#39;mercury&#39;, &#39;venus&#39;, &#39;mars&#39;, &#39;jupiter&#39;, &#39;saturn&#39;, &#39;uranus&#39;, &#39;neptune&#39;,</span>
+<span class="sd">        or any other body that Horizons supports.</span>
 <span class="sd">    timestart</span>
 <span class="sd">        start time (any CxoTime-compatible time)</span>
 <span class="sd">    timestop</span>
@@ -525,6 +654,152 @@
     <span class="k">del</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;null3&quot;</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">dat</span></div>
+
+
+<div class="viewcode-block" id="EarthBoresightAngles"><a class="viewcode-back" href="../../planets.html#chandra_aca.planets.EarthBoresightAngles">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">EarthBoresightAngles</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Earth boresight angles from Chandra</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : CxoTime</span>
+<span class="sd">        Times</span>
+<span class="sd">    earth_limb_angle : ndarray</span>
+<span class="sd">        Earth limb angle (deg)</span>
+<span class="sd">    earth_open_angle : ndarray</span>
+<span class="sd">        Earth opening angle (deg)</span>
+<span class="sd">    earth_center_angle : ndarray</span>
+<span class="sd">        Earth center angle (deg)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">times</span><span class="p">:</span> <span class="n">CxoTime</span>
+    <span class="n">earth_limb_angle</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">earth_open_angle</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">earth_center_angle</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></div>
+
+
+<div class="viewcode-block" id="get_earth_boresight_angle"><a class="viewcode-back" href="../../planets.html#chandra_aca.planets.get_earth_boresight_angle">[docs]</a><span class="k">def</span> <span class="nf">get_earth_boresight_angle</span><span class="p">(</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
+    <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EarthBoresightAngles</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Earth boresight angle from Chandra.</span>
+
+<span class="sd">    The boresight angle is the angle from the ACA boresight to the Earth limb or center.</span>
+<span class="sd">    This assumes that the Earth is spherical with radius 6371 km. The Earth position</span>
+<span class="sd">    relative to Chandra is interpolated from cheta&#39;s ``orbitephem0``.</span>
+
+<span class="sd">    The opening angle is the angle from the Earth center to limb as viewed from Chandra.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start : CxoTime-compatible</span>
+<span class="sd">        Start time</span>
+<span class="sd">    stop : CxoTime-compatible</span>
+<span class="sd">        Stop time</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EarthBoresightAngles</span>
+<span class="sd">        Dataclass with attributes:</span>
+
+<span class="sd">        - times (CxoTime)</span>
+<span class="sd">        - earth_limb_angle (deg)</span>
+<span class="sd">        - earth_open_angle (deg)</span>
+<span class="sd">        - earth_center_angle (deg)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">cheta</span> <span class="kn">import</span> <span class="n">fetch</span>
+
+    <span class="c1"># The key calculations here were adapted from acis_taco.calc_earth_vis().</span>
+    <span class="n">RAD_EARTH</span> <span class="o">=</span> <span class="mf">6371000.0</span>  <span class="c1"># m</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+
+    <span class="n">msids_ephem</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">MSIDset</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;orbitephem0_x&quot;</span><span class="p">,</span> <span class="s2">&quot;orbitephem0_y&quot;</span><span class="p">,</span> <span class="s2">&quot;orbitephem0_z&quot;</span><span class="p">],</span>
+        <span class="n">start</span> <span class="o">-</span> <span class="mi">15</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+        <span class="n">stop</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">msid_q_att</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;quat_aoattqt&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+
+    <span class="n">q_att</span> <span class="o">=</span> <span class="n">msid_q_att</span><span class="o">.</span><span class="n">vals</span>
+    <span class="n">q_att_times</span> <span class="o">=</span> <span class="n">msid_q_att</span><span class="o">.</span><span class="n">times</span>
+
+    <span class="n">ephem_times</span> <span class="o">=</span> <span class="n">msids_ephem</span><span class="p">[</span><span class="s2">&quot;orbitephem0_x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">times</span>
+
+    <span class="c1"># (N, 3) of Chandra position relative to Earth in m</span>
+    <span class="n">p_chandra_eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">q_att_times</span><span class="p">,</span>
+                <span class="n">xp</span><span class="o">=</span><span class="n">ephem_times</span><span class="p">,</span>
+                <span class="n">fp</span><span class="o">=</span><span class="n">msids_ephem</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;orbitephem0_</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+    <span class="c1"># Compute Earth position relative to Chandra to the Chandra body frame:</span>
+    <span class="c1">#   -p_chandra_eci: position of Earth relative to Chandra in the Earth frame.</span>
+    <span class="c1">#   q_att^-1 * -p_chandra_eci: position of Earth relative to Chandra in body frame.</span>
+    <span class="c1">#   einsum: dot product of q_att^-1 * -p_chandra_eci with each row of q_att^-1.</span>
+    <span class="c1">#     (N, 3, 3) . (N, 3) -&gt; (N, 3)</span>
+    <span class="n">q_att_inv</span> <span class="o">=</span> <span class="n">q_att</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">p_earth_body</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ik-&gt;ij&quot;</span><span class="p">,</span> <span class="n">q_att_inv</span><span class="p">,</span> <span class="o">-</span><span class="n">p_chandra_eci</span><span class="p">)</span>
+
+    <span class="c1"># This equation is evident by drawing a circle and a tangent line.</span>
+    <span class="n">open_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">RAD_EARTH</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p_earth_body</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># p_earth_body[:, 0] is along the ACA boresight axis (body x).</span>
+    <span class="n">earth_center_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">p_earth_body</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">p_earth_body</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">p_earth_body</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">EarthBoresightAngles</span><span class="p">(</span>
+        <span class="n">times</span><span class="o">=</span><span class="n">CxoTime</span><span class="p">(</span><span class="n">q_att_times</span><span class="p">),</span>
+        <span class="n">earth_limb_angle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">earth_center_angle</span> <span class="o">-</span> <span class="n">open_angle</span><span class="p">),</span>
+        <span class="n">earth_open_angle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">open_angle</span><span class="p">),</span>
+        <span class="n">earth_center_angle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">earth_center_angle</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="get_earth_blocks"><a class="viewcode-back" href="../../planets.html#chandra_aca.planets.get_earth_blocks">[docs]</a><span class="k">def</span> <span class="nf">get_earth_blocks</span><span class="p">(</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
+    <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">min_limb_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get intervals of Earth blocks in ``start`` to ``stop`` time interval.</span>
+
+<span class="sd">    An &quot;Earth block&quot; is when the Earth limb is within ``min_limb_angle`` of the Chandra</span>
+<span class="sd">    ACA boresight.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start : CxoTime-compatible</span>
+<span class="sd">        Start time</span>
+<span class="sd">    stop : CxoTime-compatible, optional</span>
+<span class="sd">        Stop time (default=NOW)</span>
+<span class="sd">    min_limb_angle : float, optional</span>
+<span class="sd">        Minimum limb angle (deg) for block (default=10)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Table</span>
+<span class="sd">        Table of Earth blocks with columns:</span>
+
+<span class="sd">        - datestart</span>
+<span class="sd">        - datestop</span>
+<span class="sd">        - duration</span>
+<span class="sd">        - tstart</span>
+<span class="sd">        - tstop</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">cheta.utils</span> <span class="kn">import</span> <span class="n">logical_intervals</span>
+
+    <span class="n">eba</span> <span class="o">=</span> <span class="n">get_earth_boresight_angle</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="n">logical_intervals</span><span class="p">(</span><span class="n">eba</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">secs</span><span class="p">,</span> <span class="n">eba</span><span class="o">.</span><span class="n">earth_limb_angle</span> <span class="o">&lt;</span> <span class="n">min_limb_angle</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">blocks</span></div>
 </pre></div>
 
             <div class="clearer"></div>

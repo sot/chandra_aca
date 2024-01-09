@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.44.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.45.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
     
@@ -45,7 +45,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.44.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.45.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -628,9 +628,24 @@
 
 <span class="k">def</span> <span class="nf">_group_packets</span><span class="p">(</span><span class="n">packets</span><span class="p">,</span> <span class="n">discard</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    ACA telemetry is packed in packets of 225 bytes. Each of these is split in four VCDU frames.</span>
-<span class="sd">    Before decommuting an ACA package we group the ACA-related portion of VCDU frames to form the</span>
-<span class="sd">    one 225-byte ACA packet.</span>
+<span class="sd">    Group ACA image telemetry packets to form full images.</span>
+
+<span class="sd">    ACA telemetry is packed in packets of 225 bytes, and each of these is split in four VCDU frames.</span>
+<span class="sd">    Each ACA telemetry packet includes pixel telemetry for 16 pixels in each of the 8 slots.</span>
+<span class="sd">    A 4x4 image is complete in one packet, whereas 6x6 and 8x8 images are split into two and four</span>
+<span class="sd">    packets respectively.</span>
+
+<span class="sd">    This function takes a list of dictionaries, with each dictionary containing the pixel</span>
+<span class="sd">    telemetry for one slot in a VCDU frame. Each dictionary must have the keys &#39;MJF&#39;, &#39;MNF&#39;</span>
+<span class="sd">    and &#39;IMGTYPE&#39;. It returns a list of lists of dicts, where each list of dicts contains the pixel</span>
+<span class="sd">    telemetry for a full image.</span>
+
+<span class="sd">    The function assumes:</span>
+<span class="sd">    - all entries correspond to the same slot</span>
+<span class="sd">    - the entries are ordered by increasing VCDU counter</span>
+<span class="sd">    - missing/repeated VCDU counters have been removed</span>
+
+<span class="sd">    If this is not the case, the results will be incorrect.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -644,11 +659,16 @@
 <span class="sd">    list of ACA packets</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">packets</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">res</span> <span class="ow">and</span> <span class="p">(</span><span class="n">packet</span><span class="p">[</span><span class="s2">&quot;MJF&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">128</span> <span class="o">+</span> <span class="n">packet</span><span class="p">[</span><span class="s2">&quot;MNF&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">discard</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">==</span> <span class="n">s</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">rollover</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">packet</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">packets</span><span class="p">):</span>
+        <span class="n">vcdu</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="s2">&quot;MJF&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">128</span> <span class="o">+</span> <span class="n">packet</span><span class="p">[</span><span class="s2">&quot;MNF&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">packets</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;MJF&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">128</span> <span class="o">+</span> <span class="n">packets</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;MNF&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">vcdu</span><span class="p">:</span>
+            <span class="n">rollover</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">vcdu</span> <span class="o">+=</span> <span class="n">rollover</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">24</span>
+        <span class="k">if</span> <span class="n">vcdu</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">res</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">discard</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">res</span>
             <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="p">:</span>
@@ -658,10 +678,45 @@
             <span class="n">remaining</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">:</span> <span class="mi">0</span><span class="p">}[</span>
                 <span class="nb">int</span><span class="p">(</span><span class="n">packet</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">])</span>
             <span class="p">]</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="s2">&quot;MJF&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">128</span> <span class="o">+</span> <span class="n">packet</span><span class="p">[</span><span class="s2">&quot;MNF&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">remaining</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">vcdu</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">remaining</span>
         <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">res</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">discard</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">==</span> <span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">vcdu</span> <span class="o">==</span> <span class="n">n</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">==</span> <span class="n">s</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">res</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">discard</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">res</span>
+
+
+<div class="viewcode-block" id="filter_vcdu_jumps"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.filter_vcdu_jumps">[docs]</a><span class="k">def</span> <span class="nf">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a boolean mask to filter VCDU counters that are not continuous.</span>
+
+<span class="sd">    The returned mask ensures that::</span>
+
+<span class="sd">        - VCDU counters are a strictly monotonic sequence.</span>
+<span class="sd">        - VCDU counters come in packets of four, with each group starting with a multiple of 4.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">current_packet</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># to group in fours</span>
+    <span class="n">last_frame</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># for monotonicity check</span>
+    <span class="n">selected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vcdu_counter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">):</span>
+        <span class="c1"># major frame counter rolls over at 2**17, and minor counter at 2**7</span>
+        <span class="c1"># The VCDU counter (which includes both) rolls over at 2**24 (16777216).</span>
+        <span class="c1"># The VCDU counter must increase or roll over (in which case it jumps by a large negative</span>
+        <span class="c1"># number) In the worse case, it rolls over _and_ 3600*4 frames are missing</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">last_frame</span> <span class="o">&lt;</span> <span class="n">vcdu_counter</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="n">vcdu_counter</span> <span class="o">-</span> <span class="n">last_frame</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="p">(</span><span class="mi">16777215</span> <span class="o">-</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">last_frame</span> <span class="o">=</span> <span class="n">vcdu_counter</span>
+            <span class="k">continue</span>
+        <span class="n">last_frame</span> <span class="o">=</span> <span class="n">vcdu_counter</span>
+        <span class="k">if</span> <span class="n">vcdu_counter</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">current_packet</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_packet</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vcdu_counter</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_packet</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">selected</span><span class="p">[</span><span class="n">current_packet</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">selected</span></div>
 
 
 <div class="viewcode-block" id="get_raw_aca_packets"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
@@ -710,18 +765,24 @@
     <span class="n">flags</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="s2">&quot;f&quot;</span><span class="p">]</span>
     <span class="n">frames</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="s2">&quot;frames&quot;</span><span class="p">]</span>
 
-    <span class="c1"># Getting major and minor frames to figure out which is the first ACA packet in a group</span>
+    <span class="c1"># ACA telemetry data is split into four frames. Each frame has a counter, and the first frame</span>
+    <span class="c1"># in each group of four has a counter that is a multiple of 4. The following unpacks</span>
+    <span class="c1"># the VCDU counter from the front matter of each frame.</span>
     <span class="c1"># The VCDU counter is stored in 24 bits, and struct.unpack does not have a 24-bit format code.</span>
     <span class="c1"># We therefore decom the bytes separately and combine them into a single integer using the</span>
     <span class="c1"># following weights:</span>
-    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">16</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">vcdu_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">frame</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">])</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">])</span>
     <span class="n">vcdu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBB&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;bytes&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">]))</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span> <span class="o">*</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBB&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;bytes&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">]))</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">]</span>
     <span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">vcdu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;VCDU frames are not contiguous&quot;</span><span class="p">)</span>  <span class="c1"># a sanity check</span>
+    <span class="c1"># the following ensures that:</span>
+    <span class="c1">#  - VCDU numbers are a strictly monotonic sequence</span>
+    <span class="c1">#  - Frames come in packets of four. A missing frame would cause the packet to be dropped.</span>
+    <span class="n">selected</span> <span class="o">=</span> <span class="n">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu</span><span class="p">)</span>
+    <span class="n">vcdu</span> <span class="o">=</span> <span class="n">vcdu</span><span class="p">[</span><span class="n">selected</span><span class="p">]</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frame</span> <span class="k">for</span> <span class="n">frame</span><span class="p">,</span> <span class="n">sel</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">selected</span><span class="p">)</span> <span class="k">if</span> <span class="n">sel</span><span class="p">]</span>
+    <span class="n">vcdu_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">frame</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">])</span>
 
     <span class="n">sub</span> <span class="o">=</span> <span class="n">vcdu</span> <span class="o">%</span> <span class="mi">4</span>  <span class="c1"># the minor frame index within each ACA update</span>
 
@@ -732,6 +793,15 @@
     <span class="n">n</span> <span class="o">=</span> <span class="n">major_counter</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">major_counter</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
     <span class="c1"># only unpack complete ACA frames in the original range:</span>
     <span class="n">aca_frame_entries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;flags&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;packets&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;TIME&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;MNF&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;MJF&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;VCDUCTR&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
     <span class="n">aca_frame_entries</span><span class="p">[</span><span class="n">major_counter</span><span class="p">,</span> <span class="n">sub</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">vcdu_times</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">aca_frame_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
     <span class="n">aca_frame_times</span><span class="p">[</span><span class="n">major_counter</span><span class="p">,</span> <span class="n">sub</span><span class="p">]</span> <span class="o">=</span> <span class="n">vcdu_times</span>

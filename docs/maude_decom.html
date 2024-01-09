@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.44.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.45.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
@@ -59,7 +59,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.44.0 documentation</a>
+	<a href="index.html">chandra_aca 4.45.0 documentation</a>
 	 &#187;
       </li>
       
@@ -167,6 +167,17 @@ In the following tables, column index increases to the right and row index incre
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"></dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.filter_vcdu_jumps">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">filter_vcdu_jumps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vcdu_counters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#filter_vcdu_jumps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.filter_vcdu_jumps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a boolean mask to filter VCDU counters that are not continuous.</p>
+<p>The returned mask ensures that:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">VCDU</span> <span class="n">counters</span> <span class="n">are</span> <span class="n">a</span> <span class="n">strictly</span> <span class="n">monotonic</span> <span class="n">sequence</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">VCDU</span> <span class="n">counters</span> <span class="n">come</span> <span class="ow">in</span> <span class="n">packets</span> <span class="n">of</span> <span class="n">four</span><span class="p">,</span> <span class="k">with</span> <span class="n">each</span> <span class="n">group</span> <span class="n">starting</span> <span class="k">with</span> <span class="n">a</span> <span class="n">multiple</span> <span class="n">of</span> <span class="mf">4.</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -469,6 +480,7 @@ can also happen if the frames are corrupted in some way.</p>
 <ul>
 <li><a class="reference internal" href="#">chandra_aca.maude_decom</a><ul>
 <li><a class="reference internal" href="#chandra_aca.maude_decom.blob_to_aca_image_dict"><code class="docutils literal notranslate"><span class="pre">blob_to_aca_image_dict()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.maude_decom.filter_vcdu_jumps"><code class="docutils literal notranslate"><span class="pre">filter_vcdu_jumps()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.maude_decom.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.maude_decom.get_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_aca_packets()</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.maude_decom.get_raw_aca_blobs"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_blobs()</span></code></a></li>
