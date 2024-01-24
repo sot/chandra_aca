@@ -201,26 +201,43 @@ class ACAImage(np.ndarray):
             item = (item,)
 
         if isinstance(item, tuple):
+            shape = self.shape
             if aca_coords:
                 # Interpret input `item` indices as being expressed in absolute
                 # terms and subtract row0/col0 as needed.
                 item = list(item)
                 for i, it, rc0 in zip(count(), item, (self.row0, self.col0)):
                     if isinstance(it, slice):
-                        start = None if it.start is None else it.start - rc0
-                        stop = None if it.stop is None else it.stop - rc0
+                        start = (
+                            None
+                            if it.start is None
+                            else np.clip(it.start - rc0, 0, shape[i])
+                        )
+                        stop = (
+                            None
+                            if it.stop is None
+                            else np.clip(it.stop - rc0, 0, shape[i])
+                        )
                         item[i] = slice(start, stop, it.step)
                     else:
                         item[i] = it - rc0
+                        if np.any(item[i] < 0) or np.any(item[i] >= shape[i]):
+                            raise IndexError(
+                                f"index {it} is out of bounds for axis {i} with "
+                                f"limits {rc0}:{rc0 + shape[i]}"
+                            )
                 item = tuple(item)
 
             # Compute new row0, col0 (stored in out_rc) based on input item
             for i, it, rc0 in zip(count(), item, (self.row0, self.col0)):
                 if isinstance(it, slice):
                     if it.start is not None:
-                        out_rc[i] = rc0 + it.start
+                        rc_off = it.start if it.start >= 0 else shape[i] + it.start
+                        out_rc[i] = rc0 + rc_off
                 else:
-                    out_rc[i] = rc0 + it
+                    it = np.array(it)
+                    rc_off = np.where(it >= 0, it, shape[i] + it)
+                    out_rc[i] = rc0 + rc_off
 
         return item, out_rc[0], out_rc[1]
 
