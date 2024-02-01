@@ -396,7 +396,7 @@ class _AcaImageHeaderDecom:
         -------
         dict
         """
-        bits = np.unpackbits(np.array(_unpack("BBBbbBB", bits), dtype=np.uint8))
+        bits = np.unpackbits(np.array(_unpack("BBBBBBB", bits), dtype=np.uint8))
         return {
             "IMGFID": bool(bits[0]),
             "IMGNUM": _packbits(bits[1:4]),
@@ -428,7 +428,7 @@ class _AcaImageHeaderDecom:
         -------
         dict
         """
-        bits = _unpack("BbbbbBB", bits)
+        bits = _unpack("BBbbbBB", bits)
         c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
         return {
             # do we want these?
