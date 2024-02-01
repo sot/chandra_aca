@@ -162,8 +162,7 @@ def test_ellipsis():
 
     row0 = 11
     col0 = 22
-    size = 8
-    inp = np.random.uniform(size=(size, size))
+    inp = np.arange(64).reshape(8, 8)
     img = aca_image.ACAImage(inp, row0=row0, col0=col0)
 
     assert np.all(img[...] == inp)
