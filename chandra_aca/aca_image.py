@@ -195,7 +195,9 @@ class ACAImage(np.ndarray):
             )
             aca_coords = True
 
-        out_rc = [None, None]  # New [row0, col0]
+        # These are new [row0, col0] values for the __getitem__ output. If either is left at None
+        # then the downstream code uses the original row0 or col0 value, respectively.
+        out_rc = [None, None]
 
         if isinstance(item, (int, np.integer)):
             item = (item,)
