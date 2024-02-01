@@ -47,6 +47,48 @@ def test_row_col_set():
     assert type(a.col0) is np.int64
 
 
+def test_negative_index():
+    img = ACAImage(im8, row0=11, col0=-22)
+    img2 = img[-3, :]
+    assert np.all(img2 == im8[-3, :])
+    assert img2.row0 == img[5, :].row0
+    assert img2.col0 == img.col0
+
+    img2 = img[-3:-1, :]
+    assert np.all(img2 == im8[-3:-1, :])
+    assert img2.row0 == img[5:7, :].row0
+    assert img2.col0 == img.col0
+
+
+def test_out_of_bounds():
+    img = ACAImage(im8, row0=11, col0=-22)
+    # OK in slice
+    img2 = img.aca[10:13, -24:-20]
+    assert img2.row0 == 11
+    assert img2.col0 == -22
+    assert img2.shape == (2, 2)
+
+    with pytest.raises(
+        IndexError, match="index 10 is out of bounds for axis 0 with limits 11:19"
+    ):
+        img.aca[10, :]
+
+    with pytest.raises(
+        IndexError, match="index 10 is out of bounds for axis 1 with limits -22:-14"
+    ):
+        img.aca[:, 10]
+
+    with pytest.raises(
+        IndexError, match="index -10 is out of bounds for axis 0 with size 8"
+    ):
+        img[[-10, -1, 2], :]
+
+    with pytest.raises(
+        IndexError, match="index -9 is out of bounds for axis 1 with size 8"
+    ):
+        img[:, -9]
+
+
 def test_meta_set():
     a = ACAImage(im6)
     a.ATTR = 10
