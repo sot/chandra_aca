@@ -157,6 +157,53 @@ def test_slice():
     assert np.all(a2 == im80)
 
 
+def test_ellipsis():
+    from chandra_aca import aca_image
+
+    row0 = 11
+    col0 = 22
+    inp = np.arange(64).reshape(8, 8)
+    img = aca_image.ACAImage(inp, row0=row0, col0=col0)
+
+    assert np.all(img[...] == inp)
+    assert img[...].row0 == row0
+    assert img[...].col0 == col0
+
+    img2 = img[-1, ...]
+    assert np.all(img2 == inp[-1, ...])
+    # assert img2.row0 == img[size - 1 , ...].row0  # Fails independently of this PR
+    assert img2.col0 == col0
+
+    img2 = img[1, ...]
+    assert np.all(img2 == inp[1, ...])
+    assert img2.row0 == row0 + 1
+    assert img2.col0 == col0
+
+    img2 = img[..., -2]
+    assert np.all(img2 == inp[..., -2])
+    assert img2.row0 == row0
+    # assert img2.col0 == img[..., size - 2]  # fails independently of this PR
+
+    img2 = img[..., 2]
+    assert np.all(img[..., 2] == inp[..., 2])
+    assert img[..., 2].row0 == row0
+    assert img[..., 2].col0 == col0 + 2
+
+    img2 = img.aca[row0 + 1, ...]
+    assert np.all(img2 == inp[1, ...])
+    assert img2.row0 == row0 + 1
+    assert img2.col0 == col0
+
+    img2 = img.aca[..., col0 + 2]
+    assert np.all(img2 == inp[..., 2])
+    assert img2.row0 == row0
+    assert img2.col0 == col0 + 2
+
+    with pytest.raises(IndexError):
+        # an index can only have a single ellipsis
+        img[..., ...]
+
+
 def test_slice_list():
     a = ACAImage(im6, row0=1, col0=2)
     r = [1, 2, 3]

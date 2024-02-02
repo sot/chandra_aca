@@ -396,7 +396,7 @@ class _AcaImageHeaderDecom:
         -------
         dict
         """
-        bits = np.unpackbits(np.array(_unpack("BBBbbBB", bits), dtype=np.uint8))
+        bits = np.unpackbits(np.array(_unpack("BBBBBBB", bits), dtype=np.uint8))
         return {
             "IMGFID": bool(bits[0]),
             "IMGNUM": _packbits(bits[1:4]),
@@ -428,20 +428,20 @@ class _AcaImageHeaderDecom:
         -------
         dict
         """
-        bits = _unpack("BbbbbBB", bits)
-        c = np.unpackbits(np.array(bits[:2], dtype=np.uint8))
+        values = _unpack("BBbbbbB", bits)
+        c = np.unpackbits(np.array(values[:2], dtype=np.uint8))
         return {
             # do we want these?
-            # 'FID2': bool(bits[0]),
-            # 'IMGNUM2': _packbits(bits[1:4]),
-            # 'IMGFUNC2': _packbits(bits[4:6]),
+            # 'FID2': bool(values[0]),
+            # 'IMGNUM2': _packbits(values[1:4]),
+            # 'IMGFUNC2': _packbits(values[4:6]),
             "BGDRMS": _packbits(c[6:16]),
-            "TEMPCCD": bits[2],
-            "TEMPHOUS": bits[3],
-            "TEMPPRIM": bits[4],
-            "TEMPSEC": bits[5],
-            "BGDSTAT": bits[6],
-            "BGDSTAT_PIXELS": np.unpackbits(np.array(bits[-1:], dtype=np.uint8)[-1:]),
+            "TEMPCCD": values[2],
+            "TEMPHOUS": values[3],
+            "TEMPPRIM": values[4],
+            "TEMPSEC": values[5],
+            "BGDSTAT": values[6],
+            "BGDSTAT_PIXELS": np.unpackbits(np.array(values[-1:], dtype=np.uint8)[-1:]),
         }
 
     @staticmethod

@@ -195,7 +195,9 @@ class ACAImage(np.ndarray):
             )
             aca_coords = True
 
-        out_rc = [None, None]  # New [row0, col0]
+        # These are new [row0, col0] values for the __getitem__ output. If either is left at None
+        # then the downstream code uses the original row0 or col0 value, respectively.
+        out_rc = [None, None]
 
         if isinstance(item, (int, np.integer)):
             item = (item,)
@@ -219,7 +221,7 @@ class ACAImage(np.ndarray):
                             else np.clip(it.stop - rc0, 0, shape[i])
                         )
                         item[i] = slice(start, stop, it.step)
-                    else:
+                    elif it is not ...:
                         item[i] = it - rc0
                         if np.any(item[i] < 0) or np.any(item[i] >= shape[i]):
                             raise IndexError(
@@ -234,7 +236,7 @@ class ACAImage(np.ndarray):
                     if it.start is not None:
                         rc_off = it.start if it.start >= 0 else shape[i] + it.start
                         out_rc[i] = rc0 + rc_off
-                else:
+                elif it is not ...:
                     it = np.array(it)
                     rc_off = np.where(it >= 0, it, shape[i] + it)
                     out_rc[i] = rc0 + rc_off
