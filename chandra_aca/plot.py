@@ -264,11 +264,11 @@ def plot_stars(
         A Quaternion compatible attitude for the pointing
     catalog : Records describing catalog.  Must be astropy table compatible.
         Required fields are ['idx', 'type', 'yang', 'zang', 'halfw']
-    stars : astropy table compatible set of agasc records of stars
+    stars : astropy table compatible set of AGASC records of stars
         Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
-        If bad_acq_stars will be called (bad_stars is None), additional required fields
-        ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
-        If stars is None, stars will be fetched from the AGASC for the
+        If ``bad_stars`` is None, additional required fields are
+        ['CLASS', 'COLOR1', 'ASPQ1', 'ASPQ2', 'VAR', 'POS_ERR']
+        If ``stars`` is None, stars will be fetched from the AGASC for the
         supplied attitude.
     title
         string to be used as suptitle for the figure
@@ -281,8 +281,8 @@ def plot_stars(
     grid
         boolean, plot axis grid
     bad_stars : boolean mask on 'stars' of those that don't meet minimum requirements
-        to be selected as acq stars.  If None, bad_stars will be set by a call
-        to bad_acq_stars().
+        to be selected as acq stars.  If None, ``bad_stars`` will be set by calling
+        ``bad_acq_stars()``.
     plot_keepout
         plot CCD area to be avoided in star selection (default=False)
     ax
@@ -477,26 +477,23 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
 
 def bad_acq_stars(stars):
     """
-    Return mask of 'bad' stars, by evaluating AGASC star parameters.
+    Return mask of 'bad' stars that are not acceptable as acquisition stars.
+
+    This is a thin wrapper around ``proseco.acq.get_acq_candidates_mask()``.
 
     Parameters
     ----------
-    stars : astropy table-compatible set of agasc records of stars. Required fields
-        are ['CLASS', 'ASPQ1', 'ASPQ2', 'ASPQ3', 'VAR', 'POS_ERR']
+    stars : astropy table-compatible set of AGASC records of stars. Required fields
+        are 'CLASS', 'MAG_ACA', 'MAG_ACA_ERR', 'COLOR1', 'ASPQ1', 'ASPQ2', 'VAR',
+        and'POS_ERR'.
 
     Returns
     -------
     boolean mask true for 'bad' stars
     """
-    return (
-        (stars["CLASS"] != 0)
-        | (stars["MAG_ACA_ERR"] > 100)
-        | (stars["POS_ERR"] > 3000)
-        | (stars["ASPQ1"] > 0)
-        | (stars["ASPQ2"] > 0)
-        | (stars["ASPQ3"] > 999)
-        | (stars["VAR"] > -9999)
-    )
+    import proseco.acq
+
+    return ~proseco.acq.get_acq_candidates_mask(stars)
 
 
 @custom_plt_rcparams
