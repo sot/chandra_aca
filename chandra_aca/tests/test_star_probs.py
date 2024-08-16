@@ -12,6 +12,7 @@ from ska_helpers.paths import aca_acq_prob_models_path
 from chandra_aca.star_probs import (
     acq_success_prob,
     binom_ppf,
+    binomial_confidence_interval,
     clip_and_warn,
     conf,
     get_default_acq_prob_model_info,
@@ -664,6 +665,17 @@ def test_md5_2020_02():
 def test_binom_ppf():
     vals = binom_ppf(4, 5, [0.17, 0.84])
     assert np.allclose(vals, [0.55463945, 0.87748177])
+
+
+def test_binomial_uncertainty_interval():
+    vals = binomial_confidence_interval(4, 5)
+    assert np.allclose(vals, [0.8, 0.57782044, 0.9157473])
+
+    vals = binomial_confidence_interval(4, 5, 0.6827)
+    assert np.allclose(vals, [0.8, 0.57782044, 0.9157473])
+
+    vals = binomial_confidence_interval(4, 5, 0.95)
+    assert np.allclose(vals, [0.8, 0.3713736, 0.97748723])
 
 
 def test_grid_model_3_48(monkeypatch):

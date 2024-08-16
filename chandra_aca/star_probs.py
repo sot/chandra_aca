@@ -32,6 +32,7 @@ from cxotime import CxoTimeLike
 from numba import jit
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import bisect, brentq
+from scipy.stats import beta
 from ska_helpers import chandra_models
 
 from chandra_aca.transform import (
@@ -1118,3 +1119,61 @@ def binom_ppf(k, n, conf, n_sample=1000):
     out = np.interp(conf, xp=cdf, fp=ps)
 
     return out
+
+
+def binomial_confidence_interval(n_true, n_trials, coverage=0.682689):
+    """Binomial error calculation using the Jeffreys prior.
+
+    It returns a tuple with the ratio, the lower error, and the upper error.
+
+    This is an equal-tailed Bayesian interval with a Jeffreys prior (Beta(1/2,1/2)).
+
+        "Statistical Decision Theory and Bayesian Analysis" 2nd ed.
+        Berger, J.O. (1985)
+        Springer, New York
+
+    This function is based on:
+
+        "Confidence Intervals for a binomial proportion and asymptotic expansions",
+        Lawrence D. Brown, T. Tony Cai, and Anirban DasGupta
+        Ann. Statist. Volume 30, Number 1 (2002), 160-201.
+        http://projecteuclid.org/euclid.aos/1015362189
+
+    Parameters
+    ----------
+    n_true : numpy array
+        The number of 'successes'
+    n_trials : numpy array
+        The number of trials
+    coverage : float
+        The coverage of the confidence interval. The default corresponds to the coverage of
+        '1-sigma' gaussian errors (0.682689).
+    """
+    # keeping shape to make sure the output has the same shape as the input
+    shape = np.broadcast_shapes(np.shape(n_true), np.shape(n_trials))
+
+    # normalize the input as numpy arrays
+    n_trials = np.atleast_1d(n_trials)
+    n_true = np.atleast_1d(np.atleast_1d(n_true).astype(float))
+    # calculate the ratio
+    n_trials = np.ma.MaskedArray(n_trials, mask=(n_trials == 0))
+    ratio = np.ones_like(n_true) * np.nan
+    ratio[~n_trials.mask] = n_true[~n_trials.mask] / n_trials[~n_trials.mask]
+
+    try:
+        float(coverage)
+    except ValueError:
+        raise Exception("The coverage must be a float!") from None
+
+    alpha = (1 - coverage) / 2
+    low = np.zeros_like(ratio)
+    up = np.ones_like(ratio)
+    low[ratio > 0] = beta.isf(
+        1 - alpha,
+        n_true[ratio > 0] + 0.5,
+        n_trials[ratio > 0] - n_true[ratio > 0] + 0.5,
+    )
+    up[ratio < 1] = beta.isf(
+        alpha, n_true[ratio < 1] + 0.5, n_trials[ratio < 1] - n_true[ratio < 1] + 0.5
+    )
+    return (ratio.reshape(shape), low.reshape(shape), up.reshape(shape))
