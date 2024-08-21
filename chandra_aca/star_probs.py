@@ -1155,17 +1155,13 @@ def binomial_confidence_interval(n_true, n_trials, coverage=0.682689):
 
     # normalize the input as numpy arrays
     n_trials = np.atleast_1d(n_trials)
-    n_true = np.atleast_1d(np.atleast_1d(n_true).astype(float))
+    n_true = np.atleast_1d(n_true)
     # calculate the ratio
-    n_trials = np.ma.MaskedArray(n_trials, mask=(n_trials == 0))
+    ok = n_trials != 0
     ratio = np.ones_like(n_true) * np.nan
-    ratio[~n_trials.mask] = n_true[~n_trials.mask] / n_trials[~n_trials.mask]
+    ratio[ok] = n_true[ok] / n_trials[ok]
 
-    try:
-        float(coverage)
-    except ValueError:
-        raise Exception("The coverage must be a float!") from None
-
+    # calculate the confidence intervals
     alpha = (1 - coverage) / 2
     low = np.zeros_like(ratio)
     up = np.ones_like(ratio)
