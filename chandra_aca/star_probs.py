@@ -1121,7 +1121,7 @@ def binom_ppf(k, n, conf, n_sample=1000):
     return out
 
 
-def binomial_confidence_interval(n_true, n_trials, coverage=0.682689):
+def binomial_confidence_interval(n_success, n_trials, coverage=0.682689):
     """Binomial error calculation using the Jeffreys prior.
 
     It returns a tuple with the ratio, the lower error, and the upper error.
@@ -1141,7 +1141,7 @@ def binomial_confidence_interval(n_true, n_trials, coverage=0.682689):
 
     Parameters
     ----------
-    n_true : numpy array
+    n_success : numpy array
         The number of 'successes'
     n_trials : numpy array
         The number of trials
@@ -1150,16 +1150,23 @@ def binomial_confidence_interval(n_true, n_trials, coverage=0.682689):
         '1-sigma' gaussian errors (0.682689).
     """
     # keeping shape to make sure the output has the same shape as the input
-    n_true, n_trials = np.broadcast_arrays(n_true, n_trials)
-    shape = n_true.shape
+    n_success, n_trials = np.broadcast_arrays(n_success, n_trials)
+    shape = n_success.shape
+
+    if np.any(n_trials < n_success):
+        raise ValueError("n_trials must be greater than or equal to n_success")
+    if np.any(n_trials < 0):
+        raise ValueError("n_trials must be greater or equal to 0")
+    if np.any(n_success < 0):
+        raise ValueError("n_success must be greater or equal to 0")
 
     # normalize the input as numpy arrays
     n_trials = np.atleast_1d(n_trials)
-    n_true = np.atleast_1d(n_true)
+    n_success = np.atleast_1d(n_success)
     # calculate the ratio
     ok = n_trials != 0
-    ratio = np.ones_like(n_true) * np.nan
-    ratio[ok] = n_true[ok] / n_trials[ok]
+    ratio = np.ones_like(n_success) * np.nan
+    ratio[ok] = n_success[ok] / n_trials[ok]
 
     # calculate the confidence intervals
     alpha = (1 - coverage) / 2
@@ -1167,10 +1174,12 @@ def binomial_confidence_interval(n_true, n_trials, coverage=0.682689):
     up = np.ones_like(ratio)
     low[ratio > 0] = beta.isf(
         1 - alpha,
-        n_true[ratio > 0] + 0.5,
-        n_trials[ratio > 0] - n_true[ratio > 0] + 0.5,
+        n_success[ratio > 0] + 0.5,
+        n_trials[ratio > 0] - n_success[ratio > 0] + 0.5,
     )
     up[ratio < 1] = beta.isf(
-        alpha, n_true[ratio < 1] + 0.5, n_trials[ratio < 1] - n_true[ratio < 1] + 0.5
+        alpha,
+        n_success[ratio < 1] + 0.5,
+        n_trials[ratio < 1] - n_success[ratio < 1] + 0.5,
     )
     return (ratio.reshape(shape), low.reshape(shape), up.reshape(shape))
