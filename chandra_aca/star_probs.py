@@ -30,6 +30,7 @@ from astropy.io import fits
 from Chandra.Time import DateTime
 from cxotime import CxoTimeLike
 from numba import jit
+from numpy.typing import ArrayLike
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import bisect, brentq
 from scipy.stats import beta
@@ -1121,7 +1122,9 @@ def binom_ppf(k, n, conf, n_sample=1000):
     return out
 
 
-def binomial_confidence_interval(n_success, n_trials, coverage=0.682689):
+def binomial_confidence_interval(
+    n_success: ArrayLike, n_trials: ArrayLike, coverage: float = 0.682689
+) -> tuple:
     """Binomial error calculation using the Jeffreys prior.
 
     It returns a tuple with the ratio, the lower error, and the upper error.
