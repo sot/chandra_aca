@@ -1148,6 +1148,11 @@ def binomial_confidence_interval(n_success, n_trials, coverage=0.682689):
     coverage : float
         The coverage of the confidence interval. The default corresponds to the coverage of
         '1-sigma' gaussian errors (0.682689).
+
+    Returns
+    -------
+    ratio : tuple
+        ratio of successes to trials, lower bound, upper bound
     """
     # keeping shape to make sure the output has the same shape as the input
     n_success, n_trials = np.broadcast_arrays(n_success, n_trials)
