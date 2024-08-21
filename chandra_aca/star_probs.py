@@ -1150,7 +1150,8 @@ def binomial_confidence_interval(n_true, n_trials, coverage=0.682689):
         '1-sigma' gaussian errors (0.682689).
     """
     # keeping shape to make sure the output has the same shape as the input
-    shape = np.broadcast_shapes(np.shape(n_true), np.shape(n_trials))
+    n_true, n_trials = np.broadcast_arrays(n_true, n_trials)
+    shape = n_true.shape
 
     # normalize the input as numpy arrays
     n_trials = np.atleast_1d(n_trials)
