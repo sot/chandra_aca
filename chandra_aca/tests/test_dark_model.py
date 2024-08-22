@@ -79,27 +79,28 @@ def test_get_warm_fracs_2017185():
     assert np.allclose(wps, exp, rtol=0.001, atol=2)
 
 
-@pytest.mark.parametrize("img, t_ccd, t_ref, expected", [
-    (np.array([100, 1000, 500]), -10.0, -5.0, np.array([ 171.47, 1668.62,  852.79])),
-    (np.array([100, 1000, 500]), -10.0, -15.0, np.array([ 58.31, 599.29, 293.15])),
-    (np.array([100, 1000, 500]), -15.0, -15.0, np.array([100, 1000, 500])),
-    (np.array([200, 2000, 600]), -6.0, 2.0, np.array([ 478.16, 4299.02, 1399.40])),
-])
+@pytest.mark.parametrize(
+    "img, t_ccd, t_ref, expected",
+    [
+        (np.array([100, 1000, 500]), -10.0, -5.0, np.array([171.47, 1668.62, 852.79])),
+        (np.array([100, 1000, 500]), -10.0, -15.0, np.array([58.31, 599.29, 293.15])),
+        (np.array([100, 1000, 500]), -15.0, -15.0, np.array([100, 1000, 500])),
+        (np.array([200, 2000, 600]), -6.0, 2.0, np.array([478.16, 4299.02, 1399.40])),
+    ],
+)
 def test_get_img_scaled(img, t_ccd, t_ref, expected):
     scaled_img = get_img_scaled(img, t_ccd, t_ref)
-    assert np.allclose(scaled_img, expected, atol=.1, rtol=0)
+    assert np.allclose(scaled_img, expected, atol=0.1, rtol=0)
 
 
 @pytest.mark.skipif("not HAS_MICA")
 def test_get_img_scaled_real_dc():
     test_data = {}
-    with open(
-        (Path(__file__).parent / "data" / "dark_scaled_img.pkl"), "rb"
-    ) as f:
+    with open((Path(__file__).parent / "data" / "dark_scaled_img.pkl"), "rb") as f:
         test_data.update(pickle.load(f))
 
     dc = get_dark_cal_props("2024:001", include_image=True)
     # just use 100 square pixels instead of 1024x1024
-    img = dc['image'][100:200, 100:200]
-    scaled_img = get_img_scaled(img, dc['t_ccd'], -3.0)
-    assert np.allclose(scaled_img, test_data['scaled_img'], atol=0.1, rtol=0)
+    img = dc["image"][100:200, 100:200]
+    scaled_img = get_img_scaled(img, dc["t_ccd"], -3.0)
+    assert np.allclose(scaled_img, test_data["scaled_img"], atol=0.1, rtol=0)

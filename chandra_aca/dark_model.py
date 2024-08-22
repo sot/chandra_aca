@@ -391,6 +391,4 @@ def get_img_scaled(img: np.ndarray, t_ccd: float, t_ref: float):
         y = log_dc - e * t
         return (a + b * t + c * y + d * y**2).reshape(shape)
 
-
     return img * np.exp(get_dc_exponent(img) * (t_ref - t_ccd))
-
