@@ -1125,7 +1125,7 @@ def binom_ppf(k, n, conf, n_sample=1000):
 def binomial_confidence_interval(
     n_success: int | ArrayLike, n_trials: int | ArrayLike, coverage: float = 0.682689
 ) -> tuple:
-    """Binomial error calculation using the Jeffreys prior.
+    """Binomial confidence interval calculation using the Jeffreys prior.
 
     It returns a tuple with the ratio, the lower error, and the upper error.
 
