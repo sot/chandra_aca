@@ -1158,8 +1158,7 @@ def binomial_confidence_interval(
         ratio of successes to trials, lower bound, upper bound
     """
     # keeping shape to make sure the output has the same shape as the input
-    n_success, n_trials = np.broadcast_arrays(n_success, n_trials)
-    shape = n_success.shape
+    is_scalar, n_success, n_trials = broadcast_arrays(n_success, n_trials)
 
     if np.any(n_trials < n_success):
         raise ValueError("n_trials must be greater than or equal to n_success")
@@ -1190,4 +1189,9 @@ def binomial_confidence_interval(
         n_success[ratio < 1] + 0.5,
         n_trials[ratio < 1] - n_success[ratio < 1] + 0.5,
     )
-    return (ratio.reshape(shape), low.reshape(shape), up.reshape(shape))
+    result = (
+        ratio[0] if is_scalar else ratio,
+        low[0] if is_scalar else low,
+        up[0] if is_scalar else up,
+    )
+    return result
