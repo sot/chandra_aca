@@ -1,16 +1,18 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Routines related to the canonical Chandra ACA dark current model.
+Routines related to the Chandra ACA dark current models.
 
-The model is based on smoothed twice-broken power-law fits of
-dark current histograms from Jan-2007 though Aug-2017.  This analysis
-was done entirely with dark current maps scaled to -14 C.
+The canonical model for ACA dark current is a based on smoothed
+twice-broken power-law fits of dark current histograms from Jan-2007
+though Aug-2017.  This analysis was done entirely with dark current maps scaled to -14 C.
 
 See: /proj/sot/ska/analysis/dark_current_model/dark_model.ipynb
 and other files in that directory.
 
 Alternatively:
 http://nbviewer.ipython.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model.ipynb
+
+The get_img_scaled method in this file uses a more recent approach with per-pixel scaling.
 """
 
 import warnings
@@ -340,3 +342,55 @@ def synthetic_dark_image(date, t_ccd_ref=None):
         dark *= dark_temp_scale(-14, t_ccd_ref)
 
     return dark
+
+
+def get_img_scaled(img: np.ndarray, t_ccd: float, t_ref: float):
+    """
+    Get img taken at ``t_ccd`` scaled to reference temperature ``t_ref``
+
+    This uses the more modern approach to dark current scaling which does
+    per-pixel scaling instead of using dark_temp_scale().
+
+    Parameters
+    ----------
+    img : ndarray
+        Dark current image
+    t_ccd : int or float
+        CCD temperature of the image
+    t_ref : int or float
+        Get the image scaled to this temperature
+
+    Returns
+    -------
+    ndarray
+        Dark current image scaled to ``t_ref``
+    """
+
+    # Confirm t_ccd and t_ref are just floats
+    t_ccd = float(t_ccd)
+    t_ref = float(t_ref)
+
+    # this comes from the simple fit to DC averages, with fixed T_CCD=265.15
+    def get_dc_exponent(dc):
+        t = 265.15
+        dc, t = np.broadcast_arrays(dc, t)
+        shape = dc.shape
+        t = np.atleast_1d(t)
+        dc = np.atleast_1d(dc).copy()
+        dc[np.isnan(dc)] = 20
+        dc[(dc < 20)] = 20
+        dc[(dc > 1e4)] = 1e4
+        log_dc = np.log(dc)
+        a, b, c, d, e = [
+            -4.88802057e00,
+            -1.66791619e-04,
+            -2.22596103e-01,
+            -2.45720364e-03,
+            1.90718453e-01,
+        ]
+        y = log_dc - e * t
+        return (a + b * t + c * y + d * y**2).reshape(shape)
+
+
+    return img * np.exp(get_dc_exponent(img) * (t_ref - t_ccd))
+
