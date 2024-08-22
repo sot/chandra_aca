@@ -30,8 +30,10 @@ from astropy.io import fits
 from Chandra.Time import DateTime
 from cxotime import CxoTimeLike
 from numba import jit
+from numpy.typing import ArrayLike
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import bisect, brentq
+from scipy.stats import beta
 from ska_helpers import chandra_models
 
 from chandra_aca.transform import (
@@ -1118,3 +1120,78 @@ def binom_ppf(k, n, conf, n_sample=1000):
     out = np.interp(conf, xp=cdf, fp=ps)
 
     return out
+
+
+def binomial_confidence_interval(
+    n_success: int | ArrayLike, n_trials: int | ArrayLike, coverage: float = 0.682689
+) -> tuple:
+    """Binomial confidence interval calculation using the Jeffreys prior.
+
+    It returns a tuple with the ratio, the lower error, and the upper error.
+
+    This is an equal-tailed Bayesian interval with a Jeffreys prior (Beta(1/2,1/2)).
+
+        "Statistical Decision Theory and Bayesian Analysis" 2nd ed.
+        Berger, J.O. (1985)
+        Springer, New York
+
+    This function is based on:
+
+        "Confidence Intervals for a binomial proportion and asymptotic expansions",
+        Lawrence D. Brown, T. Tony Cai, and Anirban DasGupta
+        Ann. Statist. Volume 30, Number 1 (2002), 160-201.
+        http://projecteuclid.org/euclid.aos/1015362189
+
+    Parameters
+    ----------
+    n_success : numpy array
+        The number of 'successes'
+    n_trials : numpy array
+        The number of trials
+    coverage : float
+        The coverage of the confidence interval. The default corresponds to the coverage of
+        '1-sigma' gaussian errors (0.682689).
+
+    Returns
+    -------
+    ratio : tuple
+        ratio of successes to trials, lower bound, upper bound
+    """
+    # keeping shape to make sure the output has the same shape as the input
+    is_scalar, n_success, n_trials = broadcast_arrays(n_success, n_trials)
+
+    if np.any(n_trials < n_success):
+        raise ValueError("n_trials must be greater than or equal to n_success")
+    if np.any(n_trials < 0):
+        raise ValueError("n_trials must be greater or equal to 0")
+    if np.any(n_success < 0):
+        raise ValueError("n_success must be greater or equal to 0")
+
+    # normalize the input as numpy arrays
+    n_trials = np.atleast_1d(n_trials)
+    n_success = np.atleast_1d(n_success)
+    # calculate the ratio
+    ok = n_trials != 0
+    ratio = np.ones_like(n_success) * np.nan
+    ratio[ok] = n_success[ok] / n_trials[ok]
+
+    # calculate the confidence intervals
+    alpha = (1 - coverage) / 2
+    low = np.zeros_like(ratio)
+    up = np.ones_like(ratio)
+    low[ratio > 0] = beta.isf(
+        1 - alpha,
+        n_success[ratio > 0] + 0.5,
+        n_trials[ratio > 0] - n_success[ratio > 0] + 0.5,
+    )
+    up[ratio < 1] = beta.isf(
+        alpha,
+        n_success[ratio < 1] + 0.5,
+        n_trials[ratio < 1] - n_success[ratio < 1] + 0.5,
+    )
+    result = (
+        ratio[0] if is_scalar else ratio,
+        low[0] if is_scalar else low,
+        up[0] if is_scalar else up,
+    )
+    return result

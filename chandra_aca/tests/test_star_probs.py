@@ -12,6 +12,7 @@ from ska_helpers.paths import aca_acq_prob_models_path
 from chandra_aca.star_probs import (
     acq_success_prob,
     binom_ppf,
+    binomial_confidence_interval,
     clip_and_warn,
     conf,
     get_default_acq_prob_model_info,
@@ -664,6 +665,52 @@ def test_md5_2020_02():
 def test_binom_ppf():
     vals = binom_ppf(4, 5, [0.17, 0.84])
     assert np.allclose(vals, [0.55463945, 0.87748177])
+
+
+def test_binomial_uncertainty_interval():
+    # testing different coverage levels
+    vals = binomial_confidence_interval(4, 5)
+    assert np.allclose(vals, [0.8, 0.57782044, 0.9157473])
+
+    vals = binomial_confidence_interval(4, 5, 0.6827)
+    assert np.allclose(vals, [0.8, 0.57782044, 0.9157473])
+
+    vals = binomial_confidence_interval(4, 5, 0.95)
+    assert np.allclose(vals, [0.8, 0.3713736, 0.97748723])
+
+    # testing broadcasting
+    vals = binomial_confidence_interval(1, [1, 2])
+    ref = [[1.0, 0.5], [0.46243998, 0.21575348], [1.0, 0.78424652]]
+    assert np.allclose(vals, ref)
+
+    vals = binomial_confidence_interval([[0], [1]], [1, 2])
+    ref = [
+        [[0.0, 0.0], [1.0, 0.5]],
+        [
+            [0.0, 0.0],
+            [0.46243998, 0.21575348],
+        ],
+        [[0.53756002, 0.3541577], [1.0, 0.78424652]],
+    ]
+    assert np.allclose(vals, ref)
+
+    # testing edge cases
+    vals = binomial_confidence_interval(0, 0)
+    assert np.isnan(vals[0])
+    assert vals[1] == 0
+    assert vals[2] == 1
+
+    with pytest.raises(ValueError):
+        # n_success > n_trials
+        binomial_confidence_interval(1, 0)
+
+    with pytest.raises(ValueError):
+        # n_success < 0
+        binomial_confidence_interval(-1, 0)
+
+    with pytest.raises(ValueError):
+        # n_trials < 0
+        binomial_confidence_interval(0, -1)
 
 
 def test_grid_model_3_48(monkeypatch):
