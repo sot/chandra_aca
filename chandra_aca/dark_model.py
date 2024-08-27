@@ -18,6 +18,7 @@ The get_img_scaled method in this file uses a more recent approach with per-pixe
 import warnings
 
 import numpy as np
+import numpy.typing as npt
 from Chandra.Time import DateTime
 
 # Define a common fixed binning of dark current distribution
@@ -344,39 +345,37 @@ def synthetic_dark_image(date, t_ccd_ref=None):
     return dark
 
 
-def get_img_scaled(img: np.ndarray, t_ccd: float, t_ref: float):
+def dark_temp_scale_img(img: float | npt.ArrayLike, t_ccd: float, t_ccd_ref: float):
     """
-    Get img taken at ``t_ccd`` scaled to reference temperature ``t_ref``
+    Get dark current taken at ``t_ccd`` scaled to reference temperature ``t_ccd_ref``
 
-    This uses the more modern approach to dark current scaling which does
-    per-pixel scaling instead of using dark_temp_scale().
+    This scales the dark current based on an exponential scaling factor that depends on
+    the dark current value of each pixel.  This is a more accurate way to scale dark
+    current images than using a global scaling factor as in dark_temp_scale().
 
     Parameters
     ----------
-    img : ndarray
-        Dark current image
-    t_ccd : int or float
-        CCD temperature of the image
-    t_ref : int or float
-        Get the image scaled to this temperature
+    img : float, ArrayLike
+        Dark current image or value in e-/sec
+    t_ccd : float
+        CCD temperature (degC) of the input image
+    t_ccd_ref : float
+        CCD temperature (degC) of the scaled output image
 
     Returns
     -------
-    ndarray
-        Dark current image scaled to ``t_ref``
+    float, np.ndarray
+        Dark current image scaled to ``t_ccd_ref``
     """
 
     # Confirm t_ccd and t_ref are just floats
     t_ccd = float(t_ccd)
-    t_ref = float(t_ref)
+    t_ccd_ref = float(t_ccd_ref)
 
-    # this comes from the simple fit to DC averages, with fixed T_CCD=265.15
-    def get_dc_exponent(dc):
+    # this comes from the simple fit to DC averages, with fixed T_CCD=265.15 (-8.0 C)
+    def get_dc_exponent(dc_in):
         t = 265.15
-        dc, t = np.broadcast_arrays(dc, t)
-        shape = dc.shape
-        t = np.atleast_1d(t)
-        dc = np.atleast_1d(dc).copy()
+        dc = np.atleast_1d(dc_in).copy()
         dc[np.isnan(dc)] = 20
         dc[(dc < 20)] = 20
         dc[(dc > 1e4)] = 1e4
@@ -389,6 +388,8 @@ def get_img_scaled(img: np.ndarray, t_ccd: float, t_ref: float):
             1.90718453e-01,
         ]
         y = log_dc - e * t
-        return (a + b * t + c * y + d * y**2).reshape(shape)
+        out = a + b * t + c * y + d * y**2
 
-    return img * np.exp(get_dc_exponent(img) * (t_ref - t_ccd))
+        return out[0] if np.shape(dc_in) == () else out
+
+    return img * np.exp(get_dc_exponent(img) * (t_ccd_ref - t_ccd))
