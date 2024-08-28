@@ -12,7 +12,10 @@ and other files in that directory.
 Alternatively:
 http://nbviewer.ipython.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model.ipynb
 
-The get_img_scaled method in this file uses a more recent approach with per-pixel scaling.
+The dark_temp_scale_img method in this file uses a more recent 2023 approach with per-pixel scaling.
+
+https://nbviewer.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model-2023.ipynb
+
 """
 
 import warnings
@@ -352,6 +355,9 @@ def dark_temp_scale_img(img: float | npt.ArrayLike, t_ccd: float, t_ccd_ref: flo
     This scales the dark current based on an exponential scaling factor that depends on
     the dark current value of each pixel.  This is a more accurate way to scale dark
     current images than using a global scaling factor as in dark_temp_scale().
+
+    See the reference notebook at:
+    https://nbviewer.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model-2023.ipynb
 
     Parameters
     ----------
