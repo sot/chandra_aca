@@ -373,23 +373,15 @@ def dark_temp_scale_img(img: float | npt.ArrayLike, t_ccd: float, t_ccd_ref: flo
     t_ccd_ref = float(t_ccd_ref)
 
     # this comes from the simple fit to DC averages, with fixed T_CCD=265.15 (-8.0 C)
-    def get_dc_exponent(dc_in):
-        t = 265.15
-        dc = np.atleast_1d(dc_in).copy()
-        dc[np.isnan(dc)] = 20
-        dc[(dc < 20)] = 20
-        dc[(dc > 1e4)] = 1e4
-        log_dc = np.log(dc)
-        a, b, c, d, e = [
-            -4.88802057e00,
-            -1.66791619e-04,
-            -2.22596103e-01,
-            -2.45720364e-03,
-            1.90718453e-01,
-        ]
-        y = log_dc - e * t
-        out = a + b * t + c * y + d * y**2
+    a, b, c, d, e = [
+        -4.88802057e00,
+        -1.66791619e-04,
+        -2.22596103e-01,
+        -2.45720364e-03,
+        1.90718453e-01,
+    ]
+    t = 265.15
+    y = np.log(np.clip(img, 20, 1e4)) - e * t
+    scale = a + b * t + c * y + d * y**2
 
-        return out[0] if np.shape(dc_in) == () else out
-
-    return img * np.exp(get_dc_exponent(img) * (t_ccd_ref - t_ccd))
+    return img * np.exp(scale * (t_ccd_ref - t_ccd))
