@@ -348,7 +348,12 @@ def synthetic_dark_image(date, t_ccd_ref=None):
     return dark
 
 
-def dark_temp_scale_img(img: float | npt.ArrayLike, t_ccd: float, t_ccd_ref: float):
+def dark_temp_scale_img(
+    img: float | npt.ArrayLike,
+    t_ccd: float,
+    t_ccd_ref: float,
+    t_ccd_ref_alpha: float = 265.15,
+) -> float | np.ndarray:
     """
     Get dark current taken at ``t_ccd`` scaled to reference temperature ``t_ccd_ref``
 
@@ -374,9 +379,10 @@ def dark_temp_scale_img(img: float | npt.ArrayLike, t_ccd: float, t_ccd_ref: flo
         Dark current image scaled to ``t_ccd_ref``
     """
 
-    # Confirm t_ccd and t_ref are just floats
+    # Confirm t_ccd, t_ccd_ref and t_ccd_ref_alpha are just floats
     t_ccd = float(t_ccd)
     t_ccd_ref = float(t_ccd_ref)
+    t_ccd_ref_alpha = float(t_ccd_ref_alpha)
 
     # this comes from the simple fit to DC averages, with fixed T_CCD=265.15 (-8.0 C)
     a, b, c, d, e = [
@@ -386,8 +392,7 @@ def dark_temp_scale_img(img: float | npt.ArrayLike, t_ccd: float, t_ccd_ref: flo
         -2.45720364e-03,
         1.90718453e-01,
     ]
-    t = 265.15
-    y = np.log(np.clip(img, 20, 1e4)) - e * t
-    scale = a + b * t + c * y + d * y**2
+    y = np.log(np.clip(img, 20, 1e4)) - e * t_ccd_ref_alpha
+    scale = a + b * t_ccd_ref_alpha + c * y + d * y**2
 
     return img * np.exp(scale * (t_ccd_ref - t_ccd))
