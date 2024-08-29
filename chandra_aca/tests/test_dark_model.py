@@ -89,7 +89,7 @@ def test_get_warm_fracs_2017185():
         (2000, -6, 2, 4299.02),
     ],
 )
-def test_get_img_scaled(img, t_ccd, t_ref, expected):
+def test_dark_temp_scale_img(img, t_ccd, t_ref, expected):
     scaled_img = dark_temp_scale_img(img, t_ccd, t_ref)
     assert np.allclose(scaled_img, expected, atol=0.1, rtol=0)
     if np.shape(img):
@@ -99,7 +99,7 @@ def test_get_img_scaled(img, t_ccd, t_ref, expected):
 
 
 @pytest.mark.skipif("not HAS_MICA")
-def test_get_img_scaled_real_dc():
+def test_dark_temp_scale_img_real_dc():
     test_data = {}
     with open((Path(__file__).parent / "data" / "dark_scaled_img.pkl"), "rb") as f:
         test_data.update(pickle.load(f))
