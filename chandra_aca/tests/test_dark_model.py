@@ -87,11 +87,13 @@ def test_get_warm_fracs_2017185():
         ([[100, 1000], [500, 600]], -15.0, -15.0, [[100, 1000], [500, 600]]),
         ([200, 2000, 600], -6.0, 2.0, np.array([478.16, 4299.02, 1399.40])),
         (2000, -6, 2, 4299.02),
+        ([2000, np.nan], -6, 2, [4299.02, np.nan]),
+        (np.nan, -6, 2, np.nan),
     ],
 )
 def test_dark_temp_scale_img(img, t_ccd, t_ref, expected):
     scaled_img = dark_temp_scale_img(img, t_ccd, t_ref)
-    assert np.allclose(scaled_img, expected, atol=0.1, rtol=0)
+    assert np.allclose(scaled_img, expected, atol=0.1, rtol=0, equal_nan=True)
     if np.shape(img):
         assert isinstance(scaled_img, np.ndarray)
     else:
