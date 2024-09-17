@@ -6,6 +6,9 @@ import pytest
 from astropy.table import Table
 from mica.archive.aca_dark import get_dark_cal_props
 from numpy import ma
+from cxotime import CxoTime
+import cheta.fetch
+
 
 from chandra_aca.dark_subtract import (
     get_dark_backgrounds,
@@ -13,6 +16,9 @@ from chandra_aca.dark_subtract import (
     get_dcsub_aca_images,
     get_maude_images,
     get_mica_images,
+    get_aca_images,
+    get_dark_data,
+    get_tccd_data,
 )
 
 HAS_ACA0_ARCHIVE = (Path(mica.common.MICA_ARCHIVE) / "aca0").exists()
@@ -159,6 +165,54 @@ def test_dcsub_aca_images(mock_dc, mock_imgs, dc_imgs_dn):
     # Note that the mock unsubtracted data is originally 16 * 1.696 / 5
     exp = 16 - dc_imgs_dn
     assert np.allclose(imgs_bgsub[0] * 5 / 1.696, exp, atol=1e-6, rtol=0)
+
+
+def test_get_dark_data_recent():
+    date = "2021:001:00:00:00.000"
+    dark_data_img, dark_data_tccd = get_dark_data(date)
+    assert dark_data_img.shape == (1024, 1024)
+    assert dark_data_tccd == -8.56
+
+
+def test_get_dark_data_old():
+    # Confirm this works for a really old one too
+    date = CxoTime("2001:001:00:00:00.000").secs
+    dark_data_img, dark_data_tccd = get_dark_data(date)
+    assert dark_data_img.shape == (1024, 1024)
+    assert dark_data_tccd == -10.3720703125
+
+
+def test_get_tccd_data():
+    start = "2021:001:00:00:00.000"
+    stop = "2021:001:00:00:30.000"
+    t_ccd_maude, t_ccd_times_maude = get_tccd_data(start, stop, source="maude")
+    assert np.isclose(t_ccd_maude[0], -6.55137778)
+
+    # Confirm the t_ccd values are the same for maude as default fetch data source
+    # but only bother if cxc is in the sources.  Technically this should be a skipif.
+    if "cxc" in cheta.fetch.data_source.sources():
+        t_ccd, t_ccd_times = get_tccd_data(start, stop)
+        assert np.allclose(t_ccd_maude, t_ccd)
+        assert np.allclose(t_ccd_times_maude, t_ccd_times)
+
+
+def test_get_aca_images(mock_dc, mock_imgs, dc_imgs_dn):
+    """
+    Confirm the pattern of dark current images matches the reference.
+    """
+    dat = get_aca_images(
+        aca_images=mock_imgs,
+        dc_img=mock_dc,
+        dc_tccd=-10,
+        t_ccd=np.repeat(-10, 8),
+        t_ccd_times=mock_imgs[0]["TIME"],
+    )
+    for col in ["IMG", "IMGROW0_8X8", "IMGCOL0_8X8", "TIME", "IMGBGSUB"]:
+        assert col in dat[0].colnames
+        assert np.allclose(dat[0][col], mock_imgs[0][col], atol=1e-6, rtol=0)
+    assert dat[0]["IMGBGSUB"].shape == (8, 8, 8)
+    exp = 16 - dc_imgs_dn
+    assert np.allclose(dat[0]["IMGBGSUB"] * 5 / 1.696, exp, atol=1e-6, rtol=0)
 
 
 def test_get_dark_images(mock_dc, mock_imgs, dc_imgs_dn):
