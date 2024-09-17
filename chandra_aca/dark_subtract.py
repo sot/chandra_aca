@@ -2,11 +2,13 @@ from functools import lru_cache
 
 import numba
 import numpy as np
+import requests.exceptions
 from astropy.table import Table, vstack
 from cheta import fetch_sci
 from cxotime import CxoTime, CxoTimeLike
 from mica.archive import aca_l0
 from mica.archive.aca_dark import get_dark_cal_props
+from ska_helpers import retry
 
 from chandra_aca import maude_decom
 from chandra_aca.dark_model import dark_temp_scale_img
@@ -41,6 +43,7 @@ def get_dark_data(time: CxoTimeLike):
     return dc_img, dc_tccd
 
 
+@retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_tccd_data(start: CxoTimeLike, stop: CxoTimeLike, source="maude"):
     """
     Get the CCD temperature for a given time range.
@@ -75,6 +78,7 @@ def get_tccd_data(start: CxoTimeLike, stop: CxoTimeLike, source="maude"):
     return t_ccd, t_ccd_times
 
 
+@retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_dcsub_aca_images(
     start=None,
     stop=None,
@@ -182,7 +186,6 @@ def get_dcsub_aca_images(
 def get_dark_current_imgs(img_table, dc_img, dc_tccd, t_ccd, t_ccd_times):
     """
     Get the scaled dark current values for a table of ACA images.
-
 
     Parameters
     ----------
@@ -327,6 +330,7 @@ def get_mica_images(start: CxoTimeLike, stop: CxoTimeLike, cols=None):
     return slot_data
 
 
+@retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 @lru_cache(maxsize=2)
 def get_maude_images(start: CxoTimeLike, stop: CxoTimeLike, fetch_limit_hours=100):
     """
@@ -356,6 +360,8 @@ def get_maude_images(start: CxoTimeLike, stop: CxoTimeLike, fetch_limit_hours=10
     # Break maude fetches into max 3 hour chunks required by maude_decom fetch
     for mstart in np.arange(tstart, tstop, 60 * 60 * 3):
         mstop = np.min([tstop, mstart + 60 * 60 * 3])
+        # Add a retry here if necessary
+
         imgs = maude_decom.get_aca_images(mstart, mstop)
         slot_chunks.append(imgs)
     slot_chunks = vstack(slot_chunks)
@@ -367,6 +373,7 @@ def get_maude_images(start: CxoTimeLike, stop: CxoTimeLike, fetch_limit_hours=10
     return slot_data
 
 
+@retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_aca_images(
     start=None,
     stop=None,
@@ -379,7 +386,6 @@ def get_aca_images(
 ):
     """
     Get aca images for a given time range.
-
 
     Parameters
     ----------
