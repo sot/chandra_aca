@@ -1,23 +1,18 @@
 from pathlib import Path
 
+import cheta.fetch
 import mica.common
 import numpy as np
 import pytest
 from astropy.table import Table
 from mica.archive.aca_dark import get_dark_cal_props
 from numpy import ma
-from cxotime import CxoTime
-import cheta.fetch
 
-
+from chandra_aca import maude_decom
 from chandra_aca.dark_subtract import (
+    _get_dcsub_aca_images,
     get_dark_backgrounds,
     get_dark_current_imgs,
-    get_dcsub_aca_images,
-    get_maude_images,
-    get_mica_images,
-    get_aca_images,
-    get_dark_data,
     get_tccd_data,
 )
 
@@ -40,20 +35,19 @@ def mock_dc():
 
 # Make a test fixture for the mock 8x8 data
 @pytest.fixture
-def mock_imgs():
+def mock_img_table():
     """
     Make a mock 8x8 image table.
 
     The intent is that these image coordinates should overlap with the mock dark current.
     """
-    imgs = {}
     img_table = Table()
     img_table["TIME"] = np.arange(8)
     img_table["IMGROW0_8X8"] = ma.arange(8) - 512
     img_table["IMGCOL0_8X8"] = ma.arange(8) - 512
     img_table["IMG"] = np.ones((8, 8, 8)) * 16 * 1.696 / 5
-    imgs[0] = img_table
-    return imgs
+    img_table["IMGNUM"] = 0
+    return img_table
 
 
 # Test fixture array of dark current images in DN
@@ -149,37 +143,22 @@ def dc_imgs_dn():
     return dc_imgs_dn
 
 
-def test_dcsub_aca_images(mock_dc, mock_imgs, dc_imgs_dn):
+def test_dcsub_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
     """
     Confirm that the pattern of background subtraction is correct.
     """
 
-    imgs_bgsub = get_dcsub_aca_images(
-        aca_images=mock_imgs,
+    imgs_bgsub = _get_dcsub_aca_images(
+        aca_image_table=mock_img_table,
         dc_img=mock_dc,
         dc_tccd=-10,
         t_ccd=np.repeat(-10, 8),
-        t_ccd_times=mock_imgs[0]["TIME"],
+        t_ccd_times=mock_img_table["TIME"],
     )
-    assert imgs_bgsub[0].shape == (8, 8, 8)
+    assert imgs_bgsub.shape == (8, 8, 8)
     # Note that the mock unsubtracted data is originally 16 * 1.696 / 5
     exp = 16 - dc_imgs_dn
-    assert np.allclose(imgs_bgsub[0] * 5 / 1.696, exp, atol=1e-6, rtol=0)
-
-
-def test_get_dark_data_recent():
-    date = "2021:001:00:00:00.000"
-    dark_data_img, dark_data_tccd = get_dark_data(date)
-    assert dark_data_img.shape == (1024, 1024)
-    assert dark_data_tccd == -8.56
-
-
-def test_get_dark_data_old():
-    # Confirm this works for a really old one too
-    date = CxoTime("2001:001:00:00:00.000").secs
-    dark_data_img, dark_data_tccd = get_dark_data(date)
-    assert dark_data_img.shape == (1024, 1024)
-    assert dark_data_tccd == -10.3720703125
+    assert np.allclose(imgs_bgsub * 5 / 1.696, exp, atol=1e-6, rtol=0)
 
 
 def test_get_tccd_data():
@@ -196,69 +175,54 @@ def test_get_tccd_data():
         assert np.allclose(t_ccd_times_maude, t_ccd_times)
 
 
-def test_get_aca_images(mock_dc, mock_imgs, dc_imgs_dn):
+def test_get_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
     """
     Confirm the pattern of dark current images matches the reference.
     """
-    dat = get_aca_images(
-        aca_images=mock_imgs,
+    dat = _get_dcsub_aca_images(
+        aca_image_table=mock_img_table,
         dc_img=mock_dc,
         dc_tccd=-10,
         t_ccd=np.repeat(-10, 8),
-        t_ccd_times=mock_imgs[0]["TIME"],
+        t_ccd_times=mock_img_table["TIME"],
+        full_table=True,
     )
-    for col in ["IMG", "IMGROW0_8X8", "IMGCOL0_8X8", "TIME", "IMGBGSUB"]:
-        assert col in dat[0].colnames
-        assert np.allclose(dat[0][col], mock_imgs[0][col], atol=1e-6, rtol=0)
-    assert dat[0]["IMGBGSUB"].shape == (8, 8, 8)
+    for col in ["IMG", "IMGROW0_8X8", "IMGCOL0_8X8", "TIME"]:
+        assert col in dat.colnames
+        assert np.allclose(dat[col], mock_img_table[col], atol=1e-6, rtol=0)
+    assert dat["IMGBGSUB"].shape == (8, 8, 8)
     exp = 16 - dc_imgs_dn
-    assert np.allclose(dat[0]["IMGBGSUB"] * 5 / 1.696, exp, atol=1e-6, rtol=0)
+    assert np.allclose(dat["IMGBGSUB"] * 5 / 1.696, exp, atol=1e-6, rtol=0)
 
 
-def test_get_dark_images(mock_dc, mock_imgs, dc_imgs_dn):
+def test_get_dark_images(mock_dc, mock_img_table, dc_imgs_dn):
     """
     Confirm the pattern of dark current images matches the reference.
     The temperature scaling is set here to be a no-op.
     """
     dc_imgs = get_dark_current_imgs(
-        mock_imgs[0],
+        img_table=mock_img_table,
         dc_img=mock_dc,
         dc_tccd=-10,
         t_ccd=np.repeat(-10, 8),
-        t_ccd_times=mock_imgs[0]["TIME"],
+        t_ccd_times=mock_img_table["TIME"],
     )
     assert dc_imgs.shape == (8, 8, 8)
     dc_imgs_raw = dc_imgs * 5 / 1.696
     assert np.allclose(dc_imgs_raw, dc_imgs_dn, atol=1e-6, rtol=0)
 
 
-def test_get_dark_backgrounds(mock_dc, mock_imgs, dc_imgs_dn):
+def test_get_dark_backgrounds(mock_dc, mock_img_table, dc_imgs_dn):
     """
     Confirm the pattern of dark current matches the reference.
     """
     dc_imgs_raw = get_dark_backgrounds(
         mock_dc,
-        mock_imgs[0]["IMGROW0_8X8"].data.filled(1025),
-        mock_imgs[0]["IMGCOL0_8X8"].data.filled(1025),
+        mock_img_table["IMGROW0_8X8"].data.filled(1025),
+        mock_img_table["IMGCOL0_8X8"].data.filled(1025),
     )
     assert dc_imgs_raw.shape == (8, 8, 8)
     assert np.allclose(dc_imgs_raw, dc_imgs_dn, atol=1e-6, rtol=0)
-
-
-@pytest.mark.skipif(not HAS_ACA0_ARCHIVE, reason="No ACA0 archive")
-def test_get_images():
-    """
-    Confirm mica and maude images sources agree for a small time range.
-    """
-    tstart = 746484519.429
-    imgs_maude = get_maude_images(tstart, tstart + 30)
-    imgs_mica = get_mica_images(tstart, tstart + 30)
-    for slot in range(8):
-        assert len(imgs_maude[slot]) == len(imgs_mica[slot])
-        for col in ["IMG", "IMGROW0_8X8", "IMGCOL0_8X8", "TIME"]:
-            assert np.allclose(
-                imgs_maude[slot][col], imgs_mica[slot][col], atol=0.1, rtol=0
-            )
 
 
 def test_dc_consistent():
@@ -267,19 +231,20 @@ def test_dc_consistent():
     edges of a 6x6.
     """
     tstart = 746484519.429
-    imgs_maude = get_maude_images(tstart, tstart + 30)
+    img_table = maude_decom.get_aca_images(tstart, tstart + 30)
     # This slot and this time show an overall decent correlation of dark current
     # and edge pixel values in the 6x6 image - but don't make a great test.
     slot = 4
-    img = imgs_maude[slot]["IMG"][0]
+    img_table_slot = img_table[img_table["IMGNUM"] == slot]
+    img = img_table_slot[0]["IMG"]
 
     dc = get_dark_cal_props(tstart, "nearest", include_image=True, aca_image=False)
     dc_imgs = get_dark_current_imgs(
-        imgs_maude[slot],
+        img_table_slot,
         dc_img=dc["image"],
         dc_tccd=dc["t_ccd"],
-        t_ccd=np.repeat(-9.9, len(imgs_maude[slot])),
-        t_ccd_times=imgs_maude[slot]["TIME"],
+        t_ccd=np.repeat(-9.9, len(img_table_slot)),
+        t_ccd_times=img_table_slot["TIME"],
     )
     edge_mask_6x6 = np.zeros((8, 8), dtype=bool)
     edge_mask_6x6[1, 2:6] = True
@@ -302,7 +267,7 @@ def test_dcsub_aca_images_maude():
     # This one is just a regression test
     tstart = 471139130.93277466  # dwell tstart for obsid 15600 - random obsid
     tstop = tstart + 20
-    imgs_bgsub = get_dcsub_aca_images(tstart, tstop, source="maude")
+    imgs_bgsub = _get_dcsub_aca_images(tstart, tstop, source="maude")
 
     exp0 = np.array(
         [
@@ -332,18 +297,3 @@ def test_dcsub_aca_images_maude():
         ]
     )
     np.allclose(exp4, imgs_bgsub[4][0].filled(0), atol=1, rtol=0)
-
-
-@pytest.mark.skipif(not HAS_ACA0_ARCHIVE, reason="No ACA0 archive")
-def test_dcsub_aca_images_mica_maude():
-    """
-    Confirm background subtracted mica/maude images match for small time range.
-    """
-    tstart = 471139130.93277466  # dwell tstart for obsid 15600 - random obsid
-    tstop = tstart + 30
-    imgs_bgsub = get_dcsub_aca_images(tstart, tstop, source="mica")
-
-    imgs_bgsub_maude = get_dcsub_aca_images(tstart, tstop, source="maude")
-
-    for slot in range(8):
-        assert np.allclose(imgs_bgsub[slot], imgs_bgsub_maude[slot], atol=1e-3, rtol=0)
