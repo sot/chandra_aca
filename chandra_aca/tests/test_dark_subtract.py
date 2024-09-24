@@ -148,13 +148,14 @@ def test_dcsub_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
     Confirm that the pattern of background subtraction is correct.
     """
 
-    imgs_bgsub = _get_dcsub_aca_images(
+    table_bgsub = _get_dcsub_aca_images(
         aca_image_table=mock_img_table,
-        dc_img=mock_dc,
-        dc_tccd=-10,
-        t_ccd=np.repeat(-10, 8),
+        img_dark=mock_dc,
+        tccd_dark=-10,
+        t_ccd_vals=np.repeat(-10, 8),
         t_ccd_times=mock_img_table["TIME"],
     )
+    imgs_bgsub = table_bgsub["IMGBGSUB"]
     assert imgs_bgsub.shape == (8, 8, 8)
     # Note that the mock unsubtracted data is originally 16 * 1.696 / 5
     exp = 16 - dc_imgs_dn
@@ -181,11 +182,10 @@ def test_get_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
     """
     dat = _get_dcsub_aca_images(
         aca_image_table=mock_img_table,
-        dc_img=mock_dc,
-        dc_tccd=-10,
-        t_ccd=np.repeat(-10, 8),
+        img_dark=mock_dc,
+        tccd_dark=-10,
+        t_ccd_vals=np.repeat(-10, 8),
         t_ccd_times=mock_img_table["TIME"],
-        full_table=True,
     )
     for col in ["IMG", "IMGROW0_8X8", "IMGCOL0_8X8", "TIME"]:
         assert col in dat.colnames
@@ -202,9 +202,9 @@ def test_get_dark_images(mock_dc, mock_img_table, dc_imgs_dn):
     """
     dc_imgs = get_dark_current_imgs(
         img_table=mock_img_table,
-        dc_img=mock_dc,
-        dc_tccd=-10,
-        t_ccd=np.repeat(-10, 8),
+        img_dark=mock_dc,
+        tccd_dark=-10,
+        t_ccd_vals=np.repeat(-10, 8),
         t_ccd_times=mock_img_table["TIME"],
     )
     assert dc_imgs.shape == (8, 8, 8)
@@ -241,9 +241,9 @@ def test_dc_consistent():
     dc = get_dark_cal_props(tstart, "nearest", include_image=True, aca_image=False)
     dc_imgs = get_dark_current_imgs(
         img_table_slot,
-        dc_img=dc["image"],
-        dc_tccd=dc["t_ccd"],
-        t_ccd=np.repeat(-9.9, len(img_table_slot)),
+        img_dark=dc["image"],
+        tccd_dark=dc["t_ccd"],
+        t_ccd_vals=np.repeat(-9.9, len(img_table_slot)),
         t_ccd_times=img_table_slot["TIME"],
     )
     edge_mask_6x6 = np.zeros((8, 8), dtype=bool)
@@ -267,7 +267,8 @@ def test_dcsub_aca_images_maude():
     # This one is just a regression test
     tstart = 471139130.93277466  # dwell tstart for obsid 15600 - random obsid
     tstop = tstart + 20
-    imgs_bgsub = _get_dcsub_aca_images(tstart, tstop, source="maude")
+    table_bgsub = _get_dcsub_aca_images(tstart, tstop, source="maude")
+    imgs_bgsub = table_bgsub["IMGBGSUB"]
 
     exp0 = np.array(
         [
