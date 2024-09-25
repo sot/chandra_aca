@@ -92,10 +92,18 @@ def _get_dcsub_aca_images(
 
     """
 
+    if start is None and aca_image_table is None:
+        raise ValueError("start must be defined if aca_image_table is not defined")
+    if stop is None and aca_image_table is None:
+        raise ValueError("stop must be defined if aca_image_table is not defined")
+
     if aca_image_table is not None:
         # If supplied an image table, use that, but confirm it has the right pieces.
         assert type(aca_image_table) is Table
-        # Require aca_image_table have columns IMG, IMGROW0_8X8, IMGCOL0_8X8, TIME
+
+        # Require aca_image_table have columns IMG, IMGROW0_8X8, IMGCOL0_8X8, TIME.
+        # If this is a table of mica data that doesn't have those columns, see
+        # mica.archive.aca_l0.get_aca_images for how to get the data or use that method.
         assert "IMG" in aca_image_table.colnames
         assert "IMGROW0_8X8" in aca_image_table.colnames
         assert "IMGCOL0_8X8" in aca_image_table.colnames
@@ -112,8 +120,6 @@ def _get_dcsub_aca_images(
         if stop is not None:
             raise ValueError("Do not define stop if aca_image_table is defined")
     elif source == "maude":
-        if start is None or stop is None:
-            raise ValueError("start and stop must be defined for maude source")
         img_table = maude_decom.get_aca_images(start, stop)
     elif source == "mica":
         img_table = aca_l0.get_aca_images(start, stop)
@@ -121,11 +127,6 @@ def _get_dcsub_aca_images(
         raise ValueError(
             "aca_image_table must be defined or source must be maude or mica"
         )
-
-    if start is None and aca_image_table is None:
-        raise ValueError("start must be defined if aca_image_table is not defined")
-    if stop is None and aca_image_table is None:
-        raise ValueError("stop must be defined if aca_image_table is not defined")
 
     if start is None:
         start = img_table["TIME"].min()
@@ -252,11 +253,19 @@ def get_dcsub_aca_images(
     """
     Get aca images for a given time range.
 
+    One must supply either aca_image_table or start and stop times.  If start and stop
+    times are supplied, an aca image table will be fetched from the maude or mica data
+    and a table will be returned that includes dark current background subtracted images
+    in one of the astropy table columns.  If an aca_image_table is supplied, the images
+    within that table will be used as the raw images, and a new table that includes
+    dark current background subtracted images will be returned.
+
+
     Parameters
     ----------
-    start : str, optional
+    start : CxoTimeLike, optional
         Start time of the time range. Default is None.
-    stop : str, optional
+    stop : CxoTimeLike, optional
         Stop time of the time range. Default is None.
     aca_image_table : astropy.table.Table
         Table including ACA images.
