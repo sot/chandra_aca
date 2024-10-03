@@ -1192,10 +1192,13 @@ def _get_aca_packets(
 
     table["INTEG"] = table["INTEG"] * 0.016
     table["END_INTEG_TIME"] = table["TIME"] + table["INTEG"]
+    
     if adjust_time:
-        dt = table["INTEG"] / 2 + 1.025
-        table["TIME"] -= dt
-        table["END_INTEG_TIME"] -= dt
+        # See https://github.com/sot/chandra_aca/issues/177. These adjujstments make
+        # TIME correspond to the center of integration and END_INTEG_TIME to the end.
+        # See also https://cxc.harvard.edu/mta/ASPECT/Docs/aca_l0_icd.pdf section D.2.4.
+        table["TIME"] -= table["INTEG"] / 2 + 1.025
+        table["END_INTEG_TIME"] = table["TIME"] + table['INTEG'] / 2
 
     if calibrate:
         if "IMG" in table.colnames:
