@@ -1185,3 +1185,23 @@ def test_filter_vcdu_jumps():
     for case in filter_vcdu_test_cases:
         idx = maude_decom.filter_vcdu_jumps(case["inp"])
         assert np.all(idx == case["exp"])
+
+
+def test_end_integ_time():
+    from astropy import table
+
+    start, stop = (686111020, 686111030)
+    table_l0 = maude_decom.get_aca_packets(start, stop, adjust_time=True)
+    table_maude = maude_decom.get_aca_packets(start, stop, adjust_time=False)
+    comparison = table.join(
+        table_l0, table_maude, table_names=["l0", "maude"], keys=["VCDUCTR", "IMGNUM"]
+    )
+
+    # Test that END_INTEG_TIME is the same in both
+    assert np.all(comparison["END_INTEG_TIME_maude"] == comparison["END_INTEG_TIME_l0"])
+    # Test the relation between END_INTEG_TIME and TIME found in the ACA L0 ICD
+    assert np.all(
+        np.isclose(
+            table_l0["END_INTEG_TIME"], table_l0["TIME"] + table_l0["INTEG"] / 2, rtol=0
+        )
+    )

@@ -1191,11 +1191,14 @@ def _get_aca_packets(
     table["IMGCOL0"][table["IMGTYPE"] == 2] -= 1
 
     table["INTEG"] = table["INTEG"] * 0.016
-    table["END_INTEG_TIME"] = table["TIME"] + table["INTEG"]
+    table["END_INTEG_TIME"] = table["TIME"] - 1.025
+
     if adjust_time:
-        dt = table["INTEG"] / 2 + 1.025
-        table["TIME"] -= dt
-        table["END_INTEG_TIME"] -= dt
+        # After this adjujstment, TIME corresponds to the center of integration interval and
+        # END_INTEG_TIME to the end:
+        #     END_INTEG_TIME == TIME + INTEG / 2.0
+        # See also https://cxc.harvard.edu/mta/ASPECT/Docs/aca_l0_icd.pdf section D.2.4.
+        table["TIME"] -= table["INTEG"] / 2 + 1.025
 
     if calibrate:
         if "IMG" in table.colnames:
