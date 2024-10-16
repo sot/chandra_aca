@@ -1205,3 +1205,9 @@ def test_end_integ_time():
             table_l0["END_INTEG_TIME"], table_l0["TIME"] + table_l0["INTEG"] / 2, rtol=0
         )
     )
+    # Test the relation between END_INTEG_TIME and VCDU TIME (maude) found in the ACA L0 ICD
+    assert np.all(
+        np.isclose(
+            comparison["END_INTEG_TIME_l0"], comparison["TIME_maude"] - 1.025, rtol=0
+        )
+    )
