@@ -78,10 +78,12 @@ import copy
 from struct import Struct
 from struct import unpack as _unpack
 
+import astropy.units as u
 import maude
 import numpy as np
 from astropy.table import Table, vstack
 from Chandra.Time import DateTime
+from cxotime import CxoTime, CxoTimeLike
 
 # The following are the tables in the docstring above. They appear to be transposed,
 # but the resultt agrees with level0.
@@ -1209,24 +1211,36 @@ def _get_aca_packets(
     return table
 
 
-def get_aca_images(start, stop, **maude_kwargs):
+def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     """
     Fetch ACA image telemetry
 
     Parameters
     ----------
     start
-        timestamp interpreted as a Chandra.Time.DateTime
+        timestamp, CxoTimeLike
     stop
-        timestamp interpreted as a Chandra.Time.DateTime
-    maude_kwargs
-        keyword args passed to maude
+        timestamp, CxoTimeLike.  stop - start cannot be greater than 1 day.
+    kwargs
+        keyword args passed to get_aca_packets
 
     Returns
     -------
     astropy.table.Table
     """
-    return get_aca_packets(start, stop, level0=True, **maude_kwargs)
+    if CxoTime(stop) - CxoTime(start) > 1 * u.day:
+        raise ValueError("stop - start cannot be greater than 1 day")
+    maude_fetch_times = CxoTime.linspace(start, stop, step_max=2.5 * u.hour)
+    packet_stack = [
+        get_aca_packets(
+            start=maude_fetch_times[i],
+            stop=maude_fetch_times[i + 1],
+            level0=True,
+            **kwargs,
+        )
+        for i in range(len(maude_fetch_times) - 1)
+    ]
+    return vstack(packet_stack)
 
 
 ######################

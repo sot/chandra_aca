@@ -7,6 +7,7 @@ import pickle
 import maude
 import numpy as np
 import pytest
+from cxotime import CxoTime
 
 from chandra_aca import maude_decom
 
@@ -270,6 +271,38 @@ def test_partial_images():
 
     for i in range(len(table)):
         assert np.all(table[i]["IMG"].mask == mask[table[i]["IMGTYPE"]])
+
+
+def test_aca_images_chunks_1():
+    """Test that a fetch longer than the maude 3 hour limit works"""
+    start = "2023:001:00:00:01.000"  # times picked close to 4.1 image boundary
+    stop = "2023:001:03:30:01.000"  # times picked close to 4.1 image boundary
+    imgs = maude_decom.get_aca_images(start, stop)
+    imgs.sort(["TIME", "IMGNUM"])
+
+    for slot in range(8):
+        # Confirm that the data is basically contiguous
+        ok_slot = imgs["IMGNUM"] == slot
+        # Confirm no duplicates by VCDUCTR
+        assert len(np.unique(imgs[ok_slot]["VCDUCTR"])) == len(imgs[ok_slot])
+        # Confirm for these 8x8 data that there's no gap > 5 seconds
+        assert np.max(np.diff(imgs[ok_slot]["TIME"])) < 5
+
+    assert abs(imgs[0]["TIME"] - CxoTime(start).secs) < 2
+    assert abs(imgs[-1]["TIME"] - CxoTime(stop).secs) < 2
+    # Confirm that the beginning and end match the expected values
+    imgs_start = maude_decom.get_aca_images(start, CxoTime(start).secs + 60)
+    imgs_stop = maude_decom.get_aca_images(CxoTime(stop).secs - 60, stop)
+    assert np.all(imgs[0] == imgs_start[0])
+    assert np.all(imgs[-1] == imgs_stop[-1])
+
+
+def test_aca_images_chunks_2():
+    """Test that a fetch longer than 1 day throws a ValueError"""
+    start = "2023:001:00:00:00.000"
+    stop = "2023:003:00:00:00.000"
+    with pytest.raises(ValueError, match="stop - start cannot be greater than 1 day"):
+        maude_decom.get_aca_images(start, stop)
 
 
 def test_vcdu_vs_level0():
