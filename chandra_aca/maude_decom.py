@@ -1191,7 +1191,14 @@ def _get_aca_packets(
     table["IMGCOL0"][table["IMGTYPE"] == 2] -= 1
 
     table["INTEG"] = table["INTEG"] * 0.016
-    table["END_INTEG_TIME"] = table["TIME"] - 1.025
+
+    # setting the end of the integration interval from the OBC time (see EQ7-278 F Figure 7)
+    # we are setting END_INTEG_TIME in only the first frame of an image
+    first = np.in1d(table["IMGTYPE"], [0, 1, 4])
+    if np.any(first):
+        table["END_INTEG_TIME"][first] = table["TIME"][first] - 1.025
+    else:
+        table["END_INTEG_TIME"] = np.ma.masked_all(len(table))
 
     if adjust_time:
         # After this adjujstment, TIME corresponds to the center of integration interval and
