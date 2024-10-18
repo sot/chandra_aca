@@ -1,5 +1,62 @@
 """
 Classes and functions to help fetching ACA telemetry data using MAUDE.
+
+Telemetry Specification
+=======================
+
+Aspect telemetry is described in chapter 5 of the User's Manual. This module deals mostly with
+Aspect telemetry, specified in section 5.3 of the user's manual and section 3.2.1.15.12 of the ACA
+specification document EQ7-278 F.
+
+In general, the telemetry data is specified in the following documents::
+
+    * MSFC-STD-1274B. MSFC HOSC Telemetry Format Standard
+    * MSFC-DOC-1949. MSFC HOSC Database Definitions
+
+Timing
+======
+
+Timing in MAUDE Telemetry
+-------------------------
+
+What follows is a summary from the user's guide section 6, and EQ7-278 F section 3.2.1.7. Check
+there for more details, especially Figures 6-1 to 6-4 in the user's manual and Figure 7 in
+EQ7-278 F.
+
+The ACA can update the output data every 1.025 seconds. This interval is called the update period.
+Update periods either begin or end at the time of an RCTU science header pulse.
+
+The ACA CCD operating cycle starts with a flush of charge from the CCD, followed by CCD integration,
+CCD readout, and ends with an idle period. The start/end of the update period does not coincide with
+the start/end of the CCD cycle. Instead, the end of the integration coincides with the start/end of
+the update period. This is accomplished by adjusting the idle period.
+
+The data from and integration period is available to the OBC at the end of the following update
+period (EQ7-278 F Figure 7). That is 1.025 sec after the end of integration. This is the timestamp
+seen in MAUDE telemetry::
+
+    TIME = END_INTEG_TIME + 1.025
+
+In the case of 6x6 and 8x8 images, the entire image cannot be updated in a single update period,
+because Aspect pixel telemetry contains only eight pixels per update. 6x6 images take two update
+periods, and 8x8 images take four. The end of the integration interval is the same for all the
+sub-images, and corresponds to::
+
+    END_INTEG_TIME = TIME - 1.025
+
+where `TIME` is the OBC time of the first sub-image update.
+
+Timing in level0 Data Products
+------------------------------
+
+The times for pixel telemetry in level0 data products is adjusted to coincide with the middle of the
+integration interval::
+
+    TIME = END_INTEG_TIME - INTEG / 2
+
+Global variables in this module
+===============================
+
 These include the following global variables
 
     * PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID
