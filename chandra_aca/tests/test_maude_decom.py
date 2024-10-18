@@ -7,6 +7,7 @@ import pickle
 import maude
 import numpy as np
 import pytest
+from mica.archive.aca_l0 import get_aca_images
 
 from chandra_aca import maude_decom
 
@@ -1185,3 +1186,62 @@ def test_filter_vcdu_jumps():
     for case in filter_vcdu_test_cases:
         idx = maude_decom.filter_vcdu_jumps(case["inp"])
         assert np.all(idx == case["exp"])
+
+
+@pytest.mark.parametrize("combine", [True, False])
+def test_end_integ_time(combine):
+    # this test verifies that the relations between END_INTEG_TIME and the two definitions of TIME
+    # (VCDU time and CXC level0) are as specified in the specs.
+    start_md, stop_md = (686111022.556, 686111030.776)
+    table_maude = maude_decom.get_aca_packets(
+        start_md, stop_md, combine=combine, adjust_time=False
+    )
+
+    # if adjust_time==True, times are shifted to the center of the integration window
+    # and the result is filtered based on this shifted time, so to guarantee we get the same
+    # VCDU frames, we need to give shifted times as input
+    start_l0, stop_l0 = start_md - 1.696 / 2 - 1.025, stop_md - 1.696 / 2 - 1.025
+    table_l0 = maude_decom.get_aca_packets(
+        start_l0, stop_l0, combine=combine, adjust_time=True
+    )
+
+    # sanity check making sure we get the same VCDU frames
+    assert len(table_l0) == len(table_maude)
+    assert np.all(table_l0["VCDUCTR"] == table_maude["VCDUCTR"])
+
+    # Test that END_INTEG_TIME is the same in both cases
+    assert np.all(table_maude["END_INTEG_TIME"] == table_l0["END_INTEG_TIME"])
+    # Test the relation between END_INTEG_TIME and TIME found in the ACA L0 ICD
+    assert np.all(
+        np.isclose(
+            table_l0["END_INTEG_TIME"], table_l0["TIME"] + table_l0["INTEG"] / 2, rtol=0
+        )
+    )
+    # Test the relation between END_INTEG_TIME and VCDU TIME (maude) found in the ACA L0 ICD
+    assert np.all(
+        np.isclose(table_l0["END_INTEG_TIME"], table_maude["TIME"] - 1.025, rtol=0)
+    )
+
+    if not combine:
+        # if sub-images are not combined to form full ACA images,
+        # only the first sub-image has END_INTEG_TIME defined
+        first_sub_image = np.in1d(table_l0["IMGTYPE"], [0, 1, 4])
+        assert np.all(table_l0["END_INTEG_TIME"].mask == ~first_sub_image)
+        assert np.all(table_maude["END_INTEG_TIME"].mask == ~first_sub_image)
+
+
+def test_maude_vs_aca_l0_times():
+    # mica.archive.aca_l0.get_images should return the same data as maude_decom.get_images
+    # we are testing that the times from maude_decom agree with those from mica
+    start, stop = (686111020.683, 686111028.903)
+    table_maude = maude_decom.get_aca_images(start, stop)
+    table_maude.sort(["VCDUCTR", "IMGNUM"])
+    table_mica = get_aca_images(start, stop)
+    table_mica.sort(["VCDUCTR", "IMGNUM"])
+
+    assert len(table_mica) == len(table_maude)
+    assert np.all(table_maude["VCDUCTR"] == table_mica["VCDUCTR"])
+    assert np.all(np.isclose(table_maude["TIME"], table_maude["TIME"], rtol=0))
+    assert np.all(
+        np.isclose(table_maude["END_INTEG_TIME"], table_maude["END_INTEG_TIME"], rtol=0)
+    )
