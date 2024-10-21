@@ -1230,7 +1230,7 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     """
     if CxoTime(stop) - CxoTime(start) > 1 * u.day:
         raise ValueError("stop - start cannot be greater than 1 day")
-    maude_fetch_times = CxoTime.linspace(start, stop, step_max=2.5 * u.hour)
+    maude_fetch_times = CxoTime.linspace(start, stop, step_max=3.0 * u.hour)
     packet_stack = [
         get_aca_packets(
             start=maude_fetch_times[i],
