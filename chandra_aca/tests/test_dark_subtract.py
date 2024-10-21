@@ -7,6 +7,7 @@ import pytest
 from astropy.table import Table
 from mica.archive.aca_dark import get_dark_cal_props
 from numpy import ma
+from cxotime import CxoTime
 
 from chandra_aca import maude_decom
 from chandra_aca.dark_subtract import (
@@ -165,15 +166,17 @@ def test_dcsub_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
 def test_get_tccd_data():
     start = "2021:001:00:00:00.000"
     stop = "2021:001:00:00:30.000"
-    t_ccd_maude, t_ccd_times_maude = get_tccd_data(start, stop, source="maude")
+    times = CxoTime.linspace(start, stop, 8)
+    t_ccd_maude, t_ccd_times_maude = get_tccd_data(times, source="maude")
+    assert np.all(t_ccd_times_maude == times)
     assert np.isclose(t_ccd_maude[0], -6.55137778)
 
     # Confirm the t_ccd values are the same for maude as default fetch data source
     # but only bother if cxc is in the sources.  Technically this should be a skipif.
     if "cxc" in cheta.fetch.data_source.sources():
-        t_ccd, t_ccd_times = get_tccd_data(start, stop)
+        t_ccd, t_ccd_times = get_tccd_data(times)
         assert np.allclose(t_ccd_maude, t_ccd)
-        assert np.allclose(t_ccd_times_maude, t_ccd_times)
+        assert np.allclose(t_ccd_times_maude.secs, t_ccd_times.secs)
 
 
 def test_get_aca_images(mock_dc, mock_img_table, dc_imgs_dn):

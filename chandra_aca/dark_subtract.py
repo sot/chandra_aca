@@ -1,19 +1,21 @@
 import numba
 import numpy as np
 import requests.exceptions
+import scipy.signal
 from astropy.table import Table
 from cheta import fetch_sci
-from cxotime import CxoTimeLike
+from cxotime import CxoTime, CxoTimeLike
 from mica.archive import aca_l0
 from mica.archive.aca_dark import get_dark_cal_props
 from ska_helpers import retry
+from ska_numpy import smooth
 
 from chandra_aca import maude_decom
 from chandra_aca.dark_model import dark_temp_scale_img
 
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
-def get_tccd_data(start: CxoTimeLike, stop: CxoTimeLike, source="maude"):
+def get_tccd_data(times: CxoTimeLike, pad=600, smooth_window=30, source="maude"):
     """
     Get the CCD temperature for a given time range.
 
@@ -22,13 +24,17 @@ def get_tccd_data(start: CxoTimeLike, stop: CxoTimeLike, source="maude"):
 
     Parameters
     ----------
-    start : CxoTimeLike
-        Start time of the time range.
-    stop : CxoTimeLike
-        Stop time of the time range.
+    times:
+        The times for which to get the CCD temperature data.
     source : str, optional
         Source of the CCD temperature data. If 'maude', override the fetch_sci data source
         to 'maude allow_subset=False'. Else, use the cheta default.
+    pad : int, optional
+        Pad the query times by this amount in seconds. Default is 600.
+        This extra time is not included in the returned data.
+    smooth_window : int, optional
+        3-sample Median filter and then smooth the data using a hanning window of this length.
+        Generally should not be more than pad * 2 / 32.8 .
 
     Returns
     -------
@@ -37,13 +43,33 @@ def get_tccd_data(start: CxoTimeLike, stop: CxoTimeLike, source="maude"):
     t_ccd_times : np.array
         Times corresponding to the CCD temperature values.
     """
+    fetch_start = CxoTime(times[0]).secs
+    fetch_stop = CxoTime(times[-1]).secs
+    if pad > 0:
+        fetch_start -= pad
+        fetch_stop += pad
+
     if source == "maude":
         # Override the data_source to be explicit about maude source.
         with fetch_sci.data_source("maude allow_subset=False"):
-            dat = fetch_sci.Msid("aacccdpt", start, stop)
+            dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
     else:
-        dat = fetch_sci.Msid("aacccdpt", start, stop)
-    return dat.vals, dat.times
+        dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
+
+    xin = dat.times
+    yin = dat.vals.copy()
+
+    if smooth_window > 0:
+        # Filter the data using a 3 point median filter from scipy
+        yin = scipy.signal.medfilt(yin, kernel_size=3)
+        # And then smooth it with hanning and window_len = smooth_window
+        yin = smooth(yin, window_len=smooth_window)
+
+    xout = CxoTime(times).secs
+    # Interpolate the data to the requested times
+    vals = np.interp(xout, xin, yin)
+
+    return vals, times
 
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
@@ -142,8 +168,17 @@ def _get_dcsub_aca_images(
 
     assert img_dark.shape == (1024, 1024)
 
+    # if the img_table has masked values in TIME, filter the table to remove
+    # the full rows before proceeding.
+    if hasattr(img_table["TIME"], "mask"):
+        # Filter the table in place so that we can unmask/compress TIME safely
+        img_table = img_table[~img_table["TIME"].mask]
+        times = img_table["TIME"].compressed()
+    else:
+        times = img_table["TIME"]
+
     if t_ccd_vals is None:
-        t_ccd_vals, t_ccd_times = get_tccd_data(start, stop, source=source)
+        t_ccd_vals, t_ccd_times = get_tccd_data(times, source=source)
 
     imgs_dark = get_dark_current_imgs(
         img_table, img_dark, tccd_dark, t_ccd_vals, t_ccd_times
@@ -153,7 +188,7 @@ def _get_dcsub_aca_images(
 
     img_table["IMGBGSUB"] = imgs_bgsub
     img_table["IMGDARK"] = imgs_dark
-    img_table["AACCCDPT"] = np.interp(img_table["TIME"], t_ccd_times, t_ccd_vals)
+    img_table["AACCCDPT"] = t_ccd_vals
 
     return img_table
 
