@@ -289,7 +289,7 @@ def test_vcdu_vs_level0():
         raw, start, stop, combine=True, adjust_time=True, calibrate=True
     )
     for col, col2 in zip(table.itercols(), table2.itercols()):
-        if col.name in ["TIME", "END_INTEG_TIME"]:
+        if col.name in ["TIME", "END_INTEG_TIME", "IMG_TIME"]:
             assert np.all(np.isclose(col2, col, rtol=0, atol=1e-3))
         else:
             assert np.all(col == col2)
@@ -1211,23 +1211,23 @@ def test_end_integ_time(combine):
 
     # Test that END_INTEG_TIME is the same in both cases
     assert np.all(table_maude["END_INTEG_TIME"] == table_l0["END_INTEG_TIME"])
+
     # Test the relation between END_INTEG_TIME and TIME found in the ACA L0 ICD
+    # (only valid for the first sub-image, because TIME increases in subsequent ones,
+    # whereas END_INTEG_TIME does not)
+    first_sub_image = np.in1d(table_l0["IMGTYPE"], [0, 1, 4])
     assert np.all(
         np.isclose(
-            table_l0["END_INTEG_TIME"], table_l0["TIME"] + table_l0["INTEG"] / 2, rtol=0
+            table_l0["END_INTEG_TIME"][first_sub_image],
+            table_l0["TIME"][first_sub_image] + table_l0["INTEG"][first_sub_image] / 2,
+            rtol=0,
         )
     )
+
     # Test the relation between END_INTEG_TIME and VCDU TIME (maude) found in the ACA L0 ICD
     assert np.all(
-        np.isclose(table_l0["END_INTEG_TIME"], table_maude["TIME"] - 1.025, rtol=0)
+        np.isclose(table_l0["END_INTEG_TIME"], table_maude["IMG_TIME"] - 1.025, rtol=0)
     )
-
-    if not combine:
-        # if sub-images are not combined to form full ACA images,
-        # only the first sub-image has END_INTEG_TIME defined
-        first_sub_image = np.in1d(table_l0["IMGTYPE"], [0, 1, 4])
-        assert np.all(table_l0["END_INTEG_TIME"].mask == ~first_sub_image)
-        assert np.all(table_maude["END_INTEG_TIME"].mask == ~first_sub_image)
 
 
 def test_maude_vs_aca_l0_times():

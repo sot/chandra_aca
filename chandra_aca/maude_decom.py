@@ -140,6 +140,11 @@ import numpy as np
 from astropy.table import Table, vstack
 from Chandra.Time import DateTime
 
+# maximum values for frame counters (for convenience)
+MAX_MJF = (2 << 16) - 1
+MAX_MNF = (2 << 6) - 1
+MAX_VCDU = (2 << 23) - 1
+
 # The following are the tables in the docstring above. They appear to be transposed,
 # but the resultt agrees with level0.
 PIXEL_MAP = {
@@ -1249,13 +1254,17 @@ def _get_aca_packets(
 
     table["INTEG"] = table["INTEG"] * 0.016
 
-    # setting the end of the integration interval from the OBC time (see EQ7-278 F Figure 7)
-    # we are setting END_INTEG_TIME in only the first frame of an image
-    first = np.in1d(table["IMGTYPE"], [0, 1, 4])
-    if np.any(first):
-        table["END_INTEG_TIME"][first] = table["TIME"][first] - 1.025
-    else:
-        table["END_INTEG_TIME"] = np.ma.masked_all(len(table))
+    # the time of an image is the time of its first subimage IMG_TIME, which is set 1.025 seconds
+    # after the end of integration.
+    # d_vcductr is the number of VCDU frames since the first subimage.
+    d_vcductr = np.where(
+        table["IMGTYPE"] > 4,
+        table["IMGTYPE"] - 4,
+        np.where(table["IMGTYPE"] == 2, 2, 0),
+    )
+    table["IMG_VCDUCTR"] = (table["VCDUCTR"] - 4 * d_vcductr) % MAX_VCDU
+    table["IMG_TIME"] = table["TIME"] - 1.025 * d_vcductr
+    table["END_INTEG_TIME"] = table["IMG_TIME"] - 1.025
 
     if adjust_time:
         # After this adjujstment, TIME corresponds to the center of integration interval and
