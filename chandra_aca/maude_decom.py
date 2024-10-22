@@ -1086,8 +1086,8 @@ def get_aca_packets(
     level0 : bool.
         Implies combine=True, adjust_time=True, calibrate=True
     combine : bool.
-        If True, multiple ACA packets are combined to form an image (depending on size),
-        If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.
+        If True, ACA subimages are combined to form a full image (depending on size),
+        If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.
     adjust_time : bool
         If True, TIME is at the middle of the integration window (END_INTEG_TIME - INTEG/2).
         If False, TIME is the VCDU time in telemetry (END_INTEG_TIME + 1.025 sec).
