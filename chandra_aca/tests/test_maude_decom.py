@@ -289,7 +289,7 @@ def test_vcdu_vs_level0():
         raw, start, stop, combine=True, adjust_time=True, calibrate=True
     )
     for col, col2 in zip(table.itercols(), table2.itercols()):
-        if col.name in ["TIME", "END_INTEG_TIME", "IMG_TIME"]:
+        if col.name in ["TIME", "END_INTEG_TIME"]:
             assert np.all(np.isclose(col2, col, rtol=0, atol=1e-3))
         else:
             assert np.all(col == col2)
@@ -1225,8 +1225,14 @@ def test_end_integ_time(combine):
     )
 
     # Test the relation between END_INTEG_TIME and VCDU TIME (maude) found in the ACA L0 ICD
+    # in the case of the first sub-image
+    first_sub_image = np.in1d(table_maude["IMGTYPE"], [0, 1, 4])
     assert np.all(
-        np.isclose(table_l0["END_INTEG_TIME"], table_maude["IMG_TIME"] - 1.025, rtol=0)
+        np.isclose(
+            table_maude["END_INTEG_TIME"][first_sub_image],
+            table_maude["TIME"][first_sub_image] - 1.025,
+            rtol=0,
+        )
     )
 
 
