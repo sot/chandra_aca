@@ -1105,7 +1105,6 @@ def get_aca_packets(
     adjust_time : bool
         If True, TIME is at the middle of the integration window (END_INTEG_TIME - INTEG/2).
         If False, TIME is the VCDU time in telemetry (END_INTEG_TIME + 1.025 sec).
-        after the end of integration.
     calibrate : bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
