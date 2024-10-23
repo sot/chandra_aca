@@ -1103,8 +1103,9 @@ def get_aca_packets(
         If True, ACA subimages are combined to form a full image (depending on size),
         If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.
     adjust_time : bool
-        If True, TIME is at the middle of the integration window (END_INTEG_TIME - INTEG/2).
-        If False, TIME is the VCDU time in telemetry (END_INTEG_TIME + 1.025 sec).
+        If True, TIME is at the middle of the integration window.
+        If False, TIME is the VCDU time in telemetry of the packet frame (combine=False)
+        or the VCDU time of the first sub-image of the combined image (combine=True).
     calibrate : bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
@@ -1286,7 +1287,7 @@ def _get_aca_packets(
         # END_INTEG_TIME to the end:
         #     END_INTEG_TIME == TIME + INTEG / 2.0
         # See also https://cxc.harvard.edu/mta/ASPECT/Docs/aca_l0_icd.pdf section D.2.4.
-        table["TIME"] -= table["INTEG"] / 2 + 1.025
+        table["TIME"] = table["END_INTEG_TIME"] - table["INTEG"] / 2
 
     if calibrate:
         if "IMG" in table.colnames:
