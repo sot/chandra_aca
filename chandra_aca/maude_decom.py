@@ -24,7 +24,7 @@ there for more details, especially Figures 6-1 to 6-4 in the user's manual and F
 EQ7-278 F.
 
 The ACA updates its output in regular 1.025 second periods that either begin or end at the time of
-an RCTU science header pulse (which occur every 2.05 seconds). These are called update periods, 
+an RCTU science header pulse (which occur every 2.05 seconds). These are called update periods,
 following the convention in the user manual section 6.1.
 
 The ACA CCD operating cycle starts with a flush of charge from the CCD, followed by CCD integration,
@@ -46,7 +46,7 @@ because Aspect pixel telemetry contains only eight pixels per update. 6x6 images
 periods, and 8x8 images take four. The end of the integration interval is the same for all the
 sub-images, and corresponds to::
 
-    END_INTEG_TIME = TIME - 1.025 
+    END_INTEG_TIME = TIME - 1.025
 
 When the choice of integration time causes the CCD cycle to last longer than the time it takes to
 update a full image (1.025 seconds for a 4x4 image, 2.05 seconds for a 6x6 image or 4.1 seconds for
