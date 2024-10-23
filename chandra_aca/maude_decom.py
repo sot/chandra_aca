@@ -1275,7 +1275,7 @@ def _get_aca_packets(
     d_vcductr = np.where(
         table["IMGTYPE"] > 4,
         table["IMGTYPE"] - 4,
-        np.where(table["IMGTYPE"] == 2, 2, 0),
+        np.where(table["IMGTYPE"] == 2, 1, 0),
     )
     table["IMG_VCDUCTR"] = (table["VCDUCTR"] - 4 * d_vcductr) % MAX_VCDU
     table["IMG_TIME"] = table["TIME"] - 1.025 * d_vcductr
