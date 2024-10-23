@@ -1278,8 +1278,8 @@ def _get_aca_packets(
         np.where(table["IMGTYPE"] == 2, 1, 0),
     )
     table["IMG_VCDUCTR"] = (table["VCDUCTR"] - 4 * d_vcductr) % MAX_VCDU
-    table["IMG_TIME"] = table["TIME"] - 1.025 * d_vcductr
-    table["END_INTEG_TIME"] = table["IMG_TIME"] - 1.025
+    img_time = table["TIME"] - 1.025 * d_vcductr
+    table["END_INTEG_TIME"] = img_time - 1.025
 
     if adjust_time:
         # After this adjustment, TIME corresponds to the center of integration interval and
