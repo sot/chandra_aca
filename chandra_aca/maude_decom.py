@@ -1,7 +1,79 @@
 """
 Classes and functions to help fetching ACA telemetry data using MAUDE.
+
+Telemetry Specification
+=======================
+
+Aspect telemetry is described in chapter 5 of the User's Manual. This module deals mostly with
+Aspect telemetry, specified in section 5.3 of the user's manual and section 3.2.1.15.12 of the ACA
+specification document EQ7-278 F.
+
+In general, the telemetry data is specified in the following documents (available on the Aspect
+Twiki page):
+
+* MSFC-STD-1274B. MSFC HOSC Telemetry Format Standard
+* MSFC-DOC-1949. MSFC HOSC Database Definitions
+
+Timing
+======
+
+Timing in MAUDE Telemetry
+-------------------------
+
+What follows is a summary from the user's guide section 6, and EQ7-278 F section 3.2.1.7. Check
+there for more details, especially Figures 6-1 to 6-4 in the user's manual and Figure 7 in
+EQ7-278 F.
+
+The ACA updates its output in regular 1.025 second periods that either begin or end at the time of
+an RCTU science header pulse (which occur every 2.05 seconds). These are called update periods,
+following the convention in the user manual section 6.1.
+
+The ACA CCD operating cycle starts with a flush of charge from the CCD, followed by CCD integration,
+CCD readout, and ends with an idle period. The start/end of the update period does not coincide with
+the start/end of the CCD cycle. Instead, the end of the integration coincides with the start/end of
+the update period. This is accomplished by adjusting the idle period.
+
+The data from and integration period is available to the OBC at the end of the following update
+period (EQ7-278 F Figure 7). That is 1.025 sec after the end of integration. This is the VCDU time
+seen in MAUDE telemetry::
+
+    TIME = END_INTEG_TIME + 1.025
+
+.. image:: ./images/aca_timing_manual.png
+  :width: 600
+
+In the case of 6x6 and 8x8 images, the entire image cannot be updated in a single update period,
+because Aspect pixel telemetry contains only eight pixels per update. 6x6 images take two update
+periods, and 8x8 images take four. The end of the integration interval is the same for all the
+sub-images, and corresponds to::
+
+    END_INTEG_TIME = TIME - 1.025
+
+When the choice of integration time causes the CCD cycle to last longer than the time it takes to
+update a full image (1.025 seconds for a 4x4 image, 2.05 seconds for a 6x6 image or 4.1 seconds for
+an 8x8 image) the most recent image is repeated until new pixel data is available.
+
+Timing in level0 Data Products
+------------------------------
+
+The times for pixel telemetry in level0 data products is adjusted to coincide with the middle of the
+integration interval::
+
+    TIME = END_INTEG_TIME - INTEG / 2
+
+This means that the difference between the time in telemetry and the time in the level0 data
+products is::
+
+    TIME<telem> - TIME<l0> = 1.025 + INTEG / 2
+
+Global variables in this module
+===============================
+
 These include the following global variables
 
+    * MAX_VCDU: the maximum possible VCDU frame counter value
+    * MAX_MJF: the maximum possible major frame counter value
+    * MAX_MNF: the maximum possible minor frame counter value
     * PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID
     * PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.
     * PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes
@@ -82,6 +154,11 @@ import maude
 import numpy as np
 from astropy.table import Table, vstack
 from Chandra.Time import DateTime
+
+# maximum values for frame counters (for convenience)
+MAX_MJF = (2 << 16) - 1
+MAX_MNF = (2 << 6) - 1
+MAX_VCDU = (2 << 23) - 1
 
 # The following are the tables in the docstring above. They appear to be transposed,
 # but the resultt agrees with level0.
@@ -1024,10 +1101,12 @@ def get_aca_packets(
     level0 : bool.
         Implies combine=True, adjust_time=True, calibrate=True
     combine : bool.
-        If True, multiple ACA packets are combined to form an image (depending on size),
-        If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.
+        If True, ACA subimages are combined to form a full image (depending on size),
+        If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.
     adjust_time : bool
-        If True, half the integration time is subtracted
+        If True, TIME is at the middle of the integration window.
+        If False, TIME is the VCDU time in telemetry of the packet frame (combine=False)
+        or the VCDU time of the first sub-image of the combined image (combine=True).
     calibrate : bool
         If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
         be: 0.4 * value + 273.15
@@ -1191,11 +1270,25 @@ def _get_aca_packets(
     table["IMGCOL0"][table["IMGTYPE"] == 2] -= 1
 
     table["INTEG"] = table["INTEG"] * 0.016
-    table["END_INTEG_TIME"] = table["TIME"] + table["INTEG"]
+
+    # the time of an image is the time of its first subimage IMG_TIME, which is set 1.025 seconds
+    # after the end of integration.
+    # d_vcductr is the number of VCDU frames since the first subimage.
+    d_vcductr = np.where(
+        table["IMGTYPE"] > 4,
+        table["IMGTYPE"] - 4,
+        np.where(table["IMGTYPE"] == 2, 1, 0),
+    )
+    table["IMG_VCDUCTR"] = (table["VCDUCTR"] - 4 * d_vcductr) % MAX_VCDU
+    img_time = table["TIME"] - 1.025 * d_vcductr
+    table["END_INTEG_TIME"] = img_time - 1.025
+
     if adjust_time:
-        dt = table["INTEG"] / 2 + 1.025
-        table["TIME"] -= dt
-        table["END_INTEG_TIME"] -= dt
+        # After this adjustment, TIME corresponds to the center of integration interval and
+        # END_INTEG_TIME to the end:
+        #     END_INTEG_TIME == TIME + INTEG / 2.0
+        # See also https://cxc.harvard.edu/mta/ASPECT/Docs/aca_l0_icd.pdf section D.2.4.
+        table["TIME"] = table["END_INTEG_TIME"] - table["INTEG"] / 2
 
     if calibrate:
         if "IMG" in table.colnames:
