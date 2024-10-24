@@ -8,7 +8,8 @@ Aspect telemetry is described in chapter 5 of the User's Manual. This module dea
 Aspect telemetry, specified in section 5.3 of the user's manual and section 3.2.1.15.12 of the ACA
 specification document EQ7-278 F.
 
-In general, the telemetry data is specified in the following documents:
+In general, the telemetry data is specified in the following documents (available on the Aspect
+Twiki page):
 
 * MSFC-STD-1274B. MSFC HOSC Telemetry Format Standard
 * MSFC-DOC-1949. MSFC HOSC Database Definitions
