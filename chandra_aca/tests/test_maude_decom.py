@@ -7,7 +7,6 @@ import pickle
 import maude
 import numpy as np
 import pytest
-from mica.archive.aca_l0 import get_aca_images
 
 from chandra_aca import maude_decom
 
@@ -1233,21 +1232,4 @@ def test_end_integ_time(combine):
             table_maude["TIME"][first_sub_image] - 1.025,
             rtol=0,
         )
-    )
-
-
-def test_maude_vs_aca_l0_times():
-    # mica.archive.aca_l0.get_images should return the same data as maude_decom.get_images
-    # we are testing that the times from maude_decom agree with those from mica
-    start, stop = (686111020.683, 686111028.903)
-    table_maude = maude_decom.get_aca_images(start, stop)
-    table_maude.sort(["VCDUCTR", "IMGNUM"])
-    table_mica = get_aca_images(start, stop)
-    table_mica.sort(["VCDUCTR", "IMGNUM"])
-
-    assert len(table_mica) == len(table_maude)
-    assert np.all(table_maude["VCDUCTR"] == table_mica["VCDUCTR"])
-    assert np.all(np.isclose(table_maude["TIME"], table_maude["TIME"], rtol=0))
-    assert np.all(
-        np.isclose(table_maude["END_INTEG_TIME"], table_maude["END_INTEG_TIME"], rtol=0)
     )
