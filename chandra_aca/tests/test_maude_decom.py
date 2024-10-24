@@ -1213,19 +1213,19 @@ def test_end_integ_time(combine):
     assert np.all(table_maude["END_INTEG_TIME"] == table_l0["END_INTEG_TIME"])
 
     # Test the relation between END_INTEG_TIME and TIME found in the ACA L0 ICD
-    # (only valid for the first sub-image, because TIME increases in subsequent ones,
-    # whereas END_INTEG_TIME does not)
-    first_sub_image = np.in1d(table_l0["IMGTYPE"], [0, 1, 4])
+    # this is true for all sub-images, because the time is set to that of the first sub-image
+    # and it is the same for all sub-images in the same full image.
     assert np.all(
         np.isclose(
-            table_l0["END_INTEG_TIME"][first_sub_image],
-            table_l0["TIME"][first_sub_image] + table_l0["INTEG"][first_sub_image] / 2,
+            table_l0["END_INTEG_TIME"],
+            table_l0["TIME"] + table_l0["INTEG"] / 2,
             rtol=0,
         )
     )
 
     # Test the relation between END_INTEG_TIME and VCDU TIME (maude) found in the ACA L0 ICD
-    # in the case of the first sub-image
+    # this is true only for the first sub-image, subsequent sub-images have a different VCDU time
+    # whereas END_INTEG_TIME does not change.
     first_sub_image = np.in1d(table_maude["IMGTYPE"], [0, 1, 4])
     assert np.all(
         np.isclose(
