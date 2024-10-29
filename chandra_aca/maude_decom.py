@@ -945,7 +945,7 @@ def _aca_packets_to_table(aca_packets, dtype=None):
             if name in aca_packet:
                 array[name][i] = aca_packet[name]
 
-    table = Table(array, masked=True)
+    table = Table(array)
     if img:
         table["IMG"] = img
         for i, aca_packet in enumerate(aca_packets):
@@ -1358,6 +1358,12 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     ]
     out = vstack(packet_stack)
     out.meta["times"] = maude_fetch_times
+
+    # Remove mask from columns where no values are masked.
+    for col in out.itercols():
+        if not np.any(col.mask):
+            out[col.name] = col.data.data
+
     return out
 
 
