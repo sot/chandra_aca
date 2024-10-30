@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.drift &#8212; chandra_aca 4.45.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
+    <title>chandra_aca.drift &#8212; chandra_aca 4.47.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=457a4054"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -59,7 +58,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.45.1 documentation</a>
+	<a href="index.html">chandra_aca 4.47.0 documentation</a>
 	 &#187;
       </li>
       
@@ -74,7 +73,7 @@
           <div class="body" role="main">
             
   <section id="module-chandra_aca.drift">
-<span id="chandra-aca-drift"></span><h1>chandra_aca.drift<a class="headerlink" href="#module-chandra_aca.drift" title="Permalink to this heading">¶</a></h1>
+<span id="chandra-aca-drift"></span><h1>chandra_aca.drift<a class="headerlink" href="#module-chandra_aca.drift" title="Link to this heading">¶</a></h1>
 <p>Function(s) related to ACA alignment.</p>
 <p>In particular compute the dynamical pointing offset required to achieve
 a desired zero-offset target aimpoint.</p>
@@ -82,13 +81,13 @@ a desired zero-offset target aimpoint.</p>
 <a class="reference external" href="https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb">https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb</a></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="chandra_aca.drift.AcaDriftModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">AcaDriftModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jumps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">AcaDriftModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jumps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel" title="Link to this definition">¶</a></dt>
 <dd><p>Define a drift model for aspect solution SIM DY/DZ values as a function of
 time and ACA CCD temperature.  This expresses the model which is defined
 and fitted in the fit_aimpoint_drift notebook in this repo.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="chandra_aca.drift.AcaDriftModel.calc">
-<span class="sig-name descname"><span class="pre">calc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel.calc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel.calc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#AcaDriftModel.calc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.AcaDriftModel.calc" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the drift model for aspect solution SIM DY/DZ values for input
 <code class="docutils literal notranslate"><span class="pre">times</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>.  The two arrays are broadcasted to match.</p>
 <p>The returned drifts are in arcsec and provide the expected aspect solution
@@ -115,7 +114,7 @@ SIM DY or DZ values in arcsec.  This can be converted to a drift in mm
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.drift.get_aca_offsets">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_aca_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_aca_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_aca_offsets" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_aca_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chipy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_aca_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_aca_offsets" title="Link to this definition">¶</a></dt>
 <dd><p>Compute the dynamical ACA offset values for the provided inputs.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">time</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code> inputs can be either scalars or arrays.</p>
 <dl class="field-list simple">
@@ -145,7 +144,7 @@ SIM DY or DZ values in arcsec.  This can be converted to a drift in mm
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.drift.get_default_zero_offset_table">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_default_zero_offset_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_default_zero_offset_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_default_zero_offset_table" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_default_zero_offset_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_default_zero_offset_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_default_zero_offset_table" title="Link to this definition">¶</a></dt>
 <dd><p>Get official SOT MP zero offset aimpoint table.</p>
 <p>First try <code class="docutils literal notranslate"><span class="pre">/data/mpcrit1/aimpoint_table/zero_offset_aimpoints.txt</span></code>.
 If that is not available use:
@@ -164,7 +163,7 @@ The web version is updated weekly on Sunday via a Ska cron job.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.drift.get_fid_offset">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_fid_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_fid_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_fid_offset" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_fid_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_fid_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_fid_offset" title="Link to this definition">¶</a></dt>
 <dd><p>Compute the fid light offset values for a given time and temperature.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">time</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code> inputs can be either scalars or arrays.</p>
 <dl class="field-list simple">
@@ -196,7 +195,7 @@ See <a class="reference external" href="https://github.com/sot/fid_drift_mon/blo
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.drift.get_target_aimpoint">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_target_aimpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">too</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_offset_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_target_aimpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_target_aimpoint" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.drift.</span></span><span class="sig-name descname"><span class="pre">get_target_aimpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">too</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_offset_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/drift.html#get_target_aimpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.drift.get_target_aimpoint" title="Link to this definition">¶</a></dt>
 <dd><p>Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -278,7 +277,7 @@ See <a class="reference external" href="https://github.com/sot/fid_drift_mon/blo
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 7.2.6. &nbsp;
   </p>
 </footer>
   </body>

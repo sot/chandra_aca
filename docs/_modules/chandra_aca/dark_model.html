@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.dark_model &#8212; chandra_aca 4.45.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
+    <title>chandra_aca.dark_model &#8212; chandra_aca 4.47.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -45,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.45.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -63,22 +62,28 @@
   <h1>Source code for chandra_aca.dark_model</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Routines related to the canonical Chandra ACA dark current model.</span>
+<span class="sd">Routines related to the Chandra ACA dark current models.</span>
 
-<span class="sd">The model is based on smoothed twice-broken power-law fits of</span>
-<span class="sd">dark current histograms from Jan-2007 though Aug-2017.  This analysis</span>
-<span class="sd">was done entirely with dark current maps scaled to -14 C.</span>
+<span class="sd">The canonical model for ACA dark current is a based on smoothed</span>
+<span class="sd">twice-broken power-law fits of dark current histograms from Jan-2007</span>
+<span class="sd">though Aug-2017.  This analysis was done entirely with dark current maps scaled to -14 C.</span>
 
 <span class="sd">See: /proj/sot/ska/analysis/dark_current_model/dark_model.ipynb</span>
 <span class="sd">and other files in that directory.</span>
 
 <span class="sd">Alternatively:</span>
 <span class="sd">http://nbviewer.ipython.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model.ipynb</span>
+
+<span class="sd">The dark_temp_scale_img method in this file uses a more recent 2023 approach with per-pixel scaling.</span>
+
+<span class="sd">https://nbviewer.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model-2023.ipynb</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
 <span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
 
 <span class="c1"># Define a common fixed binning of dark current distribution</span>
@@ -113,7 +118,9 @@
 <span class="n">DARK_SCALE_4C</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">0.70</span>
 
 
-<div class="viewcode-block" id="dark_temp_scale"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.dark_temp_scale">[docs]</a><span class="k">def</span> <span class="nf">dark_temp_scale</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="o">=-</span><span class="mf">19.0</span><span class="p">,</span> <span class="n">scale_4c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="dark_temp_scale">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.dark_temp_scale">[docs]</a>
+<span class="k">def</span> <span class="nf">dark_temp_scale</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="o">=-</span><span class="mf">19.0</span><span class="p">,</span> <span class="n">scale_4c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the multiplicative scale factor to convert a CCD dark map</span>
 <span class="sd">    or dark current value from temperature ``t_ccd`` to temperature</span>
 <span class="sd">    ``t_ccd_ref``::</span>
@@ -156,7 +163,10 @@
     <span class="k">return</span> <span class="n">scale_4c</span> <span class="o">**</span> <span class="p">((</span><span class="n">t_ccd_ref</span> <span class="o">-</span> <span class="n">t_ccd</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_dark_hist"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_dark_hist">[docs]</a><span class="k">def</span> <span class="nf">get_dark_hist</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_dark_hist">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_dark_hist">[docs]</a>
+<span class="k">def</span> <span class="nf">get_dark_hist</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the dark current histogram corresponding to ``date`` and ``t_ccd``.</span>
 
@@ -182,7 +192,10 @@
     <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">xbins</span><span class="p">,</span> <span class="n">y</span></div>
 
 
-<div class="viewcode-block" id="smooth_broken_pow"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.smooth_broken_pow">[docs]</a><span class="k">def</span> <span class="nf">smooth_broken_pow</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+<div class="viewcode-block" id="smooth_broken_pow">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.smooth_broken_pow">[docs]</a>
+<span class="k">def</span> <span class="nf">smooth_broken_pow</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):</span>
 <span class="sd">    1: gamma1</span>
@@ -201,7 +214,10 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">yg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)[</span><span class="n">imin</span><span class="p">:</span><span class="n">imax</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="smooth_twice_broken_pow"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.smooth_twice_broken_pow">[docs]</a><span class="k">def</span> <span class="nf">smooth_twice_broken_pow</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+<div class="viewcode-block" id="smooth_twice_broken_pow">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.smooth_twice_broken_pow">[docs]</a>
+<span class="k">def</span> <span class="nf">smooth_twice_broken_pow</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):</span>
 <span class="sd">    1: gamma1</span>
@@ -229,7 +245,10 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">yg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)[</span><span class="n">imin</span><span class="p">:</span><span class="n">imax</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="temp_scalefac"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.temp_scalefac">[docs]</a><span class="k">def</span> <span class="nf">temp_scalefac</span><span class="p">(</span><span class="n">T_ccd</span><span class="p">):</span>
+
+<div class="viewcode-block" id="temp_scalefac">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.temp_scalefac">[docs]</a>
+<span class="k">def</span> <span class="nf">temp_scalefac</span><span class="p">(</span><span class="n">T_ccd</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the multiplicative scale factor to convert a CCD dark map from</span>
 <span class="sd">    the nominal -19C temperature to the temperature T.  Based on best global fit for</span>
@@ -246,6 +265,7 @@
     <span class="k">return</span> <span class="n">dark_temp_scale</span><span class="p">(</span><span class="o">-</span><span class="mi">19</span><span class="p">,</span> <span class="n">T_ccd</span><span class="p">)</span></div>
 
 
+
 <span class="k">def</span> <span class="nf">as_array</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">is_scalar</span> <span class="o">=</span> <span class="kc">True</span>
@@ -257,7 +277,9 @@
     <span class="k">return</span> <span class="n">vals</span><span class="p">,</span> <span class="n">is_scalar</span>
 
 
-<div class="viewcode-block" id="get_sbp_pars"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_sbp_pars">[docs]</a><span class="k">def</span> <span class="nf">get_sbp_pars</span><span class="p">(</span><span class="n">dates</span><span class="p">):</span>
+<div class="viewcode-block" id="get_sbp_pars">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_sbp_pars">[docs]</a>
+<span class="k">def</span> <span class="nf">get_sbp_pars</span><span class="p">(</span><span class="n">dates</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return smooth broken powerlaw parameters set(s) at ``dates``.</span>
 
@@ -308,7 +330,10 @@
     <span class="k">return</span> <span class="n">pars_list</span></div>
 
 
-<div class="viewcode-block" id="get_warm_fracs"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_warm_fracs">[docs]</a><span class="k">def</span> <span class="nf">get_warm_fracs</span><span class="p">(</span><span class="n">warm_threshold</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="s2">&quot;2013:001:12:00:00&quot;</span><span class="p">,</span> <span class="n">T_ccd</span><span class="o">=-</span><span class="mf">19.0</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_warm_fracs">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.get_warm_fracs">[docs]</a>
+<span class="k">def</span> <span class="nf">get_warm_fracs</span><span class="p">(</span><span class="n">warm_threshold</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="s2">&quot;2013:001:12:00:00&quot;</span><span class="p">,</span> <span class="n">T_ccd</span><span class="o">=-</span><span class="mf">19.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate fraction of pixels in modeled dark current distribution</span>
 <span class="sd">    above warm threshold(s).</span>
@@ -353,7 +378,10 @@
     <span class="k">return</span> <span class="n">out</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1024.0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="synthetic_dark_image"><a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.synthetic_dark_image">[docs]</a><span class="k">def</span> <span class="nf">synthetic_dark_image</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="synthetic_dark_image">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.synthetic_dark_image">[docs]</a>
+<span class="k">def</span> <span class="nf">synthetic_dark_image</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate a synthetic dark current image corresponding to the specified</span>
 <span class="sd">    ``date`` and ``t_ccd``.</span>
@@ -403,6 +431,55 @@
         <span class="n">dark</span> <span class="o">*=</span> <span class="n">dark_temp_scale</span><span class="p">(</span><span class="o">-</span><span class="mi">14</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">dark</span></div>
+
+
+
+<div class="viewcode-block" id="dark_temp_scale_img">
+<a class="viewcode-back" href="../../dark_model.html#chandra_aca.dark_model.dark_temp_scale_img">[docs]</a>
+<span class="k">def</span> <span class="nf">dark_temp_scale_img</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t_ccd_ref</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get dark current taken at ``t_ccd`` scaled to reference temperature ``t_ccd_ref``</span>
+
+<span class="sd">    This scales the dark current based on an exponential scaling factor that depends on</span>
+<span class="sd">    the dark current value of each pixel.  This is a more accurate way to scale dark</span>
+<span class="sd">    current images than using a global scaling factor as in dark_temp_scale().</span>
+
+<span class="sd">    See the reference notebook at:</span>
+<span class="sd">    https://nbviewer.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model-2023.ipynb</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img : float, ArrayLike</span>
+<span class="sd">        Dark current image or value in e-/sec</span>
+<span class="sd">    t_ccd : float</span>
+<span class="sd">        CCD temperature (degC) of the input image</span>
+<span class="sd">    t_ccd_ref : float</span>
+<span class="sd">        CCD temperature (degC) of the scaled output image</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float, np.ndarray</span>
+<span class="sd">        Dark current image scaled to ``t_ccd_ref``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Confirm t_ccd and t_ref are just floats</span>
+    <span class="n">t_ccd</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">)</span>
+    <span class="n">t_ccd_ref</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_ccd_ref</span><span class="p">)</span>
+
+    <span class="c1"># this comes from the simple fit to DC averages, with fixed T_CCD=265.15 (-8.0 C)</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="o">-</span><span class="mf">4.88802057e00</span><span class="p">,</span>
+        <span class="o">-</span><span class="mf">1.66791619e-04</span><span class="p">,</span>
+        <span class="o">-</span><span class="mf">2.22596103e-01</span><span class="p">,</span>
+        <span class="o">-</span><span class="mf">2.45720364e-03</span><span class="p">,</span>
+        <span class="mf">1.90718453e-01</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mf">265.15</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">))</span> <span class="o">-</span> <span class="n">e</span> <span class="o">*</span> <span class="n">t</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">t</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">y</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">img</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_ccd_ref</span> <span class="o">-</span> <span class="n">t_ccd</span><span class="p">))</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -427,7 +504,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 7.2.6. &nbsp;
   </p>
 </footer>
   </body>

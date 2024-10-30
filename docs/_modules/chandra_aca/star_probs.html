@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.star_probs &#8212; chandra_aca 4.45.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.47.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -45,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.45.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -93,8 +92,10 @@
 <span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
 <span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTimeLike</span>
 <span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">ArrayLike</span>
 <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">RegularGridInterpolator</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">bisect</span><span class="p">,</span> <span class="n">brentq</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">beta</span>
 <span class="kn">from</span> <span class="nn">ska_helpers</span> <span class="kn">import</span> <span class="n">chandra_models</span>
 
 <span class="kn">from</span> <span class="nn">chandra_aca.transform</span> <span class="kn">import</span> <span class="p">(</span>
@@ -116,11 +117,16 @@
 <span class="n">MULT_STARS_ENABLED</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="ConfigItem"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.ConfigItem">[docs]</a><span class="k">class</span> <span class="nc">ConfigItem</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">ConfigItem</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfigItem">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.ConfigItem">[docs]</a>
+<span class="k">class</span> <span class="nc">ConfigItem</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">ConfigItem</span><span class="p">):</span>
     <span class="n">rootname</span> <span class="o">=</span> <span class="s2">&quot;chandra_aca.star_probs&quot;</span></div>
 
 
-<div class="viewcode-block" id="Conf"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.Conf">[docs]</a><span class="k">class</span> <span class="nc">Conf</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">ConfigNamespace</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Conf">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.Conf">[docs]</a>
+<span class="k">class</span> <span class="nc">Conf</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">ConfigNamespace</span><span class="p">):</span>
     <span class="n">default_model</span> <span class="o">=</span> <span class="n">ConfigItem</span><span class="p">(</span>
         <span class="n">defaultvalue</span><span class="o">=</span><span class="s2">&quot;grid-*&quot;</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="p">(</span>
@@ -130,11 +136,14 @@
     <span class="p">)</span></div>
 
 
+
 <span class="c1"># Create a configuration instance for the user</span>
 <span class="n">conf</span> <span class="o">=</span> <span class="n">Conf</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="get_box_delta"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_box_delta">[docs]</a><span class="k">def</span> <span class="nf">get_box_delta</span><span class="p">(</span><span class="n">halfwidth</span><span class="p">):</span>
+<div class="viewcode-block" id="get_box_delta">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_box_delta">[docs]</a>
+<span class="k">def</span> <span class="nf">get_box_delta</span><span class="p">(</span><span class="n">halfwidth</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transform from halfwidth (arcsec) to the box_delta value which gets added</span>
 <span class="sd">    to failure probability (in probit space).</span>
@@ -161,8 +170,11 @@
     <span class="k">return</span> <span class="n">box_delta</span></div>
 
 
+
 <span class="c1"># Default global values using NO_MS settings.  Kinda ugly.</span>
-<div class="viewcode-block" id="set_acq_model_ms_filter"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.set_acq_model_ms_filter">[docs]</a><span class="k">def</span> <span class="nf">set_acq_model_ms_filter</span><span class="p">(</span><span class="n">ms_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="set_acq_model_ms_filter">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.set_acq_model_ms_filter">[docs]</a>
+<span class="k">def</span> <span class="nf">set_acq_model_ms_filter</span><span class="p">(</span><span class="n">ms_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Choose one of two sets of acquisition model fit parameters based</span>
 <span class="sd">    on ``ms_enabled``.  The default is ``False``:</span>
@@ -178,7 +190,10 @@
     <span class="n">MULT_STARS_ENABLED</span> <span class="o">=</span> <span class="n">ms_enabled</span></div>
 
 
-<div class="viewcode-block" id="t_ccd_warm_limit"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit">[docs]</a><span class="k">def</span> <span class="nf">t_ccd_warm_limit</span><span class="p">(</span>
+
+<div class="viewcode-block" id="t_ccd_warm_limit">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit">[docs]</a>
+<span class="k">def</span> <span class="nf">t_ccd_warm_limit</span><span class="p">(</span>
     <span class="n">mags</span><span class="p">,</span>
     <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">colors</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -289,6 +304,7 @@
     <span class="k">return</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">out</span></div>
 
 
+
 <span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_prob_n_acq</span><span class="p">(</span><span class="n">star_probs</span><span class="p">,</span> <span class="n">n_stars</span><span class="p">,</span> <span class="n">n_acq_probs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -307,7 +323,9 @@
         <span class="n">n_acq_probs</span><span class="p">[</span><span class="n">n_acq</span><span class="p">]</span> <span class="o">+=</span> <span class="n">prob</span>
 
 
-<div class="viewcode-block" id="prob_n_acq"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.prob_n_acq">[docs]</a><span class="k">def</span> <span class="nf">prob_n_acq</span><span class="p">(</span><span class="n">star_probs</span><span class="p">):</span>
+<div class="viewcode-block" id="prob_n_acq">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.prob_n_acq">[docs]</a>
+<span class="k">def</span> <span class="nf">prob_n_acq</span><span class="p">(</span><span class="n">star_probs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given an input array of star acquisition probabilities ``star_probs``,</span>
 <span class="sd">    return the probabilities of acquiring exactly n_acq stars, where n_acq</span>
@@ -329,7 +347,10 @@
     <span class="k">return</span> <span class="n">n_acq_probs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">n_acq_probs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="acq_success_prob"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.acq_success_prob">[docs]</a><span class="k">def</span> <span class="nf">acq_success_prob</span><span class="p">(</span>
+
+<div class="viewcode-block" id="acq_success_prob">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.acq_success_prob">[docs]</a>
+<span class="k">def</span> <span class="nf">acq_success_prob</span><span class="p">(</span>
     <span class="n">date</span><span class="p">:</span> <span class="n">CxoTimeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">t_ccd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span>
     <span class="n">mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
@@ -409,7 +430,10 @@
     <span class="k">return</span> <span class="n">probs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">probs</span></div>
 
 
-<div class="viewcode-block" id="get_default_acq_prob_model_info"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_default_acq_prob_model_info">[docs]</a><span class="k">def</span> <span class="nf">get_default_acq_prob_model_info</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_default_acq_prob_model_info">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_default_acq_prob_model_info">[docs]</a>
+<span class="k">def</span> <span class="nf">get_default_acq_prob_model_info</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get info about the default acquisition probability model.</span>
 
 <span class="sd">    Example::</span>
@@ -452,7 +476,10 @@
     <span class="k">return</span> <span class="n">info</span></div>
 
 
-<div class="viewcode-block" id="clip_and_warn"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.clip_and_warn">[docs]</a><span class="k">def</span> <span class="nf">clip_and_warn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tol_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tol_hi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+
+<div class="viewcode-block" id="clip_and_warn">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.clip_and_warn">[docs]</a>
+<span class="k">def</span> <span class="nf">clip_and_warn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tol_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tol_hi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a</span>
 <span class="sd">    warning if clipping occurs, subject to ``tol_lo`` and ``tol_hi`` expansions.</span>
@@ -495,7 +522,10 @@
     <span class="k">return</span> <span class="n">val</span></div>
 
 
-<div class="viewcode-block" id="get_grid_axis_values"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_grid_axis_values">[docs]</a><span class="k">def</span> <span class="nf">get_grid_axis_values</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_grid_axis_values">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_grid_axis_values">[docs]</a>
+<span class="k">def</span> <span class="nf">get_grid_axis_values</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get grid model axis values from FITS header.</span>
 
 <span class="sd">    This is an irregularly-spaced grid if ``hdr`` has ``{axis}_0`` .. ``{axis}_&lt;N-1&gt;``.</span>
@@ -521,7 +551,10 @@
     <span class="k">return</span> <span class="n">vals</span></div>
 
 
-<div class="viewcode-block" id="get_grid_func_model"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_grid_func_model">[docs]</a><span class="k">def</span> <span class="nf">get_grid_func_model</span><span class="p">(</span>
+
+<div class="viewcode-block" id="get_grid_func_model">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_grid_func_model">[docs]</a>
+<span class="k">def</span> <span class="nf">get_grid_func_model</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">repo_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -562,6 +595,7 @@
         <span class="n">model</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">default_model</span>
 
     <span class="k">return</span> <span class="n">_get_grid_func_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">)</span></div>
+
 
 
 <span class="nd">@chandra_models</span><span class="o">.</span><span class="n">chandra_models_cache</span>
@@ -649,7 +683,9 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;could not parse date from </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="grid_model_acq_prob"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.grid_model_acq_prob">[docs]</a><span class="k">def</span> <span class="nf">grid_model_acq_prob</span><span class="p">(</span>
+<div class="viewcode-block" id="grid_model_acq_prob">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.grid_model_acq_prob">[docs]</a>
+<span class="k">def</span> <span class="nf">grid_model_acq_prob</span><span class="p">(</span>
     <span class="n">mag</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">12.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">probit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate a grid model probability of acquisition success for a star with</span>
@@ -730,7 +766,10 @@
     <span class="k">return</span> <span class="n">p_success</span></div>
 
 
-<div class="viewcode-block" id="spline_model_acq_prob"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.spline_model_acq_prob">[docs]</a><span class="k">def</span> <span class="nf">spline_model_acq_prob</span><span class="p">(</span>
+
+<div class="viewcode-block" id="spline_model_acq_prob">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.spline_model_acq_prob">[docs]</a>
+<span class="k">def</span> <span class="nf">spline_model_acq_prob</span><span class="p">(</span>
     <span class="n">mag</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">12.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">probit</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -870,7 +909,10 @@
     <span class="k">return</span> <span class="n">p_out</span></div>
 
 
-<div class="viewcode-block" id="model_acq_success_prob"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.model_acq_success_prob">[docs]</a><span class="k">def</span> <span class="nf">model_acq_success_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">):</span>
+
+<div class="viewcode-block" id="model_acq_success_prob">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.model_acq_success_prob">[docs]</a>
+<span class="k">def</span> <span class="nf">model_acq_success_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Call sota_model_acq_prob() with same params.  This is retained purely</span>
 <span class="sd">    for back-compatibility but use is deprecated.</span>
@@ -878,7 +920,10 @@
     <span class="k">return</span> <span class="n">sota_model_acq_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">halfwidth</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="sota_model_acq_prob"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.sota_model_acq_prob">[docs]</a><span class="k">def</span> <span class="nf">sota_model_acq_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">):</span>
+
+<div class="viewcode-block" id="sota_model_acq_prob">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.sota_model_acq_prob">[docs]</a>
+<span class="k">def</span> <span class="nf">sota_model_acq_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate raw SOTA model probability of acquisition success.</span>
 
@@ -1000,7 +1045,10 @@
     <span class="k">return</span> <span class="n">p_success</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">p_success</span>  <span class="c1"># Return scalar if ndim=0</span></div>
 
 
-<div class="viewcode-block" id="mag_for_p_acq"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.mag_for_p_acq">[docs]</a><span class="k">def</span> <span class="nf">mag_for_p_acq</span><span class="p">(</span><span class="n">p_acq</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="mag_for_p_acq">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.mag_for_p_acq">[docs]</a>
+<span class="k">def</span> <span class="nf">mag_for_p_acq</span><span class="p">(</span><span class="n">p_acq</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    For a given ``date`` and ``t_ccd``, find the star magnitude that has an</span>
 <span class="sd">    acquisition probability of ``p_acq``.  Star magnitude is defined/limited</span>
@@ -1047,7 +1095,10 @@
     <span class="k">return</span> <span class="n">mag</span></div>
 
 
-<div class="viewcode-block" id="guide_count"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.guide_count">[docs]</a><span class="k">def</span> <span class="nf">guide_count</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">count_9th</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+<div class="viewcode-block" id="guide_count">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.guide_count">[docs]</a>
+<span class="k">def</span> <span class="nf">guide_count</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">count_9th</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate a guide star fractional count/metric using signal-to-noise scaled</span>
 <span class="sd">    mag thresholds.</span>
 
@@ -1103,7 +1154,10 @@
     <span class="k">return</span> <span class="n">count</span></div>
 
 
-<div class="viewcode-block" id="t_ccd_warm_limit_for_guide"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit_for_guide">[docs]</a><span class="k">def</span> <span class="nf">t_ccd_warm_limit_for_guide</span><span class="p">(</span>
+
+<div class="viewcode-block" id="t_ccd_warm_limit_for_guide">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit_for_guide">[docs]</a>
+<span class="k">def</span> <span class="nf">t_ccd_warm_limit_for_guide</span><span class="p">(</span>
     <span class="n">mags</span><span class="p">,</span> <span class="n">min_guide_count</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">warm_t_ccd</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">cold_t_ccd</span><span class="o">=-</span><span class="mf">16.0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1143,7 +1197,10 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="binom_ppf"><a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.binom_ppf">[docs]</a><span class="k">def</span> <span class="nf">binom_ppf</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">n_sample</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+
+<div class="viewcode-block" id="binom_ppf">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.binom_ppf">[docs]</a>
+<span class="k">def</span> <span class="nf">binom_ppf</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">n_sample</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute percent point function (inverse of CDF) for binomial, where</span>
 <span class="sd">    the percentage is with respect to the &quot;p&quot; (binomial probability) parameter</span>
@@ -1181,6 +1238,85 @@
     <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">cdf</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">ps</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="binomial_confidence_interval">
+<a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.binomial_confidence_interval">[docs]</a>
+<span class="k">def</span> <span class="nf">binomial_confidence_interval</span><span class="p">(</span>
+    <span class="n">n_success</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">coverage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.682689</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Binomial confidence interval calculation using the Jeffreys prior.</span>
+
+<span class="sd">    It returns a tuple with the ratio, the lower error, and the upper error.</span>
+
+<span class="sd">    This is an equal-tailed Bayesian interval with a Jeffreys prior (Beta(1/2,1/2)).</span>
+
+<span class="sd">        &quot;Statistical Decision Theory and Bayesian Analysis&quot; 2nd ed.</span>
+<span class="sd">        Berger, J.O. (1985)</span>
+<span class="sd">        Springer, New York</span>
+
+<span class="sd">    This function is based on:</span>
+
+<span class="sd">        &quot;Confidence Intervals for a binomial proportion and asymptotic expansions&quot;,</span>
+<span class="sd">        Lawrence D. Brown, T. Tony Cai, and Anirban DasGupta</span>
+<span class="sd">        Ann. Statist. Volume 30, Number 1 (2002), 160-201.</span>
+<span class="sd">        http://projecteuclid.org/euclid.aos/1015362189</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_success : numpy array</span>
+<span class="sd">        The number of &#39;successes&#39;</span>
+<span class="sd">    n_trials : numpy array</span>
+<span class="sd">        The number of trials</span>
+<span class="sd">    coverage : float</span>
+<span class="sd">        The coverage of the confidence interval. The default corresponds to the coverage of</span>
+<span class="sd">        &#39;1-sigma&#39; gaussian errors (0.682689).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ratio : tuple</span>
+<span class="sd">        ratio of successes to trials, lower bound, upper bound</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># keeping shape to make sure the output has the same shape as the input</span>
+    <span class="n">is_scalar</span><span class="p">,</span> <span class="n">n_success</span><span class="p">,</span> <span class="n">n_trials</span> <span class="o">=</span> <span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">n_success</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">&lt;</span> <span class="n">n_success</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_trials must be greater than or equal to n_success&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_trials must be greater or equal to 0&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">n_success</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_success must be greater or equal to 0&quot;</span><span class="p">)</span>
+
+    <span class="c1"># normalize the input as numpy arrays</span>
+    <span class="n">n_trials</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">n_trials</span><span class="p">)</span>
+    <span class="n">n_success</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">n_success</span><span class="p">)</span>
+    <span class="c1"># calculate the ratio</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">n_trials</span> <span class="o">!=</span> <span class="mi">0</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">n_success</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">ratio</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_success</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span> <span class="o">/</span> <span class="n">n_trials</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
+
+    <span class="c1"># calculate the confidence intervals</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">coverage</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span>
+    <span class="n">up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span>
+    <span class="n">low</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">beta</span><span class="o">.</span><span class="n">isf</span><span class="p">(</span>
+        <span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">,</span>
+        <span class="n">n_success</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">n_trials</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">n_success</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">up</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">beta</span><span class="o">.</span><span class="n">isf</span><span class="p">(</span>
+        <span class="n">alpha</span><span class="p">,</span>
+        <span class="n">n_success</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">n_trials</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">n_success</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ratio</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">ratio</span><span class="p">,</span>
+        <span class="n">low</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">low</span><span class="p">,</span>
+        <span class="n">up</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">up</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -1205,7 +1341,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 7.2.6. &nbsp;
   </p>
 </footer>
   </body>

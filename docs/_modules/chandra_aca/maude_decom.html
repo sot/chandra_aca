@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.45.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.47.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -45,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.45.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -63,8 +62,80 @@
   <h1>Source code for chandra_aca.maude_decom</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Classes and functions to help fetching ACA telemetry data using MAUDE.</span>
+
+<span class="sd">Telemetry Specification</span>
+<span class="sd">=======================</span>
+
+<span class="sd">Aspect telemetry is described in chapter 5 of the User&#39;s Manual. This module deals mostly with</span>
+<span class="sd">Aspect telemetry, specified in section 5.3 of the user&#39;s manual and section 3.2.1.15.12 of the ACA</span>
+<span class="sd">specification document EQ7-278 F.</span>
+
+<span class="sd">In general, the telemetry data is specified in the following documents (available on the Aspect</span>
+<span class="sd">Twiki page):</span>
+
+<span class="sd">* MSFC-STD-1274B. MSFC HOSC Telemetry Format Standard</span>
+<span class="sd">* MSFC-DOC-1949. MSFC HOSC Database Definitions</span>
+
+<span class="sd">Timing</span>
+<span class="sd">======</span>
+
+<span class="sd">Timing in MAUDE Telemetry</span>
+<span class="sd">-------------------------</span>
+
+<span class="sd">What follows is a summary from the user&#39;s guide section 6, and EQ7-278 F section 3.2.1.7. Check</span>
+<span class="sd">there for more details, especially Figures 6-1 to 6-4 in the user&#39;s manual and Figure 7 in</span>
+<span class="sd">EQ7-278 F.</span>
+
+<span class="sd">The ACA updates its output in regular 1.025 second periods that either begin or end at the time of</span>
+<span class="sd">an RCTU science header pulse (which occur every 2.05 seconds). These are called update periods,</span>
+<span class="sd">following the convention in the user manual section 6.1.</span>
+
+<span class="sd">The ACA CCD operating cycle starts with a flush of charge from the CCD, followed by CCD integration,</span>
+<span class="sd">CCD readout, and ends with an idle period. The start/end of the update period does not coincide with</span>
+<span class="sd">the start/end of the CCD cycle. Instead, the end of the integration coincides with the start/end of</span>
+<span class="sd">the update period. This is accomplished by adjusting the idle period.</span>
+
+<span class="sd">The data from and integration period is available to the OBC at the end of the following update</span>
+<span class="sd">period (EQ7-278 F Figure 7). That is 1.025 sec after the end of integration. This is the VCDU time</span>
+<span class="sd">seen in MAUDE telemetry::</span>
+
+<span class="sd">    TIME = END_INTEG_TIME + 1.025</span>
+
+<span class="sd">.. image:: ./images/aca_timing_manual.png</span>
+<span class="sd">  :width: 600</span>
+
+<span class="sd">In the case of 6x6 and 8x8 images, the entire image cannot be updated in a single update period,</span>
+<span class="sd">because Aspect pixel telemetry contains only eight pixels per update. 6x6 images take two update</span>
+<span class="sd">periods, and 8x8 images take four. The end of the integration interval is the same for all the</span>
+<span class="sd">sub-images, and corresponds to::</span>
+
+<span class="sd">    END_INTEG_TIME = TIME - 1.025</span>
+
+<span class="sd">When the choice of integration time causes the CCD cycle to last longer than the time it takes to</span>
+<span class="sd">update a full image (1.025 seconds for a 4x4 image, 2.05 seconds for a 6x6 image or 4.1 seconds for</span>
+<span class="sd">an 8x8 image) the most recent image is repeated until new pixel data is available.</span>
+
+<span class="sd">Timing in level0 Data Products</span>
+<span class="sd">------------------------------</span>
+
+<span class="sd">The times for pixel telemetry in level0 data products is adjusted to coincide with the middle of the</span>
+<span class="sd">integration interval::</span>
+
+<span class="sd">    TIME = END_INTEG_TIME - INTEG / 2</span>
+
+<span class="sd">This means that the difference between the time in telemetry and the time in the level0 data</span>
+<span class="sd">products is::</span>
+
+<span class="sd">    TIME&lt;telem&gt; - TIME&lt;l0&gt; = 1.025 + INTEG / 2</span>
+
+<span class="sd">Global variables in this module</span>
+<span class="sd">===============================</span>
+
 <span class="sd">These include the following global variables</span>
 
+<span class="sd">    * MAX_VCDU: the maximum possible VCDU frame counter value</span>
+<span class="sd">    * MAX_MJF: the maximum possible major frame counter value</span>
+<span class="sd">    * MAX_MNF: the maximum possible minor frame counter value</span>
 <span class="sd">    * PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID</span>
 <span class="sd">    * PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.</span>
 <span class="sd">    * PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes</span>
@@ -145,6 +216,11 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
 <span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+
+<span class="c1"># maximum values for frame counters (for convenience)</span>
+<span class="n">MAX_MJF</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="n">MAX_MNF</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="n">MAX_VCDU</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">23</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
 
 <span class="c1"># The following are the tables in the docstring above. They appear to be transposed,</span>
 <span class="c1"># but the resultt agrees with level0.</span>
@@ -524,7 +600,9 @@
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;DIAGNOSTIC&quot;</span><span class="p">:</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBBBBB&quot;</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:])}</span>
 
 
-<div class="viewcode-block" id="unpack_aca_telemetry"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.unpack_aca_telemetry">[docs]</a><span class="k">def</span> <span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
+<div class="viewcode-block" id="unpack_aca_telemetry">
+<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.unpack_aca_telemetry">[docs]</a>
+<span class="k">def</span> <span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Unpack ACA telemetry encoded in 225-byte packets.</span>
 
@@ -590,6 +668,7 @@
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slots</span><span class="p">):</span>
         <span class="n">s</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">slots</span></div>
+
 
 
 <span class="k">def</span> <span class="nf">_combine_aca_packets</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
@@ -687,7 +766,9 @@
         <span class="k">yield</span> <span class="n">res</span>
 
 
-<div class="viewcode-block" id="filter_vcdu_jumps"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.filter_vcdu_jumps">[docs]</a><span class="k">def</span> <span class="nf">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">):</span>
+<div class="viewcode-block" id="filter_vcdu_jumps">
+<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.filter_vcdu_jumps">[docs]</a>
+<span class="k">def</span> <span class="nf">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return a boolean mask to filter VCDU counters that are not continuous.</span>
 
@@ -719,7 +800,10 @@
     <span class="k">return</span> <span class="n">selected</span></div>
 
 
-<div class="viewcode-block" id="get_raw_aca_packets"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_raw_aca_packets">
+<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets">[docs]</a>
+<span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</span>
 
@@ -840,6 +924,7 @@
     <span class="p">}</span></div>
 
 
+
 <span class="n">ACA_PACKETS_DTYPE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span>
     <span class="p">[</span>
         <span class="p">(</span><span class="s2">&quot;TIME&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
@@ -932,7 +1017,9 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<div class="viewcode-block" id="get_aca_packets"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_packets">[docs]</a><span class="k">def</span> <span class="nf">get_aca_packets</span><span class="p">(</span>
+<div class="viewcode-block" id="get_aca_packets">
+<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_packets">[docs]</a>
+<span class="k">def</span> <span class="nf">get_aca_packets</span><span class="p">(</span>
     <span class="n">start</span><span class="p">,</span>
     <span class="n">stop</span><span class="p">,</span>
     <span class="n">level0</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1087,10 +1174,12 @@
 <span class="sd">    level0 : bool.</span>
 <span class="sd">        Implies combine=True, adjust_time=True, calibrate=True</span>
 <span class="sd">    combine : bool.</span>
-<span class="sd">        If True, multiple ACA packets are combined to form an image (depending on size),</span>
-<span class="sd">        If False, ACA packets are not combined, resulting in multiple lines for 6x6 and 8x8 images.</span>
+<span class="sd">        If True, ACA subimages are combined to form a full image (depending on size),</span>
+<span class="sd">        If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.</span>
 <span class="sd">    adjust_time : bool</span>
-<span class="sd">        If True, half the integration time is subtracted</span>
+<span class="sd">        If True, TIME is at the middle of the integration window.</span>
+<span class="sd">        If False, TIME is the VCDU time in telemetry of the packet frame (combine=False)</span>
+<span class="sd">        or the VCDU time of the first sub-image of the combined image (combine=True).</span>
 <span class="sd">    calibrate : bool</span>
 <span class="sd">        If True, pixel values will be &#39;value * imgscale / 32 - 50&#39; and temperature values will</span>
 <span class="sd">        be: 0.4 * value + 273.15</span>
@@ -1186,6 +1275,7 @@
     <span class="k">return</span> <span class="n">aca_data</span></div>
 
 
+
 <span class="k">def</span> <span class="nf">_get_aca_packets</span><span class="p">(</span>
     <span class="n">aca_packets</span><span class="p">,</span>
     <span class="n">start</span><span class="p">,</span>
@@ -1254,11 +1344,25 @@
     <span class="n">table</span><span class="p">[</span><span class="s2">&quot;IMGCOL0&quot;</span><span class="p">][</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
 
     <span class="n">table</span><span class="p">[</span><span class="s2">&quot;INTEG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;INTEG&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.016</span>
-    <span class="n">table</span><span class="p">[</span><span class="s2">&quot;END_INTEG_TIME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;INTEG&quot;</span><span class="p">]</span>
+
+    <span class="c1"># the time of an image is the time of its first subimage IMG_TIME, which is set 1.025 seconds</span>
+    <span class="c1"># after the end of integration.</span>
+    <span class="c1"># d_vcductr is the number of VCDU frames since the first subimage.</span>
+    <span class="n">d_vcductr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">table</span><span class="p">[</span><span class="s2">&quot;IMG_VCDUCTR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;VCDUCTR&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">d_vcductr</span><span class="p">)</span> <span class="o">%</span> <span class="n">MAX_VCDU</span>
+    <span class="n">img_time</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1.025</span> <span class="o">*</span> <span class="n">d_vcductr</span>
+    <span class="n">table</span><span class="p">[</span><span class="s2">&quot;END_INTEG_TIME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_time</span> <span class="o">-</span> <span class="mf">1.025</span>
+
     <span class="k">if</span> <span class="n">adjust_time</span><span class="p">:</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;INTEG&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mf">1.025</span>
-        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dt</span>
-        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;END_INTEG_TIME&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dt</span>
+        <span class="c1"># After this adjustment, TIME corresponds to the center of integration interval and</span>
+        <span class="c1"># END_INTEG_TIME to the end:</span>
+        <span class="c1">#     END_INTEG_TIME == TIME + INTEG / 2.0</span>
+        <span class="c1"># See also https://cxc.harvard.edu/mta/ASPECT/Docs/aca_l0_icd.pdf section D.2.4.</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;END_INTEG_TIME&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;INTEG&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
 
     <span class="k">if</span> <span class="n">calibrate</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;IMG&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">colnames</span><span class="p">:</span>
@@ -1272,7 +1376,9 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<div class="viewcode-block" id="get_aca_images"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_images">[docs]</a><span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_aca_images">
+<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_images">[docs]</a>
+<span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch ACA image telemetry</span>
 
@@ -1292,12 +1398,15 @@
     <span class="k">return</span> <span class="n">get_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">level0</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">)</span></div>
 
 
+
 <span class="c1">######################</span>
 <span class="c1"># blob-based functions</span>
 <span class="c1">######################</span>
 
 
-<div class="viewcode-block" id="get_raw_aca_blobs"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_blobs">[docs]</a><span class="k">def</span> <span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_raw_aca_blobs">
+<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_blobs">[docs]</a>
+<span class="k">def</span> <span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</span>
 
@@ -1374,7 +1483,10 @@
     <span class="k">return</span> <span class="n">result</span></div>
 
 
-<div class="viewcode-block" id="blob_to_aca_image_dict"><a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict">[docs]</a><span class="k">def</span> <span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+<div class="viewcode-block" id="blob_to_aca_image_dict">
+<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assemble ACA image MSIDs from a blob into a dictionary.</span>
 
@@ -1530,6 +1642,7 @@
         <span class="n">result</span><span class="p">[</span><span class="s2">&quot;COBSRQID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">blob</span><span class="p">[</span><span class="s2">&quot;COBSRQID&quot;</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">result</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -1554,7 +1667,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 7.2.6. &nbsp;
   </p>
 </footer>
   </body>

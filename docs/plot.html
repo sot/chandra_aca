@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.plot &#8212; chandra_aca 4.45.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
+    <title>chandra_aca.plot &#8212; chandra_aca 4.47.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=457a4054"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -59,7 +58,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.45.1 documentation</a>
+	<a href="index.html">chandra_aca 4.47.0 documentation</a>
 	 &#187;
       </li>
       
@@ -74,15 +73,17 @@
           <div class="body" role="main">
             
   <section id="module-chandra_aca.plot">
-<span id="chandra-aca-plot"></span><h1>chandra_aca.plot<a class="headerlink" href="#module-chandra_aca.plot" title="Permalink to this heading">¶</a></h1>
+<span id="chandra-aca-plot"></span><h1>chandra_aca.plot<a class="headerlink" href="#module-chandra_aca.plot" title="Link to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.plot.bad_acq_stars">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">bad_acq_stars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stars</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#bad_acq_stars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.bad_acq_stars" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return mask of ‘bad’ stars, by evaluating AGASC star parameters.</p>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">bad_acq_stars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stars</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#bad_acq_stars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.bad_acq_stars" title="Link to this definition">¶</a></dt>
+<dd><p>Return mask of ‘bad’ stars that are not acceptable as acquisition stars.</p>
+<p>This is a thin wrapper around <code class="docutils literal notranslate"><span class="pre">proseco.acq.get_acq_candidates_mask()</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>stars</strong><span class="classifier">astropy table-compatible set of agasc records of stars. Required fields</span></dt><dd><p>are [‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]</p>
+<dt><strong>stars</strong><span class="classifier">astropy table-compatible set of AGASC records of stars. Required fields</span></dt><dd><p>are ‘CLASS’, ‘MAG_ACA’, ‘MAG_ACA_ERR’, ‘COLOR1’, ‘ASPQ1’, ‘ASPQ2’, ‘VAR’,
+and’POS_ERR’.</p>
 </dd>
 </dl>
 </dd>
@@ -96,7 +97,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.plot.plot_compass">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">plot_compass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roll</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_compass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.plot_compass" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">plot_compass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roll</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_compass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.plot_compass" title="Link to this definition">¶</a></dt>
 <dd><p>Make a compass plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -115,7 +116,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.plot.plot_stars">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">plot_stars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starcat_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">red_mag_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bad_stars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_keepout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_stars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.plot_stars" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.plot.</span></span><span class="sig-name descname"><span class="pre">plot_stars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starcat_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">red_mag_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bad_stars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_keepout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/plot.html#plot_stars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.plot.plot_stars" title="Link to this definition">¶</a></dt>
 <dd><p>Plot a catalog, a star field, or both in a matplotlib figure.
 If supplying a star field, an attitude must also be supplied.</p>
 <dl class="field-list">
@@ -125,10 +126,10 @@ If supplying a star field, an attitude must also be supplied.</p>
 </dd>
 <dt><strong>catalog</strong><span class="classifier">Records describing catalog.  Must be astropy table compatible.</span></dt><dd><p>Required fields are [‘idx’, ‘type’, ‘yang’, ‘zang’, ‘halfw’]</p>
 </dd>
-<dt><strong>stars</strong><span class="classifier">astropy table compatible set of agasc records of stars</span></dt><dd><p>Required fields are [‘RA_PMCORR’, ‘DEC_PMCORR’, ‘MAG_ACA’, ‘MAG_ACA_ERR’].
-If bad_acq_stars will be called (bad_stars is None), additional required fields
-[‘CLASS’, ‘ASPQ1’, ‘ASPQ2’, ‘ASPQ3’, ‘VAR’, ‘POS_ERR’]
-If stars is None, stars will be fetched from the AGASC for the
+<dt><strong>stars</strong><span class="classifier">astropy table compatible set of AGASC records of stars</span></dt><dd><p>Required fields are [‘RA_PMCORR’, ‘DEC_PMCORR’, ‘MAG_ACA’, ‘MAG_ACA_ERR’].
+If <code class="docutils literal notranslate"><span class="pre">bad_stars</span></code> is None, additional required fields are
+[‘CLASS’, ‘COLOR1’, ‘ASPQ1’, ‘ASPQ2’, ‘VAR’, ‘POS_ERR’]
+If <code class="docutils literal notranslate"><span class="pre">stars</span></code> is None, stars will be fetched from the AGASC for the
 supplied attitude.</p>
 </dd>
 <dt><strong>title</strong></dt><dd><p>string to be used as suptitle for the figure</p>
@@ -141,8 +142,8 @@ supplied attitude.</p>
 </dd>
 <dt><strong>grid</strong></dt><dd><p>boolean, plot axis grid</p>
 </dd>
-<dt><strong>bad_stars</strong><span class="classifier">boolean mask on ‘stars’ of those that don’t meet minimum requirements</span></dt><dd><p>to be selected as acq stars.  If None, bad_stars will be set by a call
-to bad_acq_stars().</p>
+<dt><strong>bad_stars</strong><span class="classifier">boolean mask on ‘stars’ of those that don’t meet minimum requirements</span></dt><dd><p>to be selected as acq stars.  If None, <code class="docutils literal notranslate"><span class="pre">bad_stars</span></code> will be set by calling
+<code class="docutils literal notranslate"><span class="pre">bad_acq_stars()</span></code>.</p>
 </dd>
 <dt><strong>plot_keepout</strong></dt><dd><p>plot CCD area to be avoided in star selection (default=False)</p>
 </dd>
@@ -212,7 +213,7 @@ to bad_acq_stars().</p>
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 7.2.6. &nbsp;
   </p>
 </footer>
   </body>

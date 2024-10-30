@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.drift &#8212; chandra_aca 4.45.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css" />
+    <title>chandra_aca.drift &#8212; chandra_aca 4.47.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -45,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.45.1 documentation</a>
+	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -163,7 +162,9 @@
 <span class="n">SIM_MM_TO_ARCSEC</span> <span class="o">=</span> <span class="mf">20.493</span>
 
 
-<div class="viewcode-block" id="AcaDriftModel"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel">[docs]</a><span class="k">class</span> <span class="nc">AcaDriftModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="AcaDriftModel">
+<a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel">[docs]</a>
+<span class="k">class</span> <span class="nc">AcaDriftModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Define a drift model for aspect solution SIM DY/DZ values as a function of</span>
 <span class="sd">    time and ACA CCD temperature.  This expresses the model which is defined</span>
@@ -177,7 +178,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">jumps</span> <span class="o">=</span> <span class="n">jumps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">year0</span> <span class="o">=</span> <span class="n">year0</span>
 
-<div class="viewcode-block" id="AcaDriftModel.calc"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel.calc">[docs]</a>    <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
+<div class="viewcode-block" id="AcaDriftModel.calc">
+<a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel.calc">[docs]</a>
+    <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the drift model for aspect solution SIM DY/DZ values for input</span>
 <span class="sd">        ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.</span>
@@ -226,10 +229,14 @@
             <span class="n">jump_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">jump_date</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="p">)</span>
             <span class="n">out</span><span class="p">[</span><span class="n">jump_idx</span><span class="p">:]</span> <span class="o">+=</span> <span class="n">jump</span>
 
-        <span class="k">return</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">out</span></div></div>
+        <span class="k">return</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_scalar</span> <span class="k">else</span> <span class="n">out</span></div>
+</div>
 
 
-<div class="viewcode-block" id="get_fid_offset"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_fid_offset">[docs]</a><span class="k">def</span> <span class="nf">get_fid_offset</span><span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+
+<div class="viewcode-block" id="get_fid_offset">
+<a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_fid_offset">[docs]</a>
+<span class="k">def</span> <span class="nf">get_fid_offset</span><span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the fid light offset values for a given time and temperature.</span>
 
@@ -280,7 +287,10 @@
     <span class="k">return</span> <span class="n">dy_pred</span> <span class="o">+</span> <span class="n">y_offset</span><span class="p">,</span> <span class="n">dz_pred</span> <span class="o">+</span> <span class="n">z_offset</span></div>
 
 
-<div class="viewcode-block" id="get_aca_offsets"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_aca_offsets">[docs]</a><span class="k">def</span> <span class="nf">get_aca_offsets</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">,</span> <span class="n">chipx</span><span class="p">,</span> <span class="n">chipy</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_aca_offsets">
+<a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_aca_offsets">[docs]</a>
+<span class="k">def</span> <span class="nf">get_aca_offsets</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">,</span> <span class="n">chipx</span><span class="p">,</span> <span class="n">chipy</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the dynamical ACA offset values for the provided inputs.</span>
 
@@ -343,7 +353,10 @@
     <span class="k">return</span> <span class="n">ddy</span><span class="p">,</span> <span class="n">ddz</span></div>
 
 
-<div class="viewcode-block" id="get_default_zero_offset_table"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_default_zero_offset_table">[docs]</a><span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
+
+<div class="viewcode-block" id="get_default_zero_offset_table">
+<a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_default_zero_offset_table">[docs]</a>
+<span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
 <span class="k">def</span> <span class="nf">get_default_zero_offset_table</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get official SOT MP zero offset aimpoint table.</span>
@@ -377,7 +390,10 @@
     <span class="k">return</span> <span class="n">out</span></div>
 
 
-<div class="viewcode-block" id="get_target_aimpoint"><a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_target_aimpoint">[docs]</a><span class="k">def</span> <span class="nf">get_target_aimpoint</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">too</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">zero_offset_table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_target_aimpoint">
+<a class="viewcode-back" href="../../drift.html#chandra_aca.drift.get_target_aimpoint">[docs]</a>
+<span class="k">def</span> <span class="nf">get_target_aimpoint</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">too</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">zero_offset_table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id</span>
 
@@ -412,6 +428,7 @@
     <span class="n">filtered_table</span> <span class="o">=</span> <span class="n">zero_offset_table</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
     <span class="c1"># Return the desired keys in the most recent [-1] row that matches</span>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">filtered_table</span><span class="p">[[</span><span class="s2">&quot;chipx&quot;</span><span class="p">,</span> <span class="s2">&quot;chipy&quot;</span><span class="p">,</span> <span class="s2">&quot;chip_id&quot;</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -436,7 +453,7 @@
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 6.1.3. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 7.2.6. &nbsp;
   </p>
 </footer>
   </body>
