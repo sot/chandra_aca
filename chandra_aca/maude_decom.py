@@ -1076,7 +1076,8 @@ def get_aca_packets(
     if (CxoTime(stop) - CxoTime(start)) > MAUDE_SINGLE_FETCH_LIMIT:
         raise ValueError(
             f"Requested {CxoTime(stop) - CxoTime(start)} of telemetry. "
-            f"Maximum allowed is {MAUDE_SINGLE_FETCH_LIMIT} at a time (see MAUDE_SINGLE_FETCH_LIMIT)."
+            f"Maximum allowed is {MAUDE_SINGLE_FETCH_LIMIT} at a time "
+            "(see MAUDE_SINGLE_FETCH_LIMIT)."
         )
 
     stop_pad = 0
