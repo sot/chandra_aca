@@ -297,6 +297,8 @@ def test_aca_images_chunks_2():
     maude_decom.MAUDE_SINGLE_FETCH_LIMIT = 1 * u.min
     start = "2023:001:00:00:01.000"  # times picked close to 4.1 image boundary
     stop = "2023:001:00:30:03.000"  # times picked close to 4.1 image boundary
+    tstart = CxoTime(start).secs
+    tstop = CxoTime(stop).secs
     try:
         imgs = maude_decom.get_aca_images(start, stop)
     finally:
@@ -314,15 +316,15 @@ def test_aca_images_chunks_2():
         assert np.max(np.diff(imgs[ok_slot]["TIME"])) < 5
 
     # Confirm that the returned data times are within the start stop
-    assert imgs["TIME"][0] >= CxoTime(start).secs
-    assert imgs["TIME"][-1] <= CxoTime(stop).secs
+    assert imgs["TIME"][0] >= tstart
+    assert imgs["TIME"][-1] <= tstop
 
     # Confirm that the beginning and end match the expected values
-    assert abs(imgs[0]["TIME"] - CxoTime(start).secs) < 2
-    assert abs(imgs[-1]["TIME"] - CxoTime(stop).secs) < 2
+    assert abs(imgs[0]["TIME"] - tstart) < 2
+    assert abs(imgs[-1]["TIME"] - tstop) < 2
 
-    imgs_start = maude_decom.get_aca_images(start, CxoTime(start).secs + 60)
-    imgs_stop = maude_decom.get_aca_images(CxoTime(stop).secs - 60, stop)
+    imgs_start = maude_decom.get_aca_images(start, CxoTime(start) + 60 * u.s)
+    imgs_stop = maude_decom.get_aca_images(CxoTime(stop) - 60 * u.s, stop)
     assert np.all(imgs[0] == imgs_start[0])
     assert np.all(imgs[-1] == imgs_stop[-1])
 
