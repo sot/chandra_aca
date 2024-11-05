@@ -1248,7 +1248,8 @@ def get_aca_images(
     stop = CxoTime(stop)
     if (stop + fetch_pad) - (start - fetch_pad) > MAUDE_FETCH_LIMIT:
         raise ValueError(
-            f"stop - start cannot be greater than {MAUDE_FETCH_LIMIT}. Set module variable MAUDE_FETCH_LIMIT if needed."
+            f"stop - start cannot be greater than {MAUDE_FETCH_LIMIT}. "
+            "Set module variable MAUDE_FETCH_LIMIT if needed."
         )
     if step_max is None:
         step_max = MAUDE_FETCH_STEP_MAX
@@ -1257,12 +1258,12 @@ def get_aca_images(
     )
     packet_stack = [
         get_aca_packets(
-            start=maude_fetch_times[i],
-            stop=maude_fetch_times[i + 1],
+            start=istart,
+            stop=istop,
             level0=True,
             **kwargs,
         )
-        for i in range(len(maude_fetch_times) - 1)
+        for istart, istop in zip(maude_fetch_times[:-1], maude_fetch_times[1:])
     ]
     out = vstack(packet_stack)
     # Trim to just have the requested time range
