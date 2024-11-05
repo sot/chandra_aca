@@ -4,6 +4,7 @@ import copy
 import os
 import pickle
 
+import astropy.units as u
 import maude
 import numpy as np
 import pytest
@@ -274,10 +275,34 @@ def test_partial_images():
 
 
 def test_aca_images_chunks_1():
-    """Test that a fetch longer than the maude 3 hour limit works"""
+    """Test that a fetch longer than the single limit does not work
+    if the step limit is larger than the single limit"""
+    single_fetch_limit = maude_decom.MAUDE_SINGLE_FETCH_LIMIT
+    step_max = maude_decom.MAUDE_FETCH_STEP_MAX
+    maude_decom.MAUDE_FETCH_STEP_MAX = 2 * u.min
+    maude_decom.MAUDE_SINGLE_FETCH_LIMIT = 1 * u.min
+    try:
+        with pytest.raises(ValueError, match="Maximum allowed"):
+            maude_decom.get_aca_images("2020:001:00:00:00.000", "2020:001:00:02:00.000")
+    finally:
+        maude_decom.MAUDE_FETCH_STEP_MAX = step_max
+        maude_decom.MAUDE_SINGLE_FETCH_LIMIT = single_fetch_limit
+
+
+def test_aca_images_chunks_2():
+    """Test that a fetch longer than the maude step limit works"""
+    single_fetch_limit = maude_decom.MAUDE_SINGLE_FETCH_LIMIT
+    step_max = maude_decom.MAUDE_FETCH_STEP_MAX
+    maude_decom.MAUDE_FETCH_STEP_MAX = 1 * u.min - 1 * u.s
+    maude_decom.MAUDE_SINGLE_FETCH_LIMIT = 1 * u.min
     start = "2023:001:00:00:01.000"  # times picked close to 4.1 image boundary
-    stop = "2023:001:03:30:01.000"  # times picked close to 4.1 image boundary
-    imgs = maude_decom.get_aca_images(start, stop)
+    stop = "2023:001:00:30:03.000"  # times picked close to 4.1 image boundary
+    try:
+        imgs = maude_decom.get_aca_images(start, stop)
+    finally:
+        maude_decom.MAUDE_FETCH_STEP_MAX = step_max
+        maude_decom.MAUDE_SINGLE_FETCH_LIMIT = single_fetch_limit
+
     imgs.sort(["TIME", "IMGNUM"])
 
     for slot in range(8):
@@ -288,20 +313,30 @@ def test_aca_images_chunks_1():
         # Confirm for these 8x8 data that there's no gap > 5 seconds
         assert np.max(np.diff(imgs[ok_slot]["TIME"])) < 5
 
+    # Confirm that the returned data times are within the start stop
+    assert imgs["TIME"][0] >= CxoTime(start).secs
+    assert imgs["TIME"][-1] <= CxoTime(stop).secs
+
+    # Confirm that the beginning and end match the expected values
     assert abs(imgs[0]["TIME"] - CxoTime(start).secs) < 2
     assert abs(imgs[-1]["TIME"] - CxoTime(stop).secs) < 2
-    # Confirm that the beginning and end match the expected values
+
     imgs_start = maude_decom.get_aca_images(start, CxoTime(start).secs + 60)
     imgs_stop = maude_decom.get_aca_images(CxoTime(stop).secs - 60, stop)
     assert np.all(imgs[0] == imgs_start[0])
     assert np.all(imgs[-1] == imgs_stop[-1])
 
+    # Check the linspace times in the returned data
+    used_step_max = 1 * u.min - 1 * u.s
+    deltas_lte = [t <= used_step_max for t in np.diff(imgs.meta["times"])]
+    assert np.all(deltas_lte)
 
-def test_aca_images_chunks_2():
-    """Test that a fetch longer than 1 day throws a ValueError"""
-    start = "2023:001:00:00:00.000"
-    stop = "2023:003:00:00:00.000"
-    with pytest.raises(ValueError, match="stop - start cannot be greater than 1 day"):
+
+def test_aca_images_chunks_3():
+    """Test that a fetch longer than MAUDE_FETCH_LIMIT throws a ValueError"""
+    start = CxoTime("2023:001:00:00:01.000")
+    stop = start + (maude_decom.MAUDE_FETCH_LIMIT * 1.1)
+    with pytest.raises(ValueError, match="stop - start cannot be greater than"):
         maude_decom.get_aca_images(start, stop)
 
 

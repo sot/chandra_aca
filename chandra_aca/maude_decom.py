@@ -85,6 +85,11 @@ from astropy.table import Table, vstack
 from Chandra.Time import DateTime
 from cxotime import CxoTime, CxoTimeLike
 
+# Maude fetch limits
+MAUDE_SINGLE_FETCH_LIMIT = 3.0 * u.hour
+MAUDE_FETCH_STEP_MAX = 3.0 * u.hour - 1.0 * u.second
+MAUDE_FETCH_LIMIT = 5 * u.day
+
 # The following are the tables in the docstring above. They appear to be transposed,
 # but the resultt agrees with level0.
 PIXEL_MAP = {
@@ -1066,10 +1071,10 @@ def get_aca_packets(
     date_start, date_stop = DateTime(start), DateTime(
         stop
     )  # ensure input is proper date
-    if 24 * (date_stop - date_start) > 3:
+    if (CxoTime(stop) - CxoTime(start)) > MAUDE_SINGLE_FETCH_LIMIT:
         raise ValueError(
-            f"Requested {24 * (date_stop - date_start)} hours of telemetry. "
-            "Maximum allowed is 3 hours at a time"
+            f"Requested {CxoTime(stop) - CxoTime(start)} of telemetry. "
+            f"Maximum allowed is {MAUDE_SINGLE_FETCH_LIMIT} at a time (see MAUDE_SINGLE_FETCH_LIMIT)."
         )
 
     stop_pad = 0
@@ -1211,16 +1216,26 @@ def _get_aca_packets(
     return table
 
 
-def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
+def get_aca_images(
+    start: CxoTimeLike, stop: CxoTimeLike, step_max: u.Quantity = None, **kwargs
+):
     """
     Fetch ACA image telemetry
+
+    Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the default settings
+    and no additional kwargs, this calls `get_aca_packets()` in a configuration that uses MAUDE frames,
+    combines image data, and sets the TIME associated with each image to the midpoint of the integration
+    time during which that pixel data was collected (matches CXC L0 times). See `get_aca_packets()`.
+
 
     Parameters
     ----------
     start
         timestamp, CxoTimeLike
     stop
-        timestamp, CxoTimeLike.  stop - start cannot be greater than 1 day.
+        timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT
+    step_max
+        maximum step size for fetching MAUDE data, u.Quantity, optional. Overrides module var MAUDE_FETCH_STEP_MAX
     kwargs
         keyword args passed to get_aca_packets
 
@@ -1228,9 +1243,18 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     -------
     astropy.table.Table
     """
-    if CxoTime(stop) - CxoTime(start) > 1 * u.day:
-        raise ValueError("stop - start cannot be greater than 1 day")
-    maude_fetch_times = CxoTime.linspace(start, stop, step_max=3.0 * u.hour)
+    fetch_pad = 5 * u.second
+    start = CxoTime(start)
+    stop = CxoTime(stop)
+    if (stop + fetch_pad) - (start - fetch_pad) > MAUDE_FETCH_LIMIT:
+        raise ValueError(
+            f"stop - start cannot be greater than {MAUDE_FETCH_LIMIT}. Set module variable MAUDE_FETCH_LIMIT if needed."
+        )
+    if step_max is None:
+        step_max = MAUDE_FETCH_STEP_MAX
+    maude_fetch_times = CxoTime.linspace(
+        start - fetch_pad, stop + fetch_pad, step_max=step_max
+    )
     packet_stack = [
         get_aca_packets(
             start=maude_fetch_times[i],
@@ -1240,7 +1264,11 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
         )
         for i in range(len(maude_fetch_times) - 1)
     ]
-    return vstack(packet_stack)
+    out = vstack(packet_stack)
+    # Trim to just have the requested time range
+    out = out[(out["TIME"] >= start.secs) & (out["TIME"] <= stop.secs)]
+    out.meta["times"] = maude_fetch_times
+    return out
 
 
 ######################
