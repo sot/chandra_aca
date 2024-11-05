@@ -694,8 +694,9 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     {'flags': int, 'packets': [],
     'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
     """
-    date_start, date_stop = DateTime(start), DateTime(
-        stop
+    date_start, date_stop = (
+        DateTime(start),
+        DateTime(stop),
     )  # ensure input is proper date
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 
@@ -1068,8 +1069,9 @@ def get_aca_packets(
         combine = True
         calibrate = True
 
-    date_start, date_stop = DateTime(start), DateTime(
-        stop
+    date_start, date_stop = (
+        DateTime(start),
+        DateTime(stop),
     )  # ensure input is proper date
     if (CxoTime(stop) - CxoTime(start)) > MAUDE_SINGLE_FETCH_LIMIT:
         raise ValueError(
@@ -1222,10 +1224,11 @@ def get_aca_images(
     """
     Fetch ACA image telemetry
 
-    Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the default settings
-    and no additional kwargs, this calls `get_aca_packets()` in a configuration that uses MAUDE frames,
-    combines image data, and sets the TIME associated with each image to the midpoint of the integration
-    time during which that pixel data was collected (matches CXC L0 times). See `get_aca_packets()`.
+    Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the default
+    settings and no additional kwargs, this calls `get_aca_packets()` in a configuration that
+    uses MAUDE frames, combines image data, and sets the TIME associated with each image to the
+    midpoint of the integration time during which that pixel data was collected (matches CXC L0
+    times). See `get_aca_packets()`.
 
 
     Parameters
@@ -1235,7 +1238,8 @@ def get_aca_images(
     stop
         timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT
     step_max
-        maximum step size for fetching MAUDE data, u.Quantity, optional. Overrides module var MAUDE_FETCH_STEP_MAX
+        maximum step size for fetching MAUDE data, u.Quantity, optional.
+        Overrides module var MAUDE_FETCH_STEP_MAX
     kwargs
         keyword args passed to get_aca_packets
 
@@ -1263,7 +1267,9 @@ def get_aca_images(
             level0=True,
             **kwargs,
         )
-        for istart, istop in zip(maude_fetch_times[:-1], maude_fetch_times[1:])
+        for istart, istop in zip(
+            maude_fetch_times[:-1], maude_fetch_times[1:], strict=False
+        )
     ]
     out = vstack(packet_stack)
     # Trim to just have the requested time range
@@ -1306,8 +1312,9 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
     dict
     {'blobs': [], 'names': np.array([]), 'types': np.array([])}
     """
-    date_start, date_stop = DateTime(start), DateTime(
-        stop
+    date_start, date_stop = (
+        DateTime(start),
+        DateTime(stop),
     )  # ensure input is proper date
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 
