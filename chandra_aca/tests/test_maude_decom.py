@@ -275,34 +275,16 @@ def test_partial_images():
 
 
 def test_aca_images_chunks_1():
-    """Test that a fetch longer than the single limit does not work
-    if the step limit is larger than the single limit"""
-    single_fetch_limit = maude_decom.MAUDE_SINGLE_FETCH_LIMIT
-    step_max = maude_decom.MAUDE_FETCH_STEP_MAX
-    maude_decom.MAUDE_FETCH_STEP_MAX = 2 * u.min
-    maude_decom.MAUDE_SINGLE_FETCH_LIMIT = 1 * u.min
-    try:
-        with pytest.raises(ValueError, match="Maximum allowed"):
-            maude_decom.get_aca_images("2020:001:00:00:00.000", "2020:001:00:02:00.000")
-    finally:
-        maude_decom.MAUDE_FETCH_STEP_MAX = step_max
-        maude_decom.MAUDE_SINGLE_FETCH_LIMIT = single_fetch_limit
-
-
-def test_aca_images_chunks_2():
     """Test that a fetch longer than the maude step limit works"""
     single_fetch_limit = maude_decom.MAUDE_SINGLE_FETCH_LIMIT
-    step_max = maude_decom.MAUDE_FETCH_STEP_MAX
-    maude_decom.MAUDE_FETCH_STEP_MAX = 1 * u.min - 1 * u.s
     maude_decom.MAUDE_SINGLE_FETCH_LIMIT = 1 * u.min
-    start = "2023:001:00:00:01.000"  # times picked close to 4.1 image boundary
-    stop = "2023:001:00:30:03.000"  # times picked close to 4.1 image boundary
+    start = "2023:001:00:00:01.000"
+    stop = "2023:001:00:05:01.000"
     tstart = CxoTime(start).secs
     tstop = CxoTime(stop).secs
     try:
         imgs = maude_decom.get_aca_images(start, stop)
     finally:
-        maude_decom.MAUDE_FETCH_STEP_MAX = step_max
         maude_decom.MAUDE_SINGLE_FETCH_LIMIT = single_fetch_limit
 
     imgs.sort(["TIME", "IMGNUM"])
@@ -334,7 +316,7 @@ def test_aca_images_chunks_2():
     assert np.all(deltas_lte)
 
 
-def test_aca_images_chunks_3():
+def test_aca_images_chunks_2():
     """Test that a fetch longer than MAUDE_FETCH_LIMIT throws a ValueError"""
     start = CxoTime("2023:001:00:00:01.000")
     stop = start + (maude_decom.MAUDE_FETCH_LIMIT * 1.1)
