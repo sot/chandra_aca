@@ -5,8 +5,16 @@ from itertools import chain, count
 from math import floor
 from pathlib import Path
 
+import mica.archive.aca_dark
+import mica.archive.aca_l0
 import numba
 import numpy as np
+import requests
+from astropy.table import Table
+from ska_helpers import retry
+
+import chandra_aca.dark_subtract
+import chandra_aca.maude_decom
 
 __all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
 
@@ -828,3 +836,50 @@ class AcaPsfLibrary(object):
 
         out = ACAImage(psf, row0=row0, col0=col0) if aca_image else (psf, row0, col0)
         return out
+
+
+@retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
+def get_aca_image_table(start, stop, bgsub=True, source="maude", **maude_kwargs):
+    if source == "maude":
+        imgs_table = chandra_aca.maude_decom.get_aca_images(start, stop, **maude_kwargs)
+        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+            imgs_table["TIME"], source=source, **maude_kwargs
+        )
+    elif source == "mica":
+        imgs_table = mica.archive.aca_l0.get_aca_images(start, stop)
+        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+            imgs_table["TIME"], source=source
+        )
+    else:
+        raise ValueError(f"source must be 'maude' or 'mica', not {source}")
+
+    # Do some unmasking until the maude_decom and aca_l0 interfaces are updated with
+    # fewer masked columns
+    imgs_table_unmasked = Table()
+    for col in imgs_table.colnames:
+        if col in ["TIME", "INTEG", "IMGROW0_8X8", "IMGCOL0_8X8"]:
+            imgs_table_unmasked[col] = imgs_table[col].data.data
+        else:
+            imgs_table_unmasked[col] = imgs_table[col]
+    imgs_table = imgs_table_unmasked
+
+    if bgsub:
+        dark_data = mica.archive.aca_dark.get_dark_cal_props(
+            imgs_table["TIME"].min(),
+            select="nearest",
+            include_image=True,
+            aca_image=False,
+        )
+        img_dark = dark_data["image"]
+        tccd_dark = dark_data["ccd_temp"]
+        imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
+            imgs_table, img_dark, tccd_dark, t_ccds
+        )
+        imgs_bgsub = imgs_table["IMG"] - imgs_dark
+        imgs_bgsub.clip(0, None)
+
+        imgs_table["BGSUB"] = imgs_bgsub
+        imgs_table["DARK"] = imgs_dark
+        imgs_table["T_CCD"] = t_ccds
+
+    return imgs_table
