@@ -307,6 +307,8 @@ def test_aca_images_chunks_1():
 
     imgs_start = maude_decom.get_aca_images(start, CxoTime(start) + 60 * u.s)
     imgs_stop = maude_decom.get_aca_images(CxoTime(stop) - 60 * u.s, stop)
+    imgs_start.sort(["TIME", "IMGNUM"])
+    imgs_stop.sort(["TIME", "IMGNUM"])
     assert np.all(imgs[0] == imgs_start[0])
     assert np.all(imgs[-1] == imgs_stop[-1])
 
