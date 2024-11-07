@@ -150,10 +150,16 @@ import copy
 from struct import Struct
 from struct import unpack as _unpack
 
+import astropy.units as u
 import maude
 import numpy as np
 from astropy.table import Table, vstack
 from Chandra.Time import DateTime
+from cxotime import CxoTime, CxoTimeLike
+
+# Maude fetch limits
+MAUDE_SINGLE_FETCH_LIMIT = 3.0 * u.hour
+MAUDE_FETCH_LIMIT = 5 * u.day
 
 # maximum values for frame counters (for convenience)
 MAX_MJF = (2 << 16) - 1
@@ -764,8 +770,9 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     {'flags': int, 'packets': [],
     'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
     """
-    date_start, date_stop = DateTime(start), DateTime(
-        stop
+    date_start, date_stop = (
+        DateTime(start),
+        DateTime(stop),
     )  # ensure input is proper date
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 
@@ -1140,13 +1147,15 @@ def get_aca_packets(
         combine = True
         calibrate = True
 
-    date_start, date_stop = DateTime(start), DateTime(
-        stop
+    date_start, date_stop = (
+        DateTime(start),
+        DateTime(stop),
     )  # ensure input is proper date
-    if 24 * (date_stop - date_start) > 3:
+    if (CxoTime(stop) - CxoTime(start)) > MAUDE_SINGLE_FETCH_LIMIT:
         raise ValueError(
-            f"Requested {24 * (date_stop - date_start)} hours of telemetry. "
-            "Maximum allowed is 3 hours at a time"
+            f"Requested {CxoTime(stop) - CxoTime(start)} of telemetry. "
+            f"Maximum allowed is {MAUDE_SINGLE_FETCH_LIMIT} at a time "
+            "(see MAUDE_SINGLE_FETCH_LIMIT)."
         )
 
     stop_pad = 0
@@ -1302,24 +1311,54 @@ def _get_aca_packets(
     return table
 
 
-def get_aca_images(start, stop, **maude_kwargs):
+def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     """
     Fetch ACA image telemetry
+
+    Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the default
+    settings and no additional kwargs, this calls `get_aca_packets()` in a configuration that
+    uses MAUDE frames, combines image data, and sets the TIME associated with each image to the
+    midpoint of the integration time during which that pixel data was collected (matches CXC L0
+    times). See `get_aca_packets()`.
+
 
     Parameters
     ----------
     start
-        timestamp interpreted as a Chandra.Time.DateTime
+        timestamp, CxoTimeLike
     stop
-        timestamp interpreted as a Chandra.Time.DateTime
-    maude_kwargs
-        keyword args passed to maude
+        timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT
+    kwargs
+        keyword args passed to get_aca_packets
 
     Returns
     -------
     astropy.table.Table
     """
-    return get_aca_packets(start, stop, level0=True, **maude_kwargs)
+    start = CxoTime(start)
+    stop = CxoTime(stop)
+    if (stop - start) > MAUDE_FETCH_LIMIT:
+        raise ValueError(
+            f"stop - start cannot be greater than {MAUDE_FETCH_LIMIT}. "
+            "Set module variable MAUDE_FETCH_LIMIT if needed."
+        )
+    maude_fetch_times = CxoTime.linspace(
+        start, stop, step_max=MAUDE_SINGLE_FETCH_LIMIT - 1 * u.s
+    )
+    packet_stack = [
+        get_aca_packets(
+            start=istart,
+            stop=istop,
+            level0=True,
+            **kwargs,
+        )
+        for istart, istop in zip(
+            maude_fetch_times[:-1], maude_fetch_times[1:], strict=False
+        )
+    ]
+    out = vstack(packet_stack)
+    out.meta["times"] = maude_fetch_times
+    return out
 
 
 ######################
@@ -1356,8 +1395,9 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
     dict
     {'blobs': [], 'names': np.array([]), 'types': np.array([])}
     """
-    date_start, date_stop = DateTime(start), DateTime(
-        stop
+    date_start, date_stop = (
+        DateTime(start),
+        DateTime(stop),
     )  # ensure input is proper date
     stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
 

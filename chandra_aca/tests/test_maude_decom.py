@@ -4,9 +4,11 @@ import copy
 import os
 import pickle
 
+import astropy.units as u
 import maude
 import numpy as np
 import pytest
+from cxotime import CxoTime
 
 from chandra_aca import maude_decom
 
@@ -270,6 +272,58 @@ def test_partial_images():
 
     for i in range(len(table)):
         assert np.all(table[i]["IMG"].mask == mask[table[i]["IMGTYPE"]])
+
+
+def test_aca_images_chunks_1():
+    """Test that a fetch longer than the maude step limit works"""
+    single_fetch_limit = maude_decom.MAUDE_SINGLE_FETCH_LIMIT
+    maude_decom.MAUDE_SINGLE_FETCH_LIMIT = 1 * u.min
+    start = "2023:001:00:00:01.000"
+    stop = "2023:001:00:05:01.000"
+    tstart = CxoTime(start).secs
+    tstop = CxoTime(stop).secs
+    try:
+        imgs = maude_decom.get_aca_images(start, stop)
+    finally:
+        maude_decom.MAUDE_SINGLE_FETCH_LIMIT = single_fetch_limit
+
+    imgs.sort(["TIME", "IMGNUM"])
+
+    for slot in range(8):
+        # Confirm that the data is basically contiguous
+        ok_slot = imgs["IMGNUM"] == slot
+        # Confirm no duplicates by VCDUCTR
+        assert len(np.unique(imgs[ok_slot]["VCDUCTR"])) == len(imgs[ok_slot])
+        # Confirm for these 8x8 data that there's no gap > 5 seconds
+        assert np.max(np.diff(imgs[ok_slot]["TIME"])) < 5
+
+    # Confirm that the returned data times are within the start stop
+    assert imgs["TIME"][0] >= tstart
+    assert imgs["TIME"][-1] <= tstop
+
+    # Confirm that the beginning and end match the expected values
+    assert abs(imgs[0]["TIME"] - tstart) < 2
+    assert abs(imgs[-1]["TIME"] - tstop) < 2
+
+    imgs_start = maude_decom.get_aca_images(start, CxoTime(start) + 60 * u.s)
+    imgs_stop = maude_decom.get_aca_images(CxoTime(stop) - 60 * u.s, stop)
+    imgs_start.sort(["TIME", "IMGNUM"])
+    imgs_stop.sort(["TIME", "IMGNUM"])
+    assert np.all(imgs[0] == imgs_start[0])
+    assert np.all(imgs[-1] == imgs_stop[-1])
+
+    # Check the linspace times in the returned data
+    used_step_max = 1 * u.min - 1 * u.s
+    deltas_lte = [t <= used_step_max for t in np.diff(imgs.meta["times"])]
+    assert np.all(deltas_lte)
+
+
+def test_aca_images_chunks_2():
+    """Test that a fetch longer than MAUDE_FETCH_LIMIT throws a ValueError"""
+    start = CxoTime("2023:001:00:00:01.000")
+    stop = start + (maude_decom.MAUDE_FETCH_LIMIT * 1.1)
+    with pytest.raises(ValueError, match="stop - start cannot be greater than"):
+        maude_decom.get_aca_images(start, stop)
 
 
 def test_vcdu_vs_level0():
