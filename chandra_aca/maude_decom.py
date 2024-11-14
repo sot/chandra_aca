@@ -154,7 +154,6 @@ import astropy.units as u
 import maude
 import numpy as np
 from astropy.table import Table, vstack
-from Chandra.Time import DateTime
 from cxotime import CxoTime, CxoTimeLike
 
 # Maude fetch limits
@@ -755,13 +754,13 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
 
     Parameters
     ----------
-    start
-        timestamp interpreted as a Chandra.Time.DateTime
-    stop
-        timestamp interpreted as a Chandra.Time.DateTime
+    start : CxoTimeLike
+        Start time for packets
+    stop : CxoTimeLike
+        Stop time for packets
     maude_result
         the result of calling maude.get_frames. Optional.
-    maude_kwargs
+    **maude_kwargs
         keyword args passed to maude.get_frames()
 
     Returns
@@ -770,11 +769,8 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     {'flags': int, 'packets': [],
     'TIME': np.array([]), 'MNF': np.array([]), 'MJF': np.array([])}
     """
-    date_start, date_stop = (
-        DateTime(start),
-        DateTime(stop),
-    )  # ensure input is proper date
-    stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
+    date_start, date_stop = CxoTime(start), CxoTime(stop)
+    stop_pad = 1.5 * u.s  # padding at the end in case of trailing partial ACA packets
 
     # get the frames and unpack front matter
     if maude_result is None:
@@ -1101,10 +1097,10 @@ def get_aca_packets(
 
     Parameters
     ----------
-    start
-        timestamp interpreted as a Chandra.Time.DateTime
-    stop
-        timestamp interpreted as a Chandra.Time.DateTime
+    start : CxoTimeLike
+        Start time for the ACA packets
+    stop : CxoTimeLike
+        Stop time for the ACA packets
     level0 : bool.
         Implies combine=True, adjust_time=True, calibrate=True
     combine : bool.
@@ -1128,8 +1124,8 @@ def get_aca_packets(
         including MSIDs that are present in blobs. If used with frames, most probably you will get
         and empty column. This option is intended to augment the default dtype. If a more
         restrictive dtype is used, a KeyError can be raised.
-    maude_kwargs
-        keyword args passed to maude
+    **maude_kwargs
+        Keyword args passed to maude
 
     Returns
     -------
@@ -1147,29 +1143,24 @@ def get_aca_packets(
         combine = True
         calibrate = True
 
-    date_start, date_stop = (
-        DateTime(start),
-        DateTime(stop),
-    )  # ensure input is proper date
-    if (CxoTime(stop) - CxoTime(start)) > MAUDE_SINGLE_FETCH_LIMIT:
+    date_start, date_stop = CxoTime(start), CxoTime(stop)
+    if date_stop - date_start > MAUDE_SINGLE_FETCH_LIMIT:
         raise ValueError(
-            f"Requested {CxoTime(stop) - CxoTime(start)} of telemetry. "
+            f"Requested {(date_stop - date_start).to_value('hr')} hr of telemetry. "
             f"Maximum allowed is {MAUDE_SINGLE_FETCH_LIMIT} at a time "
             "(see MAUDE_SINGLE_FETCH_LIMIT)."
         )
 
-    stop_pad = 0
+    stop_pad = 0 * u.s
     if adjust_time:
-        stop_pad += 2.0 / 86400  # time will get shifted...
+        stop_pad += 2.0 * u.s  # time will get shifted...
     if combine:
-        stop_pad += 3.08 / 86400  # there can be trailing frames
+        stop_pad += 3.08 * u.s  # there can be trailing frames
 
     if frames:
-        n = int(np.ceil(86400 * (date_stop - date_start) / 300))
+        n = int(np.ceil((date_stop - date_start).sec / 300))
         dt = (date_stop - date_start) / n
-        batches = [
-            (date_start + i * dt, date_start + (i + 1) * dt) for i in range(n)
-        ]  # 0.0001????
+        batches = [(date_start + i * dt, date_start + (i + 1) * dt) for i in range(n)]
         aca_packets = []
         for t1, t2 in batches:
             maude_result = (
@@ -1227,7 +1218,7 @@ def _get_aca_packets(
 
     NOTE: This function has a side effect. It adds decom_packets to the input aca_packets.
     """
-    start, stop = DateTime(start), DateTime(stop)  # ensure input is proper date
+    start, stop = CxoTime(start), CxoTime(stop)  # ensure input is proper date
 
     if not blobs:
         # this adds TIME, MJF, MNF and VCDUCTR, which is already there in the blob dictionary
@@ -1321,6 +1312,10 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     midpoint of the integration time during which that pixel data was collected (matches CXC L0
     times). See `get_aca_packets()`.
 
+    This function can be used to fetch up to 5 days of ACA image telemetry at a time.
+    If more is needed, you can set the module variable ``MAUDE_FETCH_LIMIT`` to a larger
+    value. Internally, this function will fetch the data in intervals of
+    ``MAUDE_SINGLE_FETCH_LIMIT``.
 
     Parameters
     ----------
@@ -1373,7 +1368,7 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
     If the first minor frame in a group of four ACA packets is within (start, stop),
     the three following minor frames are included if present.
 
-    returns a dictionary with keys ['TIME', 'MNF', 'MJF', 'packets', 'flags'].
+    Returns a dictionary with keys ['TIME', 'MNF', 'MJF', 'packets', 'flags'].
     These correspond to the minor frame time, minor frame count, major frame count,
     the list of packets, and flags returned by MAUDE respectively.
 
@@ -1381,13 +1376,13 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
 
     Parameters
     ----------
-    start
-        timestamp interpreted as a Chandra.Time.DateTime
-    stop
-        timestamp interpreted as a Chandra.Time.DateTime
+    start : CxoTimeLike
+        Start time for the ACA blobs
+    stop : CxoTimeLike
+        Stop time for the ACA blobs
     maude_result
         the result of calling maude.get_blobs. Optional.
-    maude_kwargs
+    **maude_kwargs
         keyword args passed to maude.get_frames()
 
     Returns
@@ -1395,11 +1390,9 @@ def get_raw_aca_blobs(start, stop, maude_result=None, **maude_kwargs):
     dict
     {'blobs': [], 'names': np.array([]), 'types': np.array([])}
     """
-    date_start, date_stop = (
-        DateTime(start),
-        DateTime(stop),
-    )  # ensure input is proper date
-    stop_pad = 1.5 / 86400  # padding at the end in case of trailing partial ACA packets
+    date_start, date_stop = CxoTime(start), CxoTime(stop)
+
+    stop_pad = 1.5 * u.s  # padding at the end in case of trailing partial ACA packets
 
     if maude_result is None:
         maude_blobs = maude.get_blobs(
