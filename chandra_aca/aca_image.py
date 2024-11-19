@@ -5,16 +5,11 @@ from itertools import chain, count
 from math import floor
 from pathlib import Path
 
-import mica.archive.aca_dark
-import mica.archive.aca_l0
 import numba
 import numpy as np
 import requests
 from astropy.table import Table
 from ska_helpers import retry
-
-import chandra_aca.dark_subtract
-import chandra_aca.maude_decom
 
 __all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
 
@@ -840,6 +835,12 @@ class AcaPsfLibrary(object):
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_aca_image_table(start, stop, bgsub=True, source="maude", **maude_kwargs):
+    import mica.archive.aca_dark
+    import mica.archive.aca_l0
+
+    import chandra_aca.dark_subtract
+    import chandra_aca.maude_decom
+
     if source == "maude":
         imgs_table = chandra_aca.maude_decom.get_aca_images(start, stop, **maude_kwargs)
         t_ccds = chandra_aca.dark_subtract.get_tccd_data(
