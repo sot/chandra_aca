@@ -1,7 +1,4 @@
-from pathlib import Path
-
 import cheta.fetch
-import mica.common
 import numpy as np
 import pytest
 from astropy.table import Table
@@ -16,8 +13,6 @@ from chandra_aca.dark_subtract import (
     get_dark_current_imgs,
     get_tccd_data,
 )
-
-HAS_ACA0_ARCHIVE = (Path(mica.common.MICA_ARCHIVE) / "aca0").exists()
 
 
 # Make a test fixture for the mock dark current image
@@ -204,6 +199,10 @@ def test_get_dark_images(mock_dc, mock_img_table, dc_imgs_dn):
     assert dc_imgs.shape == (8, 8, 8)
     dc_imgs_raw = dc_imgs * 5 / 1.696
     assert np.allclose(dc_imgs_raw, dc_imgs_dn, atol=1e-6, rtol=0)
+
+
+def test_dark_map_at_edges():
+    pass
 
 
 def test_get_dark_backgrounds(mock_dc, mock_img_table, dc_imgs_dn):
