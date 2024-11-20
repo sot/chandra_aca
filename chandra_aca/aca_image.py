@@ -9,6 +9,7 @@ import numba
 import numpy as np
 import requests
 from astropy.table import Table
+from cxotime import CxoTimeLike
 from ska_helpers import retry
 
 __all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
@@ -834,13 +835,38 @@ class AcaPsfLibrary(object):
 
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
-def get_aca_image_table(start, stop, bgsub=True, source="maude", **maude_kwargs):
+def get_aca_image_table(
+    start: CxoTimeLike, stop: CxoTimeLike, bgsub=True, source="maude", **maude_kwargs
+):
+    """
+    Get ACA images and ancillary data from either the mica or maude data sources.
+
+    Parameters
+    ----------
+    start : CxoTimeLike
+        start time
+    stop : CxoTimeLike
+        stop time (CXC sec)
+    bgsub : bool
+        include background subtracted images in output table
+    source : str
+        'maude' or 'mica'
+    maude_kwargs
+        additional kwargs for maude data source
+
+    Returns
+    -------
+    Table of ACA images and ancillary data. If bgsub is True then the table
+    will include columns for the background subtracted image ('BGSUB'), the dark current
+    image ('DARK'), and the CCD temperature ('T_CCD').
+    """
     import mica.archive.aca_dark
     import mica.archive.aca_l0
 
     import chandra_aca.dark_subtract
     import chandra_aca.maude_decom
 
+    # Get aca images over the time range
     if source == "maude":
         imgs_table = chandra_aca.maude_decom.get_aca_images(start, stop, **maude_kwargs)
         t_ccds = chandra_aca.dark_subtract.get_tccd_data(
@@ -864,6 +890,7 @@ def get_aca_image_table(start, stop, bgsub=True, source="maude", **maude_kwargs)
             imgs_table_unmasked[col] = imgs_table[col]
     imgs_table = imgs_table_unmasked
 
+    # Get background subtracted values if bgsub is True
     if bgsub:
         dark_data = mica.archive.aca_dark.get_dark_cal_props(
             imgs_table["TIME"].min(),

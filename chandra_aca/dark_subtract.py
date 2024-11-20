@@ -73,6 +73,28 @@ def get_tccd_data(
 
 
 def get_aca_images_bgd_sub(img_table, t_ccd_vals, img_dark, tccd_dark):
+    """
+    Get the background subtracted ACA images.
+
+    Parameters
+    ----------
+    img_table : astropy.table.Table
+        The table of ACA images.
+    t_ccd_vals : np.array
+        The CCD temperature values at the times of the ACA images.
+    img_dark : np.array
+        The dark calibration image. Must be 1024x1024.
+    tccd_dark : float
+        The reference temperature of the dark calibration image.
+
+    Returns
+    -------
+    tuple (imgs_bgsub, imgs_dark)
+        imgs_bgsub : np.array
+            The background subtracted ACA images.
+        imgs_dark : np.array
+            The dark current images.
+    """
     imgs_dark = get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccd_vals)
     imgs_bgsub = img_table["IMG"] - imgs_dark
     imgs_bgsub.clip(0, None)
