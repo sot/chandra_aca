@@ -511,7 +511,6 @@ def images_check_range(start, stop, img_table):
 
     # If there's a DARK column, then check it against the dark image from the dark cal
     if "DARK" in img_table.colnames:
-        from mica.archive.aca_dark import get_dark_cal_props
 
         dc = get_dark_cal_props(
             tstart, select="nearest", include_image=True, aca_image=True
