@@ -535,7 +535,8 @@ def images_check_range(start, stop, img_table):
 def test_get_aca_image_table_maude():
     """Test get_aca_image_table in the maude mode
 
-    This checks that the dark images are reasonable and the IMG data matches with and without the bgsub.
+    This checks that the dark images are reasonable and the IMG data matches with
+    and without the bgsub.
     """
     tstart = "2021:001:00:00:00"
     tstop = "2021:001:00:01:00"
