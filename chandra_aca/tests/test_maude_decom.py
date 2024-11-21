@@ -1287,3 +1287,38 @@ def test_end_integ_time(combine):
             rtol=0,
         )
     )
+
+
+def test_get_aca_image_masked_columns_1():
+    """Get images over a time covering end of maneuver and start of dwell
+
+    This has fids (8x8), guides (6x6) and null images (4x4).
+    """
+    start = "2018:024:23:05:00"
+    stop = "2018:024:23:10:00"
+    imgs = maude_decom.get_aca_images(start, stop)
+    # 4x4, 6x6, and 8x8 images
+    assert set(imgs["IMGTYPE"]) == {0, 1, 4}
+    # Null, tracking, and search
+    assert set(imgs["IMGFUNC"]) == {0, 1, 3}
+    cols_masked = {col.info.name for col in imgs.itercols() if hasattr(col, "mask")}
+    assert cols_masked == {'BGDRMS', 'TEMPCCD', 'TEMPHOUS', 'TEMPPRIM', 'TEMPSEC', 'BGDSTAT', 'IMG'}
+
+
+def test_get_aca_image_masked_columns_2():
+    """Only 6x6 and 8x8 so only IMG is masked"""
+    start = "2018:024:23:15:00"
+    stop = "2018:024:23:20:00"
+    imgs = maude_decom.get_aca_images(start, stop)
+    assert set(imgs["IMGTYPE"]) == {1, 4}
+    cols_masked = {col.info.name for col in imgs.itercols() if hasattr(col, "mask")}
+    assert cols_masked == {"IMG"}
+
+def test_get_aca_image_masked_columns_3():
+    """Only 8x8 so only IMG masked"""
+    start = "2024:001:00:00:00"
+    stop = "2024:001:00:01:00"
+    imgs = maude_decom.get_aca_images(start, stop)
+    assert set(imgs["IMGTYPE"]) == {4}
+    cols_masked = {col.info.name for col in imgs.itercols() if hasattr(col, "mask")}
+    assert cols_masked == {"IMG"}
