@@ -283,7 +283,8 @@ def test_aca_images_chunks_1():
     tstart = CxoTime(start).secs
     tstop = CxoTime(stop).secs
     try:
-        imgs = maude_decom.get_aca_images(start, stop)
+        # Include the "times" metadata in the returned images table for testing
+        imgs = maude_decom.get_aca_images(start, stop, set_times_metadata=True)
     finally:
         maude_decom.MAUDE_SINGLE_FETCH_LIMIT = single_fetch_limit
 

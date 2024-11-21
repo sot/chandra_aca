@@ -1404,6 +1404,9 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     -------
     astropy.table.Table
     """
+    # This is strictly for testing, hence undocumented.
+    set_times_metadata = kwargs.pop("set_times_metadata", False)
+
     start = CxoTime(start)
     stop = CxoTime(stop)
     if (stop - start) > MAUDE_FETCH_LIMIT:
@@ -1424,7 +1427,8 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
         for istart, istop in itertools.pairwise(maude_fetch_times)
     ]
     out = vstack(packet_stack)
-    out.meta["times"] = maude_fetch_times
+    if set_times_metadata:
+        out.meta["times"] = maude_fetch_times
 
     # Remove mask from columns where no values are masked. IMG is excepted because
     # the mask reflects the presence of 4x4 or 6x6 images, not entirely missing data
