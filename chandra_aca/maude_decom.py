@@ -1361,7 +1361,7 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
 
     # Remove mask from columns where no values are masked.
     for col in out.itercols():
-        if not np.any(col.mask):
+        if not np.any(col.mask) and col.name != "IMG":
             out[col.name] = col.data.data
 
     return out
