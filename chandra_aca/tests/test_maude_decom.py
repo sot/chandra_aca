@@ -1303,7 +1303,15 @@ def test_get_aca_image_masked_columns_1():
     # Null, tracking, and search
     assert set(imgs["IMGFUNC"]) == {0, 1, 3}
     cols_masked = {col.info.name for col in imgs.itercols() if hasattr(col, "mask")}
-    assert cols_masked == {'BGDRMS', 'TEMPCCD', 'TEMPHOUS', 'TEMPPRIM', 'TEMPSEC', 'BGDSTAT', 'IMG'}
+    assert cols_masked == {
+        "BGDRMS",
+        "TEMPCCD",
+        "TEMPHOUS",
+        "TEMPPRIM",
+        "TEMPSEC",
+        "BGDSTAT",
+        "IMG",
+    }
 
 
 def test_get_aca_image_masked_columns_2():
@@ -1314,6 +1322,7 @@ def test_get_aca_image_masked_columns_2():
     assert set(imgs["IMGTYPE"]) == {1, 4}
     cols_masked = {col.info.name for col in imgs.itercols() if hasattr(col, "mask")}
     assert cols_masked == {"IMG"}
+
 
 def test_get_aca_image_masked_columns_3():
     """Only 8x8 so only IMG masked"""
