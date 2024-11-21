@@ -1426,7 +1426,9 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     out = vstack(packet_stack)
     out.meta["times"] = maude_fetch_times
 
-    # Remove mask from columns where no values are masked.
+    # Remove mask from columns where no values are masked. IMG is excepted because
+    # the mask reflects the presence of 4x4 or 6x6 images, not entirely missing data
+    # per row.
     for col in out.itercols():
         if not np.any(col.mask) and col.name != "IMG":
             out[col.name] = col.data.data
