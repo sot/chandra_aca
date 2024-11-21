@@ -147,6 +147,7 @@ In the following tables, column index increases to the right and row index incre
 """
 
 import copy
+import itertools
 from struct import Struct
 from struct import unpack as _unpack
 
@@ -1315,11 +1316,79 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
     """
     Fetch ACA image telemetry
 
-    Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the default
-    settings and no additional kwargs, this calls `get_aca_packets()` in a configuration that
-    uses MAUDE frames, combines image data, and sets the TIME associated with each image to the
-    midpoint of the integration time during which that pixel data was collected (matches CXC L0
-    times). See `get_aca_packets()`.
+    Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the
+    default settings and no additional kwargs, this calls `get_aca_packets()` in a
+    configuration that uses MAUDE frames, combines image data, and sets the TIME
+    associated with each image to the midpoint of the integration time during which that
+    pixel data was collected (matches CXC L0 times). See `get_aca_packets()`.
+
+    The 'IMG' column is always Nx8x8 and masked, where the mask is a per-pixel mask that
+    indicates missing data for 4x4 or 6x6 images. The units of 'IMG' are DN.
+
+    For queries including 4x4 data, the 'BGDRMS', 'TEMPCCD', 'TEMPHOUS', 'TEMPPRIM',
+    'TEMPSEC', and 'BGDSTAT' columns will be masked since they are not present in the
+    4x4 image data.
+
+    There are three different specifiers of the image row/col location:
+    - IMGROW0_8x8/IMGCOL0_8x8: the row/col of the lower-left pixel of the 8x8 masked
+        image. This is generally the most useful.
+    - IMGROW0/IMGCOL0: the row/col of the lower-left pixel of the actual 4x4, 6x6, or
+        8x8 image data. For 6x6 this corresponds to the mouse-bitten corner pixel.
+    - IMGROW_A1/IMGCOL_A1: the row/col of the A1 pixel in telemetry (see ACA EQ-spec).
+
+    The full list of columns is::
+
+               name          dtype  unit
+      --------------------- ------- -----------
+                       TIME float64 CXC seconds
+                    VCDUCTR  uint32
+                        MJF  uint32
+                        MNF  uint32
+                     IMGNUM  uint32
+                    COMMCNT   uint8
+                   COMMPROG   uint8
+                    GLBSTAT   uint8
+                    IMGFUNC  uint32
+                    IMGTYPE   uint8
+                   IMGSCALE  uint16
+                    IMGROW0   int16
+                    IMGCOL0   int16
+                      INTEG float64 s
+                     BGDAVG  uint16 DN
+                     BGDRMS  uint16 DN
+                    TEMPCCD float32 degC
+                   TEMPHOUS float32 degC
+                   TEMPPRIM float32 degC
+                    TEMPSEC float32 degC
+                    BGDSTAT   uint8
+                   HIGH_BGD    bool
+                   RAM_FAIL    bool
+                   ROM_FAIL    bool
+                 POWER_FAIL    bool
+                   CAL_FAIL    bool
+         COMM_CHECKSUM_FAIL    bool
+                      RESET    bool
+               SYNTAX_ERROR    bool
+       COMMCNT_SYNTAX_ERROR    bool
+      COMMCNT_CHECKSUM_FAIL    bool
+            COMMPROG_REPEAT   uint8
+                     IMGFID    bool
+                    IMGSTAT   uint8
+                  SAT_PIXEL    bool
+                  DEF_PIXEL    bool
+                 QUAD_BOUND    bool
+                 COMMON_COL    bool
+                 MULTI_STAR    bool
+                    ION_RAD    bool
+                  IMGROW_A1   int16
+                  IMGCOL_A1   int16
+                IMGROW0_8X8   int16
+                IMGCOL0_8X8   int16
+             END_INTEG_TIME float64
+                   AAPIXTLM    str4
+                   AABGDTYP    str4
+                        IMG float64 DN
+                IMG_VCDUCTR   int64
 
 
     Parameters
@@ -1352,9 +1421,7 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
             level0=True,
             **kwargs,
         )
-        for istart, istop in zip(
-            maude_fetch_times[:-1], maude_fetch_times[1:], strict=False
-        )
+        for istart, istop in itertools.pairwise(maude_fetch_times)
     ]
     out = vstack(packet_stack)
     out.meta["times"] = maude_fetch_times
