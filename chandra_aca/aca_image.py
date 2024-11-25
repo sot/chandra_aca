@@ -858,6 +858,9 @@ def get_aca_images(
     - 'IMG_DARK': dark current image
     - 'T_CCD_SMOOTH': smoothed CCD temperature
 
+    The IMG_DARK individual values are only calculated if within the 1024x1024
+    dark current map, otherwise they are set to 0.  In practice this is not an
+    issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.
 
     Parameters
     ----------

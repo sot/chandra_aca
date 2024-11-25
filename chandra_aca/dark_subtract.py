@@ -181,14 +181,20 @@ def get_dark_backgrounds(raw_dark_img, imgrow0, imgcol0, size=8):
     imgs_dark : np.array
         The dark backgrounds in e-/s for the ACA images sampled from raw_dark_img.
         This will have the same length as imgrow0 and imgcol0, with shape
-        (len(imgrow0), size, size).  These pixels have not been scaled.
+        (len(imgrow0), size, size).  These pixels have not been scaled.  Pixels
+        outside the raw_dark_img are set to 0.
     """
 
     # Borrowed from the agasc code
     @numba.jit(nopython=True)
     def staggered_aca_slice(array_in, array_out, row, col):
         for i in np.arange(len(row)):
-            if row[i] + size < 1024 and col[i] + size < 1024:
+            if (
+                row[i] >= 0
+                and row[i] + size < 1024
+                and col[i] >= 0
+                and col[i] + size < 1024
+            ):
                 array_out[i] = array_in[row[i] : row[i] + size, col[i] : col[i] + size]
 
     imgs_dark = np.zeros([len(imgrow0), size, size], dtype=np.float64)
