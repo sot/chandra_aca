@@ -8,6 +8,13 @@ from ska_numpy import smooth
 
 from chandra_aca.dark_model import dark_temp_scale_img
 
+__all__ = [
+    "get_tccd_data",
+    "get_aca_images_bgd_sub",
+    "get_dark_current_imgs",
+    "get_dark_backgrounds",
+]
+
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_tccd_data(
@@ -25,11 +32,13 @@ def get_tccd_data(
         The times for which to get the CCD temperature data.
     source : str, optional
         Source of the CCD temperature data. If 'maude', override the fetch_sci data source
-        to 'maude allow_subset=False'. Else, use the cheta default.
+        to 'maude allow_subset=False'. If 'cxc' use the local cxc archive. Default is 'maude'.
     median_window : int, optional
-        3-sample Median filter to to remove outliers.
+        Median filter window to remove outliers.  Default is 3.
     smooth_window : int, optional
-        Smooth the data using a hanning window of this length in samples.
+        Smooth the data using a hanning window of this length in samples. Default is 30.
+    maude_channel : str, optional
+        The maude channel to use. Default is None.
 
 
     Returns
@@ -53,13 +62,16 @@ def get_tccd_data(
             data_source += f" channel={maude_channel}"
         with fetch_sci.data_source(data_source):
             dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
+    elif source == "cxc":
+        with fetch_sci.data_source("cxc"):
+            dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
     else:
-        dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
+        raise ValueError(f"Unknown source: {source}")
 
     yin = dat.vals.copy()
 
     if median_window > 0:
-        # Filter the data using a 3 point median filter from scipy
+        # Filter the data using a median filter from scipy
         yin = scipy.signal.medfilt(yin, kernel_size=median_window)
 
     if smooth_window > 0:
@@ -81,19 +93,19 @@ def get_aca_images_bgd_sub(img_table, t_ccd_vals, img_dark, tccd_dark):
     img_table : astropy.table.Table
         The table of ACA images.
     t_ccd_vals : np.array
-        The CCD temperature values at the times of the ACA images.
+        The CCD temperature values at the times of the ACA images in deg C.
     img_dark : np.array
-        The dark calibration image. Must be 1024x1024.
+        The dark calibration image. Must be 1024x1024. In e-/s.
     tccd_dark : float
-        The reference temperature of the dark calibration image.
+        The reference temperature of the dark calibration image in deg C.
 
     Returns
     -------
     tuple (imgs_bgsub, imgs_dark)
         imgs_bgsub : np.array
-            The background subtracted ACA images.
+            The background subtracted ACA images in DN.
         imgs_dark : np.array
-            The dark current images.
+            The dark current images in DN.
     """
     imgs_dark = get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccd_vals)
     imgs_bgsub = img_table["IMG"] - imgs_dark
@@ -120,7 +132,7 @@ def get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccds):
     -------
     imgs_dark : np.array
         An array containing the temperature scaled dark current for each ACA image
-        in the img_table in e-/s.
+        in the img_table in DN.
 
     """
     if len(img_table) != len(t_ccds):
@@ -167,7 +179,7 @@ def get_dark_backgrounds(raw_dark_img, imgrow0, imgcol0, size=8):
     Returns
     -------
     imgs_dark : np.array
-        The dark backgrounds for the ACA images sampled from raw_dark_img.
+        The dark backgrounds in e-/s for the ACA images sampled from raw_dark_img.
         This will have the same length as imgrow0 and imgcol0, with shape
         (len(imgrow0), size, size).  These pixels have not been scaled.
     """

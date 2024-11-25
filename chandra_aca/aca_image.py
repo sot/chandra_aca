@@ -12,7 +12,7 @@ from astropy.table import Table
 from cxotime import CxoTimeLike
 from ska_helpers import retry
 
-__all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
+__all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS", "get_aca_images"]
 
 EIGHT_LABELS = np.array(
     [
@@ -835,11 +835,29 @@ class AcaPsfLibrary(object):
 
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
-def get_aca_image_table(
+def get_aca_images(
     start: CxoTimeLike, stop: CxoTimeLike, bgsub=True, source="maude", **maude_kwargs
-):
+) -> Table:
     """
-    Get ACA images and ancillary data from either the mica or maude data sources.
+    Get ACA images and ancillary data from either the maude or cxc data sources.
+
+    The returned table of ACA images and ancillary data will include the default
+    columns returned by chandra_aca.maude_decom.get_aca_images or
+    mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
+    table will also include columns::
+
+             name            dtype  unit
+      --------------------- ------- -----------
+         IMG_BGSUB          float64  DN
+         IMG_DARK           float64  DN
+         T_CCD_SMOOTH       float32  degC
+
+    where:
+
+    - 'IMG_BGSUB': background subtracted image
+    - 'IMG_DARK': dark current image
+    - 'T_CCD_SMOOTH': smoothed CCD temperature
+
 
     Parameters
     ----------
@@ -850,15 +868,15 @@ def get_aca_image_table(
     bgsub : bool
         include background subtracted images in output table
     source : str
-        'maude' or 'mica'
+        Data source for image and temperature telemetry ('maude' or 'cxc'). For 'cxc',
+        the image telemetry is from mica and temperature telemetry is from CXC L0 via cheta.
     maude_kwargs
         additional kwargs for maude data source
 
     Returns
     -------
-    Table of ACA images and ancillary data. If bgsub is True then the table
-    will include columns for the background subtracted image ('BGSUB'), the dark current
-    image ('DARK'), and the CCD temperature ('T_CCD').
+    imgs_table : astropy.table.Table
+        Table of ACA images and ancillary data.
     """
     import mica.archive.aca_dark
     import mica.archive.aca_l0
@@ -906,8 +924,8 @@ def get_aca_image_table(
         imgs_bgsub = imgs_table["IMG"] - imgs_dark
         imgs_bgsub.clip(0, None)
 
-        imgs_table["BGSUB"] = imgs_bgsub
-        imgs_table["DARK"] = imgs_dark
-        imgs_table["T_CCD"] = t_ccds
+        imgs_table["IMG_BGSUB"] = imgs_bgsub
+        imgs_table["IMG_DARK"] = imgs_dark
+        imgs_table["T_CCD_SMOOTH"] = t_ccds
 
     return imgs_table

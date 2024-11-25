@@ -6,7 +6,7 @@ from cxotime import CxoTime
 from mica.archive.aca_dark import get_dark_cal_props
 
 from chandra_aca import maude_decom
-from chandra_aca.aca_image import get_aca_image_table
+from chandra_aca.aca_image import get_aca_images
 from chandra_aca.dark_subtract import (
     get_aca_images_bgd_sub,
     get_dark_backgrounds,
@@ -284,7 +284,7 @@ def test_dcsub_aca_images_maude():
         imgs_table, img_dark=img_dark, tccd_dark=tccd_dark, t_ccd_vals=t_ccds
     )
 
-    imgs_bgsub_table = get_aca_image_table(tstart, tstop, source="maude")
+    imgs_bgsub_table = get_aca_images(tstart, tstop, source="maude")
 
     exp0 = np.array(
         [

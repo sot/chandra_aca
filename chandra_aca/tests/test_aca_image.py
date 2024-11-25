@@ -532,19 +532,19 @@ def images_check_range(start, stop, img_table):
             assert np.allclose(img_dark, dark_row)
 
 
-def test_get_aca_image_table_maude():
-    """Test get_aca_image_table in the maude mode
+def test_get_aca_images_maude():
+    """Test get_aca_images in the maude mode
 
     This checks that the dark images are reasonable and the IMG data matches with
     and without the bgsub.
     """
     tstart = "2021:001:00:00:00"
     tstop = "2021:001:00:01:00"
-    img_table_maude = chandra_aca.aca_image.get_aca_image_table(
+    img_table_maude = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="maude", bgsub=False
     )
     images_check_range(tstart, tstop, img_table_maude)
-    img_table_maude_bgsub = chandra_aca.aca_image.get_aca_image_table(
+    img_table_maude_bgsub = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="maude", bgsub=True
     )
     images_check_range(tstart, tstop, img_table_maude_bgsub)
@@ -556,28 +556,28 @@ HAS_ACA0_ARCHIVE = (Path(mica.common.MICA_ARCHIVE) / "aca0").exists()
 
 
 @pytest.mark.skipif(not HAS_ACA0_ARCHIVE, reason="No ACA0 archive")
-def test_get_aca_image_table_mica():
-    """Test get_aca_image_table in the mica mode
+def test_get_aca_images_mica():
+    """Test get_aca_images in the mica mode
 
     This checks that the dark images are reasonable and the answers match maude.
     """
     tstart = "2012:180:00:00:00"
     tstop = "2012:180:00:01:00"
 
-    img_table_mica = chandra_aca.aca_image.get_aca_image_table(
+    img_table_mica = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="mica", bgsub=False
     )
     images_check_range(tstart, tstop, img_table_mica)
-    img_table_mica_bgsub = chandra_aca.aca_image.get_aca_image_table(
+    img_table_mica_bgsub = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="mica", bgsub=True
     )
     images_check_range(tstart, tstop, img_table_mica_bgsub)
 
     # Get maude data too for comparison
-    img_table_maude = chandra_aca.aca_image.get_aca_image_table(
+    img_table_maude = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="maude", bgsub=False
     )
-    img_table_maude_bgsub = chandra_aca.aca_image.get_aca_image_table(
+    img_table_maude_bgsub = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="maude", bgsub=True
     )
 
