@@ -556,22 +556,22 @@ HAS_ACA0_ARCHIVE = (Path(mica.common.MICA_ARCHIVE) / "aca0").exists()
 
 
 @pytest.mark.skipif(not HAS_ACA0_ARCHIVE, reason="No ACA0 archive")
-def test_get_aca_images_mica():
-    """Test get_aca_images in the mica mode
+def test_get_aca_images_cxc():
+    """Test get_aca_images in the cxc mode
 
     This checks that the dark images are reasonable and the answers match maude.
     """
     tstart = "2012:180:00:00:00"
     tstop = "2012:180:00:01:00"
 
-    img_table_mica = chandra_aca.aca_image.get_aca_images(
-        tstart, tstop, source="mica", bgsub=False
+    img_table_cxc = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="cxc", bgsub=False
     )
-    images_check_range(tstart, tstop, img_table_mica)
-    img_table_mica_bgsub = chandra_aca.aca_image.get_aca_images(
-        tstart, tstop, source="mica", bgsub=True
+    images_check_range(tstart, tstop, img_table_cxc)
+    img_table_cxc_bgsub = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="cxc", bgsub=True
     )
-    images_check_range(tstart, tstop, img_table_mica_bgsub)
+    images_check_range(tstart, tstop, img_table_cxc_bgsub)
 
     # Get maude data too for comparison
     img_table_maude = chandra_aca.aca_image.get_aca_images(
@@ -582,16 +582,16 @@ def test_get_aca_images_mica():
     )
 
     # Check that the two mica tables are the same in the key columns
-    assert np.allclose(img_table_mica["IMG"], img_table_mica_bgsub["IMG"])
-    assert np.allclose(img_table_mica["TIME"], img_table_mica_bgsub["TIME"])
+    assert np.allclose(img_table_cxc["IMG"], img_table_cxc_bgsub["IMG"])
+    assert np.allclose(img_table_cxc["TIME"], img_table_cxc_bgsub["TIME"])
 
     # Check that the tables are the same
     img_table_maude.sort(["TIME", "IMGNUM"])
     img_table_maude_bgsub.sort(["TIME", "IMGNUM"])
-    img_table_mica.sort(["TIME", "IMGNUM"])
-    img_table_mica_bgsub.sort(["TIME", "IMGNUM"])
+    img_table_cxc.sort(["TIME", "IMGNUM"])
+    img_table_cxc_bgsub.sort(["TIME", "IMGNUM"])
 
-    assert np.allclose(img_table_maude["IMG"], img_table_mica["IMG"])
-    assert np.allclose(img_table_maude["TIME"], img_table_mica["TIME"])
-    assert np.allclose(img_table_maude_bgsub["IMG"], img_table_mica_bgsub["IMG"])
-    assert np.allclose(img_table_maude_bgsub["TIME"], img_table_mica_bgsub["TIME"])
+    assert np.allclose(img_table_maude["IMG"], img_table_cxc["IMG"])
+    assert np.allclose(img_table_maude["TIME"], img_table_cxc["TIME"])
+    assert np.allclose(img_table_maude_bgsub["IMG"], img_table_cxc_bgsub["IMG"])
+    assert np.allclose(img_table_maude_bgsub["TIME"], img_table_cxc_bgsub["TIME"])

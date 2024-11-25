@@ -890,13 +890,13 @@ def get_aca_images(
         t_ccds = chandra_aca.dark_subtract.get_tccd_data(
             imgs_table["TIME"], source=source, **maude_kwargs
         )
-    elif source == "mica":
+    elif source == "cxc":
         imgs_table = mica.archive.aca_l0.get_aca_images(start, stop)
         t_ccds = chandra_aca.dark_subtract.get_tccd_data(
             imgs_table["TIME"], source=source
         )
     else:
-        raise ValueError(f"source must be 'maude' or 'mica', not {source}")
+        raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
 
     # Do some unmasking until the maude_decom and aca_l0 interfaces are updated with
     # fewer masked columns

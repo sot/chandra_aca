@@ -299,7 +299,7 @@ def test_dcsub_aca_images_maude():
         ]
     )
     np.allclose(exp0, imgs_bgsub[0][0].filled(0), atol=1, rtol=0)
-    np.allclose(exp0, imgs_bgsub_table["BGSUB"][0][0].filled(0), atol=1, rtol=0)
+    np.allclose(exp0, imgs_bgsub_table["IMG_BGSUB"][0][0].filled(0), atol=1, rtol=0)
 
     # slot 4 is 6x6 and masked
     exp4 = np.array(
@@ -315,4 +315,4 @@ def test_dcsub_aca_images_maude():
         ]
     )
     np.allclose(exp4, imgs_bgsub[4][0].filled(0), atol=1, rtol=0)
-    np.allclose(exp4, imgs_bgsub_table["BGSUB"][4][0].filled(0), atol=1, rtol=0)
+    np.allclose(exp4, imgs_bgsub_table["IMG_BGSUB"][4][0].filled(0), atol=1, rtol=0)
