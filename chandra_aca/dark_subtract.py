@@ -47,6 +47,10 @@ def get_tccd_data(
         CCD temperature values.
     """
 
+    # If no times are given, return an empty array.
+    if len(times) == 0:
+        return np.array([])
+
     pad = 600  # 600 seconds default pad
 
     # increase the pad if the smooth window is large

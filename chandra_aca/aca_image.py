@@ -901,8 +901,10 @@ def get_aca_images(
     else:
         raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
 
-    # Get background subtracted values if bgsub is True
-    if bgsub:
+    # Get background subtracted values if bgsub is True.
+    # There's nothing to do if there are no images (len(imgs_table) == 0),
+    # so special case that.
+    if bgsub and len(imgs_table) > 0:
         dark_data = mica.archive.aca_dark.get_dark_cal_props(
             imgs_table["TIME"].min(),
             select="nearest",
@@ -920,5 +922,11 @@ def get_aca_images(
         imgs_table["IMG_BGSUB"] = imgs_bgsub
         imgs_table["IMG_DARK"] = imgs_dark
         imgs_table["T_CCD_SMOOTH"] = t_ccds
+
+    if bgsub and len(imgs_table) == 0:
+        # Add the columns to the table even if there are no rows
+        imgs_table["IMG_BGSUB"] = np.zeros(0)
+        imgs_table["IMG_DARK"] = np.zeros(0)
+        imgs_table["T_CCD_SMOOTH"] = np.zeros(0)
 
     return imgs_table
