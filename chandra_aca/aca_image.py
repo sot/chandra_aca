@@ -901,16 +901,6 @@ def get_aca_images(
     else:
         raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
 
-    # Do some unmasking until the maude_decom and aca_l0 interfaces are updated with
-    # fewer masked columns
-    imgs_table_unmasked = Table()
-    for col in imgs_table.colnames:
-        if col in ["TIME", "INTEG", "IMGROW0_8X8", "IMGCOL0_8X8"]:
-            imgs_table_unmasked[col] = imgs_table[col].data.data
-        else:
-            imgs_table_unmasked[col] = imgs_table[col]
-    imgs_table = imgs_table_unmasked
-
     # Get background subtracted values if bgsub is True
     if bgsub:
         dark_data = mica.archive.aca_dark.get_dark_cal_props(
