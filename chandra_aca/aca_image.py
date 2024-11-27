@@ -850,7 +850,7 @@ def get_aca_images(
       --------------------- ------- -----------
          IMG_BGSUB          float64  DN
          IMG_DARK           float64  DN
-         T_CCD_SMOOTH       float32  degC
+         T_CCD_SMOOTH       float64  degC
 
     where:
 
