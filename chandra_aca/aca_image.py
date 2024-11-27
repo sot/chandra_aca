@@ -499,7 +499,9 @@ class ACAImage(np.ndarray):
         rand_ampls = np.random.uniform(0.0, 1.0, size=len(idxs))
         rand_times = np.random.uniform(0.0, 1.0, size=len(idxs))
 
-        for idx, rand_time, rand_ampl in zip(idxs, rand_times, rand_ampls):
+        for idx, rand_time, rand_ampl in zip(
+            idxs, rand_times, rand_ampls, strict=False
+        ):
             # Determine the new value after flickering and set in array view.
             # First get the right CDF from the list of CDFs based on the pixel value.
             cdf_idx = self.flicker_cdf_idxs[idx]
@@ -671,9 +673,8 @@ def centroid_fm(img, bgd=None, pix_zero_loc="center", norm_clip=None):
     norm = np.sum(img)
     if norm_clip is not None:
         norm = norm.clip(norm_clip, None)
-    else:
-        if norm <= 0:
-            raise ValueError("non-positive image norm {}".format(norm))
+    elif norm <= 0:
+        raise ValueError("non-positive image norm {}".format(norm))
 
     row = np.sum(rw * img) / norm
     col = np.sum(cw * img) / norm

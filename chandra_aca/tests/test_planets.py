@@ -10,12 +10,12 @@ from testr.test_helper import has_internet
 
 from chandra_aca.planets import (
     convert_time_format_spk,
+    get_earth_blocks,
     get_planet_angular_sep,
     get_planet_barycentric,
     get_planet_chandra,
     get_planet_chandra_horizons,
     get_planet_eci,
-    get_earth_blocks,
 )
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 

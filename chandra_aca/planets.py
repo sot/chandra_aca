@@ -27,11 +27,11 @@ from pathlib import Path
 from typing import Optional, Union
 
 import astropy.units as u
-from astropy.table import Table
 import jplephem.spk
 import numba
 import numpy as np
 from astropy.io import ascii
+from astropy.table import Table
 from cxotime import CxoTime, CxoTimeLike
 from ska_helpers.utils import LazyVal
 
@@ -67,8 +67,6 @@ GET_PLANET_CHANDRA_ERRORS = {
 
 class NoEphemerisError(Exception):
     """If there is no Chandra orbital ephemeris available"""
-
-    pass
 
 
 def load_kernel():

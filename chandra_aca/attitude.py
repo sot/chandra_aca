@@ -130,7 +130,7 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None):
         zag_obs.shape = 1, n_stars
 
     outs = []
-    for yo, zo in zip(yag_obs, zag_obs):
+    for yo, zo in zip(yag_obs, zag_obs, strict=False):
         out = _calc_roll_pitch_yaw(yag, zag, yo, zo, sigma=sigma)
         outs.append(out)
 
@@ -251,7 +251,7 @@ def calc_att(att, yag, zag, yag_obs, zag_obs, sigma=None):
 
     if isinstance(rolls, np.ndarray) and rolls.ndim >= 1:
         out = []
-        for roll, pitch, yaw in zip(rolls, pitches, yaws):
+        for roll, pitch, yaw in zip(rolls, pitches, yaws, strict=False):
             dq = Quat([yaw, -pitch, roll])
             out.append(q_att * dq)
     else:

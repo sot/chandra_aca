@@ -229,6 +229,7 @@ PIXEL_MAP_INV = {
             _ROWS[PIXEL_MAP[k] != "  "],
             _COLS[PIXEL_MAP[k] != "  "],
             PIXEL_MAP[k][PIXEL_MAP[k] != "  "],
+            strict=False,
         )
     }
     for k in ["6x6", "4x4", "8x8"]
@@ -395,7 +396,7 @@ def _aca_image_msid_list(pea):
             for i in range(8)
         ],
     }
-    return [{k: res[k][i] for k in res.keys()} for i in range(8)]
+    return [{k: res[k][i] for k in res} for i in range(8)]
 
 
 ACA_MSID_LIST = {i + 1: _aca_msid_list(i + 1) for i in range(2)}
@@ -799,7 +800,7 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     #  - Frames come in packets of four. A missing frame would cause the packet to be dropped.
     selected = filter_vcdu_jumps(vcdu)
     vcdu = vcdu[selected]
-    frames = [frame for frame, sel in zip(frames, selected) if sel]
+    frames = [frame for frame, sel in zip(frames, selected, strict=False) if sel]
     vcdu_times = np.array([frame["t"] for frame in frames])
 
     sub = vcdu % 4  # the minor frame index within each ACA update

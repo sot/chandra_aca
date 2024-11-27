@@ -313,7 +313,7 @@ def acq_success_prob(
         from .dark_model import get_warm_fracs
 
         warm_fracs = []
-        for date, t_ccd in zip(dates.ravel(), t_ccds.ravel()):
+        for date, t_ccd in zip(dates.ravel(), t_ccds.ravel(), strict=False):
             warm_frac = get_warm_fracs(WARM_THRESHOLD, date=date, T_ccd=t_ccd)
             warm_fracs.append(warm_frac)
         warm_frac = np.array(warm_fracs).reshape(dates.shape)
@@ -1036,7 +1036,7 @@ def guide_count(mags, t_ccd, count_9th=False):
     # Do the interpolation, noting that np.interp will use the end ``counts``
     # values for any ``mag`` < ref_mags[0] or > ref_mags[-1].
     count = 0.0
-    for mag, t_ccd in zip(mags, t_ccds):
+    for mag, t_ccd in zip(mags, t_ccds, strict=False):
         count += np.interp(mag, ref_mags[t_ccd], ref_counts)
 
     return count

@@ -255,7 +255,7 @@ def test_get_aimpoint():
     except Exception:
         zot = Table.read(ZERO_OFFSET_TABLE, format="ascii")
 
-    for obstest, answer in zip(obstests, answers):
+    for obstest, answer in zip(obstests, answers, strict=False):
         chipx, chipy, chip_id = drift.get_target_aimpoint(
             *obstest, zero_offset_table=zot
         )
@@ -349,7 +349,10 @@ def test_radec_eci_multidim(shape):
     decs_nd = decs.reshape(shape)
 
     # First do everything as scalars
-    ecis_list = [radec_to_eci(ra, dec) for ra, dec in zip(ras.tolist(), decs.tolist())]
+    ecis_list = [
+        radec_to_eci(ra, dec)
+        for ra, dec in zip(ras.tolist(), decs.tolist(), strict=False)
+    ]
     ecis_nd_from_list = np.array(ecis_list).reshape(shape + (3,))
 
     ecis = radec_to_eci(ras_nd, decs_nd)
@@ -379,7 +382,7 @@ def test_radec_yagzag_multidim(shape):
     # First do everything as scalars
     yagzags_list = [
         radec_to_yagzag(ra, dec, Quat(equatorial=eq))
-        for ra, eq in zip(ras.tolist(), eqs.tolist())
+        for ra, eq in zip(ras.tolist(), eqs.tolist(), strict=False)
     ]
     yagzags_nd_from_list = np.array(yagzags_list).reshape(shape + (2,))
 
