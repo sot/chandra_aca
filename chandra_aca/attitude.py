@@ -8,6 +8,7 @@ Note this requires Python 3.5+.
 Validation:
 http://nbviewer.jupyter.org/url/asc.harvard.edu/mta/ASPECT/ipynb/chandra_aca/calc_att_validate.ipynb
 """
+
 from __future__ import division
 
 import numpy as np

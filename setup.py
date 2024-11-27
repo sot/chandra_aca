@@ -18,9 +18,10 @@ if "--version" not in sys.argv and not ephem_file.exists():
     import urllib.request
 
     url = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de432s.bsp"
-    with urllib.request.urlopen(url, timeout=60) as f_in, open(
-        ephem_file, "wb"
-    ) as f_out:
+    with (
+        urllib.request.urlopen(url, timeout=60) as f_in,
+        open(ephem_file, "wb") as f_out,
+    ):
         shutil.copyfileobj(f_in, f_out)
 
 setup(

@@ -8,6 +8,7 @@ a desired zero-offset target aimpoint.
 A key element of this module is the fitting analysis here:
 https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb
 """
+
 import functools
 import json
 import os
