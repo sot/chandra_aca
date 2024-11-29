@@ -56,10 +56,7 @@ def test_synthetic_dark_image():
 
     # Warm pixels above threshold
     lims = [100, 200, 1000, 2000, 3000]
-    wps = []
-    for lim in lims:
-        wps.append(np.count_nonzero(dark > lim))
-    wps = np.array(wps)
+    wps = np.array([np.count_nonzero(dark > lim) for lim in lims])
 
     # Actual from 2017:185 dark cal at -13.55C : [218214, 83902, N/A, 88, 32]
     #                                            [100,   200, 1000, 2000, 3000]

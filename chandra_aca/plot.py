@@ -515,13 +515,13 @@ def plot_compass(roll):
     fig = plt.figure(figsize=(3, 3))
     ax = plt.subplot(polar=True)
     ax.annotate(
-        "", xy=(0, 0), xytext=(0, 1), arrowprops=dict(arrowstyle="<-", color="k")
+        "", xy=(0, 0), xytext=(0, 1), arrowprops={"arrowstyle": "<-", "color": "k"}
     )
     ax.annotate(
         "",
         xy=(0, 0),
         xytext=(np.radians(90), 1),
-        arrowprops=dict(arrowstyle="<-", color="k"),
+        arrowprops={"arrowstyle": "<-", "color": "k"},
     )
     ax.annotate("N", xy=(0, 0), xytext=(0, 1.2))
     ax.annotate("E", xy=(0, 0), xytext=(np.radians(90), 1.2))

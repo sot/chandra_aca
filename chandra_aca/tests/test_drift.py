@@ -39,16 +39,16 @@ filename = Path(__file__).parent / "data" / "aimpoint_regression_data.ecsv"
 dat = tbl.Table.read(filename)
 kwargs_list = []
 for row in dat:
-    kwargs = dict(
-        detector=row["detector"],
-        chip_id=row["chip_id"],
-        chipx=row["chipx"],
-        chipy=row["chipy"],
-        time=row["mean_date"],
-        t_ccd=row["mean_t_ccd"],
-        aca_offset_y=row["aca_offset_y"],
-        aca_offset_z=row["aca_offset_z"],
-    )
+    kwargs = {
+        "detector": row["detector"],
+        "chip_id": row["chip_id"],
+        "chipx": row["chipx"],
+        "chipy": row["chipy"],
+        "time": row["mean_date"],
+        "t_ccd": row["mean_t_ccd"],
+        "aca_offset_y": row["aca_offset_y"],
+        "aca_offset_z": row["aca_offset_z"],
+    }
     kwargs_list.append(kwargs)
 
 

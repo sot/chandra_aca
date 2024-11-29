@@ -378,9 +378,7 @@ class ACAImage(np.ndarray):
             )
 
             # CDF bin range (e-/sec) for each for in flicker_cdfs.
-            cdf_bins = []
-            for ii in range(hdr["n_bin"]):
-                cdf_bins.append(hdr[f"cdf_bin{ii}"])
+            cdf_bins = [hdr[f"cdf_bin{ii}"] for ii in range(hdr["n_bin"])]
             cls.flicker_cdf_bins = np.array(cdf_bins)
 
     def flicker_init(self, flicker_mean_time=10000, flicker_scale=1.0, seed=None):
