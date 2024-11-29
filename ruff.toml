@@ -2,6 +2,7 @@ extend = "ruff-base.toml"
 
 # These are files to exclude for this project.
 extend-exclude = [
+   "chandra_aca/cubic_spline.py", # not our code
    "**/*.ipynb",  # commonly not ruff-compliant
 ]
 
