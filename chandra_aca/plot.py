@@ -341,7 +341,7 @@ def plot_stars(  # noqa: PLR0915 too many statements
     r, c = yagzag_to_pixels(zeros, yz_ticks)
     ax.set_yticks(c)
     ax.set_yticklabels(yz_ticks)
-    ax.grid()
+    ax.grid(grid)
 
     ax.set_xlabel("Yag (arcsec)")
     ax.set_ylabel("Zag (arcsec)")
