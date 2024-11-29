@@ -282,11 +282,11 @@ def get_warm_fracs(warm_threshold, date="2013:001:12:00:00", T_ccd=-19.0):
     warm_thresholds, is_scalar = as_array(warm_threshold)
 
     warmpixes = []
-    for warm_threshold in warm_thresholds:
+    for wt in warm_thresholds:
         # First get the full bins to right of warm_threshold
-        ii = np.searchsorted(xbins, warm_threshold)
+        ii = np.searchsorted(xbins, wt)
         warmpix = np.sum(y[ii:])
-        lx = np.log(warm_threshold)
+        lx = np.log(wt)
         lx0 = np.log(xbins[ii - 1])
         lx1 = np.log(xbins[ii])
         ly0 = np.log(y[ii - 1])

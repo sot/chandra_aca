@@ -247,8 +247,8 @@ class ACAImage(np.ndarray):
                         rc_off = it.start if it.start >= 0 else shape[i] + it.start
                         out_rc[i] = rc0 + rc_off
                 elif it is not ...:
-                    it = np.array(it)
-                    rc_off = np.where(it >= 0, it, shape[i] + it)
+                    it_arr = np.array(it)
+                    rc_off = np.where(it_arr >= 0, it_arr, shape[i] + it_arr)
                     out_rc[i] = rc0 + rc_off
 
         return item, out_rc[0], out_rc[1]
