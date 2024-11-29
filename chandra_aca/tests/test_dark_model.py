@@ -8,9 +8,12 @@ import pytest
 from mica.archive.aca_dark import get_dark_cal_props
 from mica.common import MICA_ARCHIVE
 
-from chandra_aca.dark_model import dark_temp_scale_img
-
-from ..dark_model import dark_temp_scale, get_warm_fracs, synthetic_dark_image
+from chandra_aca.dark_model import (
+    dark_temp_scale,
+    dark_temp_scale_img,
+    get_warm_fracs,
+    synthetic_dark_image,
+)
 
 HAS_MICA = os.path.exists(MICA_ARCHIVE)
 

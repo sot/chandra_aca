@@ -8,8 +8,7 @@ from cxotime import CxoTime
 from mica.archive.aca_dark import get_dark_cal_props
 
 import chandra_aca.aca_image
-
-from ..aca_image import ACAImage, centroid_fm
+from chandra_aca.aca_image import ACAImage, centroid_fm
 
 im6 = np.arange(6**2).reshape((6, 6))
 im8 = np.arange(8**2).reshape((8, 8))

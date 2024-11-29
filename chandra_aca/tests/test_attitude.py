@@ -6,7 +6,7 @@ import pytest
 from Quaternion import Quat
 from Ska.quatutil import radec2yagzag
 
-from ..attitude import calc_att, calc_roll, calc_roll_pitch_yaw
+from chandra_aca.attitude import calc_att, calc_roll, calc_roll_pitch_yaw
 
 
 @pytest.mark.parametrize("roll", [-1, -0.1, 50 / 3600, 0.1])
