@@ -240,7 +240,7 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
 
 
 @custom_plt_rcparams
-def plot_stars(
+def plot_stars(  # noqa: PLR0915 too many statements
     attitude,
     catalog=None,
     stars=None,

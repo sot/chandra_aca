@@ -398,7 +398,7 @@ def test_vcdu_vs_level0():
             assert t
 
 
-def test_vcdu_packet_combination():
+def test_vcdu_packet_combination():  # noqa: PLR0915 Too many statements
     import copy
 
     # 8x8

@@ -35,7 +35,7 @@ def test_get_warm_fracs():
             for T_ccd in (-11, -15):
                 key = (warm_threshold, date, T_ccd)
                 warmpixs[key] = int(get_warm_fracs(*key) * 1024**2)
-    for key in warmpixs:
+    for key in warmpixs:  # noqa: PLC0206 Extracting value from dict without calling `.items()`
         assert np.allclose(warmpixs[key], exp[key], rtol=1e-5, atol=1)
 
 

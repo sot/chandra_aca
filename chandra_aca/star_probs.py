@@ -116,7 +116,7 @@ def set_acq_model_ms_filter(ms_enabled=False):
     The selected fit parameters are global/module-wide.
 
     """
-    global MULT_STARS_ENABLED
+    global MULT_STARS_ENABLED  # noqa: PLW0603
     MULT_STARS_ENABLED = ms_enabled
 
 

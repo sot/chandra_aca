@@ -195,7 +195,7 @@ class ACAImage(np.ndarray):
         """
         This is the money method that does all the work of manipulating
         an item and subsequent row0/col0 when accessing and slicing.
-        """
+        """  # noqa: D205
         # Allow slicing via an existing ACAImage object
         aca_coords = self._aca_coords
         if isinstance(item, ACAImage):
