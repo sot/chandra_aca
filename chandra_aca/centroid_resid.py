@@ -303,7 +303,7 @@ class CentroidResiduals(object):
             )
             return
         fetch_source = fetch.data_source.sources()[0]
-        if fetch_source != "cxc" and fetch_source != "maude":
+        if fetch_source not in ("cxc", "maude"):
             warnings.warn(
                 "Only maude and cxc fetch data sources are supported for offsets. "
                 "Not applying offsets."
