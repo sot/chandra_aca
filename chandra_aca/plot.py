@@ -61,9 +61,9 @@ def custom_plt():
 
 def custom_plt_rcparams(func):
     """
-    Decorator to make a function use the custom rcParams plt params
-    temporarily.  This uses a context manage to ensure original
-    params always get restored.
+    Decorator to make a function use the custom rcParams plt params temporarily.
+
+    This uses a context manage to ensure original params always get restored.
     """
 
     @wraps(func)
@@ -84,8 +84,9 @@ def symsize(mag):
 
 def _plot_catalog_items(ax, catalog):
     """
-    Plot catalog items (guide, acq, bot, mon, fid) in yang and zang on the supplied
-    axes object in place.
+    Plot catalog items (guide, acq, bot, mon, fid) in yang and zang on the supplied axes object.
+
+    This plots in place.
 
     Parameters
     ----------
@@ -156,8 +157,7 @@ def _plot_catalog_items(ax, catalog):
 
 def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     """
-    Plot plot field stars in yang and zang on the supplied
-    axes object in place.
+    Plot plot field stars in yang and zang on the supplied axes object in place.
 
     Parameters
     ----------
@@ -256,6 +256,7 @@ def plot_stars(
 ):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
+
     If supplying a star field, an attitude must also be supplied.
 
     Parameters
@@ -395,6 +396,7 @@ def plot_stars(
 
 def _plot_planets(ax, att, date0, duration, lim0, lim1):
     """
+    Plot planets.
 
     Parameters
     ----------

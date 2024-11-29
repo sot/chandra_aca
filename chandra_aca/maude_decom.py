@@ -1216,6 +1216,7 @@ def _get_aca_packets(
 ):
     """
     This is a convenience function that splits get_aca_packets for testing without MAUDE.
+
     Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.
 
     NOTE: This function has a side effect. It adds decom_packets to the input aca_packets.

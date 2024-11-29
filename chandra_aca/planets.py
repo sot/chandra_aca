@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Functions for planet position relative to Chandra, Earth, or Solar System
-Barycenter.
+Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
 
 Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
 Horizons positions are used as the "truth".

@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Calculate attitude based on star centroid values using a fast linear
-least-squares method.
+Calculate attitude based on star centroid values using a fast linear least-squares method.
 
 Note this requires Python 3.5+.
 
@@ -145,8 +144,9 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None):
 
 def _calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
     """
-    Internal version that does the real work of calc_roll_pitch_yaw and
-    works on only one sample at a time.
+    Internal version that does the real work of calc_roll_pitch_yaw.
+
+    This works on only one sample at a time.
     """
     weights = None if (sigma is None) else 1 / np.array(sigma)
     yag_avg = np.average(yag, weights=weights)

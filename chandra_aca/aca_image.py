@@ -33,6 +33,8 @@ row and highest col; pixel I4 has the highest row and lowest column."""
 
 def _operator_factory(operator, inplace=False):
     """
+    Generate data model methods.
+
     Generate data model methods like __add__(self, other) and
     __iadd__(self, other).  These always operate in the coordinate
     system of the left and right operands.  If both are in ACA
@@ -89,6 +91,8 @@ def _operator_factory(operator, inplace=False):
 
 class ACAImage(np.ndarray):
     """
+    ACA Image class.
+
     ACAImage is an ndarray subclass that supports functionality for the Chandra
     ACA. Most importantly it allows image indexing and slicing in absolute
     "aca" coordinates, where the image lower left coordinate is specified
@@ -123,6 +127,8 @@ class ACAImage(np.ndarray):
     @property
     def aca(self):
         """
+        Return a light copy of self with _aca_coords on.
+
         Return a light copy (same data) of self but with the _aca_coords
         attribute switched on so that indexing is absolute.
         """
@@ -296,8 +302,7 @@ class ACAImage(np.ndarray):
 
     def centroid_fm(self, bgd=None, pix_zero_loc="center", norm_clip=None):
         """
-        First moment centroid of ``self`` using 6x6 mousebitten image for input
-        6x6 or 8x8 images.
+        First moment centroid of ``self`` using 6x6 mousebitten image for input 6x6 or 8x8 images.
 
         Note that the returned ``norm`` is the sum of the background-subtracted 6x6
         mousebitten image, not the entire image.
@@ -345,8 +350,10 @@ class ACAImage(np.ndarray):
 
     @classmethod
     def _read_flicker_cdfs(cls):
-        """Read flickering pixel model cumulative distribution functions
-        and associated metadata.  Set up class variables accordingly.
+        """
+        Read flickering pixel model cumulative distribution functions and associated metadata.
+
+        Set up class variables accordingly.
 
         The flicker_cdf file here was created using:
         /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
@@ -450,7 +457,10 @@ class ACAImage(np.ndarray):
         self.flicker_times = t_flicker * phase
 
     def flicker_update(self, dt, use_numba=True):
-        """Propagate the image forward by ``dt`` seconds and update any pixels
+        """
+        Do a flicker update.
+
+        Propagate the image forward by ``dt`` seconds and update any pixels
         that have flickered during that interval.
 
         This has the option to use one of two implementations.  The default is
@@ -547,6 +557,8 @@ def _flicker_update_numba(
     flicker_mean_time,
 ):
     """
+    Do a flicker update.
+
     Propagate the image forward by ``dt`` seconds and update any pixels
     that have flickered during that interval.
     """
@@ -615,8 +627,7 @@ def np_interp(yin, xin, xout):
 
 def _prep_6x6(img, bgd=None):
     """
-    Subtract background and in case of 8x8 image
-    cut and return the 6x6 inner section.
+    Subtract background and in case of 8x8 image cut and return the 6x6 inner section.
     """
     if isinstance(bgd, np.ndarray):
         bgd = bgd.view(np.ndarray)
@@ -692,6 +703,8 @@ def centroid_fm(img, bgd=None, pix_zero_loc="center", norm_clip=None):
 
 class AcaPsfLibrary(object):
     """
+    AcaPsfLibrary class
+
     Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
     (pixelated) ACA PSF over a grid of subpixel locations.
 
@@ -749,8 +762,7 @@ class AcaPsfLibrary(object):
         aca_image=True,
     ):
         """
-        Get interpolated ACA PSF image that corresponds to pixel location
-        ``row``, ``col``.
+        Get interpolated ACA PSF image that corresponds to pixel location ``row``, ``col``.
 
         Parameters
         ----------
