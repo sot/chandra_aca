@@ -533,12 +533,18 @@ def _get_grid_func_model(model, version, repo_path):
     grid_halfws = get_grid_axis_values(hdr, "halfw")
 
     # Sanity checks on model data
-    assert probit_p_fail_no_1p5.shape == (
+    if probit_p_fail_no_1p5.shape != (
         len(grid_mags),
         len(grid_t_ccds),
         len(grid_halfws),
-    )
-    assert probit_p_fail_1p5.shape == probit_p_fail_no_1p5.shape
+    ):
+        raise ValueError(
+            "Shape of probit_p_fail_no_1p5 does not match the expected dimensions"
+        )
+    if probit_p_fail_1p5.shape != probit_p_fail_no_1p5.shape:
+        raise ValueError(
+            "Shape of probit_p_fail_1p5 does not match the expected dimensions"
+        )
 
     # Generate the 3-d linear interpolation functions
     func_no_1p5 = RegularGridInterpolator(

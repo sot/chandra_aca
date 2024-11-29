@@ -844,7 +844,8 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
         b"".join([aca[i] for i in entry]) for entry in aca_frame_entries[select]
     ]
     for a in aca_packets:
-        assert len(a) == 224
+        if len(a) != 224:
+            raise ValueError("ACA packet is not 224 bytes long")
 
     times = vcdu_times[aca_frame_entries[select, 0]]
     vcdu_counter = vcdu[aca_frame_entries[select, 0]]
@@ -1136,9 +1137,9 @@ def get_aca_packets(
     if not blobs and not frames:
         frames = True
 
-    assert (blobs and not frames) or (
-        frames and not blobs
-    ), "Specify only one of 'frames' or blobs"
+    # check that only one of blobs or frames is set
+    if blobs and frames:
+        raise ValueError("Specify only one of 'blobs' or 'frames'")
 
     if level0:
         adjust_time = True
