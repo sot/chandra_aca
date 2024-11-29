@@ -415,7 +415,7 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
             np.max(time) + 500 * u.s,
         )
     except ValueError:
-        raise NoEphemerisError("Chandra ephemeris not available")
+        raise NoEphemerisError("Chandra ephemeris not available") from None
 
     if len(dat["orbitephem0_x"].vals) == 0:
         raise NoEphemerisError("Chandra ephemeris not available")

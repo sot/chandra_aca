@@ -258,7 +258,7 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
             "Detector and chip combination {} not in allow values: {}".format(
                 (detector, chip_id), sorted(ASOL_TO_CHIP.keys())
             )
-        )
+        ) from None
 
     # Compute the asol DY/DZ that would be required for the aimpoint to be
     # exactly at the desired CHIPX/Y values.  Uses the geometrical transform
