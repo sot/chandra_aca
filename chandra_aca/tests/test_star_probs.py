@@ -235,7 +235,7 @@ def test_guide_count(count_9th):
 
 
 def test_t_ccd_warm_limit_guide_vs_brute():
-    for n in range(100):
+    for _n in range(100):
         mags = np.random.normal(loc=9.0, scale=1.5, size=5)
         warm_limit = t_ccd_warm_limit_for_guide(mags)
         check_warm_limit = stepwise_guide_warm_limit(mags, step=0.01)

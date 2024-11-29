@@ -782,7 +782,7 @@ def test_dynbgd_decom():
             grouped_packets_2 = maude_decom._get_aca_packets(
                 raw_frames[key], combine=True, start=start, stop=stop
             )
-            for slot in range(8):
+            for _slot in range(8):
                 assert np.all(
                     partial_packets[key][
                         "TIME", "VCDUCTR", "IMGTYPE", "AABGDTYP", "AAPIXTLM"

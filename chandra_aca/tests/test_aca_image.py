@@ -422,7 +422,7 @@ def test_aca_image_operators():
 def test_flicker_numba():
     a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
     a.flicker_init(flicker_mean_time=1000, flicker_scale=1.5, seed=10)
-    for ii in range(10):
+    for _ii in range(10):
         a.flicker_update(100.0, use_numba=True)
 
     assert np.all(np.round(a) == [[0, 81, 200], [326, 176, 609], [659, 720, 1043]])
@@ -431,7 +431,7 @@ def test_flicker_numba():
 def test_flicker_vectorized():
     a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
     a.flicker_init(flicker_mean_time=1000, flicker_scale=1.5, seed=10)
-    for ii in range(10):
+    for _ii in range(10):
         a.flicker_update(100.0, use_numba=False)
 
     assert np.all(np.round(a) == [[0, 111, 200], [219, 436, 531], [470, 829, 822]])
@@ -441,12 +441,12 @@ def test_flicker_no_seed():
     """Make sure results vary when seed is not supplied"""
     a = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
     a.flicker_init(flicker_mean_time=300)
-    for ii in range(10):
+    for _ii in range(10):
         a.flicker_update(100.0)
 
     b = ACAImage(np.linspace(0, 800, 9).reshape(3, 3))
     b.flicker_init(flicker_mean_time=300)
-    for ii in range(10):
+    for _ii in range(10):
         b.flicker_update(100.0)
 
     assert np.any(a != b)
