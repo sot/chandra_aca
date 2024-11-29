@@ -262,7 +262,7 @@ def test_partial_images():
         maude_decom._combine_aca_packets([row]) for slot in aca_packets for row in slot
     ]
 
-    for i, packet in enumerate(non_combined_aca_packets):
+    for packet in non_combined_aca_packets:
         assert "IMG" in packet
         assert packet["IMG"].shape == (8, 8)
         assert np.all(packet["IMG"].mask == mask[packet["IMGTYPE"]])
@@ -774,7 +774,7 @@ def test_dynbgd_decom():
         os.path.join(os.path.dirname(__file__), "data", "dynbgd.pkl"), "rb"
     ) as out:
         raw_frames, partial_packets, grouped_packets = pickle.load(out)
-        for i, key in enumerate(raw_frames):
+        for key in raw_frames:
             start, stop = key
             partial_packets_2 = maude_decom._get_aca_packets(
                 raw_frames[key], start=start, stop=stop

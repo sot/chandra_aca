@@ -608,7 +608,7 @@ def unpack_aca_telemetry(packet):
         "COMMPROG": _packbits(bits[16:22], unsigned=False),
         "COMMPROG_REPEAT": _packbits(bits[22:24], unsigned=False),
     }
-    for i, s in enumerate(slots):
+    for s in slots:
         s.update(res)
     return slots
 
