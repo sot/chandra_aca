@@ -28,18 +28,16 @@ def get_tccd_data(
 
     Parameters
     ----------
-    times: np.array float of Chandra seconds
-        The times for which to get the CCD temperature data.
+    times: np.array (float)
+        Sampling times for CCD temperature data (CXC seconds).
     source : str, optional
-        Source of the CCD temperature data. If 'maude', override the fetch_sci data source
-        to 'maude allow_subset=False'. If 'cxc' use the local cxc archive. Default is 'maude'.
+        Source of CCD temperature data ('maude' (default) or 'cxc' for cheta archive).
     median_window : int, optional
-        Median filter window to remove outliers.  Default is 3.
+        Median filter window to remove outliers (default=3).
     smooth_window : int, optional
-        Smooth the data using a hanning window of this length in samples. Default is 30.
+        Smooth data using a hanning window of this length in samples (default=30).
     maude_channel : str, optional
-        The maude channel to use. Default is None.
-
+        Maude channel to use (default is flight).
 
     Returns
     -------
@@ -95,21 +93,21 @@ def get_aca_images_bgd_sub(img_table, t_ccd_vals, img_dark, tccd_dark):
     Parameters
     ----------
     img_table : astropy.table.Table
-        The table of ACA images.
+        Table of ACA images with columns 'IMG', 'IMGROW0_8X8', 'IMGCOL0_8X8', 'INTEG'.
     t_ccd_vals : np.array
-        The CCD temperature values at the times of the ACA images in deg C.
+        CCD temperature values at the times of the ACA images (deg C).
     img_dark : np.array
-        The dark calibration image. Must be 1024x1024. In e-/s.
+        Dark calibration image. Must be 1024x1024 (e-/s).
     tccd_dark : float
-        The reference temperature of the dark calibration image in deg C.
+        Reference temperature of the dark calibration image (deg C).
 
     Returns
     -------
     tuple (imgs_bgsub, imgs_dark)
         imgs_bgsub : np.array
-            The background subtracted ACA images in DN.
+            Background subtracted ACA images (DN).
         imgs_dark : np.array
-            The dark current images in DN.
+            Dark current images (DN).
     """
     imgs_dark = get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccd_vals)
     imgs_bgsub = img_table["IMG"] - imgs_dark
@@ -122,28 +120,31 @@ def get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccds):
     """
     Get the scaled dark current values for a table of ACA images.
 
+    This scales the dark current to the appropriate temperature and integration time,
+    returning the dark current in DN matching the ACA images in img_table.
+
     Parameters
     ----------
     img_table : astropy.table.Table
+        Table of ACA images with columns 'IMG', 'IMGROW0_8X8', 'IMGCOL0_8X8', 'INTEG'.
     img_dark : 1024x1024 array
-        The dark calibration image.
+        Dark calibration image.
     tccd_dark : float
-        The reference temperature of the dark calibration image.
+        Reference temperature of the dark calibration image.
     t_ccds : array
-        The cheta temperature values at the times of img_table.
+        Cheta temperature values at the times of img_table.
 
     Returns
     -------
-    imgs_dark : np.array
-        An array containing the temperature scaled dark current for each ACA image
-        in the img_table in DN.
+    imgs_dark : np.array (len(img_table), 8, 8)
+        Temperature scaled dark current for each ACA image in img_table (DN).
 
     """
     if len(img_table) != len(t_ccds):
         raise ValueError("img_table and t_ccds must have the same length")
 
     if img_dark.shape != (1024, 1024):
-        raise ValueError("Dark image shape is not 1024x1024")
+        raise ValueError("dark image shape is not 1024x1024")
 
     imgs_dark_unscaled = get_dark_backgrounds(
         img_dark,
@@ -167,26 +168,24 @@ def get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccds):
 
 def get_dark_backgrounds(raw_dark_img, imgrow0, imgcol0, size=8):
     """
-    Get the dark background for a stack/table of ACA image.
+    Get dark background cutouts at a set of ACA image positions.
 
     Parameters
     ----------
     raw_dark_img : np.array
-        The dark calibration image.
-    imgrow0 : np.array
-        The row of the ACA image.
-    imgcol0 : np.array
-        The column of the ACA image.
+        Dark calibration image.
+    imgrow0 : np.array (int)
+        Row of ACA image.
+    imgcol0 : np.array (int)
+        Column of ACA image.
     size : int, optional
-        The size of the ACA image. Default is 8.
+        Size of ACA image (default=8).
 
     Returns
     -------
-    imgs_dark : np.array
-        The dark backgrounds in e-/s for the ACA images sampled from raw_dark_img.
-        This will have the same length as imgrow0 and imgcol0, with shape
-        (len(imgrow0), size, size).  These pixels have not been scaled.  Pixels
-        outside the raw_dark_img are set to 0.
+    imgs_dark : np.array (len(imgrow0), size, size)
+        Dark backgrounds for image locations sampled from raw_dark_img (e-/s).
+        Pixels outside dark_img are set to 0.0.
     """
 
     # Borrowed from the agasc code

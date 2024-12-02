@@ -839,7 +839,7 @@ def get_aca_images(
     start: CxoTimeLike, stop: CxoTimeLike, bgsub=True, source="maude", **maude_kwargs
 ) -> Table:
     """
-    Get ACA images and ancillary data from either the maude or cxc data sources.
+    Get ACA images and ancillary data from either the MAUDE or CXC data sources.
 
     The returned table of ACA images and ancillary data will include the default
     columns returned by chandra_aca.maude_decom.get_aca_images or
@@ -865,16 +865,17 @@ def get_aca_images(
     Parameters
     ----------
     start : CxoTimeLike
-        start time
+        Start time.
     stop : CxoTimeLike
-        stop time (CXC sec)
+        Stop time (CXC sec).
     bgsub : bool
-        include background subtracted images in output table
+        Include background subtracted images in output table.
     source : str
         Data source for image and temperature telemetry ('maude' or 'cxc'). For 'cxc',
-        the image telemetry is from mica and temperature telemetry is from CXC L0 via cheta.
-    maude_kwargs
-        additional kwargs for maude data source
+        the image telemetry is from mica and temperature telemetry is from CXC L0 via
+        cheta.
+    **maude_kwargs
+        Additional kwargs for maude data source.
 
     Returns
     -------
