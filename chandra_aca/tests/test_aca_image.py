@@ -491,7 +491,7 @@ def test_flicker_test_sequence():
     )
 
 
-def images_check_range(start, stop, img_table):
+def images_check_range(start, stop, img_table, *, bgsub):
     tstart = CxoTime(start).secs
     tstop = CxoTime(stop).secs
 
@@ -506,11 +506,11 @@ def images_check_range(start, stop, img_table):
     assert np.all(np.isin(np.arange(8), img_table["IMGNUM"]))
 
     # Check that if the table has BGSUB column that IMG - DARK = BGSUB
-    if "BGSUB" in img_table.colnames:
-        assert np.allclose(img_table["IMG"] - img_table["DARK"], img_table["BGSUB"])
+    if bgsub:
+        assert np.allclose(img_table["IMG"] - img_table["IMG_DARK"], img_table["IMG_BGSUB"])
 
     # If there's a DARK column, then check it against the dark image from the dark cal
-    if "DARK" in img_table.colnames:
+    if bgsub:
 
         dc = get_dark_cal_props(
             tstart, select="nearest", include_image=True, aca_image=True
@@ -518,8 +518,8 @@ def images_check_range(start, stop, img_table):
         full_img_dark = dc["image"]
         tccd_dark = dc["ccd_temp"]
         for row in img_table:
-            dark_row = row["DARK"]
-            tccd_row = row["T_CCD"]
+            dark_row = row["IMG_DARK"]
+            tccd_row = row["T_CCD_SMOOTH"]
             row8x8 = row["IMGROW0_8X8"]
             col8x8 = row["IMGCOL0_8X8"]
             dark_ref = full_img_dark.aca[row8x8 : row8x8 + 8, col8x8 : col8x8 + 8]
@@ -532,54 +532,42 @@ def images_check_range(start, stop, img_table):
             assert np.allclose(img_dark, dark_row)
 
 
-def test_get_aca_images_maude():
-    """Test get_aca_images in the maude mode
-
-    This checks that the dark images are reasonable and the IMG data matches with
-    and without the bgsub.
-    """
-    tstart = "2021:001:00:00:00"
-    tstop = "2021:001:00:01:00"
-    img_table_maude = chandra_aca.aca_image.get_aca_images(
-        tstart, tstop, source="maude", bgsub=False
-    )
-    images_check_range(tstart, tstop, img_table_maude)
-    img_table_maude_bgsub = chandra_aca.aca_image.get_aca_images(
-        tstart, tstop, source="maude", bgsub=True
-    )
-    images_check_range(tstart, tstop, img_table_maude_bgsub)
-    assert np.allclose(img_table_maude["IMG"], img_table_maude_bgsub["IMG"])
-    assert np.allclose(img_table_maude["TIME"], img_table_maude_bgsub["TIME"])
-
-
 HAS_ACA0_ARCHIVE = (Path(mica.common.MICA_ARCHIVE) / "aca0").exists()
 
 
 @pytest.mark.skipif(not HAS_ACA0_ARCHIVE, reason="No ACA0 archive")
-def test_get_aca_images_cxc():
+def test_get_aca_images_cxc_and_maude():
     """Test get_aca_images in the cxc mode
 
     This checks that the dark images are reasonable and the answers match maude.
     """
-    tstart = "2012:180:00:00:00"
-    tstop = "2012:180:00:01:00"
+    tstart = "2012:270:02:44:00"
+    tstop = "2012:270:02:47:00"
 
+    # Get CXC data and check that it looks reasonable
     img_table_cxc = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="cxc", bgsub=False
     )
-    images_check_range(tstart, tstop, img_table_cxc)
+    images_check_range(tstart, tstop, img_table_cxc, bgsub=False)
+
     img_table_cxc_bgsub = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="cxc", bgsub=True
     )
-    images_check_range(tstart, tstop, img_table_cxc_bgsub)
+    images_check_range(tstart, tstop, img_table_cxc_bgsub, bgsub=True)
 
-    # Get maude data too for comparison
+    # Get MAUDE data and check that it looks reasonable
     img_table_maude = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="maude", bgsub=False
     )
+    images_check_range(tstart, tstop, img_table_maude, bgsub=False)
+
     img_table_maude_bgsub = chandra_aca.aca_image.get_aca_images(
         tstart, tstop, source="maude", bgsub=True
     )
+    images_check_range(tstart, tstop, img_table_maude_bgsub, bgsub=True)
+
+    assert np.allclose(img_table_maude["IMG"], img_table_maude_bgsub["IMG"])
+    assert np.allclose(img_table_maude["TIME"], img_table_maude_bgsub["TIME"])
 
     # Check that the two mica tables are the same in the key columns
     assert np.allclose(img_table_cxc["IMG"], img_table_cxc_bgsub["IMG"])
