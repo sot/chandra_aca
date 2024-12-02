@@ -185,20 +185,20 @@ def get_dark_backgrounds(raw_dark_img, imgrow0, imgcol0, size=8):
     -------
     imgs_dark : np.array (len(imgrow0), size, size)
         Dark backgrounds for image locations sampled from raw_dark_img (e-/s).
-        Pixels outside dark_img are set to 0.0.
+        Pixels outside raw_dark_img are set to 0.0.
     """
+    CCD_MAX = 1024
+    CCD_MIN = 0
 
-    # Borrowed from the agasc code
     @numba.jit(nopython=True)
     def staggered_aca_slice(array_in, array_out, row, col):
-        for i in np.arange(len(row)):
-            if (
-                row[i] >= 0
-                and row[i] + size < 1024
-                and col[i] >= 0
-                and col[i] + size < 1024
-            ):
-                array_out[i] = array_in[row[i] : row[i] + size, col[i] : col[i] + size]
+        for idx in np.arange(len(row)):
+            row_out = np.zeros((size, size), dtype=np.float64)
+            for i, r in enumerate(np.arange(row[idx], row[idx] + size)):
+                for j, c in enumerate(np.arange(col[idx], col[idx] + size)):
+                    if r >= CCD_MIN and r < CCD_MAX and c >= CCD_MIN and c < CCD_MAX:
+                        row_out[i, j] = array_in[r, c]
+            array_out[idx] = row_out
 
     imgs_dark = np.zeros([len(imgrow0), size, size], dtype=np.float64)
     staggered_aca_slice(
