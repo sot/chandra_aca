@@ -507,11 +507,12 @@ def images_check_range(start, stop, img_table, *, bgsub):
 
     # Check that if the table has BGSUB column that IMG - DARK = BGSUB
     if bgsub:
-        assert np.allclose(img_table["IMG"] - img_table["IMG_DARK"], img_table["IMG_BGSUB"])
+        assert np.allclose(
+            img_table["IMG"] - img_table["IMG_DARK"], img_table["IMG_BGSUB"]
+        )
 
     # If there's a DARK column, then check it against the dark image from the dark cal
     if bgsub:
-
         dc = get_dark_cal_props(
             tstart, select="nearest", include_image=True, aca_image=True
         )
