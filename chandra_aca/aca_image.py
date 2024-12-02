@@ -925,8 +925,8 @@ def get_aca_images(
 
     if bgsub and len(imgs_table) == 0:
         # Add the columns to the table even if there are no rows
-        imgs_table["IMG_BGSUB"] = np.zeros(0)
-        imgs_table["IMG_DARK"] = np.zeros(0)
-        imgs_table["T_CCD_SMOOTH"] = np.zeros(0)
+        imgs_table["IMG_BGSUB"] = np.zeros(shape=(0, 8, 8))
+        imgs_table["IMG_DARK"] = np.zeros(shape=(0, 8, 8))
+        imgs_table["T_CCD_SMOOTH"] = np.zeros(shape=0)
 
     return imgs_table
