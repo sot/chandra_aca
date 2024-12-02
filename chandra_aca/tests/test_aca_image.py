@@ -524,8 +524,8 @@ def images_check_range(start, stop, img_table, *, bgsub):
             row8x8 = row["IMGROW0_8X8"]
             col8x8 = row["IMGCOL0_8X8"]
 
-            # If row8x8 or col8x8 is < 0 just skip the test for now
-            if row8x8 < 0 or col8x8 < 0:
+            # If row8x8 or col8x8 is < -512 just skip the test for now
+            if row8x8 < -512 or col8x8 < -512:
                 continue
 
             dark_ref = full_img_dark.aca[row8x8 : row8x8 + 8, col8x8 : col8x8 + 8]
