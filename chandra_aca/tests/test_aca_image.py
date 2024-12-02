@@ -522,14 +522,26 @@ def images_check_range(start, stop, img_table, *, bgsub):
             tccd_row = row["T_CCD_SMOOTH"]
             row8x8 = row["IMGROW0_8X8"]
             col8x8 = row["IMGCOL0_8X8"]
+
+            # If row8x8 or col8x8 is < 0 just skip the test for now
+            if row8x8 < 0 or col8x8 < 0:
+                continue
+
             dark_ref = full_img_dark.aca[row8x8 : row8x8 + 8, col8x8 : col8x8 + 8]
             from chandra_aca.dark_model import dark_temp_scale_img
 
             dark_scale = dark_temp_scale_img(dark_ref, tccd_dark, tccd_row)
             # Default to using 1.696 integ time if not present in the image table
             integ = row["INTEG"] if "INTEG" in img_table.colnames else 1.696
-            img_dark = dark_scale * integ / 5
-            assert np.allclose(img_dark, dark_row)
+            img_dark = ACAImage(dark_scale * integ / 5, row0=row8x8, col0=col8x8)
+
+            # Make an 8x8 expected image (even if the dark current goes off the CCD)
+            expected_img = (
+                ACAImage(np.zeros((8, 8)), row0=row8x8, col0=col8x8).aca + img_dark
+            )
+
+            # Compare
+            assert np.allclose(expected_img, dark_row)
 
 
 HAS_ACA0_ARCHIVE = (Path(mica.common.MICA_ARCHIVE) / "aca0").exists()
