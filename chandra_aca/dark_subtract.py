@@ -166,6 +166,24 @@ def get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccds):
     return imgs_dark
 
 
+CCD_MAX = 1024
+CCD_MIN = 0
+
+
+@numba.jit(nopython=True)
+def staggered_aca_slice(array_in, array_out, row, col):
+    """Make cutouts of array_in at positions row, col and put them in array_out.
+
+    array_out must be 3D with shape (N, sz_r, sz_c) and be initialized to 0.
+    row and col must be 1D arrays of length N.
+    """
+    for idx in np.arange(array_out.shape[0]):
+        for i, r in enumerate(np.arange(row[idx], row[idx] + array_out.shape[1])):
+            for j, c in enumerate(np.arange(col[idx], col[idx] + array_out.shape[2])):
+                if r >= CCD_MIN and r < CCD_MAX and c >= CCD_MIN and c < CCD_MAX:
+                    array_out[idx, i, j] = array_in[r, c]
+
+
 def get_dark_backgrounds(raw_dark_img, imgrow0, imgcol0, size=8):
     """
     Get dark background cutouts at a set of ACA image positions.
@@ -187,19 +205,6 @@ def get_dark_backgrounds(raw_dark_img, imgrow0, imgcol0, size=8):
         Dark backgrounds for image locations sampled from raw_dark_img (e-/s).
         Pixels outside raw_dark_img are set to 0.0.
     """
-    CCD_MAX = 1024
-    CCD_MIN = 0
-
-    @numba.jit(nopython=True)
-    def staggered_aca_slice(array_in, array_out, row, col):
-        for idx in np.arange(len(row)):
-            row_out = np.zeros((size, size), dtype=np.float64)
-            for i, r in enumerate(np.arange(row[idx], row[idx] + size)):
-                for j, c in enumerate(np.arange(col[idx], col[idx] + size)):
-                    if r >= CCD_MIN and r < CCD_MAX and c >= CCD_MIN and c < CCD_MAX:
-                        row_out[i, j] = array_in[r, c]
-            array_out[idx] = row_out
-
     imgs_dark = np.zeros([len(imgrow0), size, size], dtype=np.float64)
     staggered_aca_slice(
         raw_dark_img.astype(float), imgs_dark, 512 + imgrow0, 512 + imgcol0
