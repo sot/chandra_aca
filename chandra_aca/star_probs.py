@@ -1053,13 +1053,13 @@ def guide_count(mags, t_ccd, count_9th=False):
     ref_t_ccd = -10.9
     ref_mags0 = (9.0 if count_9th else 9.95) + np.array([0.0, 0.2, 0.3, 0.4])
     ref_mags = {}
-    for t in np.unique(t_ccds):
+    for t_ccd_unique in np.unique(t_ccds):
         # The 5.25 and 5.35 limits are not temperature dependent, these reflect the
         # possibility that the star will be brighter than 5.2 mag and the OBC will
         # reject it.  Note that around 6th mag mean observed catalog error is
         # around 0.1 mag.
-        ref_mags[t] = np.concatenate(
-            [[5.25, 5.35], snr_mag_for_t_ccd(t, ref_mags0, ref_t_ccd)]
+        ref_mags[t_ccd_unique] = np.concatenate(
+            [[5.25, 5.35], snr_mag_for_t_ccd(t_ccd_unique, ref_mags0, ref_t_ccd)]
         )
 
     ref_counts = [0.0, 1.0005, 1.0, 0.75, 0.5, 0.0]
@@ -1067,8 +1067,8 @@ def guide_count(mags, t_ccd, count_9th=False):
     # Do the interpolation, noting that np.interp will use the end ``counts``
     # values for any ``mag`` < ref_mags[0] or > ref_mags[-1].
     count = 0.0
-    for mag, t in zip(mags, t_ccds, strict=False):
-        count += np.interp(mag, ref_mags[t], ref_counts)
+    for mag, t_ccd_ in zip(mags, t_ccds, strict=False):
+        count += np.interp(mag, ref_mags[t_ccd_], ref_counts)
 
     return count
 
