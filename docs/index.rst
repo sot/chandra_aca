@@ -45,6 +45,15 @@ Dark model
 
     dark_model.rst
 
+
+Dark background subtraction
+---------------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   dark_subtract.rst
+
 MAUDE Decom
 -----------
 

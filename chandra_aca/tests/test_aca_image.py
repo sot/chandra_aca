@@ -1,6 +1,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from pathlib import Path
+
+import mica.common
 import numpy as np
 import pytest
+from cxotime import CxoTime
+from mica.archive.aca_dark import get_dark_cal_props
+
+import chandra_aca.aca_image
 
 from ..aca_image import ACAImage, centroid_fm
 
@@ -482,3 +489,110 @@ def test_flicker_test_sequence():
             ]
         ),
     )
+
+
+def images_check_range(start, stop, img_table, *, bgsub):
+    tstart = CxoTime(start).secs
+    tstop = CxoTime(stop).secs
+
+    # Check that start and stop of the range are within 4.1 secs of the requested times
+    assert np.all(np.abs(img_table["TIME"][0] - tstart) < 4.1)
+    assert np.all(np.abs(img_table["TIME"][-1] - tstop) < 4.1)
+
+    # Check that all the times in the table are within the requested range
+    assert np.all((img_table["TIME"] >= tstart) & (img_table["TIME"] < tstop))
+
+    # Check that all the slots are in there
+    assert np.all(np.isin(np.arange(8), img_table["IMGNUM"]))
+
+    # Check that if the table has BGSUB column that IMG - DARK = BGSUB
+    if bgsub:
+        assert np.allclose(
+            img_table["IMG"] - img_table["IMG_DARK"], img_table["IMG_BGSUB"]
+        )
+
+    # If there's a DARK column, then check it against the dark image from the dark cal
+    if bgsub:
+        dc = get_dark_cal_props(
+            tstart, select="nearest", include_image=True, aca_image=True
+        )
+        full_img_dark = dc["image"]
+        tccd_dark = dc["ccd_temp"]
+        for row in img_table:
+            dark_row = row["IMG_DARK"]
+            tccd_row = row["T_CCD_SMOOTH"]
+            row8x8 = row["IMGROW0_8X8"]
+            col8x8 = row["IMGCOL0_8X8"]
+
+            # If row8x8 or col8x8 is < -512 just skip the test for now
+            if row8x8 < -512 or col8x8 < -512:
+                continue
+
+            dark_ref = full_img_dark.aca[row8x8 : row8x8 + 8, col8x8 : col8x8 + 8]
+            from chandra_aca.dark_model import dark_temp_scale_img
+
+            dark_scale = dark_temp_scale_img(dark_ref, tccd_dark, tccd_row)
+            # Default to using 1.696 integ time if not present in the image table
+            integ = row["INTEG"] if "INTEG" in img_table.colnames else 1.696
+            img_dark = ACAImage(dark_scale * integ / 5, row0=row8x8, col0=col8x8)
+
+            # Make an 8x8 expected image (even if the dark current goes off the CCD)
+            expected_img = (
+                ACAImage(np.zeros((8, 8)), row0=row8x8, col0=col8x8).aca + img_dark
+            )
+
+            # Compare
+            assert np.allclose(expected_img, dark_row)
+
+
+HAS_ACA0_ARCHIVE = (Path(mica.common.MICA_ARCHIVE) / "aca0").exists()
+
+
+@pytest.mark.skipif(not HAS_ACA0_ARCHIVE, reason="No ACA0 archive")
+def test_get_aca_images_cxc_and_maude():
+    """Test get_aca_images in the cxc mode
+
+    This checks that the dark images are reasonable and the answers match maude.
+    """
+    tstart = "2012:270:02:44:00"
+    tstop = "2012:270:02:47:00"
+
+    # Get CXC data and check that it looks reasonable
+    img_table_cxc = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="cxc", bgsub=False
+    )
+    images_check_range(tstart, tstop, img_table_cxc, bgsub=False)
+
+    img_table_cxc_bgsub = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="cxc", bgsub=True
+    )
+    images_check_range(tstart, tstop, img_table_cxc_bgsub, bgsub=True)
+
+    # Get MAUDE data and check that it looks reasonable
+    img_table_maude = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="maude", bgsub=False
+    )
+    images_check_range(tstart, tstop, img_table_maude, bgsub=False)
+
+    img_table_maude_bgsub = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="maude", bgsub=True
+    )
+    images_check_range(tstart, tstop, img_table_maude_bgsub, bgsub=True)
+
+    assert np.allclose(img_table_maude["IMG"], img_table_maude_bgsub["IMG"])
+    assert np.allclose(img_table_maude["TIME"], img_table_maude_bgsub["TIME"])
+
+    # Check that the two mica tables are the same in the key columns
+    assert np.allclose(img_table_cxc["IMG"], img_table_cxc_bgsub["IMG"])
+    assert np.allclose(img_table_cxc["TIME"], img_table_cxc_bgsub["TIME"])
+
+    # Check that the tables are the same
+    img_table_maude.sort(["TIME", "IMGNUM"])
+    img_table_maude_bgsub.sort(["TIME", "IMGNUM"])
+    img_table_cxc.sort(["TIME", "IMGNUM"])
+    img_table_cxc_bgsub.sort(["TIME", "IMGNUM"])
+
+    assert np.allclose(img_table_maude["IMG"], img_table_cxc["IMG"])
+    assert np.allclose(img_table_maude["TIME"], img_table_cxc["TIME"])
+    assert np.allclose(img_table_maude_bgsub["IMG"], img_table_cxc_bgsub["IMG"])
+    assert np.allclose(img_table_maude_bgsub["TIME"], img_table_cxc_bgsub["TIME"])

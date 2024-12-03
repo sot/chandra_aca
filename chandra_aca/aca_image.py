@@ -7,8 +7,12 @@ from pathlib import Path
 
 import numba
 import numpy as np
+import requests
+from astropy.table import Table
+from cxotime import CxoTimeLike
+from ska_helpers import retry
 
-__all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS"]
+__all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS", "get_aca_images"]
 
 EIGHT_LABELS = np.array(
     [
@@ -828,3 +832,102 @@ class AcaPsfLibrary(object):
 
         out = ACAImage(psf, row0=row0, col0=col0) if aca_image else (psf, row0, col0)
         return out
+
+
+@retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
+def get_aca_images(
+    start: CxoTimeLike, stop: CxoTimeLike, bgsub=True, source="maude", **maude_kwargs
+) -> Table:
+    """
+    Get ACA images and ancillary data from either the MAUDE or CXC data sources.
+
+    The returned table of ACA images and ancillary data will include the default
+    columns returned by chandra_aca.maude_decom.get_aca_images or
+    mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
+    table will also include columns::
+
+             name            dtype  unit
+      --------------------- ------- -----------
+         IMG_BGSUB          float64  DN
+         IMG_DARK           float64  DN
+         T_CCD_SMOOTH       float64  degC
+
+    where:
+
+    - 'IMG_BGSUB': background subtracted image
+    - 'IMG_DARK': dark current image
+    - 'T_CCD_SMOOTH': smoothed CCD temperature
+
+    The IMG_DARK individual values are only calculated if within the 1024x1024
+    dark current map, otherwise they are set to 0.  In practice this is not an
+    issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.
+
+    Parameters
+    ----------
+    start : CxoTimeLike
+        Start time.
+    stop : CxoTimeLike
+        Stop time (CXC sec).
+    bgsub : bool
+        Include background subtracted images in output table.
+    source : str
+        Data source for image and temperature telemetry ('maude' or 'cxc'). For 'cxc',
+        the image telemetry is from mica and temperature telemetry is from CXC L0 via
+        cheta.
+    **maude_kwargs
+        Additional kwargs for maude data source.
+
+    Returns
+    -------
+    imgs_table : astropy.table.Table
+        Table of ACA images and ancillary data.
+    """
+    import mica.archive.aca_dark
+    import mica.archive.aca_l0
+
+    import chandra_aca.dark_subtract
+    import chandra_aca.maude_decom
+
+    # Get aca images over the time range
+    if source == "maude":
+        imgs_table = chandra_aca.maude_decom.get_aca_images(start, stop, **maude_kwargs)
+        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+            imgs_table["TIME"], source=source, **maude_kwargs
+        )
+    elif source == "cxc":
+        imgs_table = mica.archive.aca_l0.get_aca_images(start, stop)
+        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+            imgs_table["TIME"], source=source
+        )
+    else:
+        raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
+
+    # Get background subtracted values if bgsub is True.
+    # There's nothing to do if there are no images (len(imgs_table) == 0),
+    # so special case that.
+    if bgsub and len(imgs_table) > 0:
+        dark_data = mica.archive.aca_dark.get_dark_cal_props(
+            imgs_table["TIME"].min(),
+            select="nearest",
+            include_image=True,
+            aca_image=False,
+        )
+        img_dark = dark_data["image"]
+        tccd_dark = dark_data["ccd_temp"]
+        imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
+            imgs_table, img_dark, tccd_dark, t_ccds
+        )
+        imgs_bgsub = imgs_table["IMG"] - imgs_dark
+        imgs_bgsub.clip(0, None)
+
+        imgs_table["IMG_BGSUB"] = imgs_bgsub
+        imgs_table["IMG_DARK"] = imgs_dark
+        imgs_table["T_CCD_SMOOTH"] = t_ccds
+
+    if bgsub and len(imgs_table) == 0:
+        # Add the columns to the table even if there are no rows
+        imgs_table["IMG_BGSUB"] = np.zeros(shape=(0, 8, 8))
+        imgs_table["IMG_DARK"] = np.zeros(shape=(0, 8, 8))
+        imgs_table["T_CCD_SMOOTH"] = np.zeros(shape=0)
+
+    return imgs_table
