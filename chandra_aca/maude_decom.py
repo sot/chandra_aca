@@ -1137,9 +1137,8 @@ def get_aca_packets(
     if not blobs and not frames:
         frames = True
 
-    # check that only one of blobs or frames is set
-    if blobs and frames:
-        raise ValueError("Specify only one of 'blobs' or 'frames'")
+    if (not blobs and not frames) or (frames and blobs):
+        raise ValueError("Specify one and only one of 'blobs' or 'frames'")
 
     if level0:
         adjust_time = True
