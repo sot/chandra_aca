@@ -94,6 +94,8 @@ ODB_SI_ALIGN = np.array(
 
 def broadcast_arrays(*args):
     r"""
+    Broadcast ``*args`` inputs to same shape.
+
     Broadcast ``*args`` inputs to same shape and return an ``is_scalar`` flag and
     the broadcasted version of inputs.  This lets intermediate code work on
     arrays that are guaranteed to be the same shape and at least a 1-d array,
@@ -110,7 +112,9 @@ def broadcast_arrays(*args):
 
 
 def broadcast_arrays_flatten(*args):
-    r"""Broadcast ``*args`` inputs to same shape and then return that shape and the
+    r"""Broadcast ``*args`` inputs to same shape and flatten.
+
+    Broadcast ``*args`` inputs to same shape.and then return that shape and the
     flattened view of all the inputs.  This lets intermediate code work on all
     scalars or all arrays that are the same-length 1-d array and then reshape
     the output at the end (if necessary).
@@ -133,6 +137,7 @@ def pixels_to_yagzag(
 ):
     """
     Convert ACA row/column positions to ACA y-angle, z-angle.
+
     It is expected that the row and column input arguments have the same length.
 
     The ``pix_zero_loc`` parameter controls whether the input pixel values
@@ -186,6 +191,7 @@ def pixels_to_yagzag(
 def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc="edge"):
     """
     Convert ACA y-angle/z-angle positions to ACA pixel row, column.
+
     It is expected that the y-angle/z-angle input arguments have the same length.
 
     The ``pix_zero_loc`` parameter controls whether the input pixel values
@@ -290,9 +296,11 @@ def _poly_convert(y, z, coeffs, t_aca=None):
 
 def radec_to_eci(ra, dec):
     """
-    Convert from RA,Dec to ECI.  The input ``ra`` and ``dec`` values can be 1-d
-    arrays of length N in which case the output ``ECI`` will be an array with
-    shape (N, 3). The N dimension can actually be any multidimensional shape.
+    Convert from RA,Dec to ECI.
+
+    The input ``ra`` and ``dec`` values can be 1-d arrays of length N in which
+    case the output ``ECI`` will be an array with shape (N, 3). The N dimension
+    can actually be any multidimensional shape.
 
     Parameters
     ----------
@@ -318,10 +326,11 @@ def radec_to_eci(ra, dec):
 
 def eci_to_radec(eci):
     """
-    Convert from ECI vector(s) to RA, Dec.  The input ``eci`` value
-    can be an array of 3-vectors having shape (N, 3) in which case
-    the output RA, Dec will be arrays of shape N. The N dimension can
-    actually be any multidimensional shape.
+    Convert from ECI vector(s) to RA, Dec.
+
+    The input ``eci`` value can be an array of 3-vectors having shape (N, 3)
+    in which case the output RA, Dec will be arrays of shape N. The N dimension
+    can actually be any multidimensional shape.
 
     Parameters
     ----------
@@ -401,6 +410,8 @@ def count_rate_to_mag(count_rate):
 
 def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
     """
+    Calculate signal-to-noise equivalent magnitude.
+
     Given a t_ccd, solve for the magnitude that has the same expected signal
     to noise as ref_mag / ref_t_ccd.
 
@@ -445,6 +456,8 @@ def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
 
 def calc_aca_from_targ(targ, y_off, z_off, si_align=None):
     """
+    Calculate PCAD (ACA) pointing attitude.
+
     Calculate the PCAD (ACA) pointing attitude from target attitude and
     Y,Z offset (per OR-list).
 
@@ -476,6 +489,8 @@ def calc_aca_from_targ(targ, y_off, z_off, si_align=None):
 
 def calc_targ_from_aca(aca, y_off, z_off, si_align=None):
     """
+    Calculate target attitude.
+
     Calculate the target attitude from ACA (PCAD) pointing attitude and
     Y,Z offset (per OR-list).
 
@@ -508,6 +523,8 @@ def calc_targ_from_aca(aca, y_off, z_off, si_align=None):
 
 def calc_target_offsets(aca, ra_targ, dec_targ, si_align=None):
     """
+    Calculate target offsets.
+
     Calculates required Y and Z offsets (deg) required from a target RA, Dec to
     arrive at the desired PCAD pointing ``aca``.
 
@@ -548,8 +565,9 @@ def calc_target_offsets(aca, ra_targ, dec_targ, si_align=None):
 
 def radec_to_yagzag(ra, dec, q_att):
     """
-    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
-    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
+    Calculate ACA Y-angle, Z-angle from RA, Dec and pointing quaternion.
+
+    The input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
     ``yag`` and ``zag`` will be corresponding arrays of the same length.
 
     Parameters
@@ -577,8 +595,9 @@ def radec_to_yagzag(ra, dec, q_att):
 
 def yagzag_to_radec(yag, zag, q_att):
     """
-    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
-    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output
+    Calculate RA, Dec from ACA Y-angle, Z-angle and pointing quaternion.
+
+    The input ``yag`` and ``zag`` values can be 1-d arrays in which case the output
     ``ra`` and ``dec`` will be corresponding arrays of the same length.
 
     Parameters

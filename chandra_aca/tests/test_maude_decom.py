@@ -262,7 +262,7 @@ def test_partial_images():
         maude_decom._combine_aca_packets([row]) for slot in aca_packets for row in slot
     ]
 
-    for i, packet in enumerate(non_combined_aca_packets):
+    for packet in non_combined_aca_packets:
         assert "IMG" in packet
         assert packet["IMG"].shape == (8, 8)
         assert np.all(packet["IMG"].mask == mask[packet["IMGTYPE"]])
@@ -335,14 +335,14 @@ def test_vcdu_vs_level0():
     table = maude_decom.get_aca_packets(start, stop, level0=True)
 
     table2 = maude_decom.get_aca_images(start, stop)
-    for col, col2 in zip(table.itercols(), table2.itercols()):
+    for col, col2 in zip(table.itercols(), table2.itercols(), strict=False):
         assert np.all(col == col2)
 
     raw = test_data["686111010-686111040"]["raw"]
     table2 = maude_decom._get_aca_packets(
         raw, start, stop, combine=True, adjust_time=True, calibrate=True
     )
-    for col, col2 in zip(table.itercols(), table2.itercols()):
+    for col, col2 in zip(table.itercols(), table2.itercols(), strict=False):
         if col.name in ["TIME", "END_INTEG_TIME"]:
             assert np.all(np.isclose(col2, col, rtol=0, atol=1e-3))
         else:
@@ -398,7 +398,7 @@ def test_vcdu_vs_level0():
             assert t
 
 
-def test_vcdu_packet_combination():
+def test_vcdu_packet_combination():  # noqa: PLR0915 Too many statements
     import copy
 
     # 8x8
@@ -774,7 +774,7 @@ def test_dynbgd_decom():
         os.path.join(os.path.dirname(__file__), "data", "dynbgd.pkl"), "rb"
     ) as out:
         raw_frames, partial_packets, grouped_packets = pickle.load(out)
-        for i, key in enumerate(raw_frames):
+        for key in raw_frames:
             start, stop = key
             partial_packets_2 = maude_decom._get_aca_packets(
                 raw_frames[key], start=start, stop=stop
@@ -782,7 +782,7 @@ def test_dynbgd_decom():
             grouped_packets_2 = maude_decom._get_aca_packets(
                 raw_frames[key], combine=True, start=start, stop=stop
             )
-            for slot in range(8):
+            for _slot in range(8):
                 assert np.all(
                     partial_packets[key][
                         "TIME", "VCDUCTR", "IMGTYPE", "AABGDTYP", "AAPIXTLM"

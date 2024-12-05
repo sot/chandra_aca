@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Define bins for dark current distribution calculations"""
+
 import numpy as np
 
 # Even log spacing from exactly 2 to 2000, then additional bins up to 11000

@@ -8,9 +8,12 @@ import pytest
 from mica.archive.aca_dark import get_dark_cal_props
 from mica.common import MICA_ARCHIVE
 
-from chandra_aca.dark_model import dark_temp_scale_img
-
-from ..dark_model import dark_temp_scale, get_warm_fracs, synthetic_dark_image
+from chandra_aca.dark_model import (
+    dark_temp_scale,
+    dark_temp_scale_img,
+    get_warm_fracs,
+    synthetic_dark_image,
+)
 
 HAS_MICA = os.path.exists(MICA_ARCHIVE)
 
@@ -32,7 +35,7 @@ def test_get_warm_fracs():
             for T_ccd in (-11, -15):
                 key = (warm_threshold, date, T_ccd)
                 warmpixs[key] = int(get_warm_fracs(*key) * 1024**2)
-    for key in warmpixs:
+    for key in warmpixs:  # noqa: PLC0206 Extracting value from dict without calling `.items()`
         assert np.allclose(warmpixs[key], exp[key], rtol=1e-5, atol=1)
 
 
@@ -53,10 +56,7 @@ def test_synthetic_dark_image():
 
     # Warm pixels above threshold
     lims = [100, 200, 1000, 2000, 3000]
-    wps = []
-    for lim in lims:
-        wps.append(np.count_nonzero(dark > lim))
-    wps = np.array(wps)
+    wps = np.array([np.count_nonzero(dark > lim) for lim in lims])
 
     # Actual from 2017:185 dark cal at -13.55C : [218214, 83902, N/A, 88, 32]
     #                                            [100,   200, 1000, 2000, 3000]

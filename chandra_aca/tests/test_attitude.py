@@ -6,7 +6,7 @@ import pytest
 from Quaternion import Quat
 from Ska.quatutil import radec2yagzag
 
-from ..attitude import calc_att, calc_roll, calc_roll_pitch_yaw
+from chandra_aca.attitude import calc_att, calc_roll, calc_roll_pitch_yaw
 
 
 @pytest.mark.parametrize("roll", [-1, -0.1, 50 / 3600, 0.1])
@@ -105,7 +105,7 @@ def get_data_2d():
     yaws = np.sin(2 * np.pi * times / 707) * 30 / 3600
 
     qs = []
-    for roll, pitch, yaw in zip(rolls, pitches, yaws):
+    for roll, pitch, yaw in zip(rolls, pitches, yaws, strict=False):
         dq = Quat([yaw, -pitch, roll])
         q0_offset = q0 * dq
         qs.append(q0_offset)
@@ -159,7 +159,7 @@ def test_calc_att():
     ) = get_data_2d()
     q_outs = calc_att(q0, yags, zags, yags_obs_list, zags_obs_list)
     assert len(qs) == len(q_outs)
-    for q, q_out in zip(qs, q_outs):
+    for q, q_out in zip(qs, q_outs, strict=False):
         dq = q.dq(q_out)
         assert np.abs(dq.roll0) < 0.5 / 3600
         assert np.abs(dq.pitch) < 0.02 / 3600

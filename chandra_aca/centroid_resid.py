@@ -86,6 +86,8 @@ class CentroidResiduals(object):
 
     def set_centroids(self, source, slot, alg=8, apply_dt=True):
         """
+        Assign centroids.
+
         Assign centroids from ``source`` and ``slot`` to the objects centroid attributes
         (yag, zag, yag_times, zag_times)
 
@@ -275,6 +277,8 @@ class CentroidResiduals(object):
 
     def set_offsets(self):
         """
+        Apply time offsets to centroids.
+
         Apply time offsets to centroids based on type and source of centroid, obsid
         (suggesting 8x8 or 6x6 data), telemetry source ('maude' or 'cxc') and aspect solution
         source. These time offsets were fit.  See fit notebooks at:
@@ -299,7 +303,7 @@ class CentroidResiduals(object):
             )
             return
         fetch_source = fetch.data_source.sources()[0]
-        if fetch_source != "cxc" and fetch_source != "maude":
+        if fetch_source not in ("cxc", "maude"):
             warnings.warn(
                 "Only maude and cxc fetch data sources are supported for offsets. "
                 "Not applying offsets."
@@ -340,6 +344,8 @@ class CentroidResiduals(object):
 
     def calc_residuals(self):
         """
+        Calculate star residuals.
+
         Calculate residuals based on attitude and ra/dec of star.  Note that the sampling and times
         of yags may be different from zags so these should be done independently.
 

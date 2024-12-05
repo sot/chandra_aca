@@ -229,6 +229,7 @@ PIXEL_MAP_INV = {
             _ROWS[PIXEL_MAP[k] != "  "],
             _COLS[PIXEL_MAP[k] != "  "],
             PIXEL_MAP[k][PIXEL_MAP[k] != "  "],
+            strict=False,
         )
     }
     for k in ["6x6", "4x4", "8x8"]
@@ -395,7 +396,7 @@ def _aca_image_msid_list(pea):
             for i in range(8)
         ],
     }
-    return [{k: res[k][i] for k in res.keys()} for i in range(8)]
+    return [{k: res[k][i] for k in res} for i in range(8)]
 
 
 ACA_MSID_LIST = {i + 1: _aca_msid_list(i + 1) for i in range(2)}
@@ -607,7 +608,7 @@ def unpack_aca_telemetry(packet):
         "COMMPROG": _packbits(bits[16:22], unsigned=False),
         "COMMPROG_REPEAT": _packbits(bits[22:24], unsigned=False),
     }
-    for i, s in enumerate(slots):
+    for s in slots:
         s.update(res)
     return slots
 
@@ -799,7 +800,7 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
     #  - Frames come in packets of four. A missing frame would cause the packet to be dropped.
     selected = filter_vcdu_jumps(vcdu)
     vcdu = vcdu[selected]
-    frames = [frame for frame, sel in zip(frames, selected) if sel]
+    frames = [frame for frame, sel in zip(frames, selected, strict=False) if sel]
     vcdu_times = np.array([frame["t"] for frame in frames])
 
     sub = vcdu % 4  # the minor frame index within each ACA update
@@ -843,7 +844,8 @@ def get_raw_aca_packets(start, stop, maude_result=None, **maude_kwargs):
         b"".join([aca[i] for i in entry]) for entry in aca_frame_entries[select]
     ]
     for a in aca_packets:
-        assert len(a) == 224
+        if len(a) != 224:
+            raise ValueError("ACA packet is not 224 bytes long")
 
     times = vcdu_times[aca_frame_entries[select, 0]]
     vcdu_counter = vcdu[aca_frame_entries[select, 0]]
@@ -1135,9 +1137,8 @@ def get_aca_packets(
     if not blobs and not frames:
         frames = True
 
-    assert (blobs and not frames) or (
-        frames and not blobs
-    ), "Specify only one of 'frames' or blobs"
+    if (not blobs and not frames) or (frames and blobs):
+        raise ValueError("Specify one and only one of 'blobs' or 'frames'")
 
     if level0:
         adjust_time = True
@@ -1215,6 +1216,7 @@ def _get_aca_packets(
 ):
     """
     This is a convenience function that splits get_aca_packets for testing without MAUDE.
+
     Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.
 
     NOTE: This function has a side effect. It adds decom_packets to the input aca_packets.

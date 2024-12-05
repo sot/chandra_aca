@@ -75,8 +75,9 @@ conf = Conf()
 
 def get_box_delta(halfwidth):
     """
-    Transform from halfwidth (arcsec) to the box_delta value which gets added
-    to failure probability (in probit space).
+    Transform from halfwidth (arcsec) to the box_delta value.
+
+    This box_delta value gets added to failure probability (in probit space).
 
     Parameters
     ----------
@@ -103,7 +104,9 @@ def get_box_delta(halfwidth):
 # Default global values using NO_MS settings.  Kinda ugly.
 def set_acq_model_ms_filter(ms_enabled=False):
     """
-    Choose one of two sets of acquisition model fit parameters based
+    Set acq model multiple star filter.
+
+    This chooses one of two sets of acquisition model fit parameters based
     on ``ms_enabled``.  The default is ``False``:
 
     - True: MS filtering enabled (prior to FEB0816 loads), where stars would
@@ -113,7 +116,7 @@ def set_acq_model_ms_filter(ms_enabled=False):
     The selected fit parameters are global/module-wide.
 
     """
-    global MULT_STARS_ENABLED
+    global MULT_STARS_ENABLED  # noqa: PLW0603
     MULT_STARS_ENABLED = ms_enabled
 
 
@@ -128,8 +131,9 @@ def t_ccd_warm_limit(
     model=None,
 ):
     """
-    Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars
-    criterion.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
+    Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars criterion.
+
+    This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
     cold end the result may be below ``min_n_acq``, in which case the star catalog
     may be rejected.
 
@@ -171,6 +175,8 @@ def t_ccd_warm_limit(
 
     def n_acq_above_min(t_ccd):
         """
+        Calculate n_acq above min n_acq.
+
         This will be positive if the expected number of stars is above the
         minimum number of stars.  Positive => more expected stars.
         """
@@ -186,6 +192,8 @@ def t_ccd_warm_limit(
 
     def prob_n_or_fewer_below_max(t_ccd):
         """
+        Calculate probability n_or_fewer below max.
+
         This will be positive if the computed probability of acquiring n_or_fewer
         stars is less than the threshold.  Positive => lower prob. of safing action.
         """
@@ -248,6 +256,8 @@ def _prob_n_acq(star_probs, n_stars, n_acq_probs):
 
 def prob_n_acq(star_probs):
     """
+    Get probability of acquiring n_acq stars.
+
     Given an input array of star acquisition probabilities ``star_probs``,
     return the probabilities of acquiring exactly n_acq stars, where n_acq
     is evaluated at values 0 to n_stars.  This is returned as an array
@@ -278,6 +288,8 @@ def acq_success_prob(
     model: Optional[str] = None,
 ) -> float | np.ndarray[float]:
     r"""
+    Get acquisition success probability.
+
     Return probability of acquisition success for given date, temperature, star
     properties and search box size.
 
@@ -313,8 +325,8 @@ def acq_success_prob(
         from .dark_model import get_warm_fracs
 
         warm_fracs = []
-        for date, t_ccd in zip(dates.ravel(), t_ccds.ravel()):
-            warm_frac = get_warm_fracs(WARM_THRESHOLD, date=date, T_ccd=t_ccd)
+        for date, t_ccd_local in zip(dates.ravel(), t_ccds.ravel(), strict=False):
+            warm_frac = get_warm_fracs(WARM_THRESHOLD, date=date, T_ccd=t_ccd_local)
             warm_fracs.append(warm_frac)
         warm_frac = np.array(warm_fracs).reshape(dates.shape)
 
@@ -393,9 +405,10 @@ def get_default_acq_prob_model_info(verbose=True):
 
 def clip_and_warn(name, val, val_lo, val_hi, model, tol_lo=0.0, tol_hi=0.0):
     """
-    Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a
-    warning if clipping occurs, subject to ``tol_lo`` and ``tol_hi`` expansions.
-    The ``name`` and ``model`` are just used in the warning.
+    Clip ``val`` to be in the range ``val_lo`` to ``val_hi``.
+
+    This also issues a warning if clipping occurs, subject to ``tol_lo`` and
+    ``tol_hi`` expansions. The ``name`` and ``model`` are just used in the warning.
 
     Parameters
     ----------
@@ -520,12 +533,18 @@ def _get_grid_func_model(model, version, repo_path):
     grid_halfws = get_grid_axis_values(hdr, "halfw")
 
     # Sanity checks on model data
-    assert probit_p_fail_no_1p5.shape == (
+    if probit_p_fail_no_1p5.shape != (
         len(grid_mags),
         len(grid_t_ccds),
         len(grid_halfws),
-    )
-    assert probit_p_fail_1p5.shape == probit_p_fail_no_1p5.shape
+    ):
+        raise ValueError(
+            "Shape of probit_p_fail_no_1p5 does not match the expected dimensions"
+        )
+    if probit_p_fail_1p5.shape != probit_p_fail_no_1p5.shape:
+        raise ValueError(
+            "Shape of probit_p_fail_1p5 does not match the expected dimensions"
+        )
 
     # Generate the 3-d linear interpolation functions
     func_no_1p5 = RegularGridInterpolator(
@@ -591,7 +610,10 @@ def _get_date_from_model_filename(filepath: Path):
 def grid_model_acq_prob(
     mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False, model=None
 ):
-    """Calculate a grid model probability of acquisition success for a star with
+    """
+    Calculate grid model probability.
+
+    Calculate a grid model probability of acquisition success for a star with
     specified mag, t_ccd, color, and search box halfwidth.
 
     This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a
@@ -673,6 +695,8 @@ def spline_model_acq_prob(
     mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False
 ):
     """
+    Calculate spline model acq probability.
+
     Calculate poly-spline-tccd model (aka 'spline' model) probability of acquisition
     success for a star with specified mag, t_ccd, color, and search box halfwidth.
 
@@ -811,6 +835,8 @@ def spline_model_acq_prob(
 
 def model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120):
     """
+    Call sota_model_acq_prob().
+
     Call sota_model_acq_prob() with same params.  This is retained purely
     for back-compatibility but use is deprecated.
     """
@@ -941,6 +967,8 @@ def sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120):
 
 def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
     """
+    Calculate star magnitude for a given acquisition probability.
+
     For a given ``date`` and ``t_ccd``, find the star magnitude that has an
     acquisition probability of ``p_acq``.  Star magnitude is defined/limited
     to the range 5.0 - 12.0 mag.
@@ -987,7 +1015,10 @@ def mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None):
 
 
 def guide_count(mags, t_ccd, count_9th=False):
-    """Calculate a guide star fractional count/metric using signal-to-noise scaled
+    """
+    Calculate guide star fractional count.
+
+    Calculate a guide star fractional count/metric using signal-to-noise scaled
     mag thresholds.
 
     This uses a modification of the guide star fractional counts that were
@@ -1006,7 +1037,7 @@ def guide_count(mags, t_ccd, count_9th=False):
     ----------
     mags : float, array
         Star magnitude(s)
-    t_ccds : float, array
+    t_ccd : float, array
         CCD temperature(s)
     count_9th : bool
         Return fractional count of 9th mag or brighter stars
@@ -1022,13 +1053,13 @@ def guide_count(mags, t_ccd, count_9th=False):
     ref_t_ccd = -10.9
     ref_mags0 = (9.0 if count_9th else 9.95) + np.array([0.0, 0.2, 0.3, 0.4])
     ref_mags = {}
-    for t_ccd in np.unique(t_ccds):
+    for t_ccd_unique in np.unique(t_ccds):
         # The 5.25 and 5.35 limits are not temperature dependent, these reflect the
         # possibility that the star will be brighter than 5.2 mag and the OBC will
         # reject it.  Note that around 6th mag mean observed catalog error is
         # around 0.1 mag.
-        ref_mags[t_ccd] = np.concatenate(
-            [[5.25, 5.35], snr_mag_for_t_ccd(t_ccd, ref_mags0, ref_t_ccd)]
+        ref_mags[t_ccd_unique] = np.concatenate(
+            [[5.25, 5.35], snr_mag_for_t_ccd(t_ccd_unique, ref_mags0, ref_t_ccd)]
         )
 
     ref_counts = [0.0, 1.0005, 1.0, 0.75, 0.5, 0.0]
@@ -1036,8 +1067,8 @@ def guide_count(mags, t_ccd, count_9th=False):
     # Do the interpolation, noting that np.interp will use the end ``counts``
     # values for any ``mag`` < ref_mags[0] or > ref_mags[-1].
     count = 0.0
-    for mag, t_ccd in zip(mags, t_ccds):
-        count += np.interp(mag, ref_mags[t_ccd], ref_counts)
+    for mag, t_ccd_ in zip(mags, t_ccds, strict=False):
+        count += np.interp(mag, ref_mags[t_ccd_], ref_counts)
 
     return count
 
@@ -1047,6 +1078,7 @@ def t_ccd_warm_limit_for_guide(
 ):
     """
     Solve for the warmest temperature that still gets the min_guide_count.
+
     This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
     cold end the result may be below ``min_n_acq``, in which case the star catalog
     may be rejected.
@@ -1084,8 +1116,9 @@ def t_ccd_warm_limit_for_guide(
 
 def binom_ppf(k, n, conf, n_sample=1000):
     """
-    Compute percent point function (inverse of CDF) for binomial, where
-    the percentage is with respect to the "p" (binomial probability) parameter
+    Compute percent point function (inverse of CDF) for binomial.
+
+    Here the percentage is with respect to the "p" (binomial probability) parameter
     not the "k" parameter.  The latter is what one gets with scipy.stats.binom.ppf().
 
     This function internally generates ``n_sample`` samples of the binomal PMF in

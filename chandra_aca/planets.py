@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Functions for planet position relative to Chandra, Earth, or Solar System
-Barycenter.
+Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
 
 Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
 Horizons positions are used as the "truth".
@@ -20,17 +19,18 @@ Horizons positions are used as the "truth".
 
 See the ``validation/planet-accuracy.ipynb`` notebook for details.
 """
+
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
 import astropy.units as u
-from astropy.table import Table
 import jplephem.spk
 import numba
 import numpy as np
 from astropy.io import ascii
+from astropy.table import Table
 from cxotime import CxoTime, CxoTimeLike
 from ska_helpers.utils import LazyVal
 
@@ -67,8 +67,6 @@ GET_PLANET_CHANDRA_ERRORS = {
 class NoEphemerisError(Exception):
     """If there is no Chandra orbital ephemeris available"""
 
-    pass
-
 
 def load_kernel():
     kernel_path = Path(__file__).parent / "data" / "de432s.bsp"
@@ -91,22 +89,20 @@ def _close_kernel():
 JPLEPHEM_T0 = jplephem.spk.T0
 JPLEPHEM_S_PER_DAY = jplephem.spk.S_PER_DAY
 KERNEL = LazyVal(load_kernel)
-BODY_NAME_TO_KERNEL_SPEC = dict(
-    [
-        ("sun", [(0, 10)]),
-        ("mercury", [(0, 1), (1, 199)]),
-        ("venus", [(0, 2), (2, 299)]),
-        ("earth-moon-barycenter", [(0, 3)]),
-        ("earth", [(0, 3), (3, 399)]),
-        ("moon", [(0, 3), (3, 301)]),
-        ("mars", [(0, 4)]),
-        ("jupiter", [(0, 5)]),
-        ("saturn", [(0, 6)]),
-        ("uranus", [(0, 7)]),
-        ("neptune", [(0, 8)]),
-        ("pluto", [(0, 9)]),
-    ]
-)
+BODY_NAME_TO_KERNEL_SPEC = {
+    "sun": [(0, 10)],
+    "mercury": [(0, 1), (1, 199)],
+    "venus": [(0, 2), (2, 299)],
+    "earth-moon-barycenter": [(0, 3)],
+    "earth": [(0, 3), (3, 399)],
+    "moon": [(0, 3), (3, 301)],
+    "mars": [(0, 4)],
+    "jupiter": [(0, 5)],
+    "saturn": [(0, 6)],
+    "uranus": [(0, 7)],
+    "neptune": [(0, 8)],
+    "pluto": [(0, 9)],
+}
 URL_HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api?"
 
 # NOTE: using TDB scale is important because the JPL ephemeris requires JD in TDB.
@@ -419,7 +415,7 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
             np.max(time) + 500 * u.s,
         )
     except ValueError:
-        raise NoEphemerisError("Chandra ephemeris not available")
+        raise NoEphemerisError("Chandra ephemeris not available") from None
 
     if len(dat["orbitephem0_x"].vals) == 0:
         raise NoEphemerisError("Chandra ephemeris not available")
@@ -509,18 +505,18 @@ def get_planet_chandra_horizons(
         "neptune": "899",
     }
 
-    params = dict(
-        COMMAND=planet_ids.get(body, str(body).lower()),
-        MAKE_EPHEM="YES",
-        CENTER="@-151",
-        TABLE_TYPE="OBSERVER",
-        ANG_FORMAT="DEG",
-        START_TIME=timestart.datetime.strftime("%Y-%b-%d %H:%M"),
-        STOP_TIME=timestop.datetime.strftime("%Y-%b-%d %H:%M"),
-        STEP_SIZE=str(n_times - 1),
-        QUANTITIES="1,3,9,13",
-        CSV_FORMAT="YES",
-    )
+    params = {
+        "COMMAND": planet_ids.get(body, str(body).lower()),
+        "MAKE_EPHEM": "YES",
+        "CENTER": "@-151",
+        "TABLE_TYPE": "OBSERVER",
+        "ANG_FORMAT": "DEG",
+        "START_TIME": timestart.datetime.strftime("%Y-%b-%d %H:%M"),
+        "STOP_TIME": timestop.datetime.strftime("%Y-%b-%d %H:%M"),
+        "STEP_SIZE": str(n_times - 1),
+        "QUANTITIES": "1,3,9,13",
+        "CSV_FORMAT": "YES",
+    }
 
     # The HORIZONS web API seems to require all params to be quoted strings.
     # See: https://ssd-api.jpl.nasa.gov/doc/horizons.html

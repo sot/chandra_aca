@@ -8,6 +8,7 @@ a desired zero-offset target aimpoint.
 A key element of this module is the fitting analysis here:
 https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb
 """
+
 import functools
 import json
 import os
@@ -102,6 +103,8 @@ SIM_MM_TO_ARCSEC = 20.493
 
 class AcaDriftModel(object):
     """
+    AcaDriftModel class
+
     Define a drift model for aspect solution SIM DY/DZ values as a function of
     time and ACA CCD temperature.  This expresses the model which is defined
     and fitted in the fit_aimpoint_drift notebook in this repo.
@@ -116,6 +119,8 @@ class AcaDriftModel(object):
 
     def calc(self, times, t_ccd):
         """
+        Calculate the drift model
+
         Calculate the drift model for aspect solution SIM DY/DZ values for input
         ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.
 
@@ -253,7 +258,7 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
             "Detector and chip combination {} not in allow values: {}".format(
                 (detector, chip_id), sorted(ASOL_TO_CHIP.keys())
             )
-        )
+        ) from None
 
     # Compute the asol DY/DZ that would be required for the aimpoint to be
     # exactly at the desired CHIPX/Y values.  Uses the geometrical transform

@@ -5,7 +5,7 @@ import mica.common
 import numpy as np
 import pytest
 
-from ..centroid_resid import CentroidResiduals
+from chandra_aca.centroid_resid import CentroidResiduals
 
 HAS_L1_ARCHIVE = os.path.exists(os.path.join(mica.common.MICA_ARCHIVE, "asp1"))
 HAS_STARCHECK_ARCHIVE = os.path.exists(

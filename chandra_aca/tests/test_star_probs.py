@@ -221,21 +221,21 @@ def test_guide_count(count_9th):
     else:
         mags[mags > 6.1] -= 0.05
 
-    for mag, exp in zip(mags, exps):
+    for mag, exp in zip(mags, exps, strict=False):
         cnt = guide_count([mag], t_ccd=-10.9, count_9th=count_9th)
         assert np.isclose(cnt, exp, atol=0.001, rtol=0)
 
     # Evaluate at different t_ccd, but change mags accordingly to the
     # SNR-equivalent mag.
     for t_ccd in (-8, -10, -12, -14):
-        for mag, exp in zip(mags, exps):
+        for mag, exp in zip(mags, exps, strict=False):
             new_mag = snr_mag_for_t_ccd(t_ccd, mag, -10.9) if (mag > 6.1) else mag
             cnt = guide_count([new_mag], t_ccd=t_ccd, count_9th=count_9th)
             assert np.isclose(cnt, exp, atol=0.001, rtol=0)
 
 
 def test_t_ccd_warm_limit_guide_vs_brute():
-    for n in range(0, 100):
+    for _n in range(100):
         mags = np.random.normal(loc=9.0, scale=1.5, size=5)
         warm_limit = t_ccd_warm_limit_for_guide(mags)
         check_warm_limit = stepwise_guide_warm_limit(mags, step=0.01)

@@ -57,7 +57,10 @@ DARK_SCALE_4C = 1.0 / 0.70
 
 
 def dark_temp_scale(t_ccd, t_ccd_ref=-19.0, scale_4c=None):
-    """Return the multiplicative scale factor to convert a CCD dark map
+    """
+    Calculate dark current scale factor.
+
+    Return the multiplicative scale factor to convert a CCD dark map
     or dark current value from temperature ``t_ccd`` to temperature
     ``t_ccd_ref``::
 
@@ -127,7 +130,9 @@ def get_dark_hist(date, t_ccd):
 
 def smooth_broken_pow(pars, x):
     """
-    Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):
+    Smoothed broken power-law.
+
+    Pars are same as bpl1d (NOT + gaussian sigma):
     1: gamma1
     2: gamma2
     3: x_b (break point)
@@ -146,7 +151,9 @@ def smooth_broken_pow(pars, x):
 
 def smooth_twice_broken_pow(pars, x):
     """
-    Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):
+    Smoothed twice-broken power-law.
+
+    Pars are same as bpl1d (NOT + gaussian sigma):
     1: gamma1
     2: gamma2
     3: gamma3
@@ -174,6 +181,8 @@ def smooth_twice_broken_pow(pars, x):
 
 def temp_scalefac(T_ccd):
     """
+    Calculate scale factor.
+
     Return the multiplicative scale factor to convert a CCD dark map from
     the nominal -19C temperature to the temperature T.  Based on best global fit for
     dark current model in plot_predicted_warmpix.py.  Previous value was 0.62 instead
@@ -253,8 +262,7 @@ def get_sbp_pars(dates):
 
 def get_warm_fracs(warm_threshold, date="2013:001:12:00:00", T_ccd=-19.0):
     """
-    Calculate fraction of pixels in modeled dark current distribution
-    above warm threshold(s).
+    Calculate fraction of pixels in modeled dark current distribution above warm threshold(s).
 
     Parameters
     ----------
@@ -274,11 +282,11 @@ def get_warm_fracs(warm_threshold, date="2013:001:12:00:00", T_ccd=-19.0):
     warm_thresholds, is_scalar = as_array(warm_threshold)
 
     warmpixes = []
-    for warm_threshold in warm_thresholds:
+    for warm_thresh in warm_thresholds:
         # First get the full bins to right of warm_threshold
-        ii = np.searchsorted(xbins, warm_threshold)
+        ii = np.searchsorted(xbins, warm_thresh)
         warmpix = np.sum(y[ii:])
-        lx = np.log(warm_threshold)
+        lx = np.log(warm_thresh)
         lx0 = np.log(xbins[ii - 1])
         lx1 = np.log(xbins[ii])
         ly0 = np.log(y[ii - 1])
@@ -298,8 +306,7 @@ def get_warm_fracs(warm_threshold, date="2013:001:12:00:00", T_ccd=-19.0):
 
 def synthetic_dark_image(date, t_ccd_ref=None):
     """
-    Generate a synthetic dark current image corresponding to the specified
-    ``date`` and ``t_ccd``.
+    Generate a synthetic dark current image corresponding to the specified ``date`` and ``t_ccd``.
 
     Parameters
     ----------

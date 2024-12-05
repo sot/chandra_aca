@@ -1,13 +1,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Calculate attitude based on star centroid values using a fast linear
-least-squares method.
+Calculate attitude based on star centroid values using a fast linear least-squares method.
 
 Note this requires Python 3.5+.
 
 Validation:
 http://nbviewer.jupyter.org/url/asc.harvard.edu/mta/ASPECT/ipynb/chandra_aca/calc_att_validate.ipynb
 """
+
 from __future__ import division
 
 import numpy as np
@@ -129,7 +129,7 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None):
         zag_obs.shape = 1, n_stars
 
     outs = []
-    for yo, zo in zip(yag_obs, zag_obs):
+    for yo, zo in zip(yag_obs, zag_obs, strict=False):
         out = _calc_roll_pitch_yaw(yag, zag, yo, zo, sigma=sigma)
         outs.append(out)
 
@@ -144,8 +144,9 @@ def calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None):
 
 def _calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1):
     """
-    Internal version that does the real work of calc_roll_pitch_yaw and
-    works on only one sample at a time.
+    Internal version that does the real work of calc_roll_pitch_yaw.
+
+    This works on only one sample at a time.
     """
     weights = None if (sigma is None) else 1 / np.array(sigma)
     yag_avg = np.average(yag, weights=weights)
@@ -250,7 +251,7 @@ def calc_att(att, yag, zag, yag_obs, zag_obs, sigma=None):
 
     if isinstance(rolls, np.ndarray) and rolls.ndim >= 1:
         out = []
-        for roll, pitch, yaw in zip(rolls, pitches, yaws):
+        for roll, pitch, yaw in zip(rolls, pitches, yaws, strict=False):
             dq = Quat([yaw, -pitch, roll])
             out.append(q_att * dq)
     else:

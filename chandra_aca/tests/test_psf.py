@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..aca_image import ACAImage, AcaPsfLibrary
+from chandra_aca.aca_image import ACAImage, AcaPsfLibrary
 
 ap = AcaPsfLibrary()
 

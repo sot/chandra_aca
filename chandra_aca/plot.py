@@ -61,9 +61,9 @@ def custom_plt():
 
 def custom_plt_rcparams(func):
     """
-    Decorator to make a function use the custom rcParams plt params
-    temporarily.  This uses a context manage to ensure original
-    params always get restored.
+    Decorator to make a function use the custom rcParams plt params temporarily.
+
+    This uses a context manage to ensure original params always get restored.
     """
 
     @wraps(func)
@@ -84,8 +84,9 @@ def symsize(mag):
 
 def _plot_catalog_items(ax, catalog):
     """
-    Plot catalog items (guide, acq, bot, mon, fid) in yang and zang on the supplied
-    axes object in place.
+    Plot catalog items (guide, acq, bot, mon, fid) in yang and zang on the supplied axes object.
+
+    This plots in place.
 
     Parameters
     ----------
@@ -156,8 +157,7 @@ def _plot_catalog_items(ax, catalog):
 
 def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
     """
-    Plot plot field stars in yang and zang on the supplied
-    axes object in place.
+    Plot plot field stars in yang and zang on the supplied axes object in place.
 
     Parameters
     ----------
@@ -240,7 +240,7 @@ def _plot_field_stars(ax, stars, attitude, red_mag_lim=None, bad_stars=None):
 
 
 @custom_plt_rcparams
-def plot_stars(
+def plot_stars(  # noqa: PLR0915 too many statements
     attitude,
     catalog=None,
     stars=None,
@@ -256,6 +256,7 @@ def plot_stars(
 ):
     """
     Plot a catalog, a star field, or both in a matplotlib figure.
+
     If supplying a star field, an attitude must also be supplied.
 
     Parameters
@@ -340,7 +341,7 @@ def plot_stars(
     r, c = yagzag_to_pixels(zeros, yz_ticks)
     ax.set_yticks(c)
     ax.set_yticklabels(yz_ticks)
-    ax.grid()
+    ax.grid(grid)
 
     ax.set_xlabel("Yag (arcsec)")
     ax.set_ylabel("Zag (arcsec)")
@@ -395,6 +396,7 @@ def plot_stars(
 
 def _plot_planets(ax, att, date0, duration, lim0, lim1):
     """
+    Plot planets.
 
     Parameters
     ----------
@@ -513,13 +515,13 @@ def plot_compass(roll):
     fig = plt.figure(figsize=(3, 3))
     ax = plt.subplot(polar=True)
     ax.annotate(
-        "", xy=(0, 0), xytext=(0, 1), arrowprops=dict(arrowstyle="<-", color="k")
+        "", xy=(0, 0), xytext=(0, 1), arrowprops={"arrowstyle": "<-", "color": "k"}
     )
     ax.annotate(
         "",
         xy=(0, 0),
         xytext=(np.radians(90), 1),
-        arrowprops=dict(arrowstyle="<-", color="k"),
+        arrowprops={"arrowstyle": "<-", "color": "k"},
     )
     ax.annotate("N", xy=(0, 0), xytext=(0, 1.2))
     ax.annotate("E", xy=(0, 0), xytext=(np.radians(90), 1.2))

@@ -33,6 +33,8 @@ row and highest col; pixel I4 has the highest row and lowest column."""
 
 def _operator_factory(operator, inplace=False):
     """
+    Generate data model methods.
+
     Generate data model methods like __add__(self, other) and
     __iadd__(self, other).  These always operate in the coordinate
     system of the left and right operands.  If both are in ACA
@@ -89,6 +91,8 @@ def _operator_factory(operator, inplace=False):
 
 class ACAImage(np.ndarray):
     """
+    ACA Image class.
+
     ACAImage is an ndarray subclass that supports functionality for the Chandra
     ACA. Most importantly it allows image indexing and slicing in absolute
     "aca" coordinates, where the image lower left coordinate is specified
@@ -123,6 +127,8 @@ class ACAImage(np.ndarray):
     @property
     def aca(self):
         """
+        Return a light copy of self with _aca_coords on.
+
         Return a light copy (same data) of self but with the _aca_coords
         attribute switched on so that indexing is absolute.
         """
@@ -189,7 +195,7 @@ class ACAImage(np.ndarray):
         """
         This is the money method that does all the work of manipulating
         an item and subsequent row0/col0 when accessing and slicing.
-        """
+        """  # noqa: D205
         # Allow slicing via an existing ACAImage object
         aca_coords = self._aca_coords
         if isinstance(item, ACAImage):
@@ -241,8 +247,8 @@ class ACAImage(np.ndarray):
                         rc_off = it.start if it.start >= 0 else shape[i] + it.start
                         out_rc[i] = rc0 + rc_off
                 elif it is not ...:
-                    it = np.array(it)
-                    rc_off = np.where(it >= 0, it, shape[i] + it)
+                    it_arr = np.array(it)
+                    rc_off = np.where(it_arr >= 0, it_arr, shape[i] + it_arr)
                     out_rc[i] = rc0 + rc_off
 
         return item, out_rc[0], out_rc[1]
@@ -296,8 +302,7 @@ class ACAImage(np.ndarray):
 
     def centroid_fm(self, bgd=None, pix_zero_loc="center", norm_clip=None):
         """
-        First moment centroid of ``self`` using 6x6 mousebitten image for input
-        6x6 or 8x8 images.
+        First moment centroid of ``self`` using 6x6 mousebitten image for input 6x6 or 8x8 images.
 
         Note that the returned ``norm`` is the sum of the background-subtracted 6x6
         mousebitten image, not the entire image.
@@ -345,8 +350,10 @@ class ACAImage(np.ndarray):
 
     @classmethod
     def _read_flicker_cdfs(cls):
-        """Read flickering pixel model cumulative distribution functions
-        and associated metadata.  Set up class variables accordingly.
+        """
+        Read flickering pixel model cumulative distribution functions and associated metadata.
+
+        Set up class variables accordingly.
 
         The flicker_cdf file here was created using:
         /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
@@ -371,9 +378,7 @@ class ACAImage(np.ndarray):
             )
 
             # CDF bin range (e-/sec) for each for in flicker_cdfs.
-            cdf_bins = []
-            for ii in range(hdr["n_bin"]):
-                cdf_bins.append(hdr[f"cdf_bin{ii}"])
+            cdf_bins = [hdr[f"cdf_bin{ii}"] for ii in range(hdr["n_bin"])]
             cls.flicker_cdf_bins = np.array(cdf_bins)
 
     def flicker_init(self, flicker_mean_time=10000, flicker_scale=1.0, seed=None):
@@ -450,7 +455,10 @@ class ACAImage(np.ndarray):
         self.flicker_times = t_flicker * phase
 
     def flicker_update(self, dt, use_numba=True):
-        """Propagate the image forward by ``dt`` seconds and update any pixels
+        """
+        Do a flicker update.
+
+        Propagate the image forward by ``dt`` seconds and update any pixels
         that have flickered during that interval.
 
         This has the option to use one of two implementations.  The default is
@@ -499,7 +507,9 @@ class ACAImage(np.ndarray):
         rand_ampls = np.random.uniform(0.0, 1.0, size=len(idxs))
         rand_times = np.random.uniform(0.0, 1.0, size=len(idxs))
 
-        for idx, rand_time, rand_ampl in zip(idxs, rand_times, rand_ampls):
+        for idx, rand_time, rand_ampl in zip(
+            idxs, rand_times, rand_ampls, strict=False
+        ):
             # Determine the new value after flickering and set in array view.
             # First get the right CDF from the list of CDFs based on the pixel value.
             cdf_idx = self.flicker_cdf_idxs[idx]
@@ -545,6 +555,8 @@ def _flicker_update_numba(
     flicker_mean_time,
 ):
     """
+    Do a flicker update.
+
     Propagate the image forward by ``dt`` seconds and update any pixels
     that have flickered during that interval.
     """
@@ -613,8 +625,7 @@ def np_interp(yin, xin, xout):
 
 def _prep_6x6(img, bgd=None):
     """
-    Subtract background and in case of 8x8 image
-    cut and return the 6x6 inner section.
+    Subtract background and in case of 8x8 image cut and return the 6x6 inner section.
     """
     if isinstance(bgd, np.ndarray):
         bgd = bgd.view(np.ndarray)
@@ -671,9 +682,8 @@ def centroid_fm(img, bgd=None, pix_zero_loc="center", norm_clip=None):
     norm = np.sum(img)
     if norm_clip is not None:
         norm = norm.clip(norm_clip, None)
-    else:
-        if norm <= 0:
-            raise ValueError("non-positive image norm {}".format(norm))
+    elif norm <= 0:
+        raise ValueError("non-positive image norm {}".format(norm))
 
     row = np.sum(rw * img) / norm
     col = np.sum(cw * img) / norm
@@ -691,6 +701,8 @@ def centroid_fm(img, bgd=None, pix_zero_loc="center", norm_clip=None):
 
 class AcaPsfLibrary(object):
     """
+    AcaPsfLibrary class
+
     Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
     (pixelated) ACA PSF over a grid of subpixel locations.
 
@@ -748,8 +760,7 @@ class AcaPsfLibrary(object):
         aca_image=True,
     ):
         """
-        Get interpolated ACA PSF image that corresponds to pixel location
-        ``row``, ``col``.
+        Get interpolated ACA PSF image that corresponds to pixel location ``row``, ``col``.
 
         Parameters
         ----------
