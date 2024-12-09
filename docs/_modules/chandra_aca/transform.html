@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.transform &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/documentation_options.js?v=f369efd0"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
@@ -44,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -158,6 +158,8 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.broadcast_arrays">[docs]</a>
 <span class="k">def</span> <span class="nf">broadcast_arrays</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Broadcast ``*args`` inputs to same shape.</span>
+
 <span class="sd">    Broadcast ``*args`` inputs to same shape and return an ``is_scalar`` flag and</span>
 <span class="sd">    the broadcasted version of inputs.  This lets intermediate code work on</span>
 <span class="sd">    arrays that are guaranteed to be the same shape and at least a 1-d array,</span>
@@ -177,7 +179,9 @@
 <div class="viewcode-block" id="broadcast_arrays_flatten">
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.broadcast_arrays_flatten">[docs]</a>
 <span class="k">def</span> <span class="nf">broadcast_arrays_flatten</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Broadcast ``*args`` inputs to same shape and then return that shape and the</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Broadcast ``*args`` inputs to same shape and flatten.</span>
+
+<span class="sd">    Broadcast ``*args`` inputs to same shape.and then return that shape and the</span>
 <span class="sd">    flattened view of all the inputs.  This lets intermediate code work on all</span>
 <span class="sd">    scalars or all arrays that are the same-length 1-d array and then reshape</span>
 <span class="sd">    the output at the end (if necessary).</span>
@@ -203,6 +207,7 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ACA row/column positions to ACA y-angle, z-angle.</span>
+
 <span class="sd">    It is expected that the row and column input arguments have the same length.</span>
 
 <span class="sd">    The ``pix_zero_loc`` parameter controls whether the input pixel values</span>
@@ -259,6 +264,7 @@
 <span class="k">def</span> <span class="nf">yagzag_to_pixels</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;edge&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ACA y-angle/z-angle positions to ACA pixel row, column.</span>
+
 <span class="sd">    It is expected that the y-angle/z-angle input arguments have the same length.</span>
 
 <span class="sd">    The ``pix_zero_loc`` parameter controls whether the input pixel values</span>
@@ -366,9 +372,11 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.radec_to_eci">[docs]</a>
 <span class="k">def</span> <span class="nf">radec_to_eci</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert from RA,Dec to ECI.  The input ``ra`` and ``dec`` values can be 1-d</span>
-<span class="sd">    arrays of length N in which case the output ``ECI`` will be an array with</span>
-<span class="sd">    shape (N, 3). The N dimension can actually be any multidimensional shape.</span>
+<span class="sd">    Convert from RA,Dec to ECI.</span>
+
+<span class="sd">    The input ``ra`` and ``dec`` values can be 1-d arrays of length N in which</span>
+<span class="sd">    case the output ``ECI`` will be an array with shape (N, 3). The N dimension</span>
+<span class="sd">    can actually be any multidimensional shape.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -397,10 +405,11 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.eci_to_radec">[docs]</a>
 <span class="k">def</span> <span class="nf">eci_to_radec</span><span class="p">(</span><span class="n">eci</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert from ECI vector(s) to RA, Dec.  The input ``eci`` value</span>
-<span class="sd">    can be an array of 3-vectors having shape (N, 3) in which case</span>
-<span class="sd">    the output RA, Dec will be arrays of shape N. The N dimension can</span>
-<span class="sd">    actually be any multidimensional shape.</span>
+<span class="sd">    Convert from ECI vector(s) to RA, Dec.</span>
+
+<span class="sd">    The input ``eci`` value can be an array of 3-vectors having shape (N, 3)</span>
+<span class="sd">    in which case the output RA, Dec will be arrays of shape N. The N dimension</span>
+<span class="sd">    can actually be any multidimensional shape.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -489,6 +498,8 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.snr_mag_for_t_ccd">[docs]</a>
 <span class="k">def</span> <span class="nf">snr_mag_for_t_ccd</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mag</span><span class="p">,</span> <span class="n">ref_t_ccd</span><span class="p">,</span> <span class="n">scale_4c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate signal-to-noise equivalent magnitude.</span>
+
 <span class="sd">    Given a t_ccd, solve for the magnitude that has the same expected signal</span>
 <span class="sd">    to noise as ref_mag / ref_t_ccd.</span>
 
@@ -536,6 +547,8 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.calc_aca_from_targ">[docs]</a>
 <span class="k">def</span> <span class="nf">calc_aca_from_targ</span><span class="p">(</span><span class="n">targ</span><span class="p">,</span> <span class="n">y_off</span><span class="p">,</span> <span class="n">z_off</span><span class="p">,</span> <span class="n">si_align</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate PCAD (ACA) pointing attitude.</span>
+
 <span class="sd">    Calculate the PCAD (ACA) pointing attitude from target attitude and</span>
 <span class="sd">    Y,Z offset (per OR-list).</span>
 
@@ -570,6 +583,8 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.calc_targ_from_aca">[docs]</a>
 <span class="k">def</span> <span class="nf">calc_targ_from_aca</span><span class="p">(</span><span class="n">aca</span><span class="p">,</span> <span class="n">y_off</span><span class="p">,</span> <span class="n">z_off</span><span class="p">,</span> <span class="n">si_align</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate target attitude.</span>
+
 <span class="sd">    Calculate the target attitude from ACA (PCAD) pointing attitude and</span>
 <span class="sd">    Y,Z offset (per OR-list).</span>
 
@@ -605,6 +620,8 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.calc_target_offsets">[docs]</a>
 <span class="k">def</span> <span class="nf">calc_target_offsets</span><span class="p">(</span><span class="n">aca</span><span class="p">,</span> <span class="n">ra_targ</span><span class="p">,</span> <span class="n">dec_targ</span><span class="p">,</span> <span class="n">si_align</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate target offsets.</span>
+
 <span class="sd">    Calculates required Y and Z offsets (deg) required from a target RA, Dec to</span>
 <span class="sd">    arrive at the desired PCAD pointing ``aca``.</span>
 
@@ -648,8 +665,9 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.radec_to_yagzag">[docs]</a>
 <span class="k">def</span> <span class="nf">radec_to_yagzag</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">q_att</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The</span>
-<span class="sd">    input ``ra`` and ``dec`` values can be 1-d arrays in which case the output</span>
+<span class="sd">    Calculate ACA Y-angle, Z-angle from RA, Dec and pointing quaternion.</span>
+
+<span class="sd">    The input ``ra`` and ``dec`` values can be 1-d arrays in which case the output</span>
 <span class="sd">    ``yag`` and ``zag`` will be corresponding arrays of the same length.</span>
 
 <span class="sd">    Parameters</span>
@@ -680,8 +698,9 @@
 <a class="viewcode-back" href="../../transform.html#chandra_aca.transform.yagzag_to_radec">[docs]</a>
 <span class="k">def</span> <span class="nf">yagzag_to_radec</span><span class="p">(</span><span class="n">yag</span><span class="p">,</span> <span class="n">zag</span><span class="p">,</span> <span class="n">q_att</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The</span>
-<span class="sd">    input ``yag`` and ``zag`` values can be 1-d arrays in which case the output</span>
+<span class="sd">    Calculate RA, Dec from ACA Y-angle, Z-angle and pointing quaternion.</span>
+
+<span class="sd">    The input ``yag`` and ``zag`` values can be 1-d arrays in which case the output</span>
 <span class="sd">    ``ra`` and ``dec`` will be corresponding arrays of the same length.</span>
 
 <span class="sd">    Parameters</span>

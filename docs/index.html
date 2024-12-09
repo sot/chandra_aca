@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="_static/documentation_options.js?v=457a4054"></script>
+    <script src="_static/documentation_options.js?v=f369efd0"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
@@ -51,7 +51,7 @@
 	</a>
       </li>
       <li>
-	<a href="#">chandra_aca 4.47.0 documentation</a>
+	<a href="#">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       
@@ -104,6 +104,7 @@ Camera Assembly and associated aspect functionality.</p>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.EIGHT_LABELS"><code class="docutils literal notranslate"><span class="pre">EIGHT_LABELS</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.centroid_fm"><code class="docutils literal notranslate"><span class="pre">centroid_fm()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="aca_image.html#acaimage-class">ACAImage class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="aca_image.html#creation">Creation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aca_image.html#image-access-and-setting">Image access and setting</a></li>
@@ -141,6 +142,20 @@ Camera Assembly and associated aspect functionality.</p>
 <li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.smooth_twice_broken_pow"><code class="docutils literal notranslate"><span class="pre">smooth_twice_broken_pow()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.synthetic_dark_image"><code class="docutils literal notranslate"><span class="pre">synthetic_dark_image()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.temp_scalefac"><code class="docutils literal notranslate"><span class="pre">temp_scalefac()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="dark-background-subtraction">
+<h2>Dark background subtraction<a class="headerlink" href="#dark-background-subtraction" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dark_subtract.html">chandra_aca.dark_subtract</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_aca_images_bgd_sub"><code class="docutils literal notranslate"><span class="pre">get_aca_images_bgd_sub()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_dark_backgrounds"><code class="docutils literal notranslate"><span class="pre">get_dark_backgrounds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_dark_current_imgs"><code class="docutils literal notranslate"><span class="pre">get_dark_current_imgs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_tccd_data"><code class="docutils literal notranslate"><span class="pre">get_tccd_data()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -268,6 +283,7 @@ Camera Assembly and associated aspect functionality.</p>
 <li><a class="reference internal" href="#aca-images">ACA images</a></li>
 <li><a class="reference internal" href="#centroid-residuals">Centroid residuals</a></li>
 <li><a class="reference internal" href="#dark-model">Dark model</a></li>
+<li><a class="reference internal" href="#dark-background-subtraction">Dark background subtraction</a></li>
 <li><a class="reference internal" href="#maude-decom">MAUDE Decom</a></li>
 <li><a class="reference internal" href="#planet-positions">Planet Positions</a></li>
 <li><a class="reference internal" href="#plotting">Plotting</a></li>

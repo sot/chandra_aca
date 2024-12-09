@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chandra_aca.dark_subtract &#8212; chandra_aca 4.48.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
+    
+    <script src="../../_static/documentation_options.js?v=f369efd0"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script type="text/javascript" src="../../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
+        <span id="logotext1">ska</span><span id="logotext2">tools</span>
+    </a></li>
+    <li><a title="General Index" href="../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../index.html">chandra_aca 4.48.0 documentation</a>
+	 &#187;
+      </li>
+      <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for chandra_aca.dark_subtract</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numba</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">requests.exceptions</span>
+<span class="kn">import</span> <span class="nn">scipy.signal</span>
+<span class="kn">from</span> <span class="nn">cheta</span> <span class="kn">import</span> <span class="n">fetch_sci</span>
+<span class="kn">from</span> <span class="nn">ska_helpers</span> <span class="kn">import</span> <span class="n">retry</span>
+<span class="kn">from</span> <span class="nn">ska_numpy</span> <span class="kn">import</span> <span class="n">smooth</span>
+
+<span class="kn">from</span> <span class="nn">chandra_aca.dark_model</span> <span class="kn">import</span> <span class="n">dark_temp_scale_img</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;get_tccd_data&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_aca_images_bgd_sub&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_dark_current_imgs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_dark_backgrounds&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_tccd_data">
+<a class="viewcode-back" href="../../dark_subtract.html#chandra_aca.dark_subtract.get_tccd_data">[docs]</a>
+<span class="nd">@retry</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exceptions</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">tries</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">get_tccd_data</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">,</span> <span class="n">smooth_window</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">median_window</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;maude&quot;</span><span class="p">,</span> <span class="n">maude_channel</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the CCD temperature for given times and interpolate and smooth.</span>
+
+<span class="sd">    This is a light wrapper around cheta.fetch_sci.Msid(&quot;aacccdpt&quot;, start, stop)</span>
+<span class="sd">    to handle an option to use the maude data source in an explicit way.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times: np.array (float)</span>
+<span class="sd">        Sampling times for CCD temperature data (CXC seconds).</span>
+<span class="sd">    source : str, optional</span>
+<span class="sd">        Source of CCD temperature data (&#39;maude&#39; (default) or &#39;cxc&#39; for cheta archive).</span>
+<span class="sd">    median_window : int, optional</span>
+<span class="sd">        Median filter window to remove outliers (default=3).</span>
+<span class="sd">    smooth_window : int, optional</span>
+<span class="sd">        Smooth data using a hanning window of this length in samples (default=30).</span>
+<span class="sd">    maude_channel : str, optional</span>
+<span class="sd">        Maude channel to use (default is flight).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    vals : np.array</span>
+<span class="sd">        CCD temperature values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># If no times are given, return an empty array.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="n">pad</span> <span class="o">=</span> <span class="mi">600</span>  <span class="c1"># 600 seconds default pad</span>
+
+    <span class="c1"># increase the pad if the smooth window is large</span>
+    <span class="n">pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">smooth_window</span> <span class="o">*</span> <span class="mf">32.8</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad</span><span class="p">])</span>
+
+    <span class="n">fetch_start</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">pad</span>
+    <span class="n">fetch_stop</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pad</span>
+
+    <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;maude&quot;</span><span class="p">:</span>
+        <span class="c1"># Override the cheta data_source to be explicit about maude source.</span>
+        <span class="n">data_source</span> <span class="o">=</span> <span class="s2">&quot;maude allow_subset=False&quot;</span>
+        <span class="k">if</span> <span class="n">maude_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_source</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; channel=</span><span class="si">{</span><span class="n">maude_channel</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">with</span> <span class="n">fetch_sci</span><span class="o">.</span><span class="n">data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">):</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">fetch_sci</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;aacccdpt&quot;</span><span class="p">,</span> <span class="n">fetch_start</span><span class="p">,</span> <span class="n">fetch_stop</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;cxc&quot;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">fetch_sci</span><span class="o">.</span><span class="n">data_source</span><span class="p">(</span><span class="s2">&quot;cxc&quot;</span><span class="p">):</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">fetch_sci</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;aacccdpt&quot;</span><span class="p">,</span> <span class="n">fetch_start</span><span class="p">,</span> <span class="n">fetch_stop</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown source: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">yin</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">median_window</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Filter the data using a median filter from scipy</span>
+        <span class="n">yin</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">medfilt</span><span class="p">(</span><span class="n">yin</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">median_window</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">smooth_window</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># And then smooth it with hanning and window_len = smooth_window</span>
+        <span class="n">yin</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">yin</span><span class="p">,</span> <span class="n">window_len</span><span class="o">=</span><span class="n">smooth_window</span><span class="p">)</span>
+
+    <span class="c1"># Interpolate the data to the requested times</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">yin</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">vals</span></div>
+
+
+
+<div class="viewcode-block" id="get_aca_images_bgd_sub">
+<a class="viewcode-back" href="../../dark_subtract.html#chandra_aca.dark_subtract.get_aca_images_bgd_sub">[docs]</a>
+<span class="k">def</span> <span class="nf">get_aca_images_bgd_sub</span><span class="p">(</span><span class="n">img_table</span><span class="p">,</span> <span class="n">t_ccd_vals</span><span class="p">,</span> <span class="n">img_dark</span><span class="p">,</span> <span class="n">tccd_dark</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the background subtracted ACA images.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img_table : astropy.table.Table</span>
+<span class="sd">        Table of ACA images with columns &#39;IMG&#39;, &#39;IMGROW0_8X8&#39;, &#39;IMGCOL0_8X8&#39;, &#39;INTEG&#39;.</span>
+<span class="sd">    t_ccd_vals : np.array</span>
+<span class="sd">        CCD temperature values at the times of the ACA images (deg C).</span>
+<span class="sd">    img_dark : np.array</span>
+<span class="sd">        Dark calibration image. Must be 1024x1024 (e-/s).</span>
+<span class="sd">    tccd_dark : float</span>
+<span class="sd">        Reference temperature of the dark calibration image (deg C).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple (imgs_bgsub, imgs_dark)</span>
+<span class="sd">        imgs_bgsub : np.array</span>
+<span class="sd">            Background subtracted ACA images (DN).</span>
+<span class="sd">        imgs_dark : np.array</span>
+<span class="sd">            Dark current images (DN).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">imgs_dark</span> <span class="o">=</span> <span class="n">get_dark_current_imgs</span><span class="p">(</span><span class="n">img_table</span><span class="p">,</span> <span class="n">img_dark</span><span class="p">,</span> <span class="n">tccd_dark</span><span class="p">,</span> <span class="n">t_ccd_vals</span><span class="p">)</span>
+    <span class="n">imgs_bgsub</span> <span class="o">=</span> <span class="n">img_table</span><span class="p">[</span><span class="s2">&quot;IMG&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">imgs_dark</span>
+    <span class="n">imgs_bgsub</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">imgs_bgsub</span><span class="p">,</span> <span class="n">imgs_dark</span></div>
+
+
+
+<div class="viewcode-block" id="get_dark_current_imgs">
+<a class="viewcode-back" href="../../dark_subtract.html#chandra_aca.dark_subtract.get_dark_current_imgs">[docs]</a>
+<span class="k">def</span> <span class="nf">get_dark_current_imgs</span><span class="p">(</span><span class="n">img_table</span><span class="p">,</span> <span class="n">img_dark</span><span class="p">,</span> <span class="n">tccd_dark</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the scaled dark current values for a table of ACA images.</span>
+
+<span class="sd">    This scales the dark current to the appropriate temperature and integration time,</span>
+<span class="sd">    returning the dark current in DN matching the ACA images in img_table.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img_table : astropy.table.Table</span>
+<span class="sd">        Table of ACA images with columns &#39;IMG&#39;, &#39;IMGROW0_8X8&#39;, &#39;IMGCOL0_8X8&#39;, &#39;INTEG&#39;.</span>
+<span class="sd">    img_dark : 1024x1024 array</span>
+<span class="sd">        Dark calibration image.</span>
+<span class="sd">    tccd_dark : float</span>
+<span class="sd">        Reference temperature of the dark calibration image.</span>
+<span class="sd">    t_ccds : array</span>
+<span class="sd">        Cheta temperature values at the times of img_table.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    imgs_dark : np.array (len(img_table), 8, 8)</span>
+<span class="sd">        Temperature scaled dark current for each ACA image in img_table (DN).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">img_table</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t_ccds</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;img_table and t_ccds must have the same length&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">img_dark</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;dark image shape is not 1024x1024&quot;</span><span class="p">)</span>
+
+    <span class="n">imgs_dark_unscaled</span> <span class="o">=</span> <span class="n">get_dark_backgrounds</span><span class="p">(</span>
+        <span class="n">img_dark</span><span class="p">,</span>
+        <span class="n">img_table</span><span class="p">[</span><span class="s2">&quot;IMGROW0_8X8&quot;</span><span class="p">],</span>
+        <span class="n">img_table</span><span class="p">[</span><span class="s2">&quot;IMGCOL0_8X8&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="n">imgs_dark</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">img_table</span><span class="p">),</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="c1"># Scale the dark current at each dark cal 8x8 image to the ccd temperature and e-/s</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">img_dark_unscaled</span><span class="p">,</span> <span class="n">t_ccd_i</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+        <span class="nb">zip</span><span class="p">(</span><span class="n">imgs_dark_unscaled</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">img_table</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">img_scaled</span> <span class="o">=</span> <span class="n">dark_temp_scale_img</span><span class="p">(</span><span class="n">img_dark_unscaled</span><span class="p">,</span> <span class="n">tccd_dark</span><span class="p">,</span> <span class="n">t_ccd_i</span><span class="p">)</span>
+        <span class="c1"># Default to using 1.696 integ time if not present in the image table</span>
+        <span class="n">integ</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="s2">&quot;INTEG&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;INTEG&quot;</span> <span class="ow">in</span> <span class="n">img</span><span class="o">.</span><span class="n">colnames</span> <span class="k">else</span> <span class="mf">1.696</span>
+        <span class="n">imgs_dark</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_scaled</span> <span class="o">*</span> <span class="n">integ</span> <span class="o">/</span> <span class="mi">5</span>
+
+    <span class="k">return</span> <span class="n">imgs_dark</span></div>
+
+
+
+<span class="n">CCD_MAX</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">CCD_MIN</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">staggered_aca_slice</span><span class="p">(</span><span class="n">array_in</span><span class="p">,</span> <span class="n">array_out</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make cutouts of array_in at positions row, col and put them in array_out.</span>
+
+<span class="sd">    array_out must be 3D with shape (N, sz_r, sz_c) and be initialized to 0.</span>
+<span class="sd">    row and col must be 1D arrays of length N.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">array_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">array_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">col</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">array_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
+                <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;=</span> <span class="n">CCD_MIN</span> <span class="ow">and</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="n">CCD_MAX</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&gt;=</span> <span class="n">CCD_MIN</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="n">CCD_MAX</span><span class="p">:</span>
+                    <span class="n">array_out</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_in</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_dark_backgrounds">
+<a class="viewcode-back" href="../../dark_subtract.html#chandra_aca.dark_subtract.get_dark_backgrounds">[docs]</a>
+<span class="k">def</span> <span class="nf">get_dark_backgrounds</span><span class="p">(</span><span class="n">raw_dark_img</span><span class="p">,</span> <span class="n">imgrow0</span><span class="p">,</span> <span class="n">imgcol0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get dark background cutouts at a set of ACA image positions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raw_dark_img : np.array</span>
+<span class="sd">        Dark calibration image.</span>
+<span class="sd">    imgrow0 : np.array (int)</span>
+<span class="sd">        Row of ACA image.</span>
+<span class="sd">    imgcol0 : np.array (int)</span>
+<span class="sd">        Column of ACA image.</span>
+<span class="sd">    size : int, optional</span>
+<span class="sd">        Size of ACA image (default=8).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    imgs_dark : np.array (len(imgrow0), size, size)</span>
+<span class="sd">        Dark backgrounds for image locations sampled from raw_dark_img (e-/s).</span>
+<span class="sd">        Pixels outside raw_dark_img are set to 0.0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">imgs_dark</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">imgrow0</span><span class="p">),</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">staggered_aca_slice</span><span class="p">(</span>
+        <span class="n">raw_dark_img</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">imgs_dark</span><span class="p">,</span> <span class="mi">512</span> <span class="o">+</span> <span class="n">imgrow0</span><span class="p">,</span> <span class="mi">512</span> <span class="o">+</span> <span class="n">imgcol0</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">imgs_dark</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 7.2.6. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>

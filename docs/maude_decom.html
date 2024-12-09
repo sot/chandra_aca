@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="_static/documentation_options.js?v=457a4054"></script>
+    <script src="_static/documentation_options.js?v=f369efd0"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="chandra_aca.planets" href="planets.html" />
-    <link rel="prev" title="chandra_aca.dark_model" href="dark_model.html" />
+    <link rel="prev" title="chandra_aca.dark_subtract" href="dark_subtract.html" />
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
 
   </head><body>
@@ -52,13 +52,13 @@
 	</a>
       </li>
       <li class="right">
-	<a href="dark_model.html" title="chandra_aca.dark_model">
+	<a href="dark_subtract.html" title="chandra_aca.dark_subtract">
 	  &laquo; previous
 	</a>
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       
@@ -245,16 +245,97 @@ In the following tables, column index increases to the right and row index incre
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.maude_decom.get_aca_images">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Link to this definition">¶</a></dt>
 <dd><p>Fetch ACA image telemetry</p>
+<p>Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the
+default settings and no additional kwargs, this calls <cite>get_aca_packets()</cite> in a
+configuration that uses MAUDE frames, combines image data, and sets the TIME
+associated with each image to the midpoint of the integration time during which that
+pixel data was collected (matches CXC L0 times). See <cite>get_aca_packets()</cite>.</p>
+<p>The ‘IMG’ column is always Nx8x8 and masked, where the mask is a per-pixel mask that
+indicates missing data for 4x4 or 6x6 images. The units of ‘IMG’ are DN.</p>
+<p>For queries including 4x4 data, the ‘BGDRMS’, ‘TEMPCCD’, ‘TEMPHOUS’, ‘TEMPPRIM’,
+‘TEMPSEC’, and ‘BGDSTAT’ columns will be masked since they are not present in the
+4x4 image data.</p>
+<p>There are three different specifiers of the image row/col location:
+- IMGROW0_8x8/IMGCOL0_8x8: the row/col of the lower-left pixel of the 8x8 masked</p>
+<blockquote>
+<div><p>image. This is generally the most useful.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>IMGROW0/IMGCOL0: the row/col of the lower-left pixel of the actual 4x4, 6x6, or</dt><dd><p>8x8 image data. For 6x6 this corresponds to the mouse-bitten corner pixel.</p>
+</dd>
+</dl>
+</li>
+<li><p>IMGROW_A1/IMGCOL_A1: the row/col of the A1 pixel in telemetry (see ACA EQ-spec).</p></li>
+</ul>
+<p>The full list of columns is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>         <span class="n">name</span>          <span class="n">dtype</span>  <span class="n">unit</span>
+<span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
+                 <span class="n">TIME</span> <span class="n">float64</span> <span class="n">CXC</span> <span class="n">seconds</span>
+              <span class="n">VCDUCTR</span>  <span class="n">uint32</span>
+                  <span class="n">MJF</span>  <span class="n">uint32</span>
+                  <span class="n">MNF</span>  <span class="n">uint32</span>
+               <span class="n">IMGNUM</span>  <span class="n">uint32</span>
+              <span class="n">COMMCNT</span>   <span class="n">uint8</span>
+             <span class="n">COMMPROG</span>   <span class="n">uint8</span>
+              <span class="n">GLBSTAT</span>   <span class="n">uint8</span>
+              <span class="n">IMGFUNC</span>  <span class="n">uint32</span>
+              <span class="n">IMGTYPE</span>   <span class="n">uint8</span>
+             <span class="n">IMGSCALE</span>  <span class="n">uint16</span>
+              <span class="n">IMGROW0</span>   <span class="n">int16</span>
+              <span class="n">IMGCOL0</span>   <span class="n">int16</span>
+                <span class="n">INTEG</span> <span class="n">float64</span> <span class="n">s</span>
+               <span class="n">BGDAVG</span>  <span class="n">uint16</span> <span class="n">DN</span>
+               <span class="n">BGDRMS</span>  <span class="n">uint16</span> <span class="n">DN</span>
+              <span class="n">TEMPCCD</span> <span class="n">float32</span> <span class="n">degC</span>
+             <span class="n">TEMPHOUS</span> <span class="n">float32</span> <span class="n">degC</span>
+             <span class="n">TEMPPRIM</span> <span class="n">float32</span> <span class="n">degC</span>
+              <span class="n">TEMPSEC</span> <span class="n">float32</span> <span class="n">degC</span>
+              <span class="n">BGDSTAT</span>   <span class="n">uint8</span>
+             <span class="n">HIGH_BGD</span>    <span class="nb">bool</span>
+             <span class="n">RAM_FAIL</span>    <span class="nb">bool</span>
+             <span class="n">ROM_FAIL</span>    <span class="nb">bool</span>
+           <span class="n">POWER_FAIL</span>    <span class="nb">bool</span>
+             <span class="n">CAL_FAIL</span>    <span class="nb">bool</span>
+   <span class="n">COMM_CHECKSUM_FAIL</span>    <span class="nb">bool</span>
+                <span class="n">RESET</span>    <span class="nb">bool</span>
+         <span class="n">SYNTAX_ERROR</span>    <span class="nb">bool</span>
+ <span class="n">COMMCNT_SYNTAX_ERROR</span>    <span class="nb">bool</span>
+<span class="n">COMMCNT_CHECKSUM_FAIL</span>    <span class="nb">bool</span>
+      <span class="n">COMMPROG_REPEAT</span>   <span class="n">uint8</span>
+               <span class="n">IMGFID</span>    <span class="nb">bool</span>
+              <span class="n">IMGSTAT</span>   <span class="n">uint8</span>
+            <span class="n">SAT_PIXEL</span>    <span class="nb">bool</span>
+            <span class="n">DEF_PIXEL</span>    <span class="nb">bool</span>
+           <span class="n">QUAD_BOUND</span>    <span class="nb">bool</span>
+           <span class="n">COMMON_COL</span>    <span class="nb">bool</span>
+           <span class="n">MULTI_STAR</span>    <span class="nb">bool</span>
+              <span class="n">ION_RAD</span>    <span class="nb">bool</span>
+            <span class="n">IMGROW_A1</span>   <span class="n">int16</span>
+            <span class="n">IMGCOL_A1</span>   <span class="n">int16</span>
+          <span class="n">IMGROW0_8X8</span>   <span class="n">int16</span>
+          <span class="n">IMGCOL0_8X8</span>   <span class="n">int16</span>
+       <span class="n">END_INTEG_TIME</span> <span class="n">float64</span>
+             <span class="n">AAPIXTLM</span>    <span class="n">str4</span>
+             <span class="n">AABGDTYP</span>    <span class="n">str4</span>
+                  <span class="n">IMG</span> <span class="n">float64</span> <span class="n">DN</span>
+          <span class="n">IMG_VCDUCTR</span>   <span class="n">int64</span>
+</pre></div>
+</div>
+<p>This function can be used to fetch up to 5 days of ACA image telemetry at a time.
+If more is needed, you can set the module variable <code class="docutils literal notranslate"><span class="pre">MAUDE_FETCH_LIMIT</span></code> to a larger
+value. Internally, this function will fetch the data in intervals of
+<code class="docutils literal notranslate"><span class="pre">MAUDE_SINGLE_FETCH_LIMIT</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>start</strong></dt><dd><p>timestamp, CxoTimeLike</p>
 </dd>
-<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>stop</strong></dt><dd><p>timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT</p>
 </dd>
-<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude</p>
+<dt><strong>kwargs</strong></dt><dd><p>keyword args passed to get_aca_packets</p>
 </dd>
 </dl>
 </dd>
@@ -408,9 +489,9 @@ first ACA packet (image type 4) while the temperature is present in the second (
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time for the ACA packets</p>
 </dd>
-<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time for the ACA packets</p>
 </dd>
 <dt><strong>level0</strong><span class="classifier">bool.</span></dt><dd><p>Implies combine=True, adjust_time=True, calibrate=True</p>
 </dd>
@@ -435,7 +516,7 @@ including MSIDs that are present in blobs. If used with frames, most probably yo
 and empty column. This option is intended to augment the default dtype. If a more
 restrictive dtype is used, a KeyError can be raised.</p>
 </dd>
-<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude</p>
+<dt><strong>**maude_kwargs</strong></dt><dd><p>Keyword args passed to maude</p>
 </dd>
 </dl>
 </dd>
@@ -453,20 +534,20 @@ restrictive dtype is used, a KeyError can be raised.</p>
 <dd><p>Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</p>
 <p>If the first minor frame in a group of four ACA packets is within (start, stop),
 the three following minor frames are included if present.</p>
-<p>returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
+<p>Returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
 These correspond to the minor frame time, minor frame count, major frame count,
 the list of packets, and flags returned by MAUDE respectively.</p>
 <p>This is to blobs what <cite>get_raw_aca_packets</cite> is to frames.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time for the ACA blobs</p>
 </dd>
-<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time for the ACA blobs</p>
 </dd>
 <dt><strong>maude_result</strong></dt><dd><p>the result of calling maude.get_blobs. Optional.</p>
 </dd>
-<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
+<dt><strong>**maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
 </dd>
 </dl>
 </dd>
@@ -493,13 +574,13 @@ can also happen if the frames are corrupted in some way.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time for packets</p>
 </dd>
-<dt><strong>stop</strong></dt><dd><p>timestamp interpreted as a Chandra.Time.DateTime</p>
+<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time for packets</p>
 </dd>
 <dt><strong>maude_result</strong></dt><dd><p>the result of calling maude.get_frames. Optional.</p>
 </dd>
-<dt><strong>maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
+<dt><strong>**maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
 </dd>
 </dl>
 </dd>
@@ -565,8 +646,8 @@ can also happen if the frames are corrupted in some way.</p>
 
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="dark_model.html"
-                          title="previous chapter">chandra_aca.dark_model</a></p>
+    <p class="topless"><a href="dark_subtract.html"
+                          title="previous chapter">chandra_aca.dark_subtract</a></p>
   </div>
   <div>
     <h4>Next topic</h4>

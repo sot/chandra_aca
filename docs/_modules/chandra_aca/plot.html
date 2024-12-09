@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.plot &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.plot &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/documentation_options.js?v=f369efd0"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
@@ -44,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -123,9 +123,9 @@
 
 <span class="k">def</span> <span class="nf">custom_plt_rcparams</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Decorator to make a function use the custom rcParams plt params</span>
-<span class="sd">    temporarily.  This uses a context manage to ensure original</span>
-<span class="sd">    params always get restored.</span>
+<span class="sd">    Decorator to make a function use the custom rcParams plt params temporarily.</span>
+
+<span class="sd">    This uses a context manage to ensure original params always get restored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
@@ -146,8 +146,9 @@
 
 <span class="k">def</span> <span class="nf">_plot_catalog_items</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">catalog</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Plot catalog items (guide, acq, bot, mon, fid) in yang and zang on the supplied</span>
-<span class="sd">    axes object in place.</span>
+<span class="sd">    Plot catalog items (guide, acq, bot, mon, fid) in yang and zang on the supplied axes object.</span>
+
+<span class="sd">    This plots in place.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -218,8 +219,7 @@
 
 <span class="k">def</span> <span class="nf">_plot_field_stars</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">stars</span><span class="p">,</span> <span class="n">attitude</span><span class="p">,</span> <span class="n">red_mag_lim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bad_stars</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Plot plot field stars in yang and zang on the supplied</span>
-<span class="sd">    axes object in place.</span>
+<span class="sd">    Plot plot field stars in yang and zang on the supplied axes object in place.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -304,7 +304,7 @@
 <div class="viewcode-block" id="plot_stars">
 <a class="viewcode-back" href="../../plot.html#chandra_aca.plot.plot_stars">[docs]</a>
 <span class="nd">@custom_plt_rcparams</span>
-<span class="k">def</span> <span class="nf">plot_stars</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">plot_stars</span><span class="p">(</span>  <span class="c1"># noqa: PLR0915 too many statements</span>
     <span class="n">attitude</span><span class="p">,</span>
     <span class="n">catalog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">stars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -320,6 +320,7 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot a catalog, a star field, or both in a matplotlib figure.</span>
+
 <span class="sd">    If supplying a star field, an attitude must also be supplied.</span>
 
 <span class="sd">    Parameters</span>
@@ -404,7 +405,7 @@
     <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">yagzag_to_pixels</span><span class="p">(</span><span class="n">zeros</span><span class="p">,</span> <span class="n">yz_ticks</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">yz_ticks</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Yag (arcsec)&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Zag (arcsec)&quot;</span><span class="p">)</span>
@@ -460,6 +461,7 @@
 
 <span class="k">def</span> <span class="nf">_plot_planets</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">att</span><span class="p">,</span> <span class="n">date0</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">lim0</span><span class="p">,</span> <span class="n">lim1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot planets.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -583,13 +585,13 @@
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">polar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
-        <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;&lt;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">arrowprops</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;arrowstyle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;-&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;k&quot;</span><span class="p">}</span>
     <span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
         <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
         <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span>
-        <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;&lt;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">),</span>
+        <span class="n">arrowprops</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;arrowstyle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;-&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;k&quot;</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">))</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span><span class="p">),</span> <span class="mf">1.2</span><span class="p">))</span>

@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.aca_image &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="_static/documentation_options.js?v=457a4054"></script>
+    <script src="_static/documentation_options.js?v=f369efd0"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
@@ -58,7 +58,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       
@@ -82,7 +82,8 @@ generating synthetic ACA images that have a high-fidelity point spread function
 <span class="target" id="module-chandra_aca.aca_image"></span><dl class="py class">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">ACAImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage" title="Link to this definition">¶</a></dt>
-<dd><p>ACAImage is an ndarray subclass that supports functionality for the Chandra
+<dd><p>ACA Image class.</p>
+<p>ACAImage is an ndarray subclass that supports functionality for the Chandra
 ACA. Most importantly it allows image indexing and slicing in absolute
 “aca” coordinates, where the image lower left coordinate is specified
 by object <code class="docutils literal notranslate"><span class="pre">row0</span></code> and <code class="docutils literal notranslate"><span class="pre">col0</span></code> attributes.</p>
@@ -117,15 +118,15 @@ initialize from array data or create a new array of zeros.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.aca">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aca</span></span><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.aca" title="Link to this definition">¶</a></dt>
-<dd><p>Return a light copy (same data) of self but with the _aca_coords
+<dd><p>Return a light copy of self with _aca_coords on.</p>
+<p>Return a light copy (same data) of self but with the _aca_coords
 attribute switched on so that indexing is absolute.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.centroid_fm">
 <span class="sig-name descname"><span class="pre">centroid_fm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bgd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.centroid_fm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.centroid_fm" title="Link to this definition">¶</a></dt>
-<dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">self</span></code> using 6x6 mousebitten image for input
-6x6 or 8x8 images.</p>
+<dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">self</span></code> using 6x6 mousebitten image for input 6x6 or 8x8 images.</p>
 <p>Note that the returned <code class="docutils literal notranslate"><span class="pre">norm</span></code> is the sum of the background-subtracted 6x6
 mousebitten image, not the entire image.</p>
 <dl class="field-list simple">
@@ -178,7 +179,8 @@ then it would be 1 / (1 + x) =&gt; 1 / (1 + x * flicker_scale).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.flicker_update">
 <span class="sig-name descname"><span class="pre">flicker_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_numba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_update" title="Link to this definition">¶</a></dt>
-<dd><p>Propagate the image forward by <code class="docutils literal notranslate"><span class="pre">dt</span></code> seconds and update any pixels
+<dd><p>Do a flicker update.</p>
+<p>Propagate the image forward by <code class="docutils literal notranslate"><span class="pre">dt</span></code> seconds and update any pixels
 that have flickered during that interval.</p>
 <p>This has the option to use one of two implementations.  The default is
 to use the numba-based version which is about 6 times faster.  The
@@ -200,7 +202,8 @@ vectorized version is left in for reference.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.AcaPsfLibrary">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">AcaPsfLibrary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary" title="Link to this definition">¶</a></dt>
-<dd><p>Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
+<dd><p>AcaPsfLibrary class</p>
+<p>Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
 (pixelated) ACA PSF over a grid of subpixel locations.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.aca_image</span> <span class="kn">import</span> <span class="n">AcaPsfLibrary</span>
@@ -229,8 +232,7 @@ vectorized version is left in for reference.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.AcaPsfLibrary.get_psf_image">
 <span class="sig-name descname"><span class="pre">get_psf_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aca_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary.get_psf_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image" title="Link to this definition">¶</a></dt>
-<dd><p>Get interpolated ACA PSF image that corresponds to pixel location
-<code class="docutils literal notranslate"><span class="pre">row</span></code>, <code class="docutils literal notranslate"><span class="pre">col</span></code>.</p>
+<dd><p>Get interpolated ACA PSF image that corresponds to pixel location <code class="docutils literal notranslate"><span class="pre">row</span></code>, <code class="docutils literal notranslate"><span class="pre">col</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -289,6 +291,56 @@ row and highest col; pixel I4 has the highest row and lowest column.</p>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>row, col, norm float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chandra_aca.aca_image.get_aca_images">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgsub</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'maude'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.get_aca_images" title="Link to this definition">¶</a></dt>
+<dd><p>Get ACA images and ancillary data from either the MAUDE or CXC data sources.</p>
+<p>The returned table of ACA images and ancillary data will include the default
+columns returned by chandra_aca.maude_decom.get_aca_images or
+mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
+table will also include columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       <span class="n">name</span>            <span class="n">dtype</span>  <span class="n">unit</span>
+<span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
+   <span class="n">IMG_BGSUB</span>          <span class="n">float64</span>  <span class="n">DN</span>
+   <span class="n">IMG_DARK</span>           <span class="n">float64</span>  <span class="n">DN</span>
+   <span class="n">T_CCD_SMOOTH</span>       <span class="n">float64</span>  <span class="n">degC</span>
+</pre></div>
+</div>
+<p>where:</p>
+<ul class="simple">
+<li><p>‘IMG_BGSUB’: background subtracted image</p></li>
+<li><p>‘IMG_DARK’: dark current image</p></li>
+<li><p>‘T_CCD_SMOOTH’: smoothed CCD temperature</p></li>
+</ul>
+<p>The IMG_DARK individual values are only calculated if within the 1024x1024
+dark current map, otherwise they are set to 0.  In practice this is not an
+issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time.</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time (CXC sec).</p>
+</dd>
+<dt><strong>bgsub</strong><span class="classifier">bool</span></dt><dd><p>Include background subtracted images in output table.</p>
+</dd>
+<dt><strong>source</strong><span class="classifier">str</span></dt><dd><p>Data source for image and temperature telemetry (‘maude’ or ‘cxc’). For ‘cxc’,
+the image telemetry is from mica and temperature telemetry is from CXC L0 via
+cheta.</p>
+</dd>
+<dt><strong>**maude_kwargs</strong></dt><dd><p>Additional kwargs for maude data source.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>imgs_table</strong><span class="classifier">astropy.table.Table</span></dt><dd><p>Table of ACA images and ancillary data.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -546,6 +598,7 @@ as object attributes instead of going through the <code class="docutils literal 
 </li>
 <li><a class="reference internal" href="#chandra_aca.aca_image.EIGHT_LABELS"><code class="docutils literal notranslate"><span class="pre">EIGHT_LABELS</span></code></a></li>
 <li><a class="reference internal" href="#chandra_aca.aca_image.centroid_fm"><code class="docutils literal notranslate"><span class="pre">centroid_fm()</span></code></a></li>
+<li><a class="reference internal" href="#chandra_aca.aca_image.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
 <li><a class="reference internal" href="#acaimage-class">ACAImage class</a><ul>
 <li><a class="reference internal" href="#creation">Creation</a></li>
 <li><a class="reference internal" href="#image-access-and-setting">Image access and setting</a></li>

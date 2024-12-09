@@ -5,18 +5,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.dark_model &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.dark_model &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="_static/documentation_options.js?v=457a4054"></script>
+    <script src="_static/documentation_options.js?v=f369efd0"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="chandra_aca.maude_decom" href="maude_decom.html" />
+    <link rel="next" title="chandra_aca.dark_subtract" href="dark_subtract.html" />
     <link rel="prev" title="chandra_aca.centroid_resid" href="centroid_resid.html" />
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
 
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li class="right">
-	<a href="maude_decom.html" title="chandra_aca.maude_decom">
+	<a href="dark_subtract.html" title="chandra_aca.dark_subtract">
 	  next &raquo;
 	</a>
       </li>
@@ -58,7 +58,7 @@
 	 |
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       
@@ -87,7 +87,8 @@ and other files in that directory.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.dark_model.dark_temp_scale">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_model.</span></span><span class="sig-name descname"><span class="pre">dark_temp_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-19.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_4c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/dark_model.html#dark_temp_scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.dark_model.dark_temp_scale" title="Link to this definition">¶</a></dt>
-<dd><p>Return the multiplicative scale factor to convert a CCD dark map
+<dd><p>Calculate dark current scale factor.</p>
+<p>Return the multiplicative scale factor to convert a CCD dark map
 or dark current value from temperature <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code> to temperature
 <code class="docutils literal notranslate"><span class="pre">t_ccd_ref</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale_4c</span> <span class="o">**</span> <span class="p">((</span><span class="n">t_ccd_ref</span> <span class="o">-</span> <span class="n">t_ccd</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span>
@@ -206,8 +207,7 @@ parameters are derived from fits and by-hand inspection of fit trending.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.dark_model.get_warm_fracs">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_model.</span></span><span class="sig-name descname"><span class="pre">get_warm_fracs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">warm_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2013:001:12:00:00'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_ccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-19.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/dark_model.html#get_warm_fracs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.dark_model.get_warm_fracs" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate fraction of pixels in modeled dark current distribution
-above warm threshold(s).</p>
+<dd><p>Calculate fraction of pixels in modeled dark current distribution above warm threshold(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -230,7 +230,8 @@ above warm threshold(s).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.dark_model.smooth_broken_pow">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_model.</span></span><span class="sig-name descname"><span class="pre">smooth_broken_pow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/dark_model.html#smooth_broken_pow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.dark_model.smooth_broken_pow" title="Link to this definition">¶</a></dt>
-<dd><p>Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):
+<dd><p>Smoothed broken power-law.</p>
+<p>Pars are same as bpl1d (NOT + gaussian sigma):
 1: gamma1
 2: gamma2
 3: x_b (break point)
@@ -241,7 +242,8 @@ above warm threshold(s).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.dark_model.smooth_twice_broken_pow">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_model.</span></span><span class="sig-name descname"><span class="pre">smooth_twice_broken_pow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/dark_model.html#smooth_twice_broken_pow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.dark_model.smooth_twice_broken_pow" title="Link to this definition">¶</a></dt>
-<dd><p>Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):
+<dd><p>Smoothed twice-broken power-law.</p>
+<p>Pars are same as bpl1d (NOT + gaussian sigma):
 1: gamma1
 2: gamma2
 3: gamma3
@@ -252,8 +254,7 @@ above warm threshold(s).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.dark_model.synthetic_dark_image">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_model.</span></span><span class="sig-name descname"><span class="pre">synthetic_dark_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/dark_model.html#synthetic_dark_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.dark_model.synthetic_dark_image" title="Link to this definition">¶</a></dt>
-<dd><p>Generate a synthetic dark current image corresponding to the specified
-<code class="docutils literal notranslate"><span class="pre">date</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>.</p>
+<dd><p>Generate a synthetic dark current image corresponding to the specified <code class="docutils literal notranslate"><span class="pre">date</span></code> and <code class="docutils literal notranslate"><span class="pre">t_ccd</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -269,7 +270,8 @@ above warm threshold(s).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.dark_model.temp_scalefac">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_model.</span></span><span class="sig-name descname"><span class="pre">temp_scalefac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_ccd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/dark_model.html#temp_scalefac"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.dark_model.temp_scalefac" title="Link to this definition">¶</a></dt>
-<dd><p>Return the multiplicative scale factor to convert a CCD dark map from
+<dd><p>Calculate scale factor.</p>
+<p>Return the multiplicative scale factor to convert a CCD dark map from
 the nominal -19C temperature to the temperature T.  Based on best global fit for
 dark current model in plot_predicted_warmpix.py.  Previous value was 0.62 instead
 of 0.70.</p>
@@ -310,8 +312,8 @@ module DARK_SCALE_4C value which may differ from previous values of 1.0/0.70 or 
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="maude_decom.html"
-                          title="next chapter">chandra_aca.maude_decom</a></p>
+    <p class="topless"><a href="dark_subtract.html"
+                          title="next chapter">chandra_aca.dark_subtract</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>

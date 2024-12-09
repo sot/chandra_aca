@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.drift &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.drift &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/documentation_options.js?v=f369efd0"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
@@ -44,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -70,6 +70,7 @@
 <span class="sd">A key element of this module is the fitting analysis here:</span>
 <span class="sd">https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -166,6 +167,8 @@
 <a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel">[docs]</a>
 <span class="k">class</span> <span class="nc">AcaDriftModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    AcaDriftModel class</span>
+
 <span class="sd">    Define a drift model for aspect solution SIM DY/DZ values as a function of</span>
 <span class="sd">    time and ACA CCD temperature.  This expresses the model which is defined</span>
 <span class="sd">    and fitted in the fit_aimpoint_drift notebook in this repo.</span>
@@ -182,6 +185,8 @@
 <a class="viewcode-back" href="../../drift.html#chandra_aca.drift.AcaDriftModel.calc">[docs]</a>
     <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the drift model</span>
+
 <span class="sd">        Calculate the drift model for aspect solution SIM DY/DZ values for input</span>
 <span class="sd">        ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.</span>
 
@@ -326,7 +331,7 @@
             <span class="s2">&quot;Detector and chip combination </span><span class="si">{}</span><span class="s2"> not in allow values: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">chip_id</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ASOL_TO_CHIP</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="p">)</span>
-        <span class="p">)</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
 
     <span class="c1"># Compute the asol DY/DZ that would be required for the aimpoint to be</span>
     <span class="c1"># exactly at the desired CHIPX/Y values.  Uses the geometrical transform</span>

@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.transform &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="_static/documentation_options.js?v=457a4054"></script>
+    <script src="_static/documentation_options.js?v=f369efd0"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
@@ -52,7 +52,7 @@
 	
       </li>
       <li>
-	<a href="index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       
@@ -77,7 +77,8 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.broadcast_arrays">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">broadcast_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays" title="Link to this definition">¶</a></dt>
-<dd><p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape and return an <code class="docutils literal notranslate"><span class="pre">is_scalar</span></code> flag and
+<dd><p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape.</p>
+<p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape and return an <code class="docutils literal notranslate"><span class="pre">is_scalar</span></code> flag and
 the broadcasted version of inputs.  This lets intermediate code work on
 arrays that are guaranteed to be the same shape and at least a 1-d array,
 but reshape the output at the end.</p>
@@ -94,7 +95,8 @@ but reshape the output at the end.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.broadcast_arrays_flatten">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">broadcast_arrays_flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#broadcast_arrays_flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.broadcast_arrays_flatten" title="Link to this definition">¶</a></dt>
-<dd><p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape and then return that shape and the
+<dd><p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape and flatten.</p>
+<p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape.and then return that shape and the
 flattened view of all the inputs.  This lets intermediate code work on all
 scalars or all arrays that are the same-length 1-d array and then reshape
 the output at the end (if necessary).</p>
@@ -111,7 +113,8 @@ the output at the end (if necessary).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.calc_aca_from_targ">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">calc_aca_from_targ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si_align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_aca_from_targ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.calc_aca_from_targ" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the PCAD (ACA) pointing attitude from target attitude and
+<dd><p>Calculate PCAD (ACA) pointing attitude.</p>
+<p>Calculate the PCAD (ACA) pointing attitude from target attitude and
 Y,Z offset (per OR-list).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -137,7 +140,8 @@ Y,Z offset (per OR-list).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.calc_targ_from_aca">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">calc_targ_from_aca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aca</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si_align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_targ_from_aca"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.calc_targ_from_aca" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the target attitude from ACA (PCAD) pointing attitude and
+<dd><p>Calculate target attitude.</p>
+<p>Calculate the target attitude from ACA (PCAD) pointing attitude and
 Y,Z offset (per OR-list).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -163,7 +167,8 @@ Y,Z offset (per OR-list).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.calc_target_offsets">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">calc_target_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aca</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ra_targ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec_targ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si_align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#calc_target_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.calc_target_offsets" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates required Y and Z offsets (deg) required from a target RA, Dec to
+<dd><p>Calculate target offsets.</p>
+<p>Calculates required Y and Z offsets (deg) required from a target RA, Dec to
 arrive at the desired PCAD pointing <code class="docutils literal notranslate"><span class="pre">aca</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -210,10 +215,10 @@ columns mag0=10.32 and cnt_rate_mag0=5263.0.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.eci_to_radec">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">eci_to_radec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eci</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#eci_to_radec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.eci_to_radec" title="Link to this definition">¶</a></dt>
-<dd><p>Convert from ECI vector(s) to RA, Dec.  The input <code class="docutils literal notranslate"><span class="pre">eci</span></code> value
-can be an array of 3-vectors having shape (N, 3) in which case
-the output RA, Dec will be arrays of shape N. The N dimension can
-actually be any multidimensional shape.</p>
+<dd><p>Convert from ECI vector(s) to RA, Dec.</p>
+<p>The input <code class="docutils literal notranslate"><span class="pre">eci</span></code> value can be an array of 3-vectors having shape (N, 3)
+in which case the output RA, Dec will be arrays of shape N. The N dimension
+can actually be any multidimensional shape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -277,8 +282,8 @@ using <code class="docutils literal notranslate"><span class="pre">np.linalg.nor
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.pixels_to_yagzag">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">pixels_to_yagzag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_bad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_aca</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'edge'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#pixels_to_yagzag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.pixels_to_yagzag" title="Link to this definition">¶</a></dt>
-<dd><p>Convert ACA row/column positions to ACA y-angle, z-angle.
-It is expected that the row and column input arguments have the same length.</p>
+<dd><p>Convert ACA row/column positions to ACA y-angle, z-angle.</p>
+<p>It is expected that the row and column input arguments have the same length.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">pix_zero_loc</span></code> parameter controls whether the input pixel values
 are assumed to have integral values at the pixel center or at the pixel
 lower/left edge.  The PEA flight coefficients assume lower/left edge, and
@@ -312,9 +317,10 @@ centroids and other manipulations to use the center.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.radec_to_eci">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">radec_to_eci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_eci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_eci" title="Link to this definition">¶</a></dt>
-<dd><p>Convert from RA,Dec to ECI.  The input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d
-arrays of length N in which case the output <code class="docutils literal notranslate"><span class="pre">ECI</span></code> will be an array with
-shape (N, 3). The N dimension can actually be any multidimensional shape.</p>
+<dd><p>Convert from RA,Dec to ECI.</p>
+<p>The input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d arrays of length N in which
+case the output <code class="docutils literal notranslate"><span class="pre">ECI</span></code> will be an array with shape (N, 3). The N dimension
+can actually be any multidimensional shape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -335,8 +341,8 @@ shape (N, 3). The N dimension can actually be any multidimensional shape.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.radec_to_yagzag">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">radec_to_yagzag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_att</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#radec_to_yagzag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.radec_to_yagzag" title="Link to this definition">¶</a></dt>
-<dd><p>Given RA, Dec, and pointing quaternion, determine ACA Y-ang, Z-ang.  The
-input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d arrays in which case the output
+<dd><p>Calculate ACA Y-angle, Z-angle from RA, Dec and pointing quaternion.</p>
+<p>The input <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> values can be 1-d arrays in which case the output
 <code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> will be corresponding arrays of the same length.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -360,7 +366,8 @@ input <code class="docutils literal notranslate"><span class="pre">ra</span></co
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.snr_mag_for_t_ccd">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">snr_mag_for_t_ccd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_ccd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_mag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_t_ccd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_4c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#snr_mag_for_t_ccd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.snr_mag_for_t_ccd" title="Link to this definition">¶</a></dt>
-<dd><p>Given a t_ccd, solve for the magnitude that has the same expected signal
+<dd><p>Calculate signal-to-noise equivalent magnitude.</p>
+<p>Given a t_ccd, solve for the magnitude that has the same expected signal
 to noise as ref_mag / ref_t_ccd.</p>
 <p>If scale_4c is None, the value from dark_model.DARK_SCALE_4C is used.</p>
 <p>To solve for the magnitude that has the expected signal to noise as
@@ -401,8 +408,8 @@ reducing, and solving the original equality for mag gives:</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.yagzag_to_pixels">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">yagzag_to_pixels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_bad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'edge'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_pixels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_pixels" title="Link to this definition">¶</a></dt>
-<dd><p>Convert ACA y-angle/z-angle positions to ACA pixel row, column.
-It is expected that the y-angle/z-angle input arguments have the same length.</p>
+<dd><p>Convert ACA y-angle/z-angle positions to ACA pixel row, column.</p>
+<p>It is expected that the y-angle/z-angle input arguments have the same length.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">pix_zero_loc</span></code> parameter controls whether the input pixel values
 are assumed to have integral values at the pixel center or at the pixel
 lower/left edge.  The PEA flight coefficients assume lower/left edge, and
@@ -432,8 +439,8 @@ centroids and other manipulations to use <code class="docutils literal notransla
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.transform.yagzag_to_radec">
 <span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">yagzag_to_radec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_att</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/transform.html#yagzag_to_radec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.yagzag_to_radec" title="Link to this definition">¶</a></dt>
-<dd><p>Given ACA Y-ang, Z-ang and pointing quaternion determine RA, Dec. The
-input <code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> values can be 1-d arrays in which case the output
+<dd><p>Calculate RA, Dec from ACA Y-angle, Z-angle and pointing quaternion.</p>
+<p>The input <code class="docutils literal notranslate"><span class="pre">yag</span></code> and <code class="docutils literal notranslate"><span class="pre">zag</span></code> values can be 1-d arrays in which case the output
 <code class="docutils literal notranslate"><span class="pre">ra</span></code> and <code class="docutils literal notranslate"><span class="pre">dec</span></code> will be corresponding arrays of the same length.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

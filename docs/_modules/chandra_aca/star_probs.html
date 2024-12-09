@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.star_probs &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.star_probs &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/documentation_options.js?v=f369efd0"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
@@ -44,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -145,8 +145,9 @@
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.get_box_delta">[docs]</a>
 <span class="k">def</span> <span class="nf">get_box_delta</span><span class="p">(</span><span class="n">halfwidth</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Transform from halfwidth (arcsec) to the box_delta value which gets added</span>
-<span class="sd">    to failure probability (in probit space).</span>
+<span class="sd">    Transform from halfwidth (arcsec) to the box_delta value.</span>
+
+<span class="sd">    This box_delta value gets added to failure probability (in probit space).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -176,7 +177,9 @@
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.set_acq_model_ms_filter">[docs]</a>
 <span class="k">def</span> <span class="nf">set_acq_model_ms_filter</span><span class="p">(</span><span class="n">ms_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Choose one of two sets of acquisition model fit parameters based</span>
+<span class="sd">    Set acq model multiple star filter.</span>
+
+<span class="sd">    This chooses one of two sets of acquisition model fit parameters based</span>
 <span class="sd">    on ``ms_enabled``.  The default is ``False``:</span>
 
 <span class="sd">    - True: MS filtering enabled (prior to FEB0816 loads), where stars would</span>
@@ -186,7 +189,7 @@
 <span class="sd">    The selected fit parameters are global/module-wide.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">MULT_STARS_ENABLED</span>
+    <span class="k">global</span> <span class="n">MULT_STARS_ENABLED</span>  <span class="c1"># noqa: PLW0603</span>
     <span class="n">MULT_STARS_ENABLED</span> <span class="o">=</span> <span class="n">ms_enabled</span></div>
 
 
@@ -204,8 +207,9 @@
     <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars</span>
-<span class="sd">    criterion.  This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the</span>
+<span class="sd">    Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars criterion.</span>
+
+<span class="sd">    This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the</span>
 <span class="sd">    cold end the result may be below ``min_n_acq``, in which case the star catalog</span>
 <span class="sd">    may be rejected.</span>
 
@@ -247,6 +251,8 @@
 
     <span class="k">def</span> <span class="nf">n_acq_above_min</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate n_acq above min n_acq.</span>
+
 <span class="sd">        This will be positive if the expected number of stars is above the</span>
 <span class="sd">        minimum number of stars.  Positive =&gt; more expected stars.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -262,6 +268,8 @@
 
     <span class="k">def</span> <span class="nf">prob_n_or_fewer_below_max</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate probability n_or_fewer below max.</span>
+
 <span class="sd">        This will be positive if the computed probability of acquiring n_or_fewer</span>
 <span class="sd">        stars is less than the threshold.  Positive =&gt; lower prob. of safing action.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -327,6 +335,8 @@
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.prob_n_acq">[docs]</a>
 <span class="k">def</span> <span class="nf">prob_n_acq</span><span class="p">(</span><span class="n">star_probs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get probability of acquiring n_acq stars.</span>
+
 <span class="sd">    Given an input array of star acquisition probabilities ``star_probs``,</span>
 <span class="sd">    return the probabilities of acquiring exactly n_acq stars, where n_acq</span>
 <span class="sd">    is evaluated at values 0 to n_stars.  This is returned as an array</span>
@@ -360,6 +370,8 @@
     <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get acquisition success probability.</span>
+
 <span class="sd">    Return probability of acquisition success for given date, temperature, star</span>
 <span class="sd">    properties and search box size.</span>
 
@@ -395,8 +407,8 @@
         <span class="kn">from</span> <span class="nn">.dark_model</span> <span class="kn">import</span> <span class="n">get_warm_fracs</span>
 
         <span class="n">warm_fracs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">t_ccd</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dates</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">t_ccds</span><span class="o">.</span><span class="n">ravel</span><span class="p">()):</span>
-            <span class="n">warm_frac</span> <span class="o">=</span> <span class="n">get_warm_fracs</span><span class="p">(</span><span class="n">WARM_THRESHOLD</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">T_ccd</span><span class="o">=</span><span class="n">t_ccd</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">t_ccd_local</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dates</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">t_ccds</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">warm_frac</span> <span class="o">=</span> <span class="n">get_warm_fracs</span><span class="p">(</span><span class="n">WARM_THRESHOLD</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">T_ccd</span><span class="o">=</span><span class="n">t_ccd_local</span><span class="p">)</span>
             <span class="n">warm_fracs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warm_frac</span><span class="p">)</span>
         <span class="n">warm_frac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">warm_fracs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dates</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
@@ -481,9 +493,10 @@
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.clip_and_warn">[docs]</a>
 <span class="k">def</span> <span class="nf">clip_and_warn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val_lo</span><span class="p">,</span> <span class="n">val_hi</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tol_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tol_hi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Clip ``val`` to be in the range ``val_lo`` to ``val_hi`` and issue a</span>
-<span class="sd">    warning if clipping occurs, subject to ``tol_lo`` and ``tol_hi`` expansions.</span>
-<span class="sd">    The ``name`` and ``model`` are just used in the warning.</span>
+<span class="sd">    Clip ``val`` to be in the range ``val_lo`` to ``val_hi``.</span>
+
+<span class="sd">    This also issues a warning if clipping occurs, subject to ``tol_lo`` and</span>
+<span class="sd">    ``tol_hi`` expansions. The ``name`` and ``model`` are just used in the warning.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -615,12 +628,18 @@
     <span class="n">grid_halfws</span> <span class="o">=</span> <span class="n">get_grid_axis_values</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span> <span class="s2">&quot;halfw&quot;</span><span class="p">)</span>
 
     <span class="c1"># Sanity checks on model data</span>
-    <span class="k">assert</span> <span class="n">probit_p_fail_no_1p5</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span>
+    <span class="k">if</span> <span class="n">probit_p_fail_no_1p5</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span>
         <span class="nb">len</span><span class="p">(</span><span class="n">grid_mags</span><span class="p">),</span>
         <span class="nb">len</span><span class="p">(</span><span class="n">grid_t_ccds</span><span class="p">),</span>
         <span class="nb">len</span><span class="p">(</span><span class="n">grid_halfws</span><span class="p">),</span>
-    <span class="p">)</span>
-    <span class="k">assert</span> <span class="n">probit_p_fail_1p5</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">probit_p_fail_no_1p5</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Shape of probit_p_fail_no_1p5 does not match the expected dimensions&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">probit_p_fail_1p5</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">probit_p_fail_no_1p5</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Shape of probit_p_fail_1p5 does not match the expected dimensions&quot;</span>
+        <span class="p">)</span>
 
     <span class="c1"># Generate the 3-d linear interpolation functions</span>
     <span class="n">func_no_1p5</span> <span class="o">=</span> <span class="n">RegularGridInterpolator</span><span class="p">(</span>
@@ -688,7 +707,10 @@
 <span class="k">def</span> <span class="nf">grid_model_acq_prob</span><span class="p">(</span>
     <span class="n">mag</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">12.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">probit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate a grid model probability of acquisition success for a star with</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate grid model probability.</span>
+
+<span class="sd">    Calculate a grid model probability of acquisition success for a star with</span>
 <span class="sd">    specified mag, t_ccd, color, and search box halfwidth.</span>
 
 <span class="sd">    This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a</span>
@@ -773,6 +795,8 @@
     <span class="n">mag</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">12.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">probit</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate spline model acq probability.</span>
+
 <span class="sd">    Calculate poly-spline-tccd model (aka &#39;spline&#39; model) probability of acquisition</span>
 <span class="sd">    success for a star with specified mag, t_ccd, color, and search box halfwidth.</span>
 
@@ -914,6 +938,8 @@
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.model_acq_success_prob">[docs]</a>
 <span class="k">def</span> <span class="nf">model_acq_success_prob</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">warm_frac</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call sota_model_acq_prob().</span>
+
 <span class="sd">    Call sota_model_acq_prob() with same params.  This is retained purely</span>
 <span class="sd">    for back-compatibility but use is deprecated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1050,6 +1076,8 @@
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.mag_for_p_acq">[docs]</a>
 <span class="k">def</span> <span class="nf">mag_for_p_acq</span><span class="p">(</span><span class="n">p_acq</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t_ccd</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">halfwidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate star magnitude for a given acquisition probability.</span>
+
 <span class="sd">    For a given ``date`` and ``t_ccd``, find the star magnitude that has an</span>
 <span class="sd">    acquisition probability of ``p_acq``.  Star magnitude is defined/limited</span>
 <span class="sd">    to the range 5.0 - 12.0 mag.</span>
@@ -1099,7 +1127,10 @@
 <div class="viewcode-block" id="guide_count">
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.guide_count">[docs]</a>
 <span class="k">def</span> <span class="nf">guide_count</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccd</span><span class="p">,</span> <span class="n">count_9th</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate a guide star fractional count/metric using signal-to-noise scaled</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate guide star fractional count.</span>
+
+<span class="sd">    Calculate a guide star fractional count/metric using signal-to-noise scaled</span>
 <span class="sd">    mag thresholds.</span>
 
 <span class="sd">    This uses a modification of the guide star fractional counts that were</span>
@@ -1118,7 +1149,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    mags : float, array</span>
 <span class="sd">        Star magnitude(s)</span>
-<span class="sd">    t_ccds : float, array</span>
+<span class="sd">    t_ccd : float, array</span>
 <span class="sd">        CCD temperature(s)</span>
 <span class="sd">    count_9th : bool</span>
 <span class="sd">        Return fractional count of 9th mag or brighter stars</span>
@@ -1134,13 +1165,13 @@
     <span class="n">ref_t_ccd</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.9</span>
     <span class="n">ref_mags0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">9.0</span> <span class="k">if</span> <span class="n">count_9th</span> <span class="k">else</span> <span class="mf">9.95</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
     <span class="n">ref_mags</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">t_ccd</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">t_ccds</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">t_ccd_unique</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">t_ccds</span><span class="p">):</span>
         <span class="c1"># The 5.25 and 5.35 limits are not temperature dependent, these reflect the</span>
         <span class="c1"># possibility that the star will be brighter than 5.2 mag and the OBC will</span>
         <span class="c1"># reject it.  Note that around 6th mag mean observed catalog error is</span>
         <span class="c1"># around 0.1 mag.</span>
-        <span class="n">ref_mags</span><span class="p">[</span><span class="n">t_ccd</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">[[</span><span class="mf">5.25</span><span class="p">,</span> <span class="mf">5.35</span><span class="p">],</span> <span class="n">snr_mag_for_t_ccd</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mags0</span><span class="p">,</span> <span class="n">ref_t_ccd</span><span class="p">)]</span>
+        <span class="n">ref_mags</span><span class="p">[</span><span class="n">t_ccd_unique</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[[</span><span class="mf">5.25</span><span class="p">,</span> <span class="mf">5.35</span><span class="p">],</span> <span class="n">snr_mag_for_t_ccd</span><span class="p">(</span><span class="n">t_ccd_unique</span><span class="p">,</span> <span class="n">ref_mags0</span><span class="p">,</span> <span class="n">ref_t_ccd</span><span class="p">)]</span>
         <span class="p">)</span>
 
     <span class="n">ref_counts</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0005</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
@@ -1148,8 +1179,8 @@
     <span class="c1"># Do the interpolation, noting that np.interp will use the end ``counts``</span>
     <span class="c1"># values for any ``mag`` &lt; ref_mags[0] or &gt; ref_mags[-1].</span>
     <span class="n">count</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="k">for</span> <span class="n">mag</span><span class="p">,</span> <span class="n">t_ccd</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">):</span>
-        <span class="n">count</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">ref_mags</span><span class="p">[</span><span class="n">t_ccd</span><span class="p">],</span> <span class="n">ref_counts</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">mag</span><span class="p">,</span> <span class="n">t_ccd_</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mags</span><span class="p">,</span> <span class="n">t_ccds</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">ref_mags</span><span class="p">[</span><span class="n">t_ccd_</span><span class="p">],</span> <span class="n">ref_counts</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">count</span></div>
 
@@ -1162,6 +1193,7 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve for the warmest temperature that still gets the min_guide_count.</span>
+
 <span class="sd">    This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the</span>
 <span class="sd">    cold end the result may be below ``min_n_acq``, in which case the star catalog</span>
 <span class="sd">    may be rejected.</span>
@@ -1202,8 +1234,9 @@
 <a class="viewcode-back" href="../../star_probs.html#chandra_aca.star_probs.binom_ppf">[docs]</a>
 <span class="k">def</span> <span class="nf">binom_ppf</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">n_sample</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute percent point function (inverse of CDF) for binomial, where</span>
-<span class="sd">    the percentage is with respect to the &quot;p&quot; (binomial probability) parameter</span>
+<span class="sd">    Compute percent point function (inverse of CDF) for binomial.</span>
+
+<span class="sd">    Here the percentage is with respect to the &quot;p&quot; (binomial probability) parameter</span>
 <span class="sd">    not the &quot;k&quot; parameter.  The latter is what one gets with scipy.stats.binom.ppf().</span>
 
 <span class="sd">    This function internally generates ``n_sample`` samples of the binomal PMF in</span>

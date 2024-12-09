@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.47.0 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.48.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
     
-    <script src="../../_static/documentation_options.js?v=457a4054"></script>
+    <script src="../../_static/documentation_options.js?v=f369efd0"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script type="text/javascript" src="../../_static/sidebar.js"></script>
@@ -44,7 +44,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="../../index.html">chandra_aca 4.47.0 documentation</a>
+	<a href="../../index.html">chandra_aca 4.48.0 documentation</a>
 	 &#187;
       </li>
       <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
@@ -209,13 +209,19 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">from</span> <span class="nn">struct</span> <span class="kn">import</span> <span class="n">Struct</span>
 <span class="kn">from</span> <span class="nn">struct</span> <span class="kn">import</span> <span class="n">unpack</span> <span class="k">as</span> <span class="n">_unpack</span>
 
+<span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
 <span class="kn">import</span> <span class="nn">maude</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
-<span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
+<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
+
+<span class="c1"># Maude fetch limits</span>
+<span class="n">MAUDE_SINGLE_FETCH_LIMIT</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">hour</span>
+<span class="n">MAUDE_FETCH_LIMIT</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
 
 <span class="c1"># maximum values for frame counters (for convenience)</span>
 <span class="n">MAX_MJF</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
@@ -285,6 +291,7 @@
             <span class="n">_ROWS</span><span class="p">[</span><span class="n">PIXEL_MAP</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;  &quot;</span><span class="p">],</span>
             <span class="n">_COLS</span><span class="p">[</span><span class="n">PIXEL_MAP</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;  &quot;</span><span class="p">],</span>
             <span class="n">PIXEL_MAP</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">PIXEL_MAP</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;  &quot;</span><span class="p">],</span>
+            <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="p">}</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;6x6&quot;</span><span class="p">,</span> <span class="s2">&quot;4x4&quot;</span><span class="p">,</span> <span class="s2">&quot;8x8&quot;</span><span class="p">]</span>
@@ -451,7 +458,7 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
         <span class="p">],</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">res</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">res</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">res</span><span class="p">}</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
 
 
 <span class="n">ACA_MSID_LIST</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">_aca_msid_list</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)}</span>
@@ -665,7 +672,7 @@
         <span class="s2">&quot;COMMPROG&quot;</span><span class="p">:</span> <span class="n">_packbits</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">16</span><span class="p">:</span><span class="mi">22</span><span class="p">],</span> <span class="n">unsigned</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
         <span class="s2">&quot;COMMPROG_REPEAT&quot;</span><span class="p">:</span> <span class="n">_packbits</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">22</span><span class="p">:</span><span class="mi">24</span><span class="p">],</span> <span class="n">unsigned</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="p">}</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slots</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">slots</span><span class="p">:</span>
         <span class="n">s</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">slots</span></div>
 
@@ -819,13 +826,13 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    start</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    stop</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    start : CxoTimeLike</span>
+<span class="sd">        Start time for packets</span>
+<span class="sd">    stop : CxoTimeLike</span>
+<span class="sd">        Stop time for packets</span>
 <span class="sd">    maude_result</span>
 <span class="sd">        the result of calling maude.get_frames. Optional.</span>
-<span class="sd">    maude_kwargs</span>
+<span class="sd">    **maude_kwargs</span>
 <span class="sd">        keyword args passed to maude.get_frames()</span>
 
 <span class="sd">    Returns</span>
@@ -834,10 +841,8 @@
 <span class="sd">    {&#39;flags&#39;: int, &#39;packets&#39;: [],</span>
 <span class="sd">    &#39;TIME&#39;: np.array([]), &#39;MNF&#39;: np.array([]), &#39;MJF&#39;: np.array([])}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">DateTime</span><span class="p">(</span>
-        <span class="n">stop</span>
-    <span class="p">)</span>  <span class="c1"># ensure input is proper date</span>
-    <span class="n">stop_pad</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">/</span> <span class="mi">86400</span>  <span class="c1"># padding at the end in case of trailing partial ACA packets</span>
+    <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+    <span class="n">stop_pad</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>  <span class="c1"># padding at the end in case of trailing partial ACA packets</span>
 
     <span class="c1"># get the frames and unpack front matter</span>
     <span class="k">if</span> <span class="n">maude_result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -865,7 +870,7 @@
     <span class="c1">#  - Frames come in packets of four. A missing frame would cause the packet to be dropped.</span>
     <span class="n">selected</span> <span class="o">=</span> <span class="n">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu</span><span class="p">)</span>
     <span class="n">vcdu</span> <span class="o">=</span> <span class="n">vcdu</span><span class="p">[</span><span class="n">selected</span><span class="p">]</span>
-    <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frame</span> <span class="k">for</span> <span class="n">frame</span><span class="p">,</span> <span class="n">sel</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">selected</span><span class="p">)</span> <span class="k">if</span> <span class="n">sel</span><span class="p">]</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frame</span> <span class="k">for</span> <span class="n">frame</span><span class="p">,</span> <span class="n">sel</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">selected</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">if</span> <span class="n">sel</span><span class="p">]</span>
     <span class="n">vcdu_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">frame</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">])</span>
 
     <span class="n">sub</span> <span class="o">=</span> <span class="n">vcdu</span> <span class="o">%</span> <span class="mi">4</span>  <span class="c1"># the minor frame index within each ACA update</span>
@@ -909,7 +914,8 @@
         <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">aca</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">])</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">aca_frame_entries</span><span class="p">[</span><span class="n">select</span><span class="p">]</span>
     <span class="p">]</span>
     <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">aca_packets</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="mi">224</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">224</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ACA packet is not 224 bytes long&quot;</span><span class="p">)</span>
 
     <span class="n">times</span> <span class="o">=</span> <span class="n">vcdu_times</span><span class="p">[</span><span class="n">aca_frame_entries</span><span class="p">[</span><span class="n">select</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
     <span class="n">vcdu_counter</span> <span class="o">=</span> <span class="n">vcdu</span><span class="p">[</span><span class="n">aca_frame_entries</span><span class="p">[</span><span class="n">select</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
@@ -1009,7 +1015,7 @@
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">aca_packet</span><span class="p">:</span>
                 <span class="n">array</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">aca_packet</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
-    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">img</span><span class="p">:</span>
         <span class="n">table</span><span class="p">[</span><span class="s2">&quot;IMG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">aca_packet</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
@@ -1167,10 +1173,10 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    start</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    stop</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    start : CxoTimeLike</span>
+<span class="sd">        Start time for the ACA packets</span>
+<span class="sd">    stop : CxoTimeLike</span>
+<span class="sd">        Stop time for the ACA packets</span>
 <span class="sd">    level0 : bool.</span>
 <span class="sd">        Implies combine=True, adjust_time=True, calibrate=True</span>
 <span class="sd">    combine : bool.</span>
@@ -1194,8 +1200,8 @@
 <span class="sd">        including MSIDs that are present in blobs. If used with frames, most probably you will get</span>
 <span class="sd">        and empty column. This option is intended to augment the default dtype. If a more</span>
 <span class="sd">        restrictive dtype is used, a KeyError can be raised.</span>
-<span class="sd">    maude_kwargs</span>
-<span class="sd">        keyword args passed to maude</span>
+<span class="sd">    **maude_kwargs</span>
+<span class="sd">        Keyword args passed to maude</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1204,36 +1210,32 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">blobs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">frames</span><span class="p">:</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">assert</span> <span class="p">(</span><span class="n">blobs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">frames</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
-        <span class="n">frames</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">blobs</span>
-    <span class="p">),</span> <span class="s2">&quot;Specify only one of &#39;frames&#39; or blobs&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">blobs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">frames</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">frames</span> <span class="ow">and</span> <span class="n">blobs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specify one and only one of &#39;blobs&#39; or &#39;frames&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">level0</span><span class="p">:</span>
         <span class="n">adjust_time</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">combine</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">calibrate</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">DateTime</span><span class="p">(</span>
-        <span class="n">stop</span>
-    <span class="p">)</span>  <span class="c1"># ensure input is proper date</span>
-    <span class="k">if</span> <span class="mi">24</span> <span class="o">*</span> <span class="p">(</span><span class="n">date_stop</span> <span class="o">-</span> <span class="n">date_start</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">date_stop</span> <span class="o">-</span> <span class="n">date_start</span> <span class="o">&gt;</span> <span class="n">MAUDE_SINGLE_FETCH_LIMIT</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Requested </span><span class="si">{</span><span class="mi">24</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">date_stop</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">date_start</span><span class="p">)</span><span class="si">}</span><span class="s2"> hours of telemetry. &quot;</span>
-            <span class="s2">&quot;Maximum allowed is 3 hours at a time&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Requested </span><span class="si">{</span><span class="p">(</span><span class="n">date_stop</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">date_start</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="s1">&#39;hr&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> hr of telemetry. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Maximum allowed is </span><span class="si">{</span><span class="n">MAUDE_SINGLE_FETCH_LIMIT</span><span class="si">}</span><span class="s2"> at a time &quot;</span>
+            <span class="s2">&quot;(see MAUDE_SINGLE_FETCH_LIMIT).&quot;</span>
         <span class="p">)</span>
 
-    <span class="n">stop_pad</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">stop_pad</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
     <span class="k">if</span> <span class="n">adjust_time</span><span class="p">:</span>
-        <span class="n">stop_pad</span> <span class="o">+=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mi">86400</span>  <span class="c1"># time will get shifted...</span>
+        <span class="n">stop_pad</span> <span class="o">+=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>  <span class="c1"># time will get shifted...</span>
     <span class="k">if</span> <span class="n">combine</span><span class="p">:</span>
-        <span class="n">stop_pad</span> <span class="o">+=</span> <span class="mf">3.08</span> <span class="o">/</span> <span class="mi">86400</span>  <span class="c1"># there can be trailing frames</span>
+        <span class="n">stop_pad</span> <span class="o">+=</span> <span class="mf">3.08</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>  <span class="c1"># there can be trailing frames</span>
 
     <span class="k">if</span> <span class="n">frames</span><span class="p">:</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">86400</span> <span class="o">*</span> <span class="p">(</span><span class="n">date_stop</span> <span class="o">-</span> <span class="n">date_start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">300</span><span class="p">))</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">date_stop</span> <span class="o">-</span> <span class="n">date_start</span><span class="p">)</span><span class="o">.</span><span class="n">sec</span> <span class="o">/</span> <span class="mi">300</span><span class="p">))</span>
         <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">date_stop</span> <span class="o">-</span> <span class="n">date_start</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
-        <span class="n">batches</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span><span class="n">date_start</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">dt</span><span class="p">,</span> <span class="n">date_start</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-        <span class="p">]</span>  <span class="c1"># 0.0001????</span>
+        <span class="n">batches</span> <span class="o">=</span> <span class="p">[(</span><span class="n">date_start</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">dt</span><span class="p">,</span> <span class="n">date_start</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
         <span class="n">aca_packets</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
             <span class="n">maude_result</span> <span class="o">=</span> <span class="p">(</span>
@@ -1288,11 +1290,12 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is a convenience function that splits get_aca_packets for testing without MAUDE.</span>
+
 <span class="sd">    Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.</span>
 
 <span class="sd">    NOTE: This function has a side effect. It adds decom_packets to the input aca_packets.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>  <span class="c1"># ensure input is proper date</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>  <span class="c1"># ensure input is proper date</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">blobs</span><span class="p">:</span>
         <span class="c1"># this adds TIME, MJF, MNF and VCDUCTR, which is already there in the blob dictionary</span>
@@ -1378,24 +1381,136 @@
 
 <div class="viewcode-block" id="get_aca_images">
 <a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_images">[docs]</a>
-<span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch ACA image telemetry</span>
+
+<span class="sd">    Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the</span>
+<span class="sd">    default settings and no additional kwargs, this calls `get_aca_packets()` in a</span>
+<span class="sd">    configuration that uses MAUDE frames, combines image data, and sets the TIME</span>
+<span class="sd">    associated with each image to the midpoint of the integration time during which that</span>
+<span class="sd">    pixel data was collected (matches CXC L0 times). See `get_aca_packets()`.</span>
+
+<span class="sd">    The &#39;IMG&#39; column is always Nx8x8 and masked, where the mask is a per-pixel mask that</span>
+<span class="sd">    indicates missing data for 4x4 or 6x6 images. The units of &#39;IMG&#39; are DN.</span>
+
+<span class="sd">    For queries including 4x4 data, the &#39;BGDRMS&#39;, &#39;TEMPCCD&#39;, &#39;TEMPHOUS&#39;, &#39;TEMPPRIM&#39;,</span>
+<span class="sd">    &#39;TEMPSEC&#39;, and &#39;BGDSTAT&#39; columns will be masked since they are not present in the</span>
+<span class="sd">    4x4 image data.</span>
+
+<span class="sd">    There are three different specifiers of the image row/col location:</span>
+<span class="sd">    - IMGROW0_8x8/IMGCOL0_8x8: the row/col of the lower-left pixel of the 8x8 masked</span>
+<span class="sd">        image. This is generally the most useful.</span>
+<span class="sd">    - IMGROW0/IMGCOL0: the row/col of the lower-left pixel of the actual 4x4, 6x6, or</span>
+<span class="sd">        8x8 image data. For 6x6 this corresponds to the mouse-bitten corner pixel.</span>
+<span class="sd">    - IMGROW_A1/IMGCOL_A1: the row/col of the A1 pixel in telemetry (see ACA EQ-spec).</span>
+
+<span class="sd">    The full list of columns is::</span>
+
+<span class="sd">               name          dtype  unit</span>
+<span class="sd">      --------------------- ------- -----------</span>
+<span class="sd">                       TIME float64 CXC seconds</span>
+<span class="sd">                    VCDUCTR  uint32</span>
+<span class="sd">                        MJF  uint32</span>
+<span class="sd">                        MNF  uint32</span>
+<span class="sd">                     IMGNUM  uint32</span>
+<span class="sd">                    COMMCNT   uint8</span>
+<span class="sd">                   COMMPROG   uint8</span>
+<span class="sd">                    GLBSTAT   uint8</span>
+<span class="sd">                    IMGFUNC  uint32</span>
+<span class="sd">                    IMGTYPE   uint8</span>
+<span class="sd">                   IMGSCALE  uint16</span>
+<span class="sd">                    IMGROW0   int16</span>
+<span class="sd">                    IMGCOL0   int16</span>
+<span class="sd">                      INTEG float64 s</span>
+<span class="sd">                     BGDAVG  uint16 DN</span>
+<span class="sd">                     BGDRMS  uint16 DN</span>
+<span class="sd">                    TEMPCCD float32 degC</span>
+<span class="sd">                   TEMPHOUS float32 degC</span>
+<span class="sd">                   TEMPPRIM float32 degC</span>
+<span class="sd">                    TEMPSEC float32 degC</span>
+<span class="sd">                    BGDSTAT   uint8</span>
+<span class="sd">                   HIGH_BGD    bool</span>
+<span class="sd">                   RAM_FAIL    bool</span>
+<span class="sd">                   ROM_FAIL    bool</span>
+<span class="sd">                 POWER_FAIL    bool</span>
+<span class="sd">                   CAL_FAIL    bool</span>
+<span class="sd">         COMM_CHECKSUM_FAIL    bool</span>
+<span class="sd">                      RESET    bool</span>
+<span class="sd">               SYNTAX_ERROR    bool</span>
+<span class="sd">       COMMCNT_SYNTAX_ERROR    bool</span>
+<span class="sd">      COMMCNT_CHECKSUM_FAIL    bool</span>
+<span class="sd">            COMMPROG_REPEAT   uint8</span>
+<span class="sd">                     IMGFID    bool</span>
+<span class="sd">                    IMGSTAT   uint8</span>
+<span class="sd">                  SAT_PIXEL    bool</span>
+<span class="sd">                  DEF_PIXEL    bool</span>
+<span class="sd">                 QUAD_BOUND    bool</span>
+<span class="sd">                 COMMON_COL    bool</span>
+<span class="sd">                 MULTI_STAR    bool</span>
+<span class="sd">                    ION_RAD    bool</span>
+<span class="sd">                  IMGROW_A1   int16</span>
+<span class="sd">                  IMGCOL_A1   int16</span>
+<span class="sd">                IMGROW0_8X8   int16</span>
+<span class="sd">                IMGCOL0_8X8   int16</span>
+<span class="sd">             END_INTEG_TIME float64</span>
+<span class="sd">                   AAPIXTLM    str4</span>
+<span class="sd">                   AABGDTYP    str4</span>
+<span class="sd">                        IMG float64 DN</span>
+<span class="sd">                IMG_VCDUCTR   int64</span>
+
+<span class="sd">    This function can be used to fetch up to 5 days of ACA image telemetry at a time.</span>
+<span class="sd">    If more is needed, you can set the module variable ``MAUDE_FETCH_LIMIT`` to a larger</span>
+<span class="sd">    value. Internally, this function will fetch the data in intervals of</span>
+<span class="sd">    ``MAUDE_SINGLE_FETCH_LIMIT``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    start</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">        timestamp, CxoTimeLike</span>
 <span class="sd">    stop</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    maude_kwargs</span>
-<span class="sd">        keyword args passed to maude</span>
+<span class="sd">        timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT</span>
+<span class="sd">    kwargs</span>
+<span class="sd">        keyword args passed to get_aca_packets</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    astropy.table.Table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">get_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">level0</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">)</span></div>
+    <span class="c1"># This is strictly for testing, hence undocumented.</span>
+    <span class="n">set_times_metadata</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;set_times_metadata&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">MAUDE_FETCH_LIMIT</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;stop - start cannot be greater than </span><span class="si">{</span><span class="n">MAUDE_FETCH_LIMIT</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;Set module variable MAUDE_FETCH_LIMIT if needed.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">maude_fetch_times</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step_max</span><span class="o">=</span><span class="n">MAUDE_SINGLE_FETCH_LIMIT</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+    <span class="p">)</span>
+    <span class="n">packet_stack</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">get_aca_packets</span><span class="p">(</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">istart</span><span class="p">,</span>
+            <span class="n">stop</span><span class="o">=</span><span class="n">istop</span><span class="p">,</span>
+            <span class="n">level0</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">istart</span><span class="p">,</span> <span class="n">istop</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">pairwise</span><span class="p">(</span><span class="n">maude_fetch_times</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">(</span><span class="n">packet_stack</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">set_times_metadata</span><span class="p">:</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;times&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">maude_fetch_times</span>
+
+    <span class="c1"># Remove mask from columns where no values are masked. IMG is excepted because</span>
+    <span class="c1"># the mask reflects the presence of 4x4 or 6x6 images, not entirely missing data</span>
+    <span class="c1"># per row.</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">itercols</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">and</span> <span class="n">col</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;IMG&quot;</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
 
 
 
@@ -1413,7 +1528,7 @@
 <span class="sd">    If the first minor frame in a group of four ACA packets is within (start, stop),</span>
 <span class="sd">    the three following minor frames are included if present.</span>
 
-<span class="sd">    returns a dictionary with keys [&#39;TIME&#39;, &#39;MNF&#39;, &#39;MJF&#39;, &#39;packets&#39;, &#39;flags&#39;].</span>
+<span class="sd">    Returns a dictionary with keys [&#39;TIME&#39;, &#39;MNF&#39;, &#39;MJF&#39;, &#39;packets&#39;, &#39;flags&#39;].</span>
 <span class="sd">    These correspond to the minor frame time, minor frame count, major frame count,</span>
 <span class="sd">    the list of packets, and flags returned by MAUDE respectively.</span>
 
@@ -1421,13 +1536,13 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    start</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
-<span class="sd">    stop</span>
-<span class="sd">        timestamp interpreted as a Chandra.Time.DateTime</span>
+<span class="sd">    start : CxoTimeLike</span>
+<span class="sd">        Start time for the ACA blobs</span>
+<span class="sd">    stop : CxoTimeLike</span>
+<span class="sd">        Stop time for the ACA blobs</span>
 <span class="sd">    maude_result</span>
 <span class="sd">        the result of calling maude.get_blobs. Optional.</span>
-<span class="sd">    maude_kwargs</span>
+<span class="sd">    **maude_kwargs</span>
 <span class="sd">        keyword args passed to maude.get_frames()</span>
 
 <span class="sd">    Returns</span>
@@ -1435,10 +1550,9 @@
 <span class="sd">    dict</span>
 <span class="sd">    {&#39;blobs&#39;: [], &#39;names&#39;: np.array([]), &#39;types&#39;: np.array([])}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">DateTime</span><span class="p">(</span>
-        <span class="n">stop</span>
-    <span class="p">)</span>  <span class="c1"># ensure input is proper date</span>
-    <span class="n">stop_pad</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">/</span> <span class="mi">86400</span>  <span class="c1"># padding at the end in case of trailing partial ACA packets</span>
+    <span class="n">date_start</span><span class="p">,</span> <span class="n">date_stop</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+
+    <span class="n">stop_pad</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>  <span class="c1"># padding at the end in case of trailing partial ACA packets</span>
 
     <span class="k">if</span> <span class="n">maude_result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">maude_blobs</span> <span class="o">=</span> <span class="n">maude</span><span class="o">.</span><span class="n">get_blobs</span><span class="p">(</span>
