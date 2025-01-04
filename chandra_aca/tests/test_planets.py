@@ -150,7 +150,7 @@ def test_get_chandra_planet_horizons(body):
         "         5.408    31.76",
     ]
 
-    assert dat.pformat_all() == exp
+    assert dat.pformat() == exp
 
 
 @pytest.mark.skipif(not HAS_INTERNET, reason="Requires network access")
@@ -166,7 +166,7 @@ def test_get_chandra_planet_horizons_non_planet():
         "275.29375 -23.83915     349.43     659.97  --            --       --",
     ]
     del dat["time"]
-    assert dat.pformat_all() == exp
+    assert dat.pformat() == exp
 
 
 @pytest.mark.skipif(not HAS_INTERNET, reason="Requires network access")
@@ -235,4 +235,4 @@ def test_earth_boresight():
     ]
 
     blocks = get_earth_blocks(start, stop, min_limb_angle=10.0)
-    assert blocks["datestart", "datestop", "duration"].pformat_all() == exp
+    assert blocks["datestart", "datestop", "duration"].pformat() == exp
