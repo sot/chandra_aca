@@ -448,9 +448,9 @@ def test_vcdu_packet_combination():  # noqa: PLR0915 Too many statements
         [(q["MJF"], q["MNF"]) for q in p]
         for p in maude_decom._group_packets(packets, True)
     ]
-    assert p == [
-        [(9800, 88), (9800, 92), (9800, 96), (9800, 100)]
-    ], "Whole, missing 8X81"
+    assert p == [[(9800, 88), (9800, 92), (9800, 96), (9800, 100)]], (
+        "Whole, missing 8X81"
+    )
 
     packets = copy.deepcopy(test_packets_groups)
     del packets[5]
