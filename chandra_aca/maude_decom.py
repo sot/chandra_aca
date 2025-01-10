@@ -633,17 +633,25 @@ def _combine_aca_packets(aca_packets):
     res = {}
     pixels = np.ma.masked_all((8, 8))
     pixels.data[:] = np.nan
+    diagnostic = np.ma.masked_all((12,), dtype=np.uint8)
     for f in aca_packets:
         # IMGTYPE 3 is not a real image. It means the pixels are used to download memory dump data
         # if IMGTYPE == 3, do nothing. All pixels will be masked
         if f["IMGTYPE"] != 3:
             i0, i1 = _IMG_INDICES[f["IMGTYPE"]]
             pixels[i0, i1] = f["pixels"]
+        if f["IMGTYPE"] == 6:
+            diagnostic[:6] = f["DIAGNOSTIC"]
+        elif f["IMGTYPE"] == 7:
+            diagnostic[6:] = f["DIAGNOSTIC"]
 
     for f in aca_packets:
         res.update(f)
+
     del res["pixels"]
     res["IMG"] = pixels
+    res["DIAGNOSTIC"] = diagnostic
+
     return res
 
 
@@ -910,6 +918,7 @@ ACA_PACKETS_DTYPE = np.dtype(
         ("AAPIXTLM", "<U4"),
         ("AABGDTYP", "<U4"),
         ("IMG", "<f8", (8, 8)),
+        ("DIAGNOSTIC", np.uint8, (12,)),
     ]
 )
 
