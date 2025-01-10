@@ -847,7 +847,7 @@ class AcaPsfLibrary(object):
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_aca_images(
-    start: CxoTimeLike, stop: CxoTimeLike, bgsub=True, source="maude", **maude_kwargs
+    start: CxoTimeLike, stop: CxoTimeLike, bgsub=False, source="maude", **maude_kwargs
 ) -> Table:
     """
     Get ACA images and ancillary data from either the MAUDE or CXC data sources.
@@ -880,7 +880,7 @@ def get_aca_images(
     stop : CxoTimeLike
         Stop time (CXC sec).
     bgsub : bool
-        Include background subtracted images in output table.
+        Include background subtracted images in output table. Default is False.
     source : str
         Data source for image and temperature telemetry ('maude' or 'cxc'). For 'cxc',
         the image telemetry is from mica and temperature telemetry is from CXC L0 via

@@ -284,7 +284,7 @@ def test_dcsub_aca_images_maude():
         imgs_table, img_dark=img_dark, tccd_dark=tccd_dark, t_ccd_vals=t_ccds
     )
 
-    imgs_bgsub_table = get_aca_images(tstart, tstop, source="maude")
+    imgs_bgsub_table = get_aca_images(tstart, tstop, source="maude", bgsub=True)
 
     exp0 = np.array(
         [
