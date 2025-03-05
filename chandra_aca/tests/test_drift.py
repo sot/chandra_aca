@@ -12,6 +12,7 @@ from chandra_aca import drift
 # See test_get_aca_offsets() for how to test a new drift model.
 DRIFT_PARS_TEST = LazyDict(drift.load_drift_pars)
 
+
 def test_get_aca_offsets_legacy():
     """
     Legacy test that ACA offsets are reasonable, and regression test particular values
