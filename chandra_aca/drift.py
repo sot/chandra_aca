@@ -171,7 +171,11 @@ class AcaDriftModel(object):
         return out[0] if is_scalar else out
 
 
-def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
+def get_fid_offset(
+    time: CxoTimeLike,
+    t_ccd: float,
+    drift_pars: dict | None = None,
+) -> tuple:
     """
     Compute the fid light offset values for a given time and temperature.
 
@@ -183,6 +187,8 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
         Time for offset calculation.
     t_ccd : float
         ACA CCD temperature in degrees Celsius.
+    drift_pars : dict, optional
+        ACA drift model parameters.  If not supplied, the default parameters are used.
 
     Returns
     -------
@@ -201,13 +207,15 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
     2022-11 aimpoint drift model and the FEB07 fid characteristics.
     See https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb
     """
+    if drift_pars is None:
+        drift_pars = DRIFT_PARS
 
     # Clip the time to the minimum time in the drift model
     time = CxoTime(time).secs.clip(CxoTime("2012:001:12:00:00.000").secs, None)
 
     # Define model instances using calibrated parameters
-    drift_y = AcaDriftModel(**DRIFT_PARS["dy"])
-    drift_z = AcaDriftModel(**DRIFT_PARS["dz"])
+    drift_y = AcaDriftModel(**drift_pars["dy"])
+    drift_z = AcaDriftModel(**drift_pars["dz"])
 
     # Compute the predicted asol DY/DZ based on time and ACA CCD temperature
     # via the predictive model calibrated in the fit_aimpoint_drift notebook
@@ -222,7 +230,15 @@ def get_fid_offset(time: CxoTimeLike, t_ccd: float) -> tuple:
     return dy_pred + y_offset, dz_pred + z_offset
 
 
-def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
+def get_aca_offsets(
+    detector,
+    chip_id,
+    chipx,
+    chipy,
+    time,
+    t_ccd,
+    drift_pars: dict | None = None,
+):
     """
     Compute the dynamical ACA offset values for the provided inputs.
 
@@ -242,14 +258,19 @@ def get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd):
         time(s) of observation (any Chandra.Time compatible format)
     t_ccd
         ACA CCD temperature(s) (degC)
+    drift_pars : dict, optional
+        ACA drift model parameters.  If not supplied, the default parameters are used.
 
     Returns
     -------
     aca_offset_y, aca_offset_z (arcsec)
     """
+    if drift_pars is None:
+        drift_pars = DRIFT_PARS
+
     # Define model instances using calibrated parameters
-    drift_y = AcaDriftModel(**DRIFT_PARS["dy"])
-    drift_z = AcaDriftModel(**DRIFT_PARS["dz"])
+    drift_y = AcaDriftModel(**drift_pars["dy"])
+    drift_z = AcaDriftModel(**drift_pars["dz"])
 
     try:
         asol_to_chip = ASOL_TO_CHIP[detector, chip_id]

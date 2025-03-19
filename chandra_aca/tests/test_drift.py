@@ -4,8 +4,13 @@ from pathlib import Path
 import astropy.table as tbl
 import numpy as np
 import pytest
+from ska_helpers.utils import LazyDict
 
 from chandra_aca import drift
+
+# Drift pars for testing that may reflect a new model in a non-flight testing repo.
+# See test_get_aca_offsets() for how to test a new drift model.
+DRIFT_PARS_TEST = LazyDict(drift.load_drift_pars)
 
 
 def test_get_aca_offsets_legacy():
@@ -53,13 +58,38 @@ for row in dat:
 
 
 @pytest.mark.parametrize("kwargs", kwargs_list)
-def test_get_aca_offsets(kwargs, monkeypatch):
-    """Regression test that ACA offsets match the original flight values from 2022-11
-    analysis to expected precision."""
-    monkeypatch.setenv("CHANDRA_MODELS_DEFAULT_VERSION", "3.48")
+@pytest.mark.parametrize("use_drift_pars", [True, False])
+def test_get_aca_offsets(kwargs, use_drift_pars):
+    """Regression test that ACA offsets match expected.
+
+    Expected values are the original flight values from 2022-11 analysis to expected
+    precision. The chandra_models version is (by default) current flight, so this test
+    ensures that any model updates do not introduce a regression.
+
+    Testing a new drift model here can be done with environment variables::
+
+      env CHANDRA_MODELS_REPO_DIR=$HOME/git/chandra_models \
+          CHANDRA_MODELS_DEFAULT_VERSION=aimpoint-drift-update  \
+      pytest -k test_drift
+
+    When a new drift model is released, the `aimpoint_regression_data.ecsv` file can
+    optionally be updated with the new values from the analysis notebook.
+    """
     kwargs = kwargs.copy()
     aca_offset_y = kwargs.pop("aca_offset_y")
     aca_offset_z = kwargs.pop("aca_offset_z")
+
+    # Test explicitly providing drift_pars. This should be exactly the same as the
+    # default handling.
+    if use_drift_pars:
+        kwargs["drift_pars"] = DRIFT_PARS_TEST
+        # Print info for use with `-s` flag to see what model is being used.
+        info = DRIFT_PARS_TEST["info"]
+        repo_path = info["repo_path"]
+        version = info["version"]
+        md5 = info["md5"]
+        print(f"{repo_path=} {version=} {md5=}")
+
     offsets = drift.get_aca_offsets(**kwargs)
     dy = offsets[0] - aca_offset_y
     dz = offsets[1] - aca_offset_z
@@ -70,7 +100,7 @@ def test_get_aca_offsets(kwargs, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "t, t_ccd, expected_dy, expected_dz",
+    "date, t_ccd, expected_dy, expected_dz",
     [
         ("2018:284", -10.0, -7.50, -5.30),
         ("2018:286", -10.0, 5.01, 0.75),
@@ -78,11 +108,13 @@ def test_get_aca_offsets(kwargs, monkeypatch):
         ("2022:295", -10, 17.44, 2.90),
     ],
 )
-def test_get_fid_offset(t, t_ccd, expected_dy, expected_dz):
+@pytest.mark.parametrize("use_drift_pars", [True, False])
+def test_get_fid_offset(date, t_ccd, expected_dy, expected_dz, use_drift_pars):
     """
     Test that the get_fid_offset function returns expected values for a few inputs.
     """
-    dy, dz = drift.get_fid_offset(t, t_ccd)
+    kwargs = {"drift_pars": DRIFT_PARS_TEST} if use_drift_pars else {}
+    dy, dz = drift.get_fid_offset(date, t_ccd, **kwargs)
     assert np.isclose(dy, expected_dy, atol=0.01)
     assert np.isclose(dz, expected_dz, atol=0.01)
 
