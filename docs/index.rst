@@ -1,3 +1,8 @@
+chandra_aca
+===========
+
+A collection of Python modules for working with Chandra ACA data.
+
 .. toctree::
    :maxdepth: 1
 
