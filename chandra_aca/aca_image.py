@@ -1,4 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+"""
+Classes and utilities related to ACA readout images.
+
+See :ref:`aca_image` for more details and examples.
+"""
+
 import os
 from copy import deepcopy
 from itertools import chain, count
