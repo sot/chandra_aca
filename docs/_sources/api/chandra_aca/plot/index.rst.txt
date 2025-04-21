@@ -1,0 +1,23 @@
+chandra_aca.plot
+================
+
+.. py:module:: chandra_aca.plot
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/plot/plot_stars
+   /api/chandra_aca/plot/bad_acq_stars
+   /api/chandra_aca/plot/plot_compass
+
+.. autoapisummary::
+
+   chandra_aca.plot.plot_stars
+   chandra_aca.plot.bad_acq_stars
+   chandra_aca.plot.plot_compass
+
+

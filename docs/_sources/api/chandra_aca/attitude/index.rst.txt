@@ -1,0 +1,39 @@
+chandra_aca.attitude
+====================
+
+.. py:module:: chandra_aca.attitude
+
+.. autoapi-nested-parse::
+
+   Calculate attitude based on star centroid values using a fast linear least-squares method.
+
+   Note this requires Python 3.5+.
+
+   Validation:
+   http://nbviewer.jupyter.org/url/asc.harvard.edu/mta/ASPECT/ipynb/chandra_aca/calc_att_validate.ipynb
+
+   ..
+       !! processed by numpydoc !!
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/attitude/calc_roll
+   /api/chandra_aca/attitude/calc_roll_pitch_yaw
+   /api/chandra_aca/attitude/_calc_roll_pitch_yaw
+   /api/chandra_aca/attitude/_rot
+   /api/chandra_aca/attitude/calc_att
+
+.. autoapisummary::
+
+   chandra_aca.attitude.calc_roll
+   chandra_aca.attitude.calc_roll_pitch_yaw
+   chandra_aca.attitude._calc_roll_pitch_yaw
+   chandra_aca.attitude._rot
+   chandra_aca.attitude.calc_att
+
+

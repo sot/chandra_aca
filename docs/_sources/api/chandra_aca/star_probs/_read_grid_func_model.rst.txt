@@ -1,0 +1,25 @@
+chandra_aca.star_probs._read_grid_func_model
+============================================
+
+.. py:function:: chandra_aca.star_probs._read_grid_func_model(models_dir, model_name = None)
+
+   
+   Read the model file and put into local vars
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

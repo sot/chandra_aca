@@ -1,0 +1,39 @@
+chandra_aca.dark_model.get_warm_fracs
+=====================================
+
+.. py:function:: chandra_aca.dark_model.get_warm_fracs(warm_threshold, date='2013:001:12:00:00', T_ccd=-19.0)
+
+   
+   Calculate fraction of pixels in modeled dark current distribution above warm threshold(s).
+
+
+   :Parameters:
+
+       **warm_threshold**
+           scalar or list of threshold(s) in e-/sec
+
+       **date**
+           date to use for modeled dark current distribution/histogram
+
+       **T_ccd**
+           temperature (C) of modeled dark current distribution
+
+
+
+   :Returns:
+
+       list or scalar of warm fractions (depends on warm_threshold type)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

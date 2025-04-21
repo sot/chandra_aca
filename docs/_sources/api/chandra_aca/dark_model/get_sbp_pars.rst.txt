@@ -1,0 +1,40 @@
+chandra_aca.dark_model.get_sbp_pars
+===================================
+
+.. py:function:: chandra_aca.dark_model.get_sbp_pars(dates)
+
+   
+   Return smooth broken powerlaw parameters set(s) at ``dates``.
+
+   This is based on the sbp fits for the darkhist_zodi_m14 histograms in
+   /proj/sot/ska/analysis/dark_current_model/dark_model.ipynb.
+
+   The actual bi-linear fits (as a function of year) to the g1, g2, g3, x_b, and ampl
+   parameters are derived from fits and by-hand inspection of fit trending.
+
+   This is only accurate for dates > 2007.0.
+
+   :Parameters:
+
+       **dates**
+           one or a list of date(s) in DateTime compatible format
+
+
+
+   :Returns:
+
+       one or a list of parameter lists [g1, g2, g3, x_b, ampl]
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

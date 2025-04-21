@@ -1,0 +1,45 @@
+chandra_aca.drift.get_target_aimpoint
+=====================================
+
+.. py:function:: chandra_aca.drift.get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None)
+
+   
+   Given date, proposal cycle, and detector, return aimpoint chipx, chipy, chip_id
+
+
+   :Parameters:
+
+       **date**
+           observation date
+
+       **cycle**
+           proposal cycle of observation
+
+       **detector**
+           target detector
+
+       **too**
+           boolean. If target is TOO use current cycle not proposal cycle.
+
+       **zero_offset_able** : table (astropy or numpy) of zero offset aimpoint table
+           defaults to official SOT MP version if not supplied.
+
+
+
+   :Returns:
+
+       tuple of chipx, chipy, chip_id
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

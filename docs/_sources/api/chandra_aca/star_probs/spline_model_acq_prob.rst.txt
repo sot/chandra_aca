@@ -1,0 +1,46 @@
+chandra_aca.star_probs.spline_model_acq_prob
+============================================
+
+.. py:function:: chandra_aca.star_probs.spline_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False)
+
+   
+   Calculate spline model acq probability.
+
+   Calculate poly-spline-tccd model (aka 'spline' model) probability of acquisition
+   success for a star with specified mag, t_ccd, color, and search box halfwidth.
+
+   The model definition and fit values based on:
+
+   - https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2018-04-poly-spline-tccd.ipynb
+
+   See also:
+
+   - Description of the motivation and initial model development.
+     https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x11
+   - Final review and approval.
+     https://occweb.cfa.harvard.edu/twiki/bin/view/Aspect/StarWorkingGroupMeeting2018x04x18
+
+   :param mag: ACA magnitude (float or np.ndarray)
+   :param t_ccd: CCD temperature (degC, float or ndarray)
+   :param color: B-V color to check for B-V=1.5 => red star (float or np.ndarray)
+   :param halfwidth: search box halfwidth (arcsec, default=120, float or ndarray)
+   :param probit: if True then return Probit(p_success). Default=False
+
+   :returns: Acquisition success probability(s)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

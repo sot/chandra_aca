@@ -1,0 +1,45 @@
+chandra_aca.star_probs.t_ccd_warm_limit_for_guide
+=================================================
+
+.. py:function:: chandra_aca.star_probs.t_ccd_warm_limit_for_guide(mags, min_guide_count=4.0, warm_t_ccd=-5.0, cold_t_ccd=-16.0)
+
+   
+   Solve for the warmest temperature that still gets the min_guide_count.
+
+   This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
+   cold end the result may be below ``min_n_acq``, in which case the star catalog
+   may be rejected.
+
+   :Parameters:
+
+       **mags**
+           list of star ACA mags
+
+       **min_guide_count**
+           float minimum fractional guide count
+
+       **warm_t_ccd**
+           warmest CCD temperature to consider (default=-5 C)
+
+       **cold_t_ccd**
+           coldest CCD temperature to consider (default=-16 C)
+
+
+
+   :Returns:
+
+       t_ccd
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

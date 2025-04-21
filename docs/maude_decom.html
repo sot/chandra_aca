@@ -1,82 +1,348 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+
+<html lang="en" data-content_root="./" >
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.49.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
-    
-    <script src="_static/documentation_options.js?v=82bca589"></script>
+    <title>MAUDE ACA telemetry &#8212; chandra_aca 4.50.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=d9e78d80"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script type="text/javascript" src="_static/sidebar.js"></script>
-    <script type="text/javascript" src="_static/copybutton.js"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=30646c52"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'maude_decom';</script>
+    <link rel="canonical" href="https://sot.github.io/chandra_aca/maude_decom.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="chandra_aca.planets" href="planets.html" />
-    <link rel="prev" title="chandra_aca.dark_subtract" href="dark_subtract.html" />
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+    <link rel="next" title="API Reference" href="api/index.html" />
+    <link rel="prev" title="ACA images" href="aca_image.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="4.50.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  </head><body>
-<div class="topbar">
-  <a class="brand" title="Documentation Home" href="index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
-  <ul>
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
     
-    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
-        <span id="logotext1">ska</span><span id="logotext2">tools</span>
-    </a></li>
-    <li><a title="General Index" href="genindex.html">Index</a></li>
-    <li><a title="Module Index" href="py-modindex.html">Modules</a></li>
-    <li>
-      
-      
-<form action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
-      
-    </li>
-  </ul>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-<div class="related">
-    <h3>Navigation</h3>
-    <ul>
-      <li class="right">
-	<a href="planets.html" title="chandra_aca.planets">
-	  next &raquo;
-	</a>
-      </li>
-      <li class="right">
-	<a href="dark_subtract.html" title="chandra_aca.dark_subtract">
-	  &laquo; previous
-	</a>
-	 |
-      </li>
-      <li>
-	<a href="index.html">chandra_aca 4.49.0 documentation</a>
-	 &#187;
-      </li>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><a href="index.html" style="text-decoration: none;">
+    <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
+</a>
+&nbsp;
+<span style="font-size: x-large;">4.50.0</span></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
       
-      <li>chandra_aca.maude_decom</li> 
-    </ul>
-</div>
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
   
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <section id="module-chandra_aca.maude_decom">
-<span id="chandra-aca-maude-decom"></span><h1>chandra_aca.maude_decom<a class="headerlink" href="#module-chandra_aca.maude_decom" title="Link to this heading">¶</a></h1>
-<p>Classes and functions to help fetching ACA telemetry data using MAUDE.</p>
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">MAUDE ACA telemetry</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="maude-aca-telemetry">
+<span id="maude-decom"></span><h1>MAUDE ACA telemetry<a class="headerlink" href="#maude-aca-telemetry" title="Link to this heading">#</a></h1>
+<p>See <a class="reference internal" href="api/chandra_aca/maude_decom/index.html#module-chandra_aca.maude_decom" title="chandra_aca.maude_decom"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chandra_aca.maude_decom</span></code></a> for API details.</p>
 <section id="telemetry-specification">
-<h2>Telemetry Specification<a class="headerlink" href="#telemetry-specification" title="Link to this heading">¶</a></h2>
+<h2>Telemetry Specification<a class="headerlink" href="#telemetry-specification" title="Link to this heading">#</a></h2>
 <p>Aspect telemetry is described in chapter 5 of the User’s Manual. This module deals mostly with
 Aspect telemetry, specified in section 5.3 of the user’s manual and section 3.2.1.15.12 of the ACA
 specification document EQ7-278 F.</p>
@@ -88,9 +354,9 @@ Twiki page):</p>
 </ul>
 </section>
 <section id="timing">
-<h2>Timing<a class="headerlink" href="#timing" title="Link to this heading">¶</a></h2>
+<h2>Timing<a class="headerlink" href="#timing" title="Link to this heading">#</a></h2>
 <section id="timing-in-maude-telemetry">
-<h3>Timing in MAUDE Telemetry<a class="headerlink" href="#timing-in-maude-telemetry" title="Link to this heading">¶</a></h3>
+<h3>Timing in MAUDE Telemetry<a class="headerlink" href="#timing-in-maude-telemetry" title="Link to this heading">#</a></h3>
 <p>What follows is a summary from the user’s guide section 6, and EQ7-278 F section 3.2.1.7. Check
 there for more details, especially Figures 6-1 to 6-4 in the user’s manual and Figure 7 in
 EQ7-278 F.</p>
@@ -121,7 +387,7 @@ update a full image (1.025 seconds for a 4x4 image, 2.05 seconds for a 6x6 image
 an 8x8 image) the most recent image is repeated until new pixel data is available.</p>
 </section>
 <section id="timing-in-level0-data-products">
-<h3>Timing in level0 Data Products<a class="headerlink" href="#timing-in-level0-data-products" title="Link to this heading">¶</a></h3>
+<h3>Timing in level0 Data Products<a class="headerlink" href="#timing-in-level0-data-products" title="Link to this heading">#</a></h3>
 <p>The times for pixel telemetry in level0 data products is adjusted to coincide with the middle of the
 integration interval:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TIME</span> <span class="o">=</span> <span class="n">END_INTEG_TIME</span> <span class="o">-</span> <span class="n">INTEG</span> <span class="o">/</span> <span class="mi">2</span>
@@ -135,7 +401,7 @@ products is:</p>
 </section>
 </section>
 <section id="global-variables-in-this-module">
-<h2>Global variables in this module<a class="headerlink" href="#global-variables-in-this-module" title="Link to this heading">¶</a></h2>
+<h2>Global variables in this module<a class="headerlink" href="#global-variables-in-this-module" title="Link to this heading">#</a></h2>
 <p>These include the following global variables</p>
 <blockquote>
 <div><ul class="simple">
@@ -215,471 +481,120 @@ In the following tables, column index increases to the right and row index incre
 </pre></div>
 </div>
 </section>
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.maude_decom.blob_to_aca_image_dict">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">blob_to_aca_image_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blob</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgnum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#blob_to_aca_image_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.blob_to_aca_image_dict" title="Link to this definition">¶</a></dt>
-<dd><p>Assemble ACA image MSIDs from a blob into a dictionary.</p>
-<p>This does to blobs what unpack_aca_telemetry does to frames, but for a single image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>blob</strong></dt><dd></dd>
-<dt><strong>imgnum</strong></dt><dd></dd>
-<dt><strong>pea</strong></dt><dd></dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"></dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.maude_decom.filter_vcdu_jumps">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">filter_vcdu_jumps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vcdu_counters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#filter_vcdu_jumps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.filter_vcdu_jumps" title="Link to this definition">¶</a></dt>
-<dd><p>Return a boolean mask to filter VCDU counters that are not continuous.</p>
-<p>The returned mask ensures that:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">VCDU</span> <span class="n">counters</span> <span class="n">are</span> <span class="n">a</span> <span class="n">strictly</span> <span class="n">monotonic</span> <span class="n">sequence</span><span class="o">.</span>
-<span class="o">-</span> <span class="n">VCDU</span> <span class="n">counters</span> <span class="n">come</span> <span class="ow">in</span> <span class="n">packets</span> <span class="n">of</span> <span class="n">four</span><span class="p">,</span> <span class="k">with</span> <span class="n">each</span> <span class="n">group</span> <span class="n">starting</span> <span class="k">with</span> <span class="n">a</span> <span class="n">multiple</span> <span class="n">of</span> <span class="mf">4.</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_aca_images">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_images" title="Link to this definition">¶</a></dt>
-<dd><p>Fetch ACA image telemetry</p>
-<p>Fetch ACA image telemetry from MAUDE and return it as an astropy Table. With the
-default settings and no additional kwargs, this calls <cite>get_aca_packets()</cite> in a
-configuration that uses MAUDE frames, combines image data, and sets the TIME
-associated with each image to the midpoint of the integration time during which that
-pixel data was collected (matches CXC L0 times). See <cite>get_aca_packets()</cite>.</p>
-<p>The ‘IMG’ column is always Nx8x8 and masked, where the mask is a per-pixel mask that
-indicates missing data for 4x4 or 6x6 images. The units of ‘IMG’ are DN.</p>
-<p>For queries including 4x4 data, the ‘BGDRMS’, ‘TEMPCCD’, ‘TEMPHOUS’, ‘TEMPPRIM’,
-‘TEMPSEC’, and ‘BGDSTAT’ columns will be masked since they are not present in the
-4x4 image data.</p>
-<p>There are three different specifiers of the image row/col location:
-- IMGROW0_8x8/IMGCOL0_8x8: the row/col of the lower-left pixel of the 8x8 masked</p>
-<blockquote>
-<div><p>image. This is generally the most useful.</p>
-</div></blockquote>
-<ul class="simple">
-<li><dl class="simple">
-<dt>IMGROW0/IMGCOL0: the row/col of the lower-left pixel of the actual 4x4, 6x6, or</dt><dd><p>8x8 image data. For 6x6 this corresponds to the mouse-bitten corner pixel.</p>
-</dd>
-</dl>
-</li>
-<li><p>IMGROW_A1/IMGCOL_A1: the row/col of the A1 pixel in telemetry (see ACA EQ-spec).</p></li>
-</ul>
-<p>The full list of columns is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>         <span class="n">name</span>          <span class="n">dtype</span>  <span class="n">unit</span>
-<span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
-                 <span class="n">TIME</span> <span class="n">float64</span> <span class="n">CXC</span> <span class="n">seconds</span>
-              <span class="n">VCDUCTR</span>  <span class="n">uint32</span>
-                  <span class="n">MJF</span>  <span class="n">uint32</span>
-                  <span class="n">MNF</span>  <span class="n">uint32</span>
-               <span class="n">IMGNUM</span>  <span class="n">uint32</span>
-              <span class="n">COMMCNT</span>   <span class="n">uint8</span>
-             <span class="n">COMMPROG</span>   <span class="n">uint8</span>
-              <span class="n">GLBSTAT</span>   <span class="n">uint8</span>
-              <span class="n">IMGFUNC</span>  <span class="n">uint32</span>
-              <span class="n">IMGTYPE</span>   <span class="n">uint8</span>
-             <span class="n">IMGSCALE</span>  <span class="n">uint16</span>
-              <span class="n">IMGROW0</span>   <span class="n">int16</span>
-              <span class="n">IMGCOL0</span>   <span class="n">int16</span>
-                <span class="n">INTEG</span> <span class="n">float64</span> <span class="n">s</span>
-               <span class="n">BGDAVG</span>  <span class="n">uint16</span> <span class="n">DN</span>
-               <span class="n">BGDRMS</span>  <span class="n">uint16</span> <span class="n">DN</span>
-              <span class="n">TEMPCCD</span> <span class="n">float32</span> <span class="n">degC</span>
-             <span class="n">TEMPHOUS</span> <span class="n">float32</span> <span class="n">degC</span>
-             <span class="n">TEMPPRIM</span> <span class="n">float32</span> <span class="n">degC</span>
-              <span class="n">TEMPSEC</span> <span class="n">float32</span> <span class="n">degC</span>
-              <span class="n">BGDSTAT</span>   <span class="n">uint8</span>
-             <span class="n">HIGH_BGD</span>    <span class="nb">bool</span>
-             <span class="n">RAM_FAIL</span>    <span class="nb">bool</span>
-             <span class="n">ROM_FAIL</span>    <span class="nb">bool</span>
-           <span class="n">POWER_FAIL</span>    <span class="nb">bool</span>
-             <span class="n">CAL_FAIL</span>    <span class="nb">bool</span>
-   <span class="n">COMM_CHECKSUM_FAIL</span>    <span class="nb">bool</span>
-                <span class="n">RESET</span>    <span class="nb">bool</span>
-         <span class="n">SYNTAX_ERROR</span>    <span class="nb">bool</span>
- <span class="n">COMMCNT_SYNTAX_ERROR</span>    <span class="nb">bool</span>
-<span class="n">COMMCNT_CHECKSUM_FAIL</span>    <span class="nb">bool</span>
-      <span class="n">COMMPROG_REPEAT</span>   <span class="n">uint8</span>
-               <span class="n">IMGFID</span>    <span class="nb">bool</span>
-              <span class="n">IMGSTAT</span>   <span class="n">uint8</span>
-            <span class="n">SAT_PIXEL</span>    <span class="nb">bool</span>
-            <span class="n">DEF_PIXEL</span>    <span class="nb">bool</span>
-           <span class="n">QUAD_BOUND</span>    <span class="nb">bool</span>
-           <span class="n">COMMON_COL</span>    <span class="nb">bool</span>
-           <span class="n">MULTI_STAR</span>    <span class="nb">bool</span>
-              <span class="n">ION_RAD</span>    <span class="nb">bool</span>
-            <span class="n">IMGROW_A1</span>   <span class="n">int16</span>
-            <span class="n">IMGCOL_A1</span>   <span class="n">int16</span>
-          <span class="n">IMGROW0_8X8</span>   <span class="n">int16</span>
-          <span class="n">IMGCOL0_8X8</span>   <span class="n">int16</span>
-       <span class="n">END_INTEG_TIME</span> <span class="n">float64</span>
-             <span class="n">AAPIXTLM</span>    <span class="n">str4</span>
-             <span class="n">AABGDTYP</span>    <span class="n">str4</span>
-                  <span class="n">IMG</span> <span class="n">float64</span> <span class="n">DN</span>
-          <span class="n">IMG_VCDUCTR</span>   <span class="n">int64</span>
-</pre></div>
-</div>
-<p>This function can be used to fetch up to 5 days of ACA image telemetry at a time.
-If more is needed, you can set the module variable <code class="docutils literal notranslate"><span class="pre">MAUDE_FETCH_LIMIT</span></code> to a larger
-value. Internally, this function will fetch the data in intervals of
-<code class="docutils literal notranslate"><span class="pre">MAUDE_SINGLE_FETCH_LIMIT</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong></dt><dd><p>timestamp, CxoTimeLike</p>
-</dd>
-<dt><strong>stop</strong></dt><dd><p>timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT</p>
-</dd>
-<dt><strong>kwargs</strong></dt><dd><p>keyword args passed to get_aca_packets</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>astropy.table.Table</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_aca_packets">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_aca_packets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adjust_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_aca_packets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_aca_packets" title="Link to this definition">¶</a></dt>
-<dd><p>Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</p>
-<p>Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
-with complete ACA telemetry. Compare these to calls to the function:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;TEMPCCD&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMPHOUS&#39;</span><span class="p">]</span>
-<span class="go">&lt;Table masked=True length=4&gt;</span>
-<span class="go">     TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS</span>
-<span class="go">   float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16</span>
-<span class="go">------------- ------ ------ ------- ------- ------- ------- ------- ------- --------</span>
-<span class="go">684089001.869  78006     32       0       0       4     469    -332     -20       83</span>
-<span class="go">684089005.969  78006     48       0       0       4     469    -332     -20       83</span>
-<span class="go">684089010.069  78006     64       0       0       4     469    -332     -20       83</span>
-<span class="go">684089014.169  78006     80       0       0       4     469    -332     -20       83</span>
-</pre></div>
-</div>
-<p>Using combined=False, results in records with incomplete images. In this case, data can be
-missing from some records. For example, with 8X8 images, IMGROW0 and IMGCOL0 are present in the
-first ACA packet (image type 4) while the temperature is present in the second (image type 5):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;TEMPCCD&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMPHOUS&#39;</span><span class="p">]</span>
-<span class="go">    &lt;Table masked=True length=15&gt;</span>
-<span class="go">         TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS</span>
-<span class="go">       float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16</span>
-<span class="go">    ------------- ------ ------ ------- ------- ------- ------- ------- ------- --------</span>
-<span class="go">    684089000.844  78006     28       0       0       7      --      --      --       --</span>
-<span class="go">    684089001.869  78006     32       0       0       4     469    -332      --       --</span>
-<span class="go">    684089002.894  78006     36       0       0       5      --      --     -20       83</span>
-<span class="go">    684089003.919  78006     40       0       0       6      --      --      --       --</span>
-<span class="go">    684089004.944  78006     44       0       0       7      --      --      --       --</span>
-<span class="go">    684089005.969  78006     48       0       0       4     469    -332      --       --</span>
-<span class="go">    684089006.994  78006     52       0       0       5      --      --     -20       83</span>
-<span class="go">    684089008.019  78006     56       0       0       6      --      --      --       --</span>
-<span class="go">    684089009.044  78006     60       0       0       7      --      --      --       --</span>
-<span class="go">    684089010.069  78006     64       0       0       4     469    -332      --       --</span>
-<span class="go">    684089011.094  78006     68       0       0       5      --      --     -20       83</span>
-<span class="go">    684089012.119  78006     72       0       0       6      --      --      --       --</span>
-<span class="go">    684089013.144  78006     76       0       0       7      --      --      --       --</span>
-<span class="go">    684089014.169  78006     80       0       0       4     469    -332      --       --</span>
-<span class="go">    684089015.194  78006     84       0       0       5      --      --     -20       83</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="go">masked_BaseColumn(data =</span>
-<span class="go"> [[60.0 97.0 70.0 120.0 74.0 111.0 103.0 108.0]</span>
-<span class="go"> [67.0 90.0 144.0 96.0 88.0 306.0 82.0 67.0]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]],</span>
-<span class="go">                  mask =</span>
-<span class="go"> [[False False False False False False False False]</span>
-<span class="go"> [False False False False False False False False]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
-<span class="go">            fill_value = 1e+20)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="go">masked_BaseColumn(data =</span>
-<span class="go"> [[-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [76.0 81.0 160.0 486.0 449.0 215.0 88.0 156.0]</span>
-<span class="go"> [68.0 91.0 539.0 483.0 619.0 412.0 105.0 77.0]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]],</span>
-<span class="go">                  mask =</span>
-<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [False False False False False False False False]</span>
-<span class="go"> [False False False False False False False False]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
-<span class="go">            fill_value = 1e+20)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-<span class="go">masked_BaseColumn(data =</span>
-<span class="go"> [[-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [86.0 101.0 408.0 344.0 556.0 343.0 122.0 67.0]</span>
-<span class="go"> [196.0 195.0 114.0 321.0 386.0 115.0 69.0 189.0]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]],</span>
-<span class="go">                  mask =</span>
-<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [False False False False False False False False]</span>
-<span class="go"> [False False False False False False False False]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]],</span>
-<span class="go">            fill_value = 1e+20)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
-<span class="go">Out[10]:</span>
-<span class="go">masked_BaseColumn(data =</span>
-<span class="go"> [[-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [-- -- -- -- -- -- -- --]</span>
-<span class="go"> [67.0 61.0 67.0 176.0 99.0 72.0 79.0 88.0]</span>
-<span class="go"> [70.0 62.0 101.0 149.0 163.0 89.0 60.0 76.0]],</span>
-<span class="go">                  mask =</span>
-<span class="go"> [[ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [ True  True  True  True  True  True  True  True]</span>
-<span class="go"> [False False False False False False False False]</span>
-<span class="go"> [False False False False False False False False]],</span>
-<span class="go">            fill_value = 1e+20)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time for the ACA packets</p>
-</dd>
-<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time for the ACA packets</p>
-</dd>
-<dt><strong>level0</strong><span class="classifier">bool.</span></dt><dd><p>Implies combine=True, adjust_time=True, calibrate=True</p>
-</dd>
-<dt><strong>combine</strong><span class="classifier">bool.</span></dt><dd><p>If True, ACA subimages are combined to form a full image (depending on size),
-If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.</p>
-</dd>
-<dt><strong>adjust_time</strong><span class="classifier">bool</span></dt><dd><p>If True, TIME is at the middle of the integration window.
-If False, TIME is the VCDU time in telemetry of the packet frame (combine=False)
-or the VCDU time of the first sub-image of the combined image (combine=True).</p>
-</dd>
-<dt><strong>calibrate</strong><span class="classifier">bool</span></dt><dd><p>If True, pixel values will be ‘value * imgscale / 32 - 50’ and temperature values will
-be: 0.4 * value + 273.15</p>
-</dd>
-<dt><strong>blobs</strong><span class="classifier">bool or dict</span></dt><dd><p>If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
-output of maude.get_blobs ({‘blobs’: … }).</p>
-</dd>
-<dt><strong>frames</strong><span class="classifier">bool or dict</span></dt><dd><p>If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
-output of maude.get_frames ({‘data’: … }).</p>
-</dd>
-<dt><strong>dtype</strong><span class="classifier">np.dtype. Optional.</span></dt><dd><p>the dtype to use when creating the resulting table. This is useful to add columns
-including MSIDs that are present in blobs. If used with frames, most probably you will get
-and empty column. This option is intended to augment the default dtype. If a more
-restrictive dtype is used, a KeyError can be raised.</p>
-</dd>
-<dt><strong>**maude_kwargs</strong></dt><dd><p>Keyword args passed to maude</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>astropy.table.Table</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_raw_aca_blobs">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_raw_aca_blobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maude_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_blobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_blobs" title="Link to this definition">¶</a></dt>
-<dd><p>Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</p>
-<p>If the first minor frame in a group of four ACA packets is within (start, stop),
-the three following minor frames are included if present.</p>
-<p>Returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
-These correspond to the minor frame time, minor frame count, major frame count,
-the list of packets, and flags returned by MAUDE respectively.</p>
-<p>This is to blobs what <cite>get_raw_aca_packets</cite> is to frames.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time for the ACA blobs</p>
-</dd>
-<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time for the ACA blobs</p>
-</dd>
-<dt><strong>maude_result</strong></dt><dd><p>the result of calling maude.get_blobs. Optional.</p>
-</dd>
-<dt><strong>**maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>dict</dt><dd></dd>
-<dt>{‘blobs’: [], ‘names’: np.array([]), ‘types’: np.array([])}</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.maude_decom.get_raw_aca_packets">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">get_raw_aca_packets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maude_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#get_raw_aca_packets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.get_raw_aca_packets" title="Link to this definition">¶</a></dt>
-<dd><p>Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</p>
-<p>If the first minor frame in a group of four ACA packets is within (start, stop),
-the three following minor frames are included if present.</p>
-<p>returns a dictionary with keys [‘TIME’, ‘MNF’, ‘MJF’, ‘packets’, ‘flags’].
-These correspond to the minor frame time, minor frame count, major frame count,
-the list of packets, and flags returned by MAUDE respectively.</p>
-<p>This function raises an exception if the VCDU frames in maude_result are not contiguous, which
-can also happen if the frames are corrupted in some way.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time for packets</p>
-</dd>
-<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time for packets</p>
-</dd>
-<dt><strong>maude_result</strong></dt><dd><p>the result of calling maude.get_frames. Optional.</p>
-</dd>
-<dt><strong>**maude_kwargs</strong></dt><dd><p>keyword args passed to maude.get_frames()</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>dict</dt><dd></dd>
-<dt>{‘flags’: int, ‘packets’: [],</dt><dd></dd>
-<dt>‘TIME’: np.array([]), ‘MNF’: np.array([]), ‘MJF’: np.array([])}</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.maude_decom.unpack_aca_telemetry">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">unpack_aca_telemetry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/maude_decom.html#unpack_aca_telemetry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.unpack_aca_telemetry" title="Link to this definition">¶</a></dt>
-<dd><p>Unpack ACA telemetry encoded in 225-byte packets.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>packet</strong></dt><dd><p>bytes</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>list of dict</dt><dd></dd>
-<dt>A list of length 8, one entry per slot, where each entry is a dictionary.</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 
 
-            <div class="clearer"></div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="aca_image.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">ACA images</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="api/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#telemetry-specification">Telemetry Specification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timing">Timing</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timing-in-maude-telemetry">Timing in MAUDE Telemetry</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timing-in-level0-data-products">Timing in level0 Data Products</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-variables-in-this-module">Global variables in this module</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
-<ul>
-<li><a class="reference internal" href="#">chandra_aca.maude_decom</a><ul>
-<li><a class="reference internal" href="#telemetry-specification">Telemetry Specification</a></li>
-<li><a class="reference internal" href="#timing">Timing</a><ul>
-<li><a class="reference internal" href="#timing-in-maude-telemetry">Timing in MAUDE Telemetry</a></li>
-<li><a class="reference internal" href="#timing-in-level0-data-products">Timing in level0 Data Products</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#global-variables-in-this-module">Global variables in this module</a></li>
-<li><a class="reference internal" href="#chandra_aca.maude_decom.blob_to_aca_image_dict"><code class="docutils literal notranslate"><span class="pre">blob_to_aca_image_dict()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.maude_decom.filter_vcdu_jumps"><code class="docutils literal notranslate"><span class="pre">filter_vcdu_jumps()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.maude_decom.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.maude_decom.get_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_aca_packets()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.maude_decom.get_raw_aca_blobs"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_blobs()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.maude_decom.get_raw_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_packets()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.maude_decom.unpack_aca_telemetry"><code class="docutils literal notranslate"><span class="pre">unpack_aca_telemetry()</span></code></a></li>
-</ul>
-</li>
-</ul>
-
-
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="dark_subtract.html"
-                          title="previous chapter">chandra_aca.dark_subtract</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="planets.html"
-                          title="next chapter">chandra_aca.planets</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/maude_decom.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<form action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
-<footer class="footer">
-  <p class="pull-right">
-    <a href="_sources/maude_decom.rst.txt"
-       rel="nofollow">Page Source</a> &nbsp;
-    <a href="#">Back to Top</a></p>
-  <p>
-    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 8.1.3. &nbsp;
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      <br/>
+    
   </p>
-</footer>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
   </body>
 </html>

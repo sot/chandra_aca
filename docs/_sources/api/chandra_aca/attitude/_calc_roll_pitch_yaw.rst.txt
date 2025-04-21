@@ -1,0 +1,26 @@
+chandra_aca.attitude._calc_roll_pitch_yaw
+=========================================
+
+.. py:function:: chandra_aca.attitude._calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None, iter=1)
+
+   
+   Internal version that does the real work of calc_roll_pitch_yaw.
+
+   This works on only one sample at a time.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

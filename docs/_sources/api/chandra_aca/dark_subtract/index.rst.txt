@@ -1,0 +1,25 @@
+chandra_aca.dark_subtract
+=========================
+
+.. py:module:: chandra_aca.dark_subtract
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/dark_subtract/get_tccd_data
+   /api/chandra_aca/dark_subtract/get_aca_images_bgd_sub
+   /api/chandra_aca/dark_subtract/get_dark_current_imgs
+   /api/chandra_aca/dark_subtract/get_dark_backgrounds
+
+.. autoapisummary::
+
+   chandra_aca.dark_subtract.get_tccd_data
+   chandra_aca.dark_subtract.get_aca_images_bgd_sub
+   chandra_aca.dark_subtract.get_dark_current_imgs
+   chandra_aca.dark_subtract.get_dark_backgrounds
+
+

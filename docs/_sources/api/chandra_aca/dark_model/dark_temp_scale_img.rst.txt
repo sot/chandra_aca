@@ -1,0 +1,45 @@
+chandra_aca.dark_model.dark_temp_scale_img
+==========================================
+
+.. py:function:: chandra_aca.dark_model.dark_temp_scale_img(img, t_ccd, t_ccd_ref)
+
+   
+   Get dark current taken at ``t_ccd`` scaled to reference temperature ``t_ccd_ref``
+
+   This scales the dark current based on an exponential scaling factor that depends on
+   the dark current value of each pixel.  This is a more accurate way to scale dark
+   current images than using a global scaling factor as in dark_temp_scale().
+
+   See the reference notebook at:
+   https://nbviewer.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model-2023.ipynb
+
+   :Parameters:
+
+       **img** : float, ArrayLike
+           Dark current image or value in e-/sec
+
+       **t_ccd** : float
+           CCD temperature (degC) of the input image
+
+       **t_ccd_ref** : float
+           CCD temperature (degC) of the scaled output image
+
+
+
+   :Returns:
+
+       float, np.ndarray
+           Dark current image scaled to ``t_ccd_ref``
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

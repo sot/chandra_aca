@@ -1,0 +1,34 @@
+chandra_aca.maude_decom._combine_aca_packets
+============================================
+
+.. py:function:: chandra_aca.maude_decom._combine_aca_packets(aca_packets)
+
+   
+   Combine a list of ACA packets into a single record.
+
+   This is intended to combine the two 6X6 packets or the four 8X8 packets.
+
+   :Parameters:
+
+       **aca_packets**
+           list of dict
+
+
+
+   :Returns:
+
+       dict
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

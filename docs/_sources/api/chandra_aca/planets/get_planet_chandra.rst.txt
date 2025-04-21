@@ -1,0 +1,49 @@
+chandra_aca.planets.get_planet_chandra
+======================================
+
+.. py:function:: chandra_aca.planets.get_planet_chandra(body, time = None)
+
+   
+   Get position for solar system ``body`` at ``time`` relative to Chandra.
+
+   This uses the built-in JPL ephemeris file DE432s and jplephem, along with
+   the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
+   is computed at the supplied ``time`` minus the light-travel time from
+   Chandra to ``body`` to generate the apparent position from Chandra at
+   ``time``.
+
+   Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
+   follows, where the JPL Horizons positions are used as the "truth".
+
+   - Venus: < 0.25 arcsec with a peak around 0.02
+   - Mars: < 0.45 arcsec with a peak around 0.1
+   - Jupiter: < 0.2 arcsec with a peak around 0.1
+   - Saturn: < 0.2 arcsec with a peak around 0.1
+
+   :Parameters:
+
+       **body** : str
+           Body name
+
+       **time** : CxoTimeLike
+           Time or times for returned position (default=NOW)
+
+
+
+   :Returns:
+
+       ndarray (float)
+           Position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

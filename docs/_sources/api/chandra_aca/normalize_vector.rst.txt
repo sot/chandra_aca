@@ -1,0 +1,38 @@
+chandra_aca.normalize_vector
+============================
+
+.. py:function:: chandra_aca.normalize_vector(vec, ord=None)
+
+   
+   Normalize ``vec`` over the last dimension.
+
+   For an L x M x N input array, this normalizes over the N dimension
+   using ``np.linalg.norm``.
+
+   :Parameters:
+
+       **vec**
+           input vector or array of vectors
+
+       **ord**
+           ord parameter for np.linalg.norm (default=None => 2-norm)
+
+
+
+   :Returns:
+
+       normed array of vectors
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

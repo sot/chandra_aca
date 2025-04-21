@@ -1,0 +1,4 @@
+chandra_aca.attitude._rot
+=========================
+
+.. py:function:: chandra_aca.attitude._rot(roll)

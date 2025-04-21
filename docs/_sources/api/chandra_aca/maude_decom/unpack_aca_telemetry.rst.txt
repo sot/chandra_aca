@@ -1,0 +1,36 @@
+chandra_aca.maude_decom.unpack_aca_telemetry
+============================================
+
+.. py:function:: chandra_aca.maude_decom.unpack_aca_telemetry(packet)
+
+   
+   Unpack ACA telemetry encoded in 225-byte packets.
+
+
+   :Parameters:
+
+       **packet**
+           bytes
+
+
+
+   :Returns:
+
+       list of dict
+           ..
+
+       A list of length 8, one entry per slot, where each entry is a dictionary.
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

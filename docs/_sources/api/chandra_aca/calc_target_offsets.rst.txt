@@ -1,0 +1,44 @@
+chandra_aca.calc_target_offsets
+===============================
+
+.. py:function:: chandra_aca.calc_target_offsets(aca, ra_targ, dec_targ, si_align=None)
+
+   
+   Calculate target offsets.
+
+   Calculates required Y and Z offsets (deg) required from a target RA, Dec to
+   arrive at the desired PCAD pointing ``aca``.
+
+   :Parameters:
+
+       **aca**
+           PCAD attitude (any Quat-compliant initializer)
+
+       **ra_targ**
+           RA of science target from OR/Obscat
+
+       **dec_targ**
+           Dec of science target from OR/Obscat
+
+       **si_align**
+           SI ALIGN matrix (default=ODB)
+
+
+
+   :Returns:
+
+       tuple (y_off, z_off) degrees
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

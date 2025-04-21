@@ -1,0 +1,4 @@
+chandra_aca.dark_model.as_array
+===============================
+
+.. py:function:: chandra_aca.dark_model.as_array(vals)

@@ -1,0 +1,44 @@
+chandra_aca.transform.calc_aca_from_targ
+========================================
+
+.. py:function:: chandra_aca.transform.calc_aca_from_targ(targ, y_off, z_off, si_align=None)
+
+   
+   Calculate PCAD (ACA) pointing attitude.
+
+   Calculate the PCAD (ACA) pointing attitude from target attitude and
+   Y,Z offset (per OR-list).
+
+   :Parameters:
+
+       **targ**
+           science target from OR/Obscat (Quat-compliant object)
+
+       **y_off**
+           Y offset (deg, sign per OR-list convention)
+
+       **z_off**
+           Z offset (deg, sign per OR-list convention)
+
+       **si_align**
+           SI ALIGN matrix (default=ODB_SI_ALIGN)
+
+
+
+   :Returns:
+
+       q_aca (Quat)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,199 @@
+chandra_aca.maude_decom.get_aca_packets
+=======================================
+
+.. py:function:: chandra_aca.maude_decom.get_aca_packets(start, stop, level0=False, combine=False, adjust_time=False, calibrate=False, blobs=None, frames=None, dtype=None, **maude_kwargs)
+
+   
+   Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.
+
+   Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
+   with complete ACA telemetry. Compare these to calls to the function:
+
+           >>> from chandra_aca import maude_decom
+           >>> img = maude_decom.get_aca_packets(684089000, 684089016, combine=True)
+           >>> img = img[img['IMGNUM'] == 0]
+           >>> img['TIME', 'MJF', 'MNF', 'COMMCNT', 'GLBSTAT', 'IMGTYPE', 'IMGROW0', 'IMGCOL0',
+           >>>     'TEMPCCD', 'TEMPHOUS']
+           <Table masked=True length=4>
+                TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS
+              float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16
+           ------------- ------ ------ ------- ------- ------- ------- ------- ------- --------
+           684089001.869  78006     32       0       0       4     469    -332     -20       83
+           684089005.969  78006     48       0       0       4     469    -332     -20       83
+           684089010.069  78006     64       0       0       4     469    -332     -20       83
+           684089014.169  78006     80       0       0       4     469    -332     -20       83
+
+   Using combined=False, results in records with incomplete images. In this case, data can be
+   missing from some records. For example, with 8X8 images, IMGROW0 and IMGCOL0 are present in the
+   first ACA packet (image type 4) while the temperature is present in the second (image type 5):
+
+       >>> from chandra_aca import maude_decom
+       >>> img = maude_decom.get_aca_packets(684089000, 684089016, combine=False)
+       >>> img = img[img['IMGNUM'] == 0]
+       >>> img['TIME', 'MJF', 'MNF', 'COMMCNT', 'GLBSTAT', 'IMGTYPE', 'IMGROW0', 'IMGCOL0',
+       >>>     'TEMPCCD', 'TEMPHOUS']
+           <Table masked=True length=15>
+                TIME      MJF    MNF   COMMCNT GLBSTAT IMGTYPE IMGROW0 IMGCOL0 TEMPCCD TEMPHOUS
+              float64    uint32 uint32  uint8   uint8   uint8   int16   int16   int16   int16
+           ------------- ------ ------ ------- ------- ------- ------- ------- ------- --------
+           684089000.844  78006     28       0       0       7      --      --      --       --
+           684089001.869  78006     32       0       0       4     469    -332      --       --
+           684089002.894  78006     36       0       0       5      --      --     -20       83
+           684089003.919  78006     40       0       0       6      --      --      --       --
+           684089004.944  78006     44       0       0       7      --      --      --       --
+           684089005.969  78006     48       0       0       4     469    -332      --       --
+           684089006.994  78006     52       0       0       5      --      --     -20       83
+           684089008.019  78006     56       0       0       6      --      --      --       --
+           684089009.044  78006     60       0       0       7      --      --      --       --
+           684089010.069  78006     64       0       0       4     469    -332      --       --
+           684089011.094  78006     68       0       0       5      --      --     -20       83
+           684089012.119  78006     72       0       0       6      --      --      --       --
+           684089013.144  78006     76       0       0       7      --      --      --       --
+           684089014.169  78006     80       0       0       4     469    -332      --       --
+           684089015.194  78006     84       0       0       5      --      --     -20       83
+
+       >>> img['IMG'].data[1]
+       masked_BaseColumn(data =
+        [[60.0 97.0 70.0 120.0 74.0 111.0 103.0 108.0]
+        [67.0 90.0 144.0 96.0 88.0 306.0 82.0 67.0]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]],
+                         mask =
+        [[False False False False False False False False]
+        [False False False False False False False False]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]],
+                   fill_value = 1e+20)
+
+       >>> img['IMG'].data[2]
+       masked_BaseColumn(data =
+        [[-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [76.0 81.0 160.0 486.0 449.0 215.0 88.0 156.0]
+        [68.0 91.0 539.0 483.0 619.0 412.0 105.0 77.0]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]],
+                         mask =
+        [[ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [False False False False False False False False]
+        [False False False False False False False False]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]],
+                   fill_value = 1e+20)
+
+       >>> img['IMG'].data[3]
+       masked_BaseColumn(data =
+        [[-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [86.0 101.0 408.0 344.0 556.0 343.0 122.0 67.0]
+        [196.0 195.0 114.0 321.0 386.0 115.0 69.0 189.0]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]],
+                         mask =
+        [[ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [False False False False False False False False]
+        [False False False False False False False False]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]],
+                   fill_value = 1e+20)
+
+       >>> img['IMG'].data[4]
+       Out[10]:
+       masked_BaseColumn(data =
+        [[-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [-- -- -- -- -- -- -- --]
+        [67.0 61.0 67.0 176.0 99.0 72.0 79.0 88.0]
+        [70.0 62.0 101.0 149.0 163.0 89.0 60.0 76.0]],
+                         mask =
+        [[ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [ True  True  True  True  True  True  True  True]
+        [False False False False False False False False]
+        [False False False False False False False False]],
+                   fill_value = 1e+20)
+
+   :Parameters:
+
+       **start** : CxoTimeLike
+           Start time for the ACA packets
+
+       **stop** : CxoTimeLike
+           Stop time for the ACA packets
+
+       **level0** : bool.
+           Implies combine=True, adjust_time=True, calibrate=True
+
+       **combine** : bool.
+           If True, ACA subimages are combined to form a full image (depending on size),
+           If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.
+
+       **adjust_time** : bool
+           If True, TIME is at the middle of the integration window.
+           If False, TIME is the VCDU time in telemetry of the packet frame (combine=False)
+           or the VCDU time of the first sub-image of the combined image (combine=True).
+
+       **calibrate** : bool
+           If True, pixel values will be 'value * imgscale / 32 - 50' and temperature values will
+           be: 0.4 * value + 273.15
+
+       **blobs** : bool or dict
+           If set, data is assembled from MAUDE blobs. If it is a dictionary, it must be the
+           output of maude.get_blobs ({'blobs': ... }).
+
+       **frames** : bool or dict
+           If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
+           output of maude.get_frames ({'data': ... }).
+
+       **dtype** : np.dtype. Optional.
+           the dtype to use when creating the resulting table. This is useful to add columns
+           including MSIDs that are present in blobs. If used with frames, most probably you will get
+           and empty column. This option is intended to augment the default dtype. If a more
+           restrictive dtype is used, a KeyError can be raised.
+
+       **\*\*maude_kwargs**
+           Keyword args passed to maude
+
+
+
+   :Returns:
+
+       astropy.table.Table
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

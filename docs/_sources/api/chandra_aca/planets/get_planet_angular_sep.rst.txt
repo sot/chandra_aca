@@ -1,0 +1,50 @@
+chandra_aca.planets.get_planet_angular_sep
+==========================================
+
+.. py:function:: chandra_aca.planets.get_planet_angular_sep(body, ra, dec, time=None, observer_position = 'earth')
+
+   
+   Get angular separation between planet ``body`` and target ``ra``, ``dec``.
+
+   Valid values for the ``observer_position`` argument are:
+
+   - 'earth' (default, approximate, fastest)
+   - 'chandra' (reasonably accurate fast, requires fetching ephemeris)
+   - 'chandra-horizons' (most accurate, slow, requires internet access)
+
+   :Parameters:
+
+       **body** : str
+           Body name (lower case planet name)
+
+       **ra** : float
+           RA in degrees
+
+       **dec** : float
+           Dec in degrees
+
+       **time** : CxoTime-compatible object
+           Time or times of observation
+
+       **observer_position** : str
+           Observer position ('earth', 'chandra', or 'chandra-horizons')
+
+
+
+   :Returns:
+
+       angular separation (deg)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

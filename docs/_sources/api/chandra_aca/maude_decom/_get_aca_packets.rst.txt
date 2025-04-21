@@ -1,0 +1,28 @@
+chandra_aca.maude_decom._get_aca_packets
+========================================
+
+.. py:function:: chandra_aca.maude_decom._get_aca_packets(aca_packets, start, stop, combine=False, adjust_time=False, calibrate=False, blobs=False, dtype=None)
+
+   
+   This is a convenience function that splits get_aca_packets for testing without MAUDE.
+
+   Same arguments as get_aca_packets plus aca_packets, the raw ACA 225-byte packets.
+
+   NOTE: This function has a side effect. It adds decom_packets to the input aca_packets.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

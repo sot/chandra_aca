@@ -1,0 +1,334 @@
+chandra_aca.aca_image.ACAImage
+==============================
+
+.. py:class:: chandra_aca.aca_image.ACAImage(shape, dtype=float, buffer=None, offset=0, strides=None, order=None)
+
+   Bases: :py:obj:`numpy.ndarray`
+
+
+   
+   ACA Image class.
+
+   ACAImage is an ndarray subclass that supports functionality for the Chandra
+   ACA. Most importantly it allows image indexing and slicing in absolute
+   "aca" coordinates, where the image lower left coordinate is specified
+   by object ``row0`` and ``col0`` attributes.
+
+   It also provides a ``meta`` dict that can be used to store additional useful
+   information.  Any keys which are all upper-case will be exposed as object
+   attributes, e.g. ``img.BGDAVG`` <=> ``img.meta['BGDAVG']``.  The ``row0``
+   attribute  is a proxy for ``img.meta['IMGROW0']``, and likewise for ``col0``.
+
+   When initializing an ``ACAImage``, additional ``*args`` and ``**kwargs`` are
+   used to try initializing via ``np.array(*args, **kwargs)``.  If this fails
+   then ``np.zeros(*args, **kwargs)`` is tried.  In this way one can either
+   initialize from array data or create a new array of zeros.
+
+   Examples::
+
+     >>> import numpy as np
+     >>> from chandra_aca.aca_image import ACAImage
+     >>> dat = np.random.uniform(size=(1024, 1024))
+     >>> a = ACAImage(dat, row0=-512, col0=-512)
+     >>> a = ACAImage([[1,2], [3,4]], meta={'BGDAVG': 5.2})
+     >>> a = ACAImage(shape=(1024, 1024), row0=-512, col0=-512)
+
+   :param row0: row coordinate of lower left image pixel (int, default=0)
+   :param col0: col coordinate of lower left image pixel (int, default=0)
+   :param meta: dict of object attributes
+   :param ``*args``: additional args passed to np.array() or np.zeros()
+   :param ``**kwargs``: additional kwargs passed to np.array() or np.zeros()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:property:: aca
+
+      
+      Return a light copy of self with _aca_coords on.
+
+      Return a light copy (same data) of self but with the _aca_coords
+      attribute switched on so that indexing is absolute.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: __array_finalize__(obj)
+
+
+   .. py:attribute:: __add__
+
+
+   .. py:attribute:: __sub__
+
+
+   .. py:attribute:: __mul__
+
+
+   .. py:attribute:: __truediv__
+
+
+   .. py:attribute:: __floordiv__
+
+
+   .. py:attribute:: __mod__
+
+
+   .. py:attribute:: __pow__
+
+
+   .. py:attribute:: __iadd__
+
+
+   .. py:attribute:: __isub__
+
+
+   .. py:attribute:: __imul__
+
+
+   .. py:attribute:: __itruediv__
+
+
+   .. py:attribute:: __ifloordiv__
+
+
+   .. py:attribute:: __imod__
+
+
+   .. py:attribute:: __ipow__
+
+
+   .. py:method:: _adjust_item(item)
+
+      
+      This is the money method that does all the work of manipulating
+      an item and subsequent row0/col0 when accessing and slicing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: __getitem__(item)
+
+
+   .. py:method:: __setitem__(item, value)
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __getattr__(attr)
+
+
+   .. py:method:: __setattr__(attr, value)
+
+
+   .. py:method:: centroid_fm(bgd=None, pix_zero_loc='center', norm_clip=None)
+
+      
+      First moment centroid of ``self`` using 6x6 mousebitten image for input 6x6 or 8x8 images.
+
+      Note that the returned ``norm`` is the sum of the background-subtracted 6x6
+      mousebitten image, not the entire image.
+
+      :Parameters:
+
+          **bgd**
+              background to subtract, scalar or NxN ndarray (float)
+
+          **pix_zero_loc**
+              row/col coords are integral at 'edge' or 'center'
+
+          **norm_clip** : clip image norm at this min value (default is None and
+              implies Exception for non-positive norm)
+
+
+
+      :Returns:
+
+          row, col, norm float
+              ..
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: __dir__()
+
+
+   .. py:property:: row0
+
+
+   .. py:property:: col0
+
+
+   .. py:method:: _read_flicker_cdfs()
+      :classmethod:
+
+
+      
+      Read flickering pixel model cumulative distribution functions and associated metadata.
+
+      Set up class variables accordingly.
+
+      The flicker_cdf file here was created using:
+      /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: flicker_init(flicker_mean_time=10000, flicker_scale=1.0, seed=None)
+
+      
+      Initialize instance variables to allow for flickering pixel updates.
+
+      The ``flicker_scale`` can be interpreted as follows: if the pixel
+      was going to flicker by a multiplicative factor of (1 + x), now
+      make it flicker by (1 + x * flicker_scale).  This applies for flickers
+      that increase the amplitude.  For flickers that make the value smaller,
+      then it would be 1 / (1 + x) => 1 / (1 + x * flicker_scale).
+
+      The flicker_cdf file here was created using:
+      /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb
+
+      Examples and performance details at:
+      /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-implementation.ipynb
+
+      The model was reviewed and approved at SS&AWG on 2019-05-22.
+
+      :Parameters:
+
+          **flicker_mean_time**
+              mean flickering time (sec, default=10000)
+
+          **flicker_scale** : multiplicative factor beyond model default for
+              flickering amplitude (default=1.0)
+
+          **seed**
+              random seed for reproducibility (default=None => no seed)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: flicker_update(dt, use_numba=True)
+
+      
+      Do a flicker update.
+
+      Propagate the image forward by ``dt`` seconds and update any pixels
+      that have flickered during that interval.
+
+      This has the option to use one of two implementations.  The default is
+      to use the numba-based version which is about 6 times faster.  The
+      vectorized version is left in for reference.
+
+      :Parameters:
+
+          **dt**
+              time (secs) to propagate image
+
+          **use_numba**
+              use the numba version of updating (default=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: _flicker_update_vectorized(dt)
+

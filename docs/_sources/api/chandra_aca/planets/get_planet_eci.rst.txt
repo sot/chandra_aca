@@ -1,0 +1,56 @@
+chandra_aca.planets.get_planet_eci
+==================================
+
+.. py:function:: chandra_aca.planets.get_planet_eci(body, time = None, pos_observer = None)
+
+   
+   Get ECI apparent position for solar system ``body`` at ``time``.
+
+   This uses the built-in JPL ephemeris file DE432s and jplephem. The position
+   is computed at the supplied ``time`` minus the light-travel time from the
+   observer to ``body`` to generate the apparent position on Earth at ``time``.
+
+   ``body`` and ``pos_observer`` must be one of "sun", "mercury", "venus",
+   "earth-moon-barycenter", "earth", "moon", "mars", "jupiter", "saturn", "uranus",
+   "neptune", or "pluto".
+
+   Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the
+   JPL Horizons positions are used as the "truth". This assumes the observer
+   position is Earth (default).
+
+   - Venus: < 12 arcmin with peak around 2 arcmin
+   - Mars: < 8 arcmin with peak around 1.5 arcmin
+   - Jupiter: < 1 arcmin with peak around 0.5 arcmin
+   - Saturn: < 0.5 arcmin with peak around 0.3 arcmin
+
+   :Parameters:
+
+       **body** : str
+           Body name (lower case planet name)
+
+       **time** : CxoTimeLike, optional
+           Time or times for returned position (default=NOW)
+
+       **pos_observer** : str, optional
+           Observer position (default=Earth)
+
+
+
+   :Returns:
+
+       ndarray (float)
+           Earth-Centered Inertial (ECI) position (km) as (x, y, z)
+           or N x (x, y, z)
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

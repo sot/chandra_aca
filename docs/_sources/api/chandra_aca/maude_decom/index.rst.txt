@@ -1,0 +1,139 @@
+chandra_aca.maude_decom
+=======================
+
+.. py:module:: chandra_aca.maude_decom
+
+.. autoapi-nested-parse::
+
+   Classes and functions to help fetching ACA telemetry data using MAUDE.
+
+   See :ref:`maude_decom` for more details and examples.
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.maude_decom.MAUDE_SINGLE_FETCH_LIMIT
+   chandra_aca.maude_decom.MAUDE_FETCH_LIMIT
+   chandra_aca.maude_decom.MAX_MJF
+   chandra_aca.maude_decom.MAX_MNF
+   chandra_aca.maude_decom.MAX_VCDU
+   chandra_aca.maude_decom.PIXEL_MAP
+   chandra_aca.maude_decom.PIXEL_MASK
+   chandra_aca.maude_decom.PIXEL_MAP_INV
+   chandra_aca.maude_decom._msid_prefix
+   chandra_aca.maude_decom.ACA_MSID_LIST
+   chandra_aca.maude_decom.ACA_SLOT_MSID_LIST
+   chandra_aca.maude_decom._a2p
+   chandra_aca.maude_decom._IMG_INDICES
+   chandra_aca.maude_decom._aca_front_fmt
+   chandra_aca.maude_decom._size_bits
+   chandra_aca.maude_decom._pixel_bits
+   chandra_aca.maude_decom._bits
+   chandra_aca.maude_decom.ACA_PACKETS_DTYPE
+
+
+Classes
+-------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/maude_decom/_AcaImageHeaderDecom
+
+.. autoapisummary::
+
+   chandra_aca.maude_decom._AcaImageHeaderDecom
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/maude_decom/_aca_msid_list
+   /api/chandra_aca/maude_decom/_aca_image_msid_list
+   /api/chandra_aca/maude_decom/_packbits
+   /api/chandra_aca/maude_decom/unpack_aca_telemetry
+   /api/chandra_aca/maude_decom/_combine_aca_packets
+   /api/chandra_aca/maude_decom/_group_packets
+   /api/chandra_aca/maude_decom/filter_vcdu_jumps
+   /api/chandra_aca/maude_decom/get_raw_aca_packets
+   /api/chandra_aca/maude_decom/_aca_packets_to_table
+   /api/chandra_aca/maude_decom/get_aca_packets
+   /api/chandra_aca/maude_decom/_get_aca_packets
+   /api/chandra_aca/maude_decom/get_aca_images
+   /api/chandra_aca/maude_decom/get_raw_aca_blobs
+   /api/chandra_aca/maude_decom/blob_to_aca_image_dict
+
+.. autoapisummary::
+
+   chandra_aca.maude_decom._aca_msid_list
+   chandra_aca.maude_decom._aca_image_msid_list
+   chandra_aca.maude_decom._packbits
+   chandra_aca.maude_decom.unpack_aca_telemetry
+   chandra_aca.maude_decom._combine_aca_packets
+   chandra_aca.maude_decom._group_packets
+   chandra_aca.maude_decom.filter_vcdu_jumps
+   chandra_aca.maude_decom.get_raw_aca_packets
+   chandra_aca.maude_decom._aca_packets_to_table
+   chandra_aca.maude_decom.get_aca_packets
+   chandra_aca.maude_decom._get_aca_packets
+   chandra_aca.maude_decom.get_aca_images
+   chandra_aca.maude_decom.get_raw_aca_blobs
+   chandra_aca.maude_decom.blob_to_aca_image_dict
+
+
+Module Contents
+---------------
+
+.. py:data:: MAUDE_SINGLE_FETCH_LIMIT
+
+.. py:data:: MAUDE_FETCH_LIMIT
+
+.. py:data:: MAX_MJF
+   :value: 131071
+
+
+.. py:data:: MAX_MNF
+   :value: 127
+
+
+.. py:data:: MAX_VCDU
+   :value: 16777215
+
+
+.. py:data:: PIXEL_MAP
+
+.. py:data:: PIXEL_MASK
+
+.. py:data:: PIXEL_MAP_INV
+
+.. py:data:: _msid_prefix
+
+.. py:data:: ACA_MSID_LIST
+
+.. py:data:: ACA_SLOT_MSID_LIST
+
+.. py:data:: _a2p
+   :value: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
+
+
+.. py:data:: _IMG_INDICES
+
+.. py:data:: _aca_front_fmt
+
+.. py:data:: _size_bits
+
+.. py:data:: _pixel_bits
+
+.. py:data:: _bits
+
+.. py:data:: ACA_PACKETS_DTYPE
+

@@ -1,0 +1,32 @@
+chandra_aca.broadcast_arrays
+============================
+
+.. py:function:: chandra_aca.broadcast_arrays(*args)
+
+   
+   Broadcast ``*args`` inputs to same shape.
+
+   Broadcast ``*args`` inputs to same shape and return an ``is_scalar`` flag and
+   the broadcasted version of inputs.  This lets intermediate code work on
+   arrays that are guaranteed to be the same shape and at least a 1-d array,
+   but reshape the output at the end.
+
+   :param args: tuple of scalar / array inputs
+   :returns: [is_scalar, \*flat_args]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

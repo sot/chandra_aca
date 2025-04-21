@@ -1,0 +1,27 @@
+chandra_aca.star_probs.model_acq_success_prob
+=============================================
+
+.. py:function:: chandra_aca.star_probs.model_acq_success_prob(mag, warm_frac, color=0, halfwidth=120)
+
+   
+   Call sota_model_acq_prob().
+
+   Call sota_model_acq_prob() with same params.  This is retained purely
+   for back-compatibility but use is deprecated.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

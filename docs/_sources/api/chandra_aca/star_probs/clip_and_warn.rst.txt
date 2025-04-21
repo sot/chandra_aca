@@ -1,0 +1,53 @@
+chandra_aca.star_probs.clip_and_warn
+====================================
+
+.. py:function:: chandra_aca.star_probs.clip_and_warn(name, val, val_lo, val_hi, model, tol_lo=0.0, tol_hi=0.0)
+
+   
+   Clip ``val`` to be in the range ``val_lo`` to ``val_hi``.
+
+   This also issues a warning if clipping occurs, subject to ``tol_lo`` and
+   ``tol_hi`` expansions. The ``name`` and ``model`` are just used in the warning.
+
+   :Parameters:
+
+       **name**
+           Value name
+
+       **val**
+           Value
+
+       **val_lo**
+           Minimum
+
+       **val_hi**
+           Maximum
+
+       **model**
+           Model name
+
+       **tol_lo**
+           Tolerance below ``val_lo`` for issuing a warning (default=0.0)
+
+       **tol_hi**
+           Tolerance above ``val_hi`` for issuing a warning (default=0.0)
+
+
+
+   :Returns:
+
+       Clipped value
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

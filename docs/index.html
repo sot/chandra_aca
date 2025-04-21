@@ -1,329 +1,445 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+
+<html lang="en" data-content_root="./" >
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca &#8212; chandra_aca 4.49.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
-    
-    <script src="_static/documentation_options.js?v=82bca589"></script>
+    <title>chandra_aca &#8212; chandra_aca 4.50.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=d9e78d80"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script type="text/javascript" src="_static/sidebar.js"></script>
-    <script type="text/javascript" src="_static/copybutton.js"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=30646c52"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <link rel="canonical" href="https://sot.github.io/chandra_aca/index.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="chandra_aca.drift" href="drift.html" />
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+    <link rel="next" title="ACA images" href="aca_image.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="4.50.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  </head><body>
-<div class="topbar">
-  <a class="brand" title="Documentation Home" href="#"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
-  <ul>
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
     
-    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
-        <span id="logotext1">ska</span><span id="logotext2">tools</span>
-    </a></li>
-    <li><a title="General Index" href="genindex.html">Index</a></li>
-    <li><a title="Module Index" href="py-modindex.html">Modules</a></li>
-    <li>
-      
-      
-<form action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
-      
-    </li>
-  </ul>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-<div class="related">
-    <h3>Navigation</h3>
-    <ul>
-      <li class="right">
-	<a href="drift.html" title="chandra_aca.drift">
-	  next &raquo;
-	</a>
-      </li>
-      <li>
-	<a href="#">chandra_aca 4.49.0 documentation</a>
-	 &#187;
-      </li>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><a href="#" style="text-decoration: none;">
+    <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
+</a>
+&nbsp;
+<span style="font-size: x-large;">4.50.0</span></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
       
-       
-    </ul>
-</div>
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
   
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <section id="chandra-aca">
-<h1>chandra_aca<a class="headerlink" href="#chandra-aca" title="Link to this heading">¶</a></h1>
-<p>The chandra_aca package provides functionality related to the Chandra Aspect
-Camera Assembly and associated aspect functionality.</p>
-<div class="toctree-wrapper compound">
+  
 </div>
-<section id="aca-alignment-drift">
-<h2>ACA alignment drift<a class="headerlink" href="#aca-alignment-drift" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="drift.html">chandra_aca.drift</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.AcaDriftModel"><code class="docutils literal notranslate"><span class="pre">AcaDriftModel</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.get_aca_offsets"><code class="docutils literal notranslate"><span class="pre">get_aca_offsets()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.get_default_zero_offset_table"><code class="docutils literal notranslate"><span class="pre">get_default_zero_offset_table()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.get_fid_offset"><code class="docutils literal notranslate"><span class="pre">get_fid_offset()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="drift.html#chandra_aca.drift.get_target_aimpoint"><code class="docutils literal notranslate"><span class="pre">get_target_aimpoint()</span></code></a></li>
-</ul>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="aca_image.html">
+    ACA images
+  </a>
 </li>
-</ul>
-</div>
-</section>
-<section id="aca-images">
-<h2>ACA images<a class="headerlink" href="#aca-images" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="aca_image.html">chandra_aca.aca_image</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage"><code class="docutils literal notranslate"><span class="pre">ACAImage</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.aca"><code class="docutils literal notranslate"><span class="pre">ACAImage.aca</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.centroid_fm"><code class="docutils literal notranslate"><span class="pre">ACAImage.centroid_fm()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.flicker_init"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_init()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.ACAImage.flicker_update"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_update()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.AcaPsfLibrary"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary.get_psf_image()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.EIGHT_LABELS"><code class="docutils literal notranslate"><span class="pre">EIGHT_LABELS</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.centroid_fm"><code class="docutils literal notranslate"><span class="pre">centroid_fm()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="aca_image.html#chandra_aca.aca_image.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="aca_image.html#acaimage-class">ACAImage class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#creation">Creation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#image-access-and-setting">Image access and setting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#image-arithmetic-operations">Image arithmetic operations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aca_image.html#meta-data">Meta-data</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="centroid-residuals">
-<h2>Centroid residuals<a class="headerlink" href="#centroid-residuals" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="centroid_resid.html">chandra_aca.centroid_resid</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="centroid_resid.html#chandra_aca.centroid_resid.CentroidResiduals"><code class="docutils literal notranslate"><span class="pre">CentroidResiduals</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="dark-model">
-<h2>Dark model<a class="headerlink" href="#dark-model" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="dark_model.html">chandra_aca.dark_model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.dark_temp_scale"><code class="docutils literal notranslate"><span class="pre">dark_temp_scale()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.dark_temp_scale_img"><code class="docutils literal notranslate"><span class="pre">dark_temp_scale_img()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.get_dark_hist"><code class="docutils literal notranslate"><span class="pre">get_dark_hist()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.get_sbp_pars"><code class="docutils literal notranslate"><span class="pre">get_sbp_pars()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.get_warm_fracs"><code class="docutils literal notranslate"><span class="pre">get_warm_fracs()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.smooth_broken_pow"><code class="docutils literal notranslate"><span class="pre">smooth_broken_pow()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.smooth_twice_broken_pow"><code class="docutils literal notranslate"><span class="pre">smooth_twice_broken_pow()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.synthetic_dark_image"><code class="docutils literal notranslate"><span class="pre">synthetic_dark_image()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_model.html#chandra_aca.dark_model.temp_scalefac"><code class="docutils literal notranslate"><span class="pre">temp_scalefac()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="dark-background-subtraction">
-<h2>Dark background subtraction<a class="headerlink" href="#dark-background-subtraction" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="dark_subtract.html">chandra_aca.dark_subtract</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_aca_images_bgd_sub"><code class="docutils literal notranslate"><span class="pre">get_aca_images_bgd_sub()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_dark_backgrounds"><code class="docutils literal notranslate"><span class="pre">get_dark_backgrounds()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_dark_current_imgs"><code class="docutils literal notranslate"><span class="pre">get_dark_current_imgs()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="dark_subtract.html#chandra_aca.dark_subtract.get_tccd_data"><code class="docutils literal notranslate"><span class="pre">get_tccd_data()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="maude-decom">
-<h2>MAUDE Decom<a class="headerlink" href="#maude-decom" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="maude_decom.html">chandra_aca.maude_decom</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#telemetry-specification">Telemetry Specification</a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#timing">Timing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#global-variables-in-this-module">Global variables in this module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict"><code class="docutils literal notranslate"><span class="pre">blob_to_aca_image_dict()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.filter_vcdu_jumps"><code class="docutils literal notranslate"><span class="pre">filter_vcdu_jumps()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_aca_packets()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_raw_aca_blobs"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_blobs()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets"><code class="docutils literal notranslate"><span class="pre">get_raw_aca_packets()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="maude_decom.html#chandra_aca.maude_decom.unpack_aca_telemetry"><code class="docutils literal notranslate"><span class="pre">unpack_aca_telemetry()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="planet-positions">
-<h2>Planet Positions<a class="headerlink" href="#planet-positions" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="planets.html">chandra_aca.planets</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.EarthBoresightAngles"><code class="docutils literal notranslate"><span class="pre">EarthBoresightAngles</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.NoEphemerisError"><code class="docutils literal notranslate"><span class="pre">NoEphemerisError</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_earth_blocks"><code class="docutils literal notranslate"><span class="pre">get_earth_blocks()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_earth_boresight_angle"><code class="docutils literal notranslate"><span class="pre">get_earth_boresight_angle()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_angular_sep"><code class="docutils literal notranslate"><span class="pre">get_planet_angular_sep()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_barycentric"><code class="docutils literal notranslate"><span class="pre">get_planet_barycentric()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_chandra"><code class="docutils literal notranslate"><span class="pre">get_planet_chandra()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_chandra_horizons"><code class="docutils literal notranslate"><span class="pre">get_planet_chandra_horizons()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="planets.html#chandra_aca.planets.get_planet_eci"><code class="docutils literal notranslate"><span class="pre">get_planet_eci()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="plotting">
-<h2>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="plot.html">chandra_aca.plot</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="plot.html#chandra_aca.plot.bad_acq_stars"><code class="docutils literal notranslate"><span class="pre">bad_acq_stars()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="plot.html#chandra_aca.plot.plot_compass"><code class="docutils literal notranslate"><span class="pre">plot_compass()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="plot.html#chandra_aca.plot.plot_stars"><code class="docutils literal notranslate"><span class="pre">plot_stars()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="star-probabilities">
-<h2>Star probabilities<a class="headerlink" href="#star-probabilities" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="star_probs.html">chandra_aca.star_probs</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.Conf"><code class="docutils literal notranslate"><span class="pre">Conf</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.ConfigItem"><code class="docutils literal notranslate"><span class="pre">ConfigItem</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.acq_success_prob"><code class="docutils literal notranslate"><span class="pre">acq_success_prob()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.binom_ppf"><code class="docutils literal notranslate"><span class="pre">binom_ppf()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.binomial_confidence_interval"><code class="docutils literal notranslate"><span class="pre">binomial_confidence_interval()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.clip_and_warn"><code class="docutils literal notranslate"><span class="pre">clip_and_warn()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_box_delta"><code class="docutils literal notranslate"><span class="pre">get_box_delta()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_default_acq_prob_model_info"><code class="docutils literal notranslate"><span class="pre">get_default_acq_prob_model_info()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_grid_axis_values"><code class="docutils literal notranslate"><span class="pre">get_grid_axis_values()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.get_grid_func_model"><code class="docutils literal notranslate"><span class="pre">get_grid_func_model()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.grid_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">grid_model_acq_prob()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.guide_count"><code class="docutils literal notranslate"><span class="pre">guide_count()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.mag_for_p_acq"><code class="docutils literal notranslate"><span class="pre">mag_for_p_acq()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.model_acq_success_prob"><code class="docutils literal notranslate"><span class="pre">model_acq_success_prob()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.prob_n_acq"><code class="docutils literal notranslate"><span class="pre">prob_n_acq()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.set_acq_model_ms_filter"><code class="docutils literal notranslate"><span class="pre">set_acq_model_ms_filter()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.sota_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">sota_model_acq_prob()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.spline_model_acq_prob"><code class="docutils literal notranslate"><span class="pre">spline_model_acq_prob()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit"><code class="docutils literal notranslate"><span class="pre">t_ccd_warm_limit()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="star_probs.html#chandra_aca.star_probs.t_ccd_warm_limit_for_guide"><code class="docutils literal notranslate"><span class="pre">t_ccd_warm_limit_for_guide()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="transformations">
-<h2>Transformations<a class="headerlink" href="#transformations" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="transform.html">chandra_aca.transform</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.broadcast_arrays"><code class="docutils literal notranslate"><span class="pre">broadcast_arrays()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.broadcast_arrays_flatten"><code class="docutils literal notranslate"><span class="pre">broadcast_arrays_flatten()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.calc_aca_from_targ"><code class="docutils literal notranslate"><span class="pre">calc_aca_from_targ()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.calc_targ_from_aca"><code class="docutils literal notranslate"><span class="pre">calc_targ_from_aca()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.calc_target_offsets"><code class="docutils literal notranslate"><span class="pre">calc_target_offsets()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.count_rate_to_mag"><code class="docutils literal notranslate"><span class="pre">count_rate_to_mag()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.eci_to_radec"><code class="docutils literal notranslate"><span class="pre">eci_to_radec()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.mag_to_count_rate"><code class="docutils literal notranslate"><span class="pre">mag_to_count_rate()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.normalize_vector"><code class="docutils literal notranslate"><span class="pre">normalize_vector()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.pixels_to_yagzag"><code class="docutils literal notranslate"><span class="pre">pixels_to_yagzag()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.radec_to_eci"><code class="docutils literal notranslate"><span class="pre">radec_to_eci()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.radec_to_yagzag"><code class="docutils literal notranslate"><span class="pre">radec_to_yagzag()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.snr_mag_for_t_ccd"><code class="docutils literal notranslate"><span class="pre">snr_mag_for_t_ccd()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.yagzag_to_pixels"><code class="docutils literal notranslate"><span class="pre">yagzag_to_pixels()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="transform.html#chandra_aca.transform.yagzag_to_radec"><code class="docutils literal notranslate"><span class="pre">yagzag_to_radec()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-</section>
 
 
-            <div class="clearer"></div>
-          </div>
-        </div>
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
-<ul>
-<li><a class="reference internal" href="#">chandra_aca</a><ul>
-<li><a class="reference internal" href="#aca-alignment-drift">ACA alignment drift</a></li>
-<li><a class="reference internal" href="#aca-images">ACA images</a></li>
-<li><a class="reference internal" href="#centroid-residuals">Centroid residuals</a></li>
-<li><a class="reference internal" href="#dark-model">Dark model</a></li>
-<li><a class="reference internal" href="#dark-background-subtraction">Dark background subtraction</a></li>
-<li><a class="reference internal" href="#maude-decom">MAUDE Decom</a></li>
-<li><a class="reference internal" href="#planet-positions">Planet Positions</a></li>
-<li><a class="reference internal" href="#plotting">Plotting</a></li>
-<li><a class="reference internal" href="#star-probabilities">Star probabilities</a></li>
-<li><a class="reference internal" href="#transformations">Transformations</a></li>
-</ul>
-</li>
-</ul>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
 
-
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="drift.html"
-                          title="next chapter">chandra_aca.drift</a></p>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
   </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<form action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
-        </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
       </div>
-      <div class="clearer"></div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="chandra-aca">
+<h1>chandra_aca<a class="headerlink" href="#chandra-aca" title="Link to this heading">#</a></h1>
+<p>A collection of Python modules for working with Chandra ACA data.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="aca_image.html">ACA images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maude_decom.html">MAUDE ACA telemetry</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/chandra_aca/index.html">chandra_aca</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/chandra_aca/index.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/aca_image/index.html">chandra_aca.aca_image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/attitude/index.html">chandra_aca.attitude</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/centroid_resid/index.html">chandra_aca.centroid_resid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/cubic_spline/index.html">chandra_aca.cubic_spline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/dark_model/index.html">chandra_aca.dark_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/dark_subtract/index.html">chandra_aca.dark_subtract</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/darkbins/index.html">chandra_aca.darkbins</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/drift/index.html">chandra_aca.drift</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/maude_decom/index.html">chandra_aca.maude_decom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/planets/index.html">chandra_aca.planets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/plot/index.html">chandra_aca.plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/star_probs/index.html">chandra_aca.star_probs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/tests/index.html">chandra_aca.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/transform/index.html">chandra_aca.transform</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/chandra_aca/index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/chandra_aca/index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/chandra_aca/index.html#package-contents">Package Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/index.html#chandra_aca.ACA2PIX_coeff"><code class="docutils literal notranslate"><span class="pre">ACA2PIX_coeff</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/index.html#chandra_aca.PIX2ACA_coeff"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_coeff</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/index.html#chandra_aca.PIX2ACA_eeprom"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_eeprom</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/index.html#chandra_aca.ACA_MAG0"><code class="docutils literal notranslate"><span class="pre">ACA_MAG0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/index.html#chandra_aca.ACA_CNT_RATE_MAG0"><code class="docutils literal notranslate"><span class="pre">ACA_CNT_RATE_MAG0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/index.html#chandra_aca.ODB_SI_ALIGN"><code class="docutils literal notranslate"><span class="pre">ODB_SI_ALIGN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/chandra_aca/index.html#chandra_aca.__version__"><code class="docutils literal notranslate"><span class="pre">__version__</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="aca_image.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ACA images</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
-<footer class="footer">
-  <p class="pull-right">
-    <a href="_sources/index.rst.txt"
-       rel="nofollow">Page Source</a> &nbsp;
-    <a href="#">Back to Top</a></p>
-  <p>
-    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 8.1.3. &nbsp;
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      <br/>
+    
   </p>
-</footer>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
   </body>
 </html>

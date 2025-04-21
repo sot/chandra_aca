@@ -1,0 +1,35 @@
+chandra_aca.count_rate_to_mag
+=============================
+
+.. py:function:: chandra_aca.count_rate_to_mag(count_rate)
+
+   
+   Convert count rate in e- / sec to ACA mag
+
+   Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
+   columns mag0=10.32 and cnt_rate_mag0=5263.0.
+
+   :Parameters:
+
+       **count_rate**
+           count rate (e-/sec)
+
+
+
+   :Returns:
+
+       magnitude (ACA mag)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

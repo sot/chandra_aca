@@ -1,0 +1,33 @@
+chandra_aca.plot.plot_compass
+=============================
+
+.. py:function:: chandra_aca.plot.plot_compass(roll)
+
+   
+   Make a compass plot.
+
+
+   :Parameters:
+
+       **roll**
+           Attitude roll for compass plot.
+
+
+
+   :Returns:
+
+       matplotlib figure
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

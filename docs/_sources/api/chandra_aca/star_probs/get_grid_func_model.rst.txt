@@ -1,0 +1,55 @@
+chandra_aca.star_probs.get_grid_func_model
+==========================================
+
+.. py:function:: chandra_aca.star_probs.get_grid_func_model(model = None, version = None, repo_path = None)
+
+   
+   Get grid model from the ``model`` name.
+
+   This reads the model data from the FITS file in the ``chandra_models`` repository.
+   The ``model`` name can be a glob pattern like ``grid-*``, which will match the
+   grid model with the most recent date. If not provided the ``DEFAULT_MODEL`` is used.
+
+   The return value is a dict with necessary data to use the model::
+
+       "filename": filepath (Path),
+       "func_no_1p5": RegularGridInterpolator for stars with color != 1.5 (common)
+       "func_1p5": RegularGridInterpolator for stars with color = 1.5 (less common)
+       "mag_lo": lower bound of mag axis
+       "mag_hi": upper bound of mag axis
+       "t_ccd_lo": lower bound of t_ccd axis
+       "t_ccd_hi": upper bound of t_ccd axis
+       "halfw_lo": lower bound of halfw axis
+       "halfw_hi": upper bound of halfw axis
+       "info": dict of provenance info for model file
+
+   :Parameters:
+
+       **model**
+           Model name (optional), defaults to ``conf.default_model``
+
+       **version**
+           Version / tag / branch of ``chandra_models`` repository (optional)
+
+       **repo_path**
+           Path to ``chandra_models`` repository (optional)
+
+
+
+   :Returns:
+
+       dict of model data
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

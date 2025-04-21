@@ -1,0 +1,44 @@
+chandra_aca.star_probs.Conf
+===========================
+
+.. py:class:: chandra_aca.star_probs.Conf
+
+   Bases: :py:obj:`astropy.config.ConfigNamespace`
+
+
+   
+   A namespace of configuration items.  Each subpackage with
+   configuration items should define a subclass of this class,
+   containing `ConfigItem` instances as members.
+
+   For example::
+
+       class Conf(_config.ConfigNamespace):
+           unicode_output = _config.ConfigItem(
+               False,
+               'Use Unicode characters when outputting values, ...')
+           use_color = _config.ConfigItem(
+               sys.platform != 'win32',
+               'When True, use ANSI color escape sequences when ...',
+               aliases=['astropy.utils.console.USE_COLOR'])
+       conf = Conf()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: default_model
+

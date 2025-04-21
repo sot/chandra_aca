@@ -1,0 +1,63 @@
+chandra_aca.attitude.calc_roll_pitch_yaw
+========================================
+
+.. py:function:: chandra_aca.attitude.calc_roll_pitch_yaw(yag, zag, yag_obs, zag_obs, sigma=None)
+
+   
+   Calc S/C delta roll, pitch, and yaw for observed star positions relative to reference.
+
+   This function computes a S/C delta roll/pitch/yaw that transforms the
+   reference star positions yag/zag into the observed positions
+   yag_obs/zag_obs.  The units for these values must be in arcsec.
+
+   The ``yag`` and ``zag`` values correspond to the reference star catalog
+   positions.  These must be a 1-d list or array of length M (number of
+   stars).
+
+   The ``yag_obs`` and ``zag_obs`` values must be either a 1-d or 2-d array
+   with shape M (single readout of M stars) or shape N x M (N rows of M
+   stars).
+
+   The ``sigma`` parameter can be None or a 1-d array of length M.
+
+   The algorithm is a simple but fast linear least-squared solution which uses
+   a small angle assumption to linearize the rotation matrix from
+   [[cos(th) -sin(th)], [sin(th), cos(th)]] to [[1, -th], [th, 1]].
+   In practice anything below 1.0 degree is fine.
+
+   :Parameters:
+
+       **yag**
+           reference yag (list or array, arcsec)
+
+       **zag**
+           reference zag (list or array, arcsec)
+
+       **yag_obs**
+           observed yag (list or array, arcsec)
+
+       **zag_obs**
+           observed zag (list or array, arcsec)
+
+       **sigma**
+           centroid uncertainties (None or list or array, arcsec)
+
+
+
+   :Returns:
+
+       roll, pitch, yaw (degrees)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

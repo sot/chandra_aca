@@ -1,0 +1,617 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chandra_aca &#8212; chandra_aca 4.50.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=d9e78d80"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/chandra_aca/index';</script>
+    <link rel="canonical" href="https://sot.github.io/chandra_aca/api/chandra_aca/index.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="chandra_aca.aca_image" href="aca_image/index.html" />
+    <link rel="prev" title="API Reference" href="../index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="4.50.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><a href="../../index.html" style="text-decoration: none;">
+    <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
+</a>
+&nbsp;
+<span style="font-size: x-large;">4.50.0</span></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">API Reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">chandra_aca</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-chandra_aca">
+<span id="chandra-aca"></span><h1>chandra_aca<a class="headerlink" href="#module-chandra_aca" title="Link to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="aca_image/index.html">chandra_aca.aca_image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attitude/index.html">chandra_aca.attitude</a></li>
+<li class="toctree-l1"><a class="reference internal" href="centroid_resid/index.html">chandra_aca.centroid_resid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cubic_spline/index.html">chandra_aca.cubic_spline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dark_model/index.html">chandra_aca.dark_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dark_subtract/index.html">chandra_aca.dark_subtract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="darkbins/index.html">chandra_aca.darkbins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drift/index.html">chandra_aca.drift</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maude_decom/index.html">chandra_aca.maude_decom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="planets/index.html">chandra_aca.planets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot/index.html">chandra_aca.plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="star_probs/index.html">chandra_aca.star_probs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/index.html">chandra_aca.tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transform/index.html">chandra_aca.transform</a></li>
+</ul>
+</div>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.ACA2PIX_coeff" title="chandra_aca.ACA2PIX_coeff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA2PIX_coeff</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.PIX2ACA_coeff" title="chandra_aca.PIX2ACA_coeff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX2ACA_coeff</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.PIX2ACA_eeprom" title="chandra_aca.PIX2ACA_eeprom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX2ACA_eeprom</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.ACA_MAG0" title="chandra_aca.ACA_MAG0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA_MAG0</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.ACA_CNT_RATE_MAG0" title="chandra_aca.ACA_CNT_RATE_MAG0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA_CNT_RATE_MAG0</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.ODB_SI_ALIGN" title="chandra_aca.ODB_SI_ALIGN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ODB_SI_ALIGN</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.__version__" title="chandra_aca.__version__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__version__</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="broadcast_arrays.html#chandra_aca.broadcast_arrays" title="chandra_aca.broadcast_arrays"><code class="xref py py-obj docutils literal notranslate"><span class="pre">broadcast_arrays</span></code></a>(*args)</p></td>
+<td><p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="broadcast_arrays_flatten.html#chandra_aca.broadcast_arrays_flatten" title="chandra_aca.broadcast_arrays_flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">broadcast_arrays_flatten</span></code></a>(*args)</p></td>
+<td><p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape and flatten.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pixels_to_yagzag.html#chandra_aca.pixels_to_yagzag" title="chandra_aca.pixels_to_yagzag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixels_to_yagzag</span></code></a>(row, col[, allow_bad, flight, t_aca, ...])</p></td>
+<td><p>Convert ACA row/column positions to ACA y-angle, z-angle.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="yagzag_to_pixels.html#chandra_aca.yagzag_to_pixels" title="chandra_aca.yagzag_to_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yagzag_to_pixels</span></code></a>(yang, zang[, allow_bad, pix_zero_loc])</p></td>
+<td><p>Convert ACA y-angle/z-angle positions to ACA pixel row, column.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_poly_convert.html#chandra_aca._poly_convert" title="chandra_aca._poly_convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_poly_convert</span></code></a>(y, z, coeffs[, t_aca])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="radec_to_eci.html#chandra_aca.radec_to_eci" title="chandra_aca.radec_to_eci"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radec_to_eci</span></code></a>(ra, dec)</p></td>
+<td><p>Convert from RA,Dec to ECI.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="eci_to_radec.html#chandra_aca.eci_to_radec" title="chandra_aca.eci_to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eci_to_radec</span></code></a>(eci)</p></td>
+<td><p>Convert from ECI vector(s) to RA, Dec.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mag_to_count_rate.html#chandra_aca.mag_to_count_rate" title="chandra_aca.mag_to_count_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mag_to_count_rate</span></code></a>(mag)</p></td>
+<td><p>Convert ACA mag to count rate in e- / sec</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="count_rate_to_mag.html#chandra_aca.count_rate_to_mag" title="chandra_aca.count_rate_to_mag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_rate_to_mag</span></code></a>(count_rate)</p></td>
+<td><p>Convert count rate in e- / sec to ACA mag</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="snr_mag_for_t_ccd.html#chandra_aca.snr_mag_for_t_ccd" title="chandra_aca.snr_mag_for_t_ccd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">snr_mag_for_t_ccd</span></code></a>(t_ccd, ref_mag, ref_t_ccd[, scale_4c])</p></td>
+<td><p>Calculate signal-to-noise equivalent magnitude.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="calc_aca_from_targ.html#chandra_aca.calc_aca_from_targ" title="chandra_aca.calc_aca_from_targ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_aca_from_targ</span></code></a>(targ, y_off, z_off[, si_align])</p></td>
+<td><p>Calculate PCAD (ACA) pointing attitude.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="calc_targ_from_aca.html#chandra_aca.calc_targ_from_aca" title="chandra_aca.calc_targ_from_aca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_targ_from_aca</span></code></a>(aca, y_off, z_off[, si_align])</p></td>
+<td><p>Calculate target attitude.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="calc_target_offsets.html#chandra_aca.calc_target_offsets" title="chandra_aca.calc_target_offsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_target_offsets</span></code></a>(aca, ra_targ, dec_targ[, si_align])</p></td>
+<td><p>Calculate target offsets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="radec_to_yagzag.html#chandra_aca.radec_to_yagzag" title="chandra_aca.radec_to_yagzag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radec_to_yagzag</span></code></a>(ra, dec, q_att)</p></td>
+<td><p>Calculate ACA Y-angle, Z-angle from RA, Dec and pointing quaternion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="yagzag_to_radec.html#chandra_aca.yagzag_to_radec" title="chandra_aca.yagzag_to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yagzag_to_radec</span></code></a>(yag, zag, q_att)</p></td>
+<td><p>Calculate RA, Dec from ACA Y-angle, Z-angle and pointing quaternion.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="normalize_vector.html#chandra_aca.normalize_vector" title="chandra_aca.normalize_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_vector</span></code></a>(vec[, ord])</p></td>
+<td><p>Normalize <code class="docutils literal notranslate"><span class="pre">vec</span></code> over the last dimension.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="test.html#chandra_aca.test" title="chandra_aca.test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Run py.test unit tests.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.ACA2PIX_coeff">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.</span></span><span class="sig-name descname"><span class="pre">ACA2PIX_coeff</span></span><a class="reference internal" href="../../_modules/chandra_aca/transform.html#ACA2PIX_coeff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.ACA2PIX_coeff" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.PIX2ACA_coeff">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.</span></span><span class="sig-name descname"><span class="pre">PIX2ACA_coeff</span></span><a class="reference internal" href="../../_modules/chandra_aca/transform.html#PIX2ACA_coeff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.PIX2ACA_coeff" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.PIX2ACA_eeprom">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.</span></span><span class="sig-name descname"><span class="pre">PIX2ACA_eeprom</span></span><a class="reference internal" href="../../_modules/chandra_aca/transform.html#PIX2ACA_eeprom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.PIX2ACA_eeprom" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.ACA_MAG0">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.</span></span><span class="sig-name descname"><span class="pre">ACA_MAG0</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10.32</span></em><a class="reference internal" href="../../_modules/chandra_aca/transform.html#ACA_MAG0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.ACA_MAG0" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.ACA_CNT_RATE_MAG0">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.</span></span><span class="sig-name descname"><span class="pre">ACA_CNT_RATE_MAG0</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5263.0</span></em><a class="reference internal" href="../../_modules/chandra_aca/transform.html#ACA_CNT_RATE_MAG0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.ACA_CNT_RATE_MAG0" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.ODB_SI_ALIGN">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.</span></span><span class="sig-name descname"><span class="pre">ODB_SI_ALIGN</span></span><a class="reference internal" href="../../_modules/chandra_aca/transform.html#ODB_SI_ALIGN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.ODB_SI_ALIGN" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.__version__">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><a class="reference internal" href="../../_modules/chandra_aca.html#__version__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.__version__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="aca_image/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">chandra_aca.aca_image</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.ACA2PIX_coeff"><code class="docutils literal notranslate"><span class="pre">ACA2PIX_coeff</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.PIX2ACA_coeff"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_coeff</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.PIX2ACA_eeprom"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_eeprom</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.ACA_MAG0"><code class="docutils literal notranslate"><span class="pre">ACA_MAG0</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.ACA_CNT_RATE_MAG0"><code class="docutils literal notranslate"><span class="pre">ACA_CNT_RATE_MAG0</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.ODB_SI_ALIGN"><code class="docutils literal notranslate"><span class="pre">ODB_SI_ALIGN</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.__version__"><code class="docutils literal notranslate"><span class="pre">__version__</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+chandra_aca.drift.AcaDriftModel
+===============================
+
+.. py:class:: chandra_aca.drift.AcaDriftModel(scale, offset, trend, jumps, year0)
+
+   Bases: :py:obj:`object`
+
+
+   
+   AcaDriftModel class
+
+   Define a drift model for aspect solution SIM DY/DZ values as a function of
+   time and ACA CCD temperature.  This expresses the model which is defined
+   and fitted in the fit_aimpoint_drift notebook in this repo.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: scale
+
+
+   .. py:attribute:: offset
+
+
+   .. py:attribute:: trend
+
+
+   .. py:attribute:: jumps
+
+
+   .. py:attribute:: year0
+
+
+   .. py:method:: calc(times, t_ccd)
+
+      
+      Calculate the drift model
+
+      Calculate the drift model for aspect solution SIM DY/DZ values for input
+      ``times`` and ``t_ccd``.  The two arrays are broadcasted to match.
+
+      The returned drifts are in arcsec and provide the expected aspect solution
+      SIM DY or DZ values in arcsec.  This can be converted to a drift in mm
+      (corresponding to units in an ASOL file) via the scale factor 20.493 arcsec/mm.
+
+      :Parameters:
+
+          **times**
+              array of times (CXC secs)
+
+          **t_ccd**
+              CCD temperatures (degC)
+
+
+
+      :Returns:
+
+          array of ASOL SIM DY/DZ (arcsec)
+              ..
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

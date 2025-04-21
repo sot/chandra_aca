@@ -1,0 +1,54 @@
+chandra_aca.planets.EarthBoresightAngles
+========================================
+
+.. py:class:: chandra_aca.planets.EarthBoresightAngles
+
+   
+   Earth boresight angles from Chandra
+
+
+
+   :Attributes:
+
+       **times** : CxoTime
+           Times
+
+       **earth_limb_angle** : ndarray
+           Earth limb angle (deg)
+
+       **earth_open_angle** : ndarray
+           Earth opening angle (deg)
+
+       **earth_center_angle** : ndarray
+           Earth center angle (deg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: times
+      :type:  cxotime.CxoTime
+
+
+   .. py:attribute:: earth_limb_angle
+      :type:  numpy.ndarray
+
+
+   .. py:attribute:: earth_open_angle
+      :type:  numpy.ndarray
+
+
+   .. py:attribute:: earth_center_angle
+      :type:  numpy.ndarray
+

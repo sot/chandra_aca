@@ -1,0 +1,31 @@
+chandra_aca.dark_model.smooth_broken_pow
+========================================
+
+.. py:function:: chandra_aca.dark_model.smooth_broken_pow(pars, x)
+
+   
+   Smoothed broken power-law.
+
+   Pars are same as bpl1d (NOT + gaussian sigma):
+   1: gamma1
+   2: gamma2
+   3: x_b (break point)
+   4: x_r (normalization reference point)
+   5: ampl1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

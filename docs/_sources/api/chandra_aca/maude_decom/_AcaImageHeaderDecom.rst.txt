@@ -1,0 +1,136 @@
+chandra_aca.maude_decom._AcaImageHeaderDecom
+============================================
+
+.. py:class:: chandra_aca.maude_decom._AcaImageHeaderDecom
+
+   
+   Class to decommute ACA image telemtry headers.
+
+   These methods are grouped into a class because header 3 packet is split into up to 8 parts.
+   The __call__ method in this class accumulates the partial packets. Once all images are of known
+   types, and the packets are known, it will return the header 3 data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: _header
+
+
+   .. py:method:: __call__(imgnum, imgtype, byte_array)
+
+
+   .. py:method:: _aca_header_1(bits)
+      :staticmethod:
+
+
+      
+      Unpack ACA header 1 (ACA User Manual 5.3.2.2.1).
+
+
+      :Parameters:
+
+          **bits**
+              bytes-like object of length 7
+
+
+
+      :Returns:
+
+          dict
+              ..
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: _aca_header_2(bits)
+      :staticmethod:
+
+
+      
+      Unpack ACA header 2 (ACA User Manual 5.3.2.2.2).
+
+
+      :Parameters:
+
+          **bits**
+              bytes-like object of length 7
+
+
+
+      :Returns:
+
+          dict
+              ..
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: _aca_header_3(bits)
+      :staticmethod:
+
+
+      
+      Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).
+
+
+      :Parameters:
+
+          **bits**
+              bytes-like object of length 7
+
+
+
+      :Returns:
+
+          dict
+              ..
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

@@ -1,0 +1,70 @@
+chandra_aca.star_probs.t_ccd_warm_limit
+=======================================
+
+.. py:function:: chandra_aca.star_probs.t_ccd_warm_limit(mags, date=None, colors=0, halfwidths=120, min_n_acq=5.0, cold_t_ccd=-16, warm_t_ccd=-5, model=None)
+
+   
+   Find the warmest CCD temperature which meets the ``min_n_acq`` acquisition stars criterion.
+
+   This returns a value between ``cold_t_ccd`` and ``warm_t_ccd``.  At the
+   cold end the result may be below ``min_n_acq``, in which case the star catalog
+   may be rejected.
+
+   The ``min_n_acq`` argument can be specified in one of two ways:
+
+    - Scalar float value: expected number of acquired stars must exceed threshold.
+        Expected number is the sum of the individual probabilities.
+    - Tuple (n, prob): computed probability of acquiring ``n`` or fewer stars
+        must not exceed ``prob``.
+
+   :Parameters:
+
+       **mags**
+           list of star ACA mags
+
+       **date**
+           observation date (any Chandra.Time valid format)
+
+       **colors**
+           list of star B-V colors (optional, default=0.0)
+
+       **halfwidths**
+           list of acq box halfwidths(optional, default=120)
+
+       **min_n_acq**
+           float or tuple (see above)
+
+       **cold_t_ccd**
+           coldest CCD temperature to consider (default=-16 C)
+
+       **warm_t_ccd**
+           warmest CCD temperature to consider (default=-5 C)
+
+       **model**
+           probability model (see acq_success_prob() for allowed values, default)
+
+
+
+   :Returns:
+
+       (t_ccd, n_acq | prob_n_or_fewer) tuple with CCD temperature upper limit:
+           ..
+
+       - number of expected ACQ stars at that temperature (scalar min_n_acq)
+           ..
+
+       - probability of acquiring ``n`` or fewer stars (tuple min_n_acq)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

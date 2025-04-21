@@ -1,0 +1,95 @@
+chandra_aca.transform
+=====================
+
+.. py:module:: chandra_aca.transform
+
+.. autoapi-nested-parse::
+
+   The transform modules includes:
+
+   - Coordinate conversions between ACA Pixels and ACA Y-angle, Z-angle
+   - Mag to count conversions
+   - Science target coordinate to ACA frame conversions
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.transform.ACA2PIX_coeff
+   chandra_aca.transform.PIX2ACA_coeff
+   chandra_aca.transform.PIX2ACA_eeprom
+   chandra_aca.transform.PIX2ACA_eeprom
+   chandra_aca.transform.ACA_MAG0
+   chandra_aca.transform.ACA_CNT_RATE_MAG0
+   chandra_aca.transform.ODB_SI_ALIGN
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/transform/broadcast_arrays
+   /api/chandra_aca/transform/broadcast_arrays_flatten
+   /api/chandra_aca/transform/pixels_to_yagzag
+   /api/chandra_aca/transform/yagzag_to_pixels
+   /api/chandra_aca/transform/_poly_convert
+   /api/chandra_aca/transform/radec_to_eci
+   /api/chandra_aca/transform/eci_to_radec
+   /api/chandra_aca/transform/mag_to_count_rate
+   /api/chandra_aca/transform/count_rate_to_mag
+   /api/chandra_aca/transform/snr_mag_for_t_ccd
+   /api/chandra_aca/transform/calc_aca_from_targ
+   /api/chandra_aca/transform/calc_targ_from_aca
+   /api/chandra_aca/transform/calc_target_offsets
+   /api/chandra_aca/transform/radec_to_yagzag
+   /api/chandra_aca/transform/yagzag_to_radec
+   /api/chandra_aca/transform/normalize_vector
+
+.. autoapisummary::
+
+   chandra_aca.transform.broadcast_arrays
+   chandra_aca.transform.broadcast_arrays_flatten
+   chandra_aca.transform.pixels_to_yagzag
+   chandra_aca.transform.yagzag_to_pixels
+   chandra_aca.transform._poly_convert
+   chandra_aca.transform.radec_to_eci
+   chandra_aca.transform.eci_to_radec
+   chandra_aca.transform.mag_to_count_rate
+   chandra_aca.transform.count_rate_to_mag
+   chandra_aca.transform.snr_mag_for_t_ccd
+   chandra_aca.transform.calc_aca_from_targ
+   chandra_aca.transform.calc_targ_from_aca
+   chandra_aca.transform.calc_target_offsets
+   chandra_aca.transform.radec_to_yagzag
+   chandra_aca.transform.yagzag_to_radec
+   chandra_aca.transform.normalize_vector
+
+
+Module Contents
+---------------
+
+.. py:data:: ACA2PIX_coeff
+
+.. py:data:: PIX2ACA_coeff
+
+.. py:data:: PIX2ACA_eeprom
+
+.. py:data:: PIX2ACA_eeprom
+
+.. py:data:: ACA_MAG0
+   :value: 10.32
+
+
+.. py:data:: ACA_CNT_RATE_MAG0
+   :value: 5263.0
+
+
+.. py:data:: ODB_SI_ALIGN
+

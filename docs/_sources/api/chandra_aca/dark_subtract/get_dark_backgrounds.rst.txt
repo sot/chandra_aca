@@ -1,0 +1,43 @@
+chandra_aca.dark_subtract.get_dark_backgrounds
+==============================================
+
+.. py:function:: chandra_aca.dark_subtract.get_dark_backgrounds(raw_dark_img, imgrow0, imgcol0, size=8)
+
+   
+   Get dark background cutouts at a set of ACA image positions.
+
+
+   :Parameters:
+
+       **raw_dark_img** : np.array
+           Dark calibration image.
+
+       **imgrow0** : np.array (int)
+           Row of ACA image.
+
+       **imgcol0** : np.array (int)
+           Column of ACA image.
+
+       **size** : int, optional
+           Size of ACA image (default=8).
+
+
+
+   :Returns:
+
+       **imgs_dark** : np.array (len(imgrow0), size, size)
+           Dark backgrounds for image locations sampled from raw_dark_img (e-/s).
+           Pixels outside raw_dark_img are set to 0.0.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

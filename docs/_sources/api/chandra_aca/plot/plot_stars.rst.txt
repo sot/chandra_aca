@@ -1,0 +1,72 @@
+chandra_aca.plot.plot_stars
+===========================
+
+.. py:function:: chandra_aca.plot.plot_stars(attitude, catalog=None, stars=None, title=None, starcat_time=None, red_mag_lim=None, quad_bound=True, grid=True, bad_stars=None, plot_keepout=False, ax=None, duration=0)
+
+   
+   Plot a catalog, a star field, or both in a matplotlib figure.
+
+   If supplying a star field, an attitude must also be supplied.
+
+   :Parameters:
+
+       **attitude**
+           A Quaternion compatible attitude for the pointing
+
+       **catalog** : Records describing catalog.  Must be astropy table compatible.
+           Required fields are ['idx', 'type', 'yang', 'zang', 'halfw']
+
+       **stars** : astropy table compatible set of AGASC records of stars
+           Required fields are ['RA_PMCORR', 'DEC_PMCORR', 'MAG_ACA', 'MAG_ACA_ERR'].
+           If ``bad_stars`` is None, additional required fields are
+           ['CLASS', 'COLOR1', 'ASPQ1', 'ASPQ2', 'VAR', 'POS_ERR']
+           If ``stars`` is None, stars will be fetched from the AGASC for the
+           supplied attitude.
+
+       **title**
+           string to be used as suptitle for the figure
+
+       **starcat_time** : DateTime-compatible time.  Used in ACASC fetch for proper
+           motion correction.  Not used if stars is not None.
+
+       **red_mag_lim**
+           faint limit for field star plotting.
+
+       **quad_bound**
+           boolean, plot inner quadrant boundaries
+
+       **grid**
+           boolean, plot axis grid
+
+       **bad_stars** : boolean mask on 'stars' of those that don't meet minimum requirements
+           to be selected as acq stars.  If None, ``bad_stars`` will be set by calling
+           ``bad_acq_stars()``.
+
+       **plot_keepout**
+           plot CCD area to be avoided in star selection (default=False)
+
+       **ax**
+           matplotlib axes object to use (optional)
+
+       **duration** : duration (starting at ``starcat_time``) for plotting planets
+           (secs, default=0)
+
+
+
+   :Returns:
+
+       matplotlib figure
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

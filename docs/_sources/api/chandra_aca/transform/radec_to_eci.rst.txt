@@ -1,0 +1,39 @@
+chandra_aca.transform.radec_to_eci
+==================================
+
+.. py:function:: chandra_aca.transform.radec_to_eci(ra, dec)
+
+   
+   Convert from RA,Dec to ECI.
+
+   The input ``ra`` and ``dec`` values can be 1-d arrays of length N in which
+   case the output ``ECI`` will be an array with shape (N, 3). The N dimension
+   can actually be any multidimensional shape.
+
+   :Parameters:
+
+       **ra**
+           Right Ascension (degrees)
+
+       **dec**
+           Declination (degrees)
+
+
+
+   :Returns:
+
+       numpy array ECI (3-vector or N x 3 array)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

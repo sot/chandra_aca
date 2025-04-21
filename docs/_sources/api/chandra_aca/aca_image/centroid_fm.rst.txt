@@ -1,0 +1,45 @@
+chandra_aca.aca_image.centroid_fm
+=================================
+
+.. py:function:: chandra_aca.aca_image.centroid_fm(img, bgd=None, pix_zero_loc='center', norm_clip=None)
+
+   
+   First moment centroid of ``img``.
+
+   Return FM centroid in coords where lower left pixel of image has value
+   (0.0, 0.0) at the center (for pix_zero_loc='center') or the lower-left edge
+   (for pix_zero_loc='edge').
+
+   :Parameters:
+
+       **img**
+           NxN ndarray
+
+       **bgd**
+           background to subtract, float of NXN ndarray
+
+       **pix_zero_loc**
+           row/col coords are integral at 'edge' or 'center'
+
+       **norm_clip** : clip image norm at this min value (default is None and
+           implies Exception for non-positive norm)
+
+
+
+   :Returns:
+
+       row, col, norm float
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

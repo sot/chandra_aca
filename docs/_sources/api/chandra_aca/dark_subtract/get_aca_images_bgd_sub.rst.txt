@@ -1,0 +1,45 @@
+chandra_aca.dark_subtract.get_aca_images_bgd_sub
+================================================
+
+.. py:function:: chandra_aca.dark_subtract.get_aca_images_bgd_sub(img_table, t_ccd_vals, img_dark, tccd_dark)
+
+   
+   Get the background subtracted ACA images.
+
+
+   :Parameters:
+
+       **img_table** : astropy.table.Table
+           Table of ACA images with columns 'IMG', 'IMGROW0_8X8', 'IMGCOL0_8X8', 'INTEG'.
+
+       **t_ccd_vals** : np.array
+           CCD temperature values at the times of the ACA images (deg C).
+
+       **img_dark** : np.array
+           Dark calibration image. Must be 1024x1024 (e-/s).
+
+       **tccd_dark** : float
+           Reference temperature of the dark calibration image (deg C).
+
+
+
+   :Returns:
+
+       tuple (imgs_bgsub, imgs_dark)
+           imgs_bgsub : np.array
+               Background subtracted ACA images (DN).
+           imgs_dark : np.array
+               Dark current images (DN).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,44 @@
+chandra_aca.star_probs.mag_for_p_acq
+====================================
+
+.. py:function:: chandra_aca.star_probs.mag_for_p_acq(p_acq, date=None, t_ccd=-10.0, halfwidth=120, model=None)
+
+   
+   Calculate star magnitude for a given acquisition probability.
+
+   For a given ``date`` and ``t_ccd``, find the star magnitude that has an
+   acquisition probability of ``p_acq``.  Star magnitude is defined/limited
+   to the range 5.0 - 12.0 mag.
+
+   :Parameters:
+
+       **p_acq**
+           acquisition probability (0 to 1.0)
+
+       **date**
+           observation date (any Chandra.Time valid format)
+
+       **t_ccd**
+           ACA CCD temperature (deg C)
+
+       **halfwidth**
+           search box halfwidth (arcsec, default=120)
+
+       **model** : probability model (see acq_success_prob() for allowed values, default)
+           :returns mag: star magnitude
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

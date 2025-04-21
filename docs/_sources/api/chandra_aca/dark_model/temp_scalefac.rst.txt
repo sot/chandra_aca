@@ -1,0 +1,33 @@
+chandra_aca.dark_model.temp_scalefac
+====================================
+
+.. py:function:: chandra_aca.dark_model.temp_scalefac(T_ccd)
+
+   
+   Calculate scale factor.
+
+   Return the multiplicative scale factor to convert a CCD dark map from
+   the nominal -19C temperature to the temperature T.  Based on best global fit for
+   dark current model in plot_predicted_warmpix.py.  Previous value was 0.62 instead
+   of 0.70.
+
+   If attempting to reproduce previous analysis, be aware that this is now calling
+   chandra_aca.dark_model.dark_temp_scale and the value will be determined using the
+   module DARK_SCALE_4C value which may differ from previous values of 1.0/0.70 or 1.0/0.62.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

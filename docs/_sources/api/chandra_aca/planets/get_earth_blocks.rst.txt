@@ -1,0 +1,47 @@
+chandra_aca.planets.get_earth_blocks
+====================================
+
+.. py:function:: chandra_aca.planets.get_earth_blocks(start, stop = None, *, min_limb_angle = 10.0)
+
+   
+   Get intervals of Earth blocks in ``start`` to ``stop`` time interval.
+
+   An "Earth block" is when the Earth limb is within ``min_limb_angle`` of the Chandra
+   ACA boresight.
+
+   :Parameters:
+
+       **start** : CxoTime-compatible
+           Start time
+
+       **stop** : CxoTime-compatible, optional
+           Stop time (default=NOW)
+
+       **min_limb_angle** : float, optional
+           Minimum limb angle (deg) for block (default=10)
+
+
+
+   :Returns:
+
+       Table
+           Table of Earth blocks with columns:
+           
+           - datestart
+           - datestop
+           - duration
+           - tstart
+           - tstop
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

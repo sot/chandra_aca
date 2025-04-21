@@ -1,0 +1,105 @@
+chandra_aca.aca_image.AcaPsfLibrary
+===================================
+
+.. py:class:: chandra_aca.aca_image.AcaPsfLibrary(filename=None)
+
+   Bases: :py:obj:`object`
+
+
+   
+   AcaPsfLibrary class
+
+   Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
+   (pixelated) ACA PSF over a grid of subpixel locations.
+
+   Example::
+
+     >>> from chandra_aca.aca_image import AcaPsfLibrary
+     >>> apl = AcaPsfLibrary()  # Reads in PSF library data file
+     >>> img = apl.get_psf_image(row=-10.456, col=250.123, norm=100000)
+     >>> img
+     <ACAImage row0=-14 col0=247
+     array([[   39,    54,    56,    52,    37,    33,    30,    21],
+            [   79,   144,   260,   252,   156,    86,    67,    36],
+            [  162,   544,  2474,  5269,  2012,   443,   163,    57],
+            [  255,  1420, 10083, 12688, 11273,  1627,   302,    78],
+            [  186,  1423,  8926,  8480, 12292,  2142,   231,    64],
+            [   80,   344,  1384,  6509,  4187,   665,   111,    43],
+            [   40,    78,   241,   828,   616,   188,    65,    29],
+            [   24,    39,    86,   157,   139,    69,    48,    32]])>
+
+   :param filename: file name of ACA PSF library (default=built-in file)
+   :returns: AcaPsfLibrary object
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: dat
+
+
+   .. py:attribute:: drc
+
+
+   .. py:attribute:: psfs
+
+
+   .. py:method:: get_psf_image(row, col, norm=1.0, pix_zero_loc='center', interpolation='bilinear', aca_image=True)
+
+      
+      Get interpolated ACA PSF image that corresponds to pixel location ``row``, ``col``.
+
+
+      :Parameters:
+
+          **row**
+              (float) row value of PSF centroid
+
+          **col**
+              (float) col value of PSF centroid
+
+          **norm**
+              (float) summed intensity of PSF image
+
+          **pix_zero_loc**
+              row/col coords are integral at 'edge' or 'center'
+
+          **interpolation**
+              'nearest' | 'bilinear' (default)
+
+          **aca_image**
+              return ACAImage if True, else return ndarray
+
+
+
+      :Returns:
+
+          ACAImage if (aca_image is True) else (ndarray image, row0, col0)
+              ..
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

@@ -1,0 +1,4 @@
+chandra_aca.star_probs._get_grid_func_model
+===========================================
+
+.. py:function:: chandra_aca.star_probs._get_grid_func_model(model, version, repo_path)

@@ -1,0 +1,74 @@
+chandra_aca.planets.get_planet_chandra_horizons
+===============================================
+
+.. py:function:: chandra_aca.planets.get_planet_chandra_horizons(body, timestart, timestop, n_times = 10, timeout = 10)
+
+   
+   Get body position and other info as seen from Chandra using JPL Horizons.
+
+   In addition to the planet names, the ``body`` argument can be any identifier that
+   Horizon supports, e.g. ``sun`` or ``geo`` (Earth geocenter).
+
+   This function queries the JPL Horizons site using the web API interface
+   (See https://ssd-api.jpl.nasa.gov/doc/horizons.html for docs).
+
+   The return value is an astropy Table with columns: time, ra, dec, rate_ra,
+   rate_dec, mag, surf_brt, ang_diam. The units are included in the table
+   columns. The ``time`` column is a ``CxoTime`` object.
+
+   The returned Table has a meta key value ``response_text`` with the full text
+   of the Horizons response and a ``response_json`` key with the parsed JSON.
+
+   Example::
+
+     >>> from chandra_aca.planets import get_planet_chandra_horizons
+     >>> dat = get_planet_chandra_horizons('jupiter', '2020:001', '2020:002', n_times=4)
+     >>> dat
+     <Table length=5>
+              time             ra       dec     rate_ra    rate_dec    mag      surf_brt   ang_diam
+                              deg       deg    arcsec / h arcsec / h   mag   mag / arcsec2  arcsec
+             object         float64   float64   float64    float64   float64    float64    float64
+     --------------------- --------- --------- ---------- ---------- ------- ------------- --------
+     2020:001:00:00:00.000 276.96494 -23.20087      34.22       0.98  -1.839         5.408    31.75
+     2020:001:06:00:00.000 277.02707 -23.19897      34.30       1.30  -1.839         5.408    31.76
+     2020:001:12:00:00.000 277.08934 -23.19652      34.39       1.64  -1.839         5.408    31.76
+     2020:001:18:00:00.000 277.15181 -23.19347      34.51       2.03  -1.839         5.408    31.76
+     2020:002:00:00:00.000 277.21454 -23.18970      34.69       2.51  -1.839         5.408    31.76
+
+   :Parameters:
+
+       **body** : str
+           One of 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
+           or any other body that Horizons supports.
+
+       **timestart**
+           start time (any CxoTime-compatible time)
+
+       **timestop**
+           stop time (any CxoTime-compatible time)
+
+       **n_times**
+           number of time samples (inclusive, default=10)
+
+       **timeout**
+           timeout for query to Horizons (secs)
+
+
+
+   :Returns:
+
+       Table of information
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

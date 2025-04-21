@@ -1,0 +1,53 @@
+chandra_aca.star_probs.guide_count
+==================================
+
+.. py:function:: chandra_aca.star_probs.guide_count(mags, t_ccd, count_9th=False)
+
+   
+   Calculate guide star fractional count.
+
+   Calculate a guide star fractional count/metric using signal-to-noise scaled
+   mag thresholds.
+
+   This uses a modification of the guide star fractional counts that were
+   suggested at the 7-Mar-2018 SSAWG and agreed upon at the 21-Mar-2018
+   SSAWG.  The implementation here does a piecewise linear interpolation
+   between the reference mag - fractional count points instead of the
+   original "threshold interpolation" (nearest neighbor mag <= reference
+   mag).  Approved at 16-Jan-2019 SSAWG.
+
+   One feature is the slight incline in the guide_count curve from 1.0005 at
+   mag=6.0 to 1.0 at mag=10.0.  This does not show up in standard outputs
+   of guide_counts to two decimal places (``8 * 0.0005 = 0.004``), but helps with
+   minimization.
+
+   :Parameters:
+
+       **mags** : float, array
+           Star magnitude(s)
+
+       **t_ccd** : float, array
+           CCD temperature(s)
+
+       **count_9th** : bool
+           Return fractional count of 9th mag or brighter stars
+
+
+
+   :Returns:
+
+       float, fractional count
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

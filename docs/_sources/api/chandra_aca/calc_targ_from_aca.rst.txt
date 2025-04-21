@@ -1,0 +1,44 @@
+chandra_aca.calc_targ_from_aca
+==============================
+
+.. py:function:: chandra_aca.calc_targ_from_aca(aca, y_off, z_off, si_align=None)
+
+   
+   Calculate target attitude.
+
+   Calculate the target attitude from ACA (PCAD) pointing attitude and
+   Y,Z offset (per OR-list).
+
+   :Parameters:
+
+       **aca**
+           ACA (PCAD) pointing attitude (any Quat-compliant object)
+
+       **y_off**
+           Y offset (deg, sign per OR-list convention)
+
+       **z_off**
+           Z offset (deg, sign per OR-list convention)
+
+       **si_align**
+           SI ALIGN matrix
+
+
+
+   :Returns:
+
+       q_targ (Quat)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,35 @@
+chandra_aca.plot.bad_acq_stars
+==============================
+
+.. py:function:: chandra_aca.plot.bad_acq_stars(stars)
+
+   
+   Return mask of 'bad' stars that are not acceptable as acquisition stars.
+
+   This is a thin wrapper around ``proseco.acq.get_acq_candidates_mask()``.
+
+   :Parameters:
+
+       **stars** : astropy table-compatible set of AGASC records of stars. Required fields
+           are 'CLASS', 'MAG_ACA', 'MAG_ACA_ERR', 'COLOR1', 'ASPQ1', 'ASPQ2', 'VAR',
+           and'POS_ERR'.
+
+
+
+   :Returns:
+
+       boolean mask true for 'bad' stars
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

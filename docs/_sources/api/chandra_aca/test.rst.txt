@@ -1,0 +1,25 @@
+chandra_aca.test
+================
+
+.. py:function:: chandra_aca.test(*args, **kwargs)
+
+   
+   Run py.test unit tests.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,81 @@
+chandra_aca.aca_image
+=====================
+
+.. py:module:: chandra_aca.aca_image
+
+.. autoapi-nested-parse::
+
+   Classes and utilities related to ACA readout images.
+
+   See :ref:`aca_image` for more details and examples.
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.aca_image.EIGHT_LABELS
+
+
+Classes
+-------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/aca_image/ACAImage
+   /api/chandra_aca/aca_image/AcaPsfLibrary
+
+.. autoapisummary::
+
+   chandra_aca.aca_image.ACAImage
+   chandra_aca.aca_image.AcaPsfLibrary
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/aca_image/centroid_fm
+   /api/chandra_aca/aca_image/get_aca_images
+
+.. autoapisummary::
+
+   chandra_aca.aca_image.centroid_fm
+   chandra_aca.aca_image.get_aca_images
+
+
+Module Contents
+---------------
+
+.. py:data:: EIGHT_LABELS
+
+   
+   Constant for labeling ACA image pixels using the EQ-278 spec format.
+   Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
+   row and highest col; pixel I4 has the highest row and lowest column.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

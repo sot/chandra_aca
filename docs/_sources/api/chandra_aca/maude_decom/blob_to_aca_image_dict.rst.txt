@@ -1,0 +1,40 @@
+chandra_aca.maude_decom.blob_to_aca_image_dict
+==============================================
+
+.. py:function:: chandra_aca.maude_decom.blob_to_aca_image_dict(blob, imgnum, pea=1)
+
+   
+   Assemble ACA image MSIDs from a blob into a dictionary.
+
+   This does to blobs what unpack_aca_telemetry does to frames, but for a single image.
+
+   :Parameters:
+
+       **blob**
+           ..
+
+       **imgnum**
+           ..
+
+       **pea**
+           ..
+
+
+
+   :Returns:
+
+       
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

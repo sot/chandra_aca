@@ -1,0 +1,4 @@
+chandra_aca.star_probs._get_date_from_model_filename
+====================================================
+
+.. py:function:: chandra_aca.star_probs._get_date_from_model_filename(filepath)

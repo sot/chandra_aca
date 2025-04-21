@@ -1,0 +1,53 @@
+chandra_aca.star_probs.grid_model_acq_prob
+==========================================
+
+.. py:function:: chandra_aca.star_probs.grid_model_acq_prob(mag=10.0, t_ccd=-12.0, color=0.6, halfwidth=120, probit=False, model=None)
+
+   
+   Calculate grid model probability.
+
+   Calculate a grid model probability of acquisition success for a star with
+   specified mag, t_ccd, color, and search box halfwidth.
+
+   This does a 3-d linear interpolation on mag, t_ccd, and halfwidth using a
+   pre-computed gridded model that is stored in a FITS file.
+
+   :Parameters:
+
+       **mag**
+           ACA magnitude (float or np.ndarray)
+
+       **t_ccd**
+           CCD temperature (degC, float or ndarray)
+
+       **color**
+           B-V color to check for B-V=1.5 => red star (float or np.ndarray)
+
+       **halfwidth**
+           search box halfwidth (arcsec, default=120, float or ndarray)
+
+       **probit**
+           if True then return Probit(p_success). Default=False
+
+       **model**
+           Model name, e.g. 'grid-floor-2018-11'
+
+
+
+   :Returns:
+
+       Acquisition success probability(s)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

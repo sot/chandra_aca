@@ -1,211 +1,349 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../">
+
+<html lang="en" data-content_root="../../" >
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.49.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-astropy.css?v=f4f7060c" />
-    
-    <script src="../../_static/documentation_options.js?v=82bca589"></script>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.50.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=d9e78d80"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script type="text/javascript" src="../../_static/sidebar.js"></script>
-    <script type="text/javascript" src="../../_static/copybutton.js"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/chandra_aca/maude_decom';</script>
+    <link rel="canonical" href="https://sot.github.io/chandra_aca/_modules/chandra_aca/maude_decom.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="4.50.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  </head><body>
-<div class="topbar">
-  <a class="brand" title="Documentation Home" href="../../index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
-  <ul>
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
     
-    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
-        <span id="logotext1">ska</span><span id="logotext2">tools</span>
-    </a></li>
-    <li><a title="General Index" href="../../genindex.html">Index</a></li>
-    <li><a title="Module Index" href="../../py-modindex.html">Modules</a></li>
-    <li>
-      
-      
-<form action="../../search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
-      
-    </li>
-  </ul>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-<div class="related">
-    <h3>Navigation</h3>
-    <ul>
-      <li>
-	<a href="../../index.html">chandra_aca 4.49.0 documentation</a>
-	 &#187;
-      </li>
-      <li><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><a href="../../index.html" style="text-decoration: none;">
+    <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
+</a>
+&nbsp;
+<span style="font-size: x-large;">4.50.0</span></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
       
-       
-    </ul>
-</div>
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
   
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../chandra_aca.html" class="nav-link">chandra_aca</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">chandra_aca.maude_decom</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
   <h1>Source code for chandra_aca.maude_decom</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Classes and functions to help fetching ACA telemetry data using MAUDE.</span>
 
-<span class="sd">Telemetry Specification</span>
-<span class="sd">=======================</span>
-
-<span class="sd">Aspect telemetry is described in chapter 5 of the User&#39;s Manual. This module deals mostly with</span>
-<span class="sd">Aspect telemetry, specified in section 5.3 of the user&#39;s manual and section 3.2.1.15.12 of the ACA</span>
-<span class="sd">specification document EQ7-278 F.</span>
-
-<span class="sd">In general, the telemetry data is specified in the following documents (available on the Aspect</span>
-<span class="sd">Twiki page):</span>
-
-<span class="sd">* MSFC-STD-1274B. MSFC HOSC Telemetry Format Standard</span>
-<span class="sd">* MSFC-DOC-1949. MSFC HOSC Database Definitions</span>
-
-<span class="sd">Timing</span>
-<span class="sd">======</span>
-
-<span class="sd">Timing in MAUDE Telemetry</span>
-<span class="sd">-------------------------</span>
-
-<span class="sd">What follows is a summary from the user&#39;s guide section 6, and EQ7-278 F section 3.2.1.7. Check</span>
-<span class="sd">there for more details, especially Figures 6-1 to 6-4 in the user&#39;s manual and Figure 7 in</span>
-<span class="sd">EQ7-278 F.</span>
-
-<span class="sd">The ACA updates its output in regular 1.025 second periods that either begin or end at the time of</span>
-<span class="sd">an RCTU science header pulse (which occur every 2.05 seconds). These are called update periods,</span>
-<span class="sd">following the convention in the user manual section 6.1.</span>
-
-<span class="sd">The ACA CCD operating cycle starts with a flush of charge from the CCD, followed by CCD integration,</span>
-<span class="sd">CCD readout, and ends with an idle period. The start/end of the update period does not coincide with</span>
-<span class="sd">the start/end of the CCD cycle. Instead, the end of the integration coincides with the start/end of</span>
-<span class="sd">the update period. This is accomplished by adjusting the idle period.</span>
-
-<span class="sd">The data from and integration period is available to the OBC at the end of the following update</span>
-<span class="sd">period (EQ7-278 F Figure 7). That is 1.025 sec after the end of integration. This is the VCDU time</span>
-<span class="sd">seen in MAUDE telemetry::</span>
-
-<span class="sd">    TIME = END_INTEG_TIME + 1.025</span>
-
-<span class="sd">.. image:: ./images/aca_timing_manual.png</span>
-<span class="sd">  :width: 600</span>
-
-<span class="sd">In the case of 6x6 and 8x8 images, the entire image cannot be updated in a single update period,</span>
-<span class="sd">because Aspect pixel telemetry contains only eight pixels per update. 6x6 images take two update</span>
-<span class="sd">periods, and 8x8 images take four. The end of the integration interval is the same for all the</span>
-<span class="sd">sub-images, and corresponds to::</span>
-
-<span class="sd">    END_INTEG_TIME = TIME - 1.025</span>
-
-<span class="sd">When the choice of integration time causes the CCD cycle to last longer than the time it takes to</span>
-<span class="sd">update a full image (1.025 seconds for a 4x4 image, 2.05 seconds for a 6x6 image or 4.1 seconds for</span>
-<span class="sd">an 8x8 image) the most recent image is repeated until new pixel data is available.</span>
-
-<span class="sd">Timing in level0 Data Products</span>
-<span class="sd">------------------------------</span>
-
-<span class="sd">The times for pixel telemetry in level0 data products is adjusted to coincide with the middle of the</span>
-<span class="sd">integration interval::</span>
-
-<span class="sd">    TIME = END_INTEG_TIME - INTEG / 2</span>
-
-<span class="sd">This means that the difference between the time in telemetry and the time in the level0 data</span>
-<span class="sd">products is::</span>
-
-<span class="sd">    TIME&lt;telem&gt; - TIME&lt;l0&gt; = 1.025 + INTEG / 2</span>
-
-<span class="sd">Global variables in this module</span>
-<span class="sd">===============================</span>
-
-<span class="sd">These include the following global variables</span>
-
-<span class="sd">    * MAX_VCDU: the maximum possible VCDU frame counter value</span>
-<span class="sd">    * MAX_MJF: the maximum possible major frame counter value</span>
-<span class="sd">    * MAX_MNF: the maximum possible minor frame counter value</span>
-<span class="sd">    * PIXEL_MAP: dict of np.array, with values mapping integer pixel indices to pixel string ID</span>
-<span class="sd">    * PIXEL_MAP_INV: dict of dict, with values mapping pixel string ID to integer pixel indices.</span>
-<span class="sd">    * PIXEL_MASK: dict of np.array. Values are boolean masks that apply to images of different sizes</span>
-<span class="sd">    * ACA_MSID_LIST: dictionary of commonly-used ACA telemetry MSIDs.</span>
-<span class="sd">    * ACA_SLOT_MSID_LIST: dictionary of ACA image telemetry MSIDs.</span>
-
-<span class="sd">PIXEL_MAP contains maps between pixel indices and pixel IDm depending on the image size.</span>
-<span class="sd">In the following tables, column index increases to the right and row index increases to the top</span>
-<span class="sd">(c.f. ACA User Manual Figs 1.8 and 1.9 )::</span>
-
-<span class="sd">  - Size 4X41:</span>
-
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | -- | -- | -- | -- | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | -- | -- | -- | -- | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | D1 | H1 | L1 | P1 | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | C1 | G1 | K1 | O1 | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | B1 | F1 | J1 | N1 | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | A1 | E1 | I1 | M1 | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | -- | -- | -- | -- | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | -- | -- | -- | -- | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-
-<span class="sd">  - Size 6X61 or 6X62:</span>
-
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | -- | -- | -- | -- | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | E2 | F2 | G2 | H2 | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | D2 | D1 | H1 | L1 | P1 | I2 | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | C2 | C1 | G1 | K1 | O1 | J2 | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | B2 | B1 | F1 | J1 | N1 | K2 | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | A2 | A1 | E1 | I1 | M1 | L2 | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | P2 | O2 | N2 | M2 | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | -- | -- | -- | -- | -- | -- | -- | -- |</span>
-<span class="sd">    -----------------------------------------</span>
-
-
-<span class="sd">  - Size 8X81, 8X82, 8X83 or 8X84:</span>
-
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | H1 | P1 | H2 | P2 | H3 | P3 | H4 | P4 |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | G1 | O1 | G2 | O2 | G3 | O3 | G4 | O4 |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | F1 | N1 | F2 | N2 | F3 | N3 | F4 | N4 |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | E1 | M1 | E2 | M2 | E3 | M3 | E4 | M4 |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | D1 | L1 | D2 | L2 | D3 | L3 | D4 | L4 |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | C1 | K1 | C2 | K2 | C3 | K3 | C4 | K4 |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | B1 | J1 | B2 | J2 | B3 | J3 | B4 | J4 |</span>
-<span class="sd">    -----------------------------------------</span>
-<span class="sd">    | A1 | I1 | A2 | I2 | A3 | I3 | A4 | I4 |</span>
-<span class="sd">    -----------------------------------------</span>
+<span class="sd">See :ref:`maude_decom` for more details and examples.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">copy</span>
@@ -220,16 +358,33 @@
 <span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
 
 <span class="c1"># Maude fetch limits</span>
-<span class="n">MAUDE_SINGLE_FETCH_LIMIT</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">hour</span>
-<span class="n">MAUDE_FETCH_LIMIT</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<div class="viewcode-block" id="MAUDE_SINGLE_FETCH_LIMIT">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.MAUDE_SINGLE_FETCH_LIMIT">[docs]</a>
+<span class="n">MAUDE_SINGLE_FETCH_LIMIT</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">hour</span></div>
+
+<div class="viewcode-block" id="MAUDE_FETCH_LIMIT">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.MAUDE_FETCH_LIMIT">[docs]</a>
+<span class="n">MAUDE_FETCH_LIMIT</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span></div>
+
 
 <span class="c1"># maximum values for frame counters (for convenience)</span>
-<span class="n">MAX_MJF</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-<span class="n">MAX_MNF</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-<span class="n">MAX_VCDU</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">23</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+<div class="viewcode-block" id="MAX_MJF">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.MAX_MJF">[docs]</a>
+<span class="n">MAX_MJF</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="MAX_MNF">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.MAX_MNF">[docs]</a>
+<span class="n">MAX_MNF</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="MAX_VCDU">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.MAX_VCDU">[docs]</a>
+<span class="n">MAX_VCDU</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="mi">23</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div>
+
 
 <span class="c1"># The following are the tables in the docstring above. They appear to be transposed,</span>
 <span class="c1"># but the resultt agrees with level0.</span>
+<div class="viewcode-block" id="PIXEL_MAP">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.PIXEL_MAP">[docs]</a>
 <span class="n">PIXEL_MAP</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;4x4&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="p">[</span>
@@ -279,11 +434,17 @@
             <span class="p">[</span><span class="s2">&quot;  &quot;</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="p">,</span> <span class="s2">&quot;  &quot;</span><span class="p">],</span>
         <span class="p">]</span>
     <span class="p">),</span>
-<span class="p">}</span>
+<span class="p">}</span></div>
 
-<span class="n">PIXEL_MASK</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">PIXEL_MAP</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;  &quot;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">PIXEL_MAP</span><span class="p">}</span>
+
+<div class="viewcode-block" id="PIXEL_MASK">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.PIXEL_MASK">[docs]</a>
+<span class="n">PIXEL_MASK</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">PIXEL_MAP</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;  &quot;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">PIXEL_MAP</span><span class="p">}</span></div>
+
 <span class="n">_ROWS</span><span class="p">,</span> <span class="n">_COLS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
 
+<div class="viewcode-block" id="PIXEL_MAP_INV">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.PIXEL_MAP_INV">[docs]</a>
 <span class="n">PIXEL_MAP_INV</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">k</span><span class="p">:</span> <span class="p">{</span>
         <span class="n">p</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
@@ -295,10 +456,14 @@
         <span class="p">)</span>
     <span class="p">}</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;6x6&quot;</span><span class="p">,</span> <span class="s2">&quot;4x4&quot;</span><span class="p">,</span> <span class="s2">&quot;8x8&quot;</span><span class="p">]</span>
-<span class="p">}</span>
+<span class="p">}</span></div>
 
 
-<span class="n">_msid_prefix</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;R&quot;</span><span class="p">}</span>
+
+<div class="viewcode-block" id="_msid_prefix">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom._msid_prefix">[docs]</a>
+<span class="n">_msid_prefix</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;R&quot;</span><span class="p">}</span></div>
+
 
 
 <span class="k">def</span> <span class="nf">_aca_msid_list</span><span class="p">(</span><span class="n">pea</span><span class="p">):</span>
@@ -461,17 +626,28 @@
     <span class="k">return</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">res</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">res</span><span class="p">}</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
 
 
-<span class="n">ACA_MSID_LIST</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">_aca_msid_list</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)}</span>
-<span class="n">ACA_SLOT_MSID_LIST</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">_aca_image_msid_list</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)}</span>
+<div class="viewcode-block" id="ACA_MSID_LIST">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.ACA_MSID_LIST">[docs]</a>
+<span class="n">ACA_MSID_LIST</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">_aca_msid_list</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)}</span></div>
+
+<div class="viewcode-block" id="ACA_SLOT_MSID_LIST">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.ACA_SLOT_MSID_LIST">[docs]</a>
+<span class="n">ACA_SLOT_MSID_LIST</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">_aca_image_msid_list</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)}</span></div>
 
 
-<span class="n">_a2p</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;J&quot;</span><span class="p">,</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="_a2p">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom._a2p">[docs]</a>
+<span class="n">_a2p</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;J&quot;</span><span class="p">,</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">]</span></div>
+
 <span class="c1"># This maps image type to a list of pixel indices over the 8x8 array.</span>
 <span class="c1"># - Type 0 is 4x4,</span>
 <span class="c1"># - Types 1 (first batch of 6x6) and 4 (first batch of 8x8) use the same pixel IDs as 4x4.</span>
 <span class="c1"># - Type 3 is not a real image type. It occurs when the image telemetry is used to download</span>
 <span class="c1">#   memory dump data. In this case, the image is treated as 4x4, but the values might be giberish.</span>
 <span class="c1"># - Types 2 (second batch of 6x6) and 5 (second batch of 8x8) use the same pixel IDs.</span>
+<div class="viewcode-block" id="_IMG_INDICES">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom._IMG_INDICES">[docs]</a>
 <span class="n">_IMG_INDICES</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">PIXEL_MAP_INV</span><span class="p">[</span><span class="s2">&quot;4x4&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">1&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_a2p</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">PIXEL_MAP_INV</span><span class="p">[</span><span class="s2">&quot;6x6&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">1&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_a2p</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
@@ -481,17 +657,30 @@
     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">PIXEL_MAP_INV</span><span class="p">[</span><span class="s2">&quot;8x8&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">2&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_a2p</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">PIXEL_MAP_INV</span><span class="p">[</span><span class="s2">&quot;8x8&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">3&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_a2p</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">PIXEL_MAP_INV</span><span class="p">[</span><span class="s2">&quot;8x8&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">4&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_a2p</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-<span class="p">]</span>
+<span class="p">]</span></div>
+
 
 <span class="c1">######################</span>
 <span class="c1"># VCDU-based functions</span>
 <span class="c1">######################</span>
 
 <span class="c1"># these are used multiple times</span>
-<span class="n">_aca_front_fmt</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&gt;HBBBBBB&quot;</span><span class="p">)</span>
-<span class="n">_size_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
-<span class="n">_pixel_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
-<span class="n">_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<div class="viewcode-block" id="_aca_front_fmt">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom._aca_front_fmt">[docs]</a>
+<span class="n">_aca_front_fmt</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&gt;HBBBBBB&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_size_bits">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom._size_bits">[docs]</a>
+<span class="n">_size_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_pixel_bits">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom._pixel_bits">[docs]</a>
+<span class="n">_pixel_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_bits">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom._bits">[docs]</a>
+<span class="n">_bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
 
 
 <span class="c1"># I&#39;m sure there is a better way...</span>
@@ -607,8 +796,6 @@
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;DIAGNOSTIC&quot;</span><span class="p">:</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBBBBB&quot;</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:])}</span>
 
 
-<div class="viewcode-block" id="unpack_aca_telemetry">
-<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.unpack_aca_telemetry">[docs]</a>
 <span class="k">def</span> <span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Unpack ACA telemetry encoded in 225-byte packets.</span>
@@ -674,8 +861,7 @@
     <span class="p">}</span>
     <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">slots</span><span class="p">:</span>
         <span class="n">s</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">slots</span></div>
-
+    <span class="k">return</span> <span class="n">slots</span>
 
 
 <span class="k">def</span> <span class="nf">_combine_aca_packets</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
@@ -773,8 +959,6 @@
         <span class="k">yield</span> <span class="n">res</span>
 
 
-<div class="viewcode-block" id="filter_vcdu_jumps">
-<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.filter_vcdu_jumps">[docs]</a>
 <span class="k">def</span> <span class="nf">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return a boolean mask to filter VCDU counters that are not continuous.</span>
@@ -804,12 +988,9 @@
         <span class="n">current_packet</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">vcdu_counter</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_packet</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
             <span class="n">selected</span><span class="p">[</span><span class="n">current_packet</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">return</span> <span class="n">selected</span></div>
+    <span class="k">return</span> <span class="n">selected</span>
 
 
-
-<div class="viewcode-block" id="get_raw_aca_packets">
-<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_packets">[docs]</a>
 <span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</span>
@@ -927,10 +1108,11 @@
         <span class="s2">&quot;MNF&quot;</span><span class="p">:</span> <span class="n">vcdu_counter</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">),</span>
         <span class="s2">&quot;MJF&quot;</span><span class="p">:</span> <span class="n">vcdu_counter</span> <span class="o">//</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">),</span>
         <span class="s2">&quot;VCDUCTR&quot;</span><span class="p">:</span> <span class="n">vcdu_counter</span><span class="p">,</span>
-    <span class="p">}</span></div>
+    <span class="p">}</span>
 
 
-
+<div class="viewcode-block" id="ACA_PACKETS_DTYPE">
+<a class="viewcode-back" href="../../api/chandra_aca/maude_decom/index.html#chandra_aca.maude_decom.ACA_PACKETS_DTYPE">[docs]</a>
 <span class="n">ACA_PACKETS_DTYPE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span>
     <span class="p">[</span>
         <span class="p">(</span><span class="s2">&quot;TIME&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
@@ -982,7 +1164,8 @@
         <span class="p">(</span><span class="s2">&quot;AABGDTYP&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;U4&quot;</span><span class="p">),</span>
         <span class="p">(</span><span class="s2">&quot;IMG&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">)),</span>
     <span class="p">]</span>
-<span class="p">)</span>
+<span class="p">)</span></div>
+
 
 
 <span class="k">def</span> <span class="nf">_aca_packets_to_table</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1023,8 +1206,6 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<div class="viewcode-block" id="get_aca_packets">
-<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_packets">[docs]</a>
 <span class="k">def</span> <span class="nf">get_aca_packets</span><span class="p">(</span>
     <span class="n">start</span><span class="p">,</span>
     <span class="n">stop</span><span class="p">,</span>
@@ -1274,8 +1455,7 @@
             <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">aca_data</span> <span class="o">=</span> <span class="n">aca_data</span><span class="p">[(</span><span class="n">aca_data</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">aca_data</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">stop</span><span class="p">)]</span>
-    <span class="k">return</span> <span class="n">aca_data</span></div>
-
+    <span class="k">return</span> <span class="n">aca_data</span>
 
 
 <span class="k">def</span> <span class="nf">_get_aca_packets</span><span class="p">(</span>
@@ -1379,8 +1559,6 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<div class="viewcode-block" id="get_aca_images">
-<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_aca_images">[docs]</a>
 <span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch ACA image telemetry</span>
@@ -1399,10 +1577,11 @@
 <span class="sd">    4x4 image data.</span>
 
 <span class="sd">    There are three different specifiers of the image row/col location:</span>
+
 <span class="sd">    - IMGROW0_8x8/IMGCOL0_8x8: the row/col of the lower-left pixel of the 8x8 masked</span>
-<span class="sd">        image. This is generally the most useful.</span>
+<span class="sd">      image. This is generally the most useful.</span>
 <span class="sd">    - IMGROW0/IMGCOL0: the row/col of the lower-left pixel of the actual 4x4, 6x6, or</span>
-<span class="sd">        8x8 image data. For 6x6 this corresponds to the mouse-bitten corner pixel.</span>
+<span class="sd">      8x8 image data. For 6x6 this corresponds to the mouse-bitten corner pixel.</span>
 <span class="sd">    - IMGROW_A1/IMGCOL_A1: the row/col of the A1 pixel in telemetry (see ACA EQ-spec).</span>
 
 <span class="sd">    The full list of columns is::</span>
@@ -1510,8 +1689,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">and</span> <span class="n">col</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;IMG&quot;</span><span class="p">:</span>
             <span class="n">out</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span>
 
-    <span class="k">return</span> <span class="n">out</span></div>
-
+    <span class="k">return</span> <span class="n">out</span>
 
 
 <span class="c1">######################</span>
@@ -1519,8 +1697,6 @@
 <span class="c1">######################</span>
 
 
-<div class="viewcode-block" id="get_raw_aca_blobs">
-<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.get_raw_aca_blobs">[docs]</a>
 <span class="k">def</span> <span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</span>
@@ -1594,12 +1770,9 @@
         <span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span>
         <span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="n">types</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="n">result</span></div>
+    <span class="k">return</span> <span class="n">result</span>
 
 
-
-<div class="viewcode-block" id="blob_to_aca_image_dict">
-<a class="viewcode-back" href="../../maude_decom.html#chandra_aca.maude_decom.blob_to_aca_image_dict">[docs]</a>
 <span class="k">def</span> <span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assemble ACA image MSIDs from a blob into a dictionary.</span>
@@ -1755,34 +1928,78 @@
     <span class="k">if</span> <span class="s2">&quot;COBSRQID&quot;</span> <span class="ow">in</span> <span class="n">blob</span><span class="p">:</span>
         <span class="n">result</span><span class="p">[</span><span class="s2">&quot;COBSRQID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">blob</span><span class="p">[</span><span class="s2">&quot;COBSRQID&quot;</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">result</span></div>
-
+    <span class="k">return</span> <span class="n">result</span>
 </pre></div>
 
-            <div class="clearer"></div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
-
-
-<form action="../../search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
-<footer class="footer">
-  <p class="pull-right"> &nbsp;
-    <a href="#">Back to Top</a></p>
-  <p>
-    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 8.1.3. &nbsp;
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      <br/>
+    
   </p>
-</footer>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
   </body>
 </html>

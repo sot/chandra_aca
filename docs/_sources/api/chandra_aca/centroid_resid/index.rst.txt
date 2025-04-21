@@ -1,0 +1,34 @@
+chandra_aca.centroid_resid
+==========================
+
+.. py:module:: chandra_aca.centroid_resid
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.centroid_resid.R2A
+
+
+Classes
+-------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/centroid_resid/CentroidResiduals
+
+.. autoapisummary::
+
+   chandra_aca.centroid_resid.CentroidResiduals
+
+
+Module Contents
+---------------
+
+.. py:data:: R2A
+   :value: 206264.81
+
+

@@ -1,0 +1,54 @@
+chandra_aca.star_probs.binomial_confidence_interval
+===================================================
+
+.. py:function:: chandra_aca.star_probs.binomial_confidence_interval(n_success, n_trials, coverage = 0.682689)
+
+   
+   Binomial confidence interval calculation using the Jeffreys prior.
+
+   It returns a tuple with the ratio, the lower error, and the upper error.
+
+   This is an equal-tailed Bayesian interval with a Jeffreys prior (Beta(1/2,1/2)).
+
+       "Statistical Decision Theory and Bayesian Analysis" 2nd ed.
+       Berger, J.O. (1985)
+       Springer, New York
+
+   This function is based on:
+
+       "Confidence Intervals for a binomial proportion and asymptotic expansions",
+       Lawrence D. Brown, T. Tony Cai, and Anirban DasGupta
+       Ann. Statist. Volume 30, Number 1 (2002), 160-201.
+       http://projecteuclid.org/euclid.aos/1015362189
+
+   :Parameters:
+
+       **n_success** : numpy array
+           The number of 'successes'
+
+       **n_trials** : numpy array
+           The number of trials
+
+       **coverage** : float
+           The coverage of the confidence interval. The default corresponds to the coverage of
+           '1-sigma' gaussian errors (0.682689).
+
+
+
+   :Returns:
+
+       **ratio** : tuple
+           ratio of successes to trials, lower bound, upper bound
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

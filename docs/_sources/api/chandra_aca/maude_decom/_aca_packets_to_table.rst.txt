@@ -1,0 +1,36 @@
+chandra_aca.maude_decom._aca_packets_to_table
+=============================================
+
+.. py:function:: chandra_aca.maude_decom._aca_packets_to_table(aca_packets, dtype=None)
+
+   
+   Store ACA packets in a table.
+
+
+   :Parameters:
+
+       **aca_packets**
+           list of dict
+
+       **dtype**
+           dtype to use in the resulting table. Optional.
+
+
+
+   :Returns:
+
+       astropy.table.Table
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

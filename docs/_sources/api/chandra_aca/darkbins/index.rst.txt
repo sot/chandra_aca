@@ -1,0 +1,67 @@
+chandra_aca.darkbins
+====================
+
+.. py:module:: chandra_aca.darkbins
+
+.. autoapi-nested-parse::
+
+   Define bins for dark current distribution calculations
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.darkbins.x0
+   chandra_aca.darkbins.x1
+   chandra_aca.darkbins.x2
+   chandra_aca.darkbins.dx
+   chandra_aca.darkbins.lx0
+   chandra_aca.darkbins.lx1
+   chandra_aca.darkbins.lx2
+   chandra_aca.darkbins.n_bins
+   chandra_aca.darkbins.dx
+   chandra_aca.darkbins.log_bins
+   chandra_aca.darkbins.bins
+   chandra_aca.darkbins.bin_centers
+
+
+Module Contents
+---------------
+
+.. py:data:: x0
+   :value: 2
+
+
+.. py:data:: x1
+   :value: 2000
+
+
+.. py:data:: x2
+   :value: 11000
+
+
+.. py:data:: dx
+   :value: 0.05
+
+
+.. py:data:: lx0
+
+.. py:data:: lx1
+
+.. py:data:: lx2
+
+.. py:data:: n_bins
+
+.. py:data:: dx
+
+.. py:data:: log_bins
+
+.. py:data:: bins
+
+.. py:data:: bin_centers
+

@@ -1,0 +1,67 @@
+chandra_aca.aca_image.get_aca_images
+====================================
+
+.. py:function:: chandra_aca.aca_image.get_aca_images(start, stop, bgsub=False, source='maude', **maude_kwargs)
+
+   
+   Get ACA images and ancillary data from either the MAUDE or CXC data sources.
+
+   The returned table of ACA images and ancillary data will include the default
+   columns returned by chandra_aca.maude_decom.get_aca_images or
+   mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
+   table will also include columns::
+
+            name            dtype  unit
+     --------------------- ------- -----------
+        IMG_BGSUB          float64  DN
+        IMG_DARK           float64  DN
+        T_CCD_SMOOTH       float64  degC
+
+   where:
+
+   - 'IMG_BGSUB': background subtracted image
+   - 'IMG_DARK': dark current image
+   - 'T_CCD_SMOOTH': smoothed CCD temperature
+
+   The IMG_DARK individual values are only calculated if within the 1024x1024
+   dark current map, otherwise they are set to 0.  In practice this is not an
+   issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.
+
+   :Parameters:
+
+       **start** : CxoTimeLike
+           Start time.
+
+       **stop** : CxoTimeLike
+           Stop time (CXC sec).
+
+       **bgsub** : bool
+           Include background subtracted images in output table. Default is False.
+
+       **source** : str
+           Data source for image and temperature telemetry ('maude' or 'cxc'). For 'cxc',
+           the image telemetry is from mica and temperature telemetry is from CXC L0 via
+           cheta.
+
+       **\*\*maude_kwargs**
+           Additional kwargs for maude data source.
+
+
+
+   :Returns:
+
+       **imgs_table** : astropy.table.Table
+           Table of ACA images and ancillary data.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

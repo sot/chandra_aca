@@ -1,14 +1,15 @@
-chandra_aca.aca_image
-======================
+.. _aca_image:
 
-The `aca_image` module contains classes and utilities related to ACA readout
+ACA images
+==========
+
+The ``aca_image`` module contains classes and utilities related to ACA readout
 images.  This includes the `ACAImage class`_ for manipulating images in
 ACA coordinates, a first moment centroiding routine, and a library for
 generating synthetic ACA images that have a high-fidelity point spread function
 (PSF).
 
-.. automodule:: chandra_aca.aca_image
-   :members:
+See :mod:`chandra_aca.aca_image` for API details.
 
 ACAImage class
 ^^^^^^^^^^^^^^

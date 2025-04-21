@@ -1,0 +1,52 @@
+chandra_aca.drift.get_aca_offsets
+=================================
+
+.. py:function:: chandra_aca.drift.get_aca_offsets(detector, chip_id, chipx, chipy, time, t_ccd, drift_pars = None)
+
+   
+   Compute the dynamical ACA offset values for the provided inputs.
+
+   The ``time`` and ``t_ccd`` inputs can be either scalars or arrays.
+
+   :Parameters:
+
+       **detector**
+           one of ACIS-I, ACIS-S, HRC-I, HRC-S
+
+       **chipx**
+           zero-offset aimpoint CHIPX
+
+       **chipy**
+           zero-offset aimpoint CHIPY
+
+       **chip_id**
+           zero-offset aimpoint CHIP ID
+
+       **time**
+           time(s) of observation (any Chandra.Time compatible format)
+
+       **t_ccd**
+           ACA CCD temperature(s) (degC)
+
+       **drift_pars** : dict, optional
+           ACA drift model parameters.  If not supplied, the default parameters are used.
+
+
+
+   :Returns:
+
+       aca_offset_y, aca_offset_z (arcsec)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

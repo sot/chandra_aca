@@ -1,0 +1,69 @@
+chandra_aca.attitude.calc_att
+=============================
+
+.. py:function:: chandra_aca.attitude.calc_att(att, yag, zag, yag_obs, zag_obs, sigma=None)
+
+   
+   Calc S/C attitude for observed star positions relative to reference.
+
+   This function computes a S/C attitude that transforms the
+   reference star positions yag/zag into the observed positions
+   yag_obs/zag_obs.  The units for these values must be in arcsec.
+
+   The attitude ``att`` is the reference attitude for the reference star
+   catalog.  It can be any value that initializes a Quat object.
+
+   The ``yag`` and ``zag`` values correspond to the reference star catalog
+   positions.  These must be a 1-d list or array of length M (number of
+   stars).
+
+   The ``yag_obs`` and ``zag_obs`` values must be either a 1-d or 2-d array
+   with shape M (single readout of M stars) or shape N x M (N rows of M
+   stars).
+
+   The ``sigma`` parameter can be None or a 1-d array of length M.
+
+   The algorithm is a simple but fast linear least-squared solution which uses
+   a small angle assumption to linearize the rotation matrix from
+   [[cos(th) -sin(th)], [sin(th), cos(th)]] to [[1, -th], [th, 1]].
+   In practice anything below 1.0 degree is fine.
+
+   :Parameters:
+
+       **att**
+           reference attitude (Quat-compatible)
+
+       **yag**
+           reference yag (list or array, arcsec)
+
+       **zag**
+           reference zag (list or array, arcsec)
+
+       **yag_obs**
+           observed yag (list or array, arcsec)
+
+       **zag_obs**
+           observed zag (list or array, arcsec)
+
+       **sigma**
+           centroid uncertainties (None or list or array, arcsec)
+
+
+
+   :Returns:
+
+       Quat or list of Quat
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,51 @@
+chandra_aca.drift.get_fid_offset
+================================
+
+.. py:function:: chandra_aca.drift.get_fid_offset(time, t_ccd, drift_pars = None)
+
+   
+   Compute the fid light offset values for a given time and temperature.
+
+   The ``time`` and ``t_ccd`` inputs can be either scalars or arrays.
+
+   :Parameters:
+
+       **time** : CxoTimeLike format
+           Time for offset calculation.
+
+       **t_ccd** : float
+           ACA CCD temperature in degrees Celsius.
+
+       **drift_pars** : dict, optional
+           ACA drift model parameters.  If not supplied, the default parameters are used.
+
+
+
+   :Returns:
+
+       tuple
+           A tuple containing the y-angle and z-angle offsets (in arcseconds) to apply
+           additively to the nominal (FEB07) fid positions.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The apparent fid light positions change in accordance with the ACA alignment drift as a
+   function of time and temperature. This is captured in the ACA aimpoint drift model. This
+   function uses that model to provide the offsets in y-angle and z-angle (arcsec) to apply
+   additively to the nominal fid positions.
+
+   The y_offset and z_offset values in this function were calibrated using the
+   2022-11 aimpoint drift model and the FEB07 fid characteristics.
+   See https://github.com/sot/fid_drift_mon/blob/master/fid_offset_coeff.ipynb
+
+
+
+   ..
+       !! processed by numpydoc !!

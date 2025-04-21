@@ -1,0 +1,108 @@
+chandra_aca
+===========
+
+.. py:module:: chandra_aca
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/chandra_aca/aca_image/index
+   /api/chandra_aca/attitude/index
+   /api/chandra_aca/centroid_resid/index
+   /api/chandra_aca/cubic_spline/index
+   /api/chandra_aca/dark_model/index
+   /api/chandra_aca/dark_subtract/index
+   /api/chandra_aca/darkbins/index
+   /api/chandra_aca/drift/index
+   /api/chandra_aca/maude_decom/index
+   /api/chandra_aca/planets/index
+   /api/chandra_aca/plot/index
+   /api/chandra_aca/star_probs/index
+   /api/chandra_aca/tests/index
+   /api/chandra_aca/transform/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.ACA2PIX_coeff
+   chandra_aca.PIX2ACA_coeff
+   chandra_aca.PIX2ACA_eeprom
+   chandra_aca.ACA_MAG0
+   chandra_aca.ACA_CNT_RATE_MAG0
+   chandra_aca.ODB_SI_ALIGN
+   chandra_aca.__version__
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/broadcast_arrays
+   /api/chandra_aca/broadcast_arrays_flatten
+   /api/chandra_aca/pixels_to_yagzag
+   /api/chandra_aca/yagzag_to_pixels
+   /api/chandra_aca/_poly_convert
+   /api/chandra_aca/radec_to_eci
+   /api/chandra_aca/eci_to_radec
+   /api/chandra_aca/mag_to_count_rate
+   /api/chandra_aca/count_rate_to_mag
+   /api/chandra_aca/snr_mag_for_t_ccd
+   /api/chandra_aca/calc_aca_from_targ
+   /api/chandra_aca/calc_targ_from_aca
+   /api/chandra_aca/calc_target_offsets
+   /api/chandra_aca/radec_to_yagzag
+   /api/chandra_aca/yagzag_to_radec
+   /api/chandra_aca/normalize_vector
+   /api/chandra_aca/test
+
+.. autoapisummary::
+
+   chandra_aca.broadcast_arrays
+   chandra_aca.broadcast_arrays_flatten
+   chandra_aca.pixels_to_yagzag
+   chandra_aca.yagzag_to_pixels
+   chandra_aca._poly_convert
+   chandra_aca.radec_to_eci
+   chandra_aca.eci_to_radec
+   chandra_aca.mag_to_count_rate
+   chandra_aca.count_rate_to_mag
+   chandra_aca.snr_mag_for_t_ccd
+   chandra_aca.calc_aca_from_targ
+   chandra_aca.calc_targ_from_aca
+   chandra_aca.calc_target_offsets
+   chandra_aca.radec_to_yagzag
+   chandra_aca.yagzag_to_radec
+   chandra_aca.normalize_vector
+   chandra_aca.test
+
+
+Package Contents
+----------------
+
+.. py:data:: ACA2PIX_coeff
+
+.. py:data:: PIX2ACA_coeff
+
+.. py:data:: PIX2ACA_eeprom
+
+.. py:data:: ACA_MAG0
+   :value: 10.32
+
+
+.. py:data:: ACA_CNT_RATE_MAG0
+   :value: 5263.0
+
+
+.. py:data:: ODB_SI_ALIGN
+
+.. py:data:: __version__
+

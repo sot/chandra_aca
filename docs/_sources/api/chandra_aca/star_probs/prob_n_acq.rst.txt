@@ -1,0 +1,34 @@
+chandra_aca.star_probs.prob_n_acq
+=================================
+
+.. py:function:: chandra_aca.star_probs.prob_n_acq(star_probs)
+
+   
+   Get probability of acquiring n_acq stars.
+
+   Given an input array of star acquisition probabilities ``star_probs``,
+   return the probabilities of acquiring exactly n_acq stars, where n_acq
+   is evaluated at values 0 to n_stars.  This is returned as an array
+   of length n_stars.  In addition the cumulative sum, which represents
+   the probability of acquiring n_acq or fewer stars, is returned.
+
+   :Parameters:
+
+       **star_probs** : array of star acq probabilities (list or ndarray)
+           :returns n_acq_probs, cum_n_acq_probs: tuple of ndarray, ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

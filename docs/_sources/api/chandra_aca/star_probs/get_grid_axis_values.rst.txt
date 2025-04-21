@@ -1,0 +1,36 @@
+chandra_aca.star_probs.get_grid_axis_values
+===========================================
+
+.. py:function:: chandra_aca.star_probs.get_grid_axis_values(hdr, axis)
+
+   
+   Get grid model axis values from FITS header.
+
+   This is an irregularly-spaced grid if ``hdr`` has ``{axis}_0`` .. ``{axis}_<N-1>``.
+   Otherwise it is a regularly-spaced grid::
+
+       linspace(hdr[f"{axis}_lo"], hdr[f"{axis}_hi"], n_vals)
+
+   :Parameters:
+
+       **hdr**
+           FITS header (dict-like)
+
+       **axis**
+           Axis name (e.g. "mag")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

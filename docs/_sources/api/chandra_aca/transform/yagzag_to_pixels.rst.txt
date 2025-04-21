@@ -1,0 +1,49 @@
+chandra_aca.transform.yagzag_to_pixels
+======================================
+
+.. py:function:: chandra_aca.transform.yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc='edge')
+
+   
+   Convert ACA y-angle/z-angle positions to ACA pixel row, column.
+
+   It is expected that the y-angle/z-angle input arguments have the same length.
+
+   The ``pix_zero_loc`` parameter controls whether the input pixel values
+   are assumed to have integral values at the pixel center or at the pixel
+   lower/left edge.  The PEA flight coefficients assume lower/left edge, and
+   that is the default.  However, it is generally more convenient when doing
+   centroids and other manipulations to use ``pix_zero_loc='center'``.
+
+   :Parameters:
+
+       **yang**
+           ACA y-angle (single value, list, or 1-d numpy array)
+
+       **zang**
+           ACA z-angle (single value, list, or 1-d numpy array)
+
+       **allow_bad** : boolean switch.  If true, method will not throw errors
+           if the resulting row/col values are nominally off the ACA CCD.
+
+       **pix_zero_loc**
+           row/col coords are integral at 'edge' or 'center'
+
+
+
+   :Returns:
+
+       (row, col) each vector of the same length as row/col
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

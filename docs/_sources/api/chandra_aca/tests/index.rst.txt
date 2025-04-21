@@ -1,0 +1,6 @@
+chandra_aca.tests
+=================
+
+.. py:module:: chandra_aca.tests
+
+

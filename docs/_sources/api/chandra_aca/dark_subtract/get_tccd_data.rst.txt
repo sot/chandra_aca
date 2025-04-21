@@ -1,0 +1,47 @@
+chandra_aca.dark_subtract.get_tccd_data
+=======================================
+
+.. py:function:: chandra_aca.dark_subtract.get_tccd_data(times, smooth_window=30, median_window=3, source='maude', maude_channel=None)
+
+   
+   Get the CCD temperature for given times and interpolate and smooth.
+
+   This is a light wrapper around cheta.fetch_sci.Msid("aacccdpt", start, stop)
+   to handle an option to use the maude data source in an explicit way.
+
+   :Parameters:
+
+       **times: np.array (float)**
+           Sampling times for CCD temperature data (CXC seconds).
+
+       **source** : str, optional
+           Source of CCD temperature data ('maude' (default) or 'cxc' for cheta archive).
+
+       **median_window** : int, optional
+           Median filter window to remove outliers (default=3).
+
+       **smooth_window** : int, optional
+           Smooth data using a hanning window of this length in samples (default=30).
+
+       **maude_channel** : str, optional
+           Maude channel to use (default is flight).
+
+
+
+   :Returns:
+
+       **vals** : np.array
+           CCD temperature values.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

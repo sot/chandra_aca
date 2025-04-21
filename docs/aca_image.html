@@ -1,353 +1,353 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+
+<html lang="en" data-content_root="./" >
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.49.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css?v=f4f7060c" />
-    
-    <script src="_static/documentation_options.js?v=82bca589"></script>
+    <title>ACA images &#8212; chandra_aca 4.50.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=d9e78d80"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script type="text/javascript" src="_static/sidebar.js"></script>
-    <script type="text/javascript" src="_static/copybutton.js"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=30646c52"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'aca_image';</script>
+    <link rel="canonical" href="https://sot.github.io/chandra_aca/aca_image.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="chandra_aca.centroid_resid" href="centroid_resid.html" />
-    <link rel="prev" title="chandra_aca.drift" href="drift.html" />
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+    <link rel="next" title="MAUDE ACA telemetry" href="maude_decom.html" />
+    <link rel="prev" title="chandra_aca" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="4.50.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  </head><body>
-<div class="topbar">
-  <a class="brand" title="Documentation Home" href="index.html"><span id="logotext1">Ska! </span><span id="logotext2">chandra_aca</span><span id="logotext3"></span></a>
-  <ul>
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
     
-    <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
-        <span id="logotext1">ska</span><span id="logotext2">tools</span>
-    </a></li>
-    <li><a title="General Index" href="genindex.html">Index</a></li>
-    <li><a title="Module Index" href="py-modindex.html">Modules</a></li>
-    <li>
-      
-      
-<form action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
-      
-    </li>
-  </ul>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-<div class="related">
-    <h3>Navigation</h3>
-    <ul>
-      <li class="right">
-	<a href="centroid_resid.html" title="chandra_aca.centroid_resid">
-	  next &raquo;
-	</a>
-      </li>
-      <li class="right">
-	<a href="drift.html" title="chandra_aca.drift">
-	  &laquo; previous
-	</a>
-	 |
-      </li>
-      <li>
-	<a href="index.html">chandra_aca 4.49.0 documentation</a>
-	 &#187;
-      </li>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><a href="index.html" style="text-decoration: none;">
+    <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
+</a>
+&nbsp;
+<span style="font-size: x-large;">4.50.0</span></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
       
-      <li>chandra_aca.aca_image</li> 
-    </ul>
-</div>
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
   
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <section id="chandra-aca-aca-image">
-<h1>chandra_aca.aca_image<a class="headerlink" href="#chandra-aca-aca-image" title="Link to this heading">¶</a></h1>
-<p>The <cite>aca_image</cite> module contains classes and utilities related to ACA readout
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ACA images</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="aca-images">
+<span id="aca-image"></span><h1>ACA images<a class="headerlink" href="#aca-images" title="Link to this heading">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">aca_image</span></code> module contains classes and utilities related to ACA readout
 images.  This includes the <a class="reference internal" href="#acaimage-class">ACAImage class</a> for manipulating images in
 ACA coordinates, a first moment centroiding routine, and a library for
 generating synthetic ACA images that have a high-fidelity point spread function
 (PSF).</p>
-<span class="target" id="module-chandra_aca.aca_image"></span><dl class="py class">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">ACAImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage" title="Link to this definition">¶</a></dt>
-<dd><p>ACA Image class.</p>
-<p>ACAImage is an ndarray subclass that supports functionality for the Chandra
-ACA. Most importantly it allows image indexing and slicing in absolute
-“aca” coordinates, where the image lower left coordinate is specified
-by object <code class="docutils literal notranslate"><span class="pre">row0</span></code> and <code class="docutils literal notranslate"><span class="pre">col0</span></code> attributes.</p>
-<p>It also provides a <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict that can be used to store additional useful
-information.  Any keys which are all upper-case will be exposed as object
-attributes, e.g. <code class="docutils literal notranslate"><span class="pre">img.BGDAVG</span></code> &lt;=&gt; <code class="docutils literal notranslate"><span class="pre">img.meta['BGDAVG']</span></code>.  The <code class="docutils literal notranslate"><span class="pre">row0</span></code>
-attribute  is a proxy for <code class="docutils literal notranslate"><span class="pre">img.meta['IMGROW0']</span></code>, and likewise for <code class="docutils literal notranslate"><span class="pre">col0</span></code>.</p>
-<p>When initializing an <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code>, additional <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> are
-used to try initializing via <code class="docutils literal notranslate"><span class="pre">np.array(*args,</span> <span class="pre">**kwargs)</span></code>.  If this fails
-then <code class="docutils literal notranslate"><span class="pre">np.zeros(*args,</span> <span class="pre">**kwargs)</span></code> is tried.  In this way one can either
-initialize from array data or create a new array of zeros.</p>
-<p>Examples:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.aca_image</span> <span class="kn">import</span> <span class="n">ACAImage</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">row0</span><span class="o">=-</span><span class="mi">512</span><span class="p">,</span> <span class="n">col0</span><span class="o">=-</span><span class="mi">512</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]],</span> <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;BGDAVG&#39;</span><span class="p">:</span> <span class="mf">5.2</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ACAImage</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">row0</span><span class="o">=-</span><span class="mi">512</span><span class="p">,</span> <span class="n">col0</span><span class="o">=-</span><span class="mi">512</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>row0</strong> – row coordinate of lower left image pixel (int, default=0)</p></li>
-<li><p><strong>col0</strong> – col coordinate of lower left image pixel (int, default=0)</p></li>
-<li><p><strong>meta</strong> – dict of object attributes</p></li>
-<li><p><strong>*args</strong> – additional args passed to np.array() or np.zeros()</p></li>
-<li><p><strong>**kwargs</strong> – additional kwargs passed to np.array() or np.zeros()</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.aca">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aca</span></span><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.aca" title="Link to this definition">¶</a></dt>
-<dd><p>Return a light copy of self with _aca_coords on.</p>
-<p>Return a light copy (same data) of self but with the _aca_coords
-attribute switched on so that indexing is absolute.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.centroid_fm">
-<span class="sig-name descname"><span class="pre">centroid_fm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bgd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.centroid_fm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.centroid_fm" title="Link to this definition">¶</a></dt>
-<dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">self</span></code> using 6x6 mousebitten image for input 6x6 or 8x8 images.</p>
-<p>Note that the returned <code class="docutils literal notranslate"><span class="pre">norm</span></code> is the sum of the background-subtracted 6x6
-mousebitten image, not the entire image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>bgd</strong></dt><dd><p>background to subtract, scalar or NxN ndarray (float)</p>
-</dd>
-<dt><strong>pix_zero_loc</strong></dt><dd><p>row/col coords are integral at ‘edge’ or ‘center’</p>
-</dd>
-<dt><strong>norm_clip</strong><span class="classifier">clip image norm at this min value (default is None and</span></dt><dd><p>implies Exception for non-positive norm)</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>row, col, norm float</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.flicker_init">
-<span class="sig-name descname"><span class="pre">flicker_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flicker_mean_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flicker_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_init" title="Link to this definition">¶</a></dt>
-<dd><p>Initialize instance variables to allow for flickering pixel updates.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">flicker_scale</span></code> can be interpreted as follows: if the pixel
-was going to flicker by a multiplicative factor of (1 + x), now
-make it flicker by (1 + x * flicker_scale).  This applies for flickers
-that increase the amplitude.  For flickers that make the value smaller,
-then it would be 1 / (1 + x) =&gt; 1 / (1 + x * flicker_scale).</p>
-<p>The flicker_cdf file here was created using:
-/proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb</p>
-<p>Examples and performance details at:
-/proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-implementation.ipynb</p>
-<p>The model was reviewed and approved at SS&amp;AWG on 2019-05-22.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>flicker_mean_time</strong></dt><dd><p>mean flickering time (sec, default=10000)</p>
-</dd>
-<dt><strong>flicker_scale</strong><span class="classifier">multiplicative factor beyond model default for</span></dt><dd><p>flickering amplitude (default=1.0)</p>
-</dd>
-<dt><strong>seed</strong></dt><dd><p>random seed for reproducibility (default=None =&gt; no seed)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.ACAImage.flicker_update">
-<span class="sig-name descname"><span class="pre">flicker_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_numba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#ACAImage.flicker_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.ACAImage.flicker_update" title="Link to this definition">¶</a></dt>
-<dd><p>Do a flicker update.</p>
-<p>Propagate the image forward by <code class="docutils literal notranslate"><span class="pre">dt</span></code> seconds and update any pixels
-that have flickered during that interval.</p>
-<p>This has the option to use one of two implementations.  The default is
-to use the numba-based version which is about 6 times faster.  The
-vectorized version is left in for reference.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong></dt><dd><p>time (secs) to propagate image</p>
-</dd>
-<dt><strong>use_numba</strong></dt><dd><p>use the numba version of updating (default=True)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.AcaPsfLibrary">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">AcaPsfLibrary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary" title="Link to this definition">¶</a></dt>
-<dd><p>AcaPsfLibrary class</p>
-<p>Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
-(pixelated) ACA PSF over a grid of subpixel locations.</p>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca.aca_image</span> <span class="kn">import</span> <span class="n">AcaPsfLibrary</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">apl</span> <span class="o">=</span> <span class="n">AcaPsfLibrary</span><span class="p">()</span>  <span class="c1"># Reads in PSF library data file</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">apl</span><span class="o">.</span><span class="n">get_psf_image</span><span class="p">(</span><span class="n">row</span><span class="o">=-</span><span class="mf">10.456</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mf">250.123</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span>
-<span class="go">&lt;ACAImage row0=-14 col0=247</span>
-<span class="go">array([[   39,    54,    56,    52,    37,    33,    30,    21],</span>
-<span class="go">       [   79,   144,   260,   252,   156,    86,    67,    36],</span>
-<span class="go">       [  162,   544,  2474,  5269,  2012,   443,   163,    57],</span>
-<span class="go">       [  255,  1420, 10083, 12688, 11273,  1627,   302,    78],</span>
-<span class="go">       [  186,  1423,  8926,  8480, 12292,  2142,   231,    64],</span>
-<span class="go">       [   80,   344,  1384,  6509,  4187,   665,   111,    43],</span>
-<span class="go">       [   40,    78,   241,   828,   616,   188,    65,    29],</span>
-<span class="go">       [   24,    39,    86,   157,   139,    69,    48,    32]])&gt;</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>filename</strong> – file name of ACA PSF library (default=built-in file)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>AcaPsfLibrary object</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.AcaPsfLibrary.get_psf_image">
-<span class="sig-name descname"><span class="pre">get_psf_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aca_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#AcaPsfLibrary.get_psf_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image" title="Link to this definition">¶</a></dt>
-<dd><p>Get interpolated ACA PSF image that corresponds to pixel location <code class="docutils literal notranslate"><span class="pre">row</span></code>, <code class="docutils literal notranslate"><span class="pre">col</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>row</strong></dt><dd><p>(float) row value of PSF centroid</p>
-</dd>
-<dt><strong>col</strong></dt><dd><p>(float) col value of PSF centroid</p>
-</dd>
-<dt><strong>norm</strong></dt><dd><p>(float) summed intensity of PSF image</p>
-</dd>
-<dt><strong>pix_zero_loc</strong></dt><dd><p>row/col coords are integral at ‘edge’ or ‘center’</p>
-</dd>
-<dt><strong>interpolation</strong></dt><dd><p>‘nearest’ | ‘bilinear’ (default)</p>
-</dd>
-<dt><strong>aca_image</strong></dt><dd><p>return ACAImage if True, else return ndarray</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>ACAImage if (aca_image is True) else (ndarray image, row0, col0)</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.EIGHT_LABELS">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">EIGHT_LABELS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([['A1',</span> <span class="pre">'B1',</span> <span class="pre">'C1',</span> <span class="pre">'D1',</span> <span class="pre">'E1',</span> <span class="pre">'F1',</span> <span class="pre">'G1',</span> <span class="pre">'H1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I1',</span> <span class="pre">'J1',</span> <span class="pre">'K1',</span> <span class="pre">'L1',</span> <span class="pre">'M1',</span> <span class="pre">'N1',</span> <span class="pre">'O1',</span> <span class="pre">'P1'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A2',</span> <span class="pre">'B2',</span> <span class="pre">'C2',</span> <span class="pre">'D2',</span> <span class="pre">'E2',</span> <span class="pre">'F2',</span> <span class="pre">'G2',</span> <span class="pre">'H2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I2',</span> <span class="pre">'J2',</span> <span class="pre">'K2',</span> <span class="pre">'L2',</span> <span class="pre">'M2',</span> <span class="pre">'N2',</span> <span class="pre">'O2',</span> <span class="pre">'P2'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A3',</span> <span class="pre">'B3',</span> <span class="pre">'C3',</span> <span class="pre">'D3',</span> <span class="pre">'E3',</span> <span class="pre">'F3',</span> <span class="pre">'G3',</span> <span class="pre">'H3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I3',</span> <span class="pre">'J3',</span> <span class="pre">'K3',</span> <span class="pre">'L3',</span> <span class="pre">'M3',</span> <span class="pre">'N3',</span> <span class="pre">'O3',</span> <span class="pre">'P3'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['A4',</span> <span class="pre">'B4',</span> <span class="pre">'C4',</span> <span class="pre">'D4',</span> <span class="pre">'E4',</span> <span class="pre">'F4',</span> <span class="pre">'G4',</span> <span class="pre">'H4'],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">['I4',</span> <span class="pre">'J4',</span> <span class="pre">'K4',</span> <span class="pre">'L4',</span> <span class="pre">'M4',</span> <span class="pre">'N4',</span> <span class="pre">'O4',</span> <span class="pre">'P4']],</span> <span class="pre">dtype='&lt;U2')</span></em><a class="headerlink" href="#chandra_aca.aca_image.EIGHT_LABELS" title="Link to this definition">¶</a></dt>
-<dd><p>Constant for labeling ACA image pixels using the EQ-278 spec format.
-Pixel A1 has the lowest values of row and column; pixel H1 has the lowest
-row and highest col; pixel I4 has the highest row and lowest column.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.centroid_fm">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">centroid_fm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_zero_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#centroid_fm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.centroid_fm" title="Link to this definition">¶</a></dt>
-<dd><p>First moment centroid of <code class="docutils literal notranslate"><span class="pre">img</span></code>.</p>
-<p>Return FM centroid in coords where lower left pixel of image has value
-(0.0, 0.0) at the center (for pix_zero_loc=’center’) or the lower-left edge
-(for pix_zero_loc=’edge’).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>img</strong></dt><dd><p>NxN ndarray</p>
-</dd>
-<dt><strong>bgd</strong></dt><dd><p>background to subtract, float of NXN ndarray</p>
-</dd>
-<dt><strong>pix_zero_loc</strong></dt><dd><p>row/col coords are integral at ‘edge’ or ‘center’</p>
-</dd>
-<dt><strong>norm_clip</strong><span class="classifier">clip image norm at this min value (default is None and</span></dt><dd><p>implies Exception for non-positive norm)</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>row, col, norm float</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="chandra_aca.aca_image.get_aca_images">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgsub</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'maude'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chandra_aca/aca_image.html#get_aca_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.aca_image.get_aca_images" title="Link to this definition">¶</a></dt>
-<dd><p>Get ACA images and ancillary data from either the MAUDE or CXC data sources.</p>
-<p>The returned table of ACA images and ancillary data will include the default
-columns returned by chandra_aca.maude_decom.get_aca_images or
-mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
-table will also include columns:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       <span class="n">name</span>            <span class="n">dtype</span>  <span class="n">unit</span>
-<span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
-   <span class="n">IMG_BGSUB</span>          <span class="n">float64</span>  <span class="n">DN</span>
-   <span class="n">IMG_DARK</span>           <span class="n">float64</span>  <span class="n">DN</span>
-   <span class="n">T_CCD_SMOOTH</span>       <span class="n">float64</span>  <span class="n">degC</span>
-</pre></div>
-</div>
-<p>where:</p>
-<ul class="simple">
-<li><p>‘IMG_BGSUB’: background subtracted image</p></li>
-<li><p>‘IMG_DARK’: dark current image</p></li>
-<li><p>‘T_CCD_SMOOTH’: smoothed CCD temperature</p></li>
-</ul>
-<p>The IMG_DARK individual values are only calculated if within the 1024x1024
-dark current map, otherwise they are set to 0.  In practice this is not an
-issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>start</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Start time.</p>
-</dd>
-<dt><strong>stop</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Stop time (CXC sec).</p>
-</dd>
-<dt><strong>bgsub</strong><span class="classifier">bool</span></dt><dd><p>Include background subtracted images in output table. Default is False.</p>
-</dd>
-<dt><strong>source</strong><span class="classifier">str</span></dt><dd><p>Data source for image and temperature telemetry (‘maude’ or ‘cxc’). For ‘cxc’,
-the image telemetry is from mica and temperature telemetry is from CXC L0 via
-cheta.</p>
-</dd>
-<dt><strong>**maude_kwargs</strong></dt><dd><p>Additional kwargs for maude data source.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>imgs_table</strong><span class="classifier">astropy.table.Table</span></dt><dd><p>Table of ACA images and ancillary data.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
+<p>See <a class="reference internal" href="api/chandra_aca/aca_image/index.html#module-chandra_aca.aca_image" title="chandra_aca.aca_image"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chandra_aca.aca_image</span></code></a> for API details.</p>
 <section id="acaimage-class">
-<h2>ACAImage class<a class="headerlink" href="#acaimage-class" title="Link to this heading">¶</a></h2>
+<h2>ACAImage class<a class="headerlink" href="#acaimage-class" title="Link to this heading">#</a></h2>
 <p>ACAImage is an ndarray subclass that supports functionality for the Chandra
 ACA. Most importantly it allows image indexing and slicing in absolute
 “aca” coordinates, where the image lower left coordinate is specified
@@ -357,7 +357,7 @@ information.  Any keys which are all upper-case will be exposed as object
 attributes, e.g. <code class="docutils literal notranslate"><span class="pre">img.BGDAVG</span></code> &lt;=&gt; <code class="docutils literal notranslate"><span class="pre">img.meta['BGDAVG']</span></code>.  The <code class="docutils literal notranslate"><span class="pre">row0</span></code>
 attribute  is a proxy for <code class="docutils literal notranslate"><span class="pre">img.meta['IMGROW0']</span></code>, and likewise for <code class="docutils literal notranslate"><span class="pre">col0</span></code>.</p>
 <section id="creation">
-<h3>Creation<a class="headerlink" href="#creation" title="Link to this heading">¶</a></h3>
+<h3>Creation<a class="headerlink" href="#creation" title="Link to this heading">#</a></h3>
 <p>When initializing an <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code>, additional <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> are
 used to try initializing via <code class="docutils literal notranslate"><span class="pre">np.array(*args,</span> <span class="pre">**kwargs)</span></code>.  If this fails
 then <code class="docutils literal notranslate"><span class="pre">np.zeros(*args,</span> <span class="pre">**kwargs)</span></code> is tried.  In this way one can either
@@ -395,7 +395,7 @@ point values are shown.</p>
 </div>
 </section>
 <section id="image-access-and-setting">
-<h3>Image access and setting<a class="headerlink" href="#image-access-and-setting" title="Link to this heading">¶</a></h3>
+<h3>Image access and setting<a class="headerlink" href="#image-access-and-setting" title="Link to this heading">#</a></h3>
 <p>You can access array elements as usual, and in fact do any normal numpy array operations:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 <span class="go">15</span>
@@ -462,7 +462,7 @@ within the area of <code class="docutils literal notranslate"><span class="pre">
 </div>
 </section>
 <section id="image-arithmetic-operations">
-<h3>Image arithmetic operations<a class="headerlink" href="#image-arithmetic-operations" title="Link to this heading">¶</a></h3>
+<h3>Image arithmetic operations<a class="headerlink" href="#image-arithmetic-operations" title="Link to this heading">#</a></h3>
 <p>In addition to doing image arithmetic operations using explicit slices
 as shown previously, one can also use normal arithmetic operators like
 <code class="docutils literal notranslate"><span class="pre">+</span></code> (for addition) or <code class="docutils literal notranslate"><span class="pre">+=</span></code> for in-place addition.</p>
@@ -551,7 +551,7 @@ shown in the examples below.  The supported operations for this are:</p>
 </div>
 </section>
 <section id="meta-data">
-<h3>Meta-data<a class="headerlink" href="#meta-data" title="Link to this heading">¶</a></h3>
+<h3>Meta-data<a class="headerlink" href="#meta-data" title="Link to this heading">#</a></h3>
 <p>Finally, the <code class="docutils literal notranslate"><span class="pre">ACAImage</span></code> object can store arbitrary metadata in the
 <code class="docutils literal notranslate"><span class="pre">meta</span></code> dict attribute.  However, in order to make this convenient and
 distinct from native numpy attributes, the <code class="docutils literal notranslate"><span class="pre">meta</span></code> attributes should
@@ -577,75 +577,117 @@ as object attributes instead of going through the <code class="docutils literal 
 </section>
 
 
-            <div class="clearer"></div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">chandra_aca</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="maude_decom.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">MAUDE ACA telemetry</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acaimage-class">ACAImage class</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creation">Creation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image-access-and-setting">Image access and setting</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image-arithmetic-operations">Image arithmetic operations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-data">Meta-data</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
-<ul>
-<li><a class="reference internal" href="#">chandra_aca.aca_image</a><ul>
-<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage"><code class="docutils literal notranslate"><span class="pre">ACAImage</span></code></a><ul>
-<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.aca"><code class="docutils literal notranslate"><span class="pre">ACAImage.aca</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.centroid_fm"><code class="docutils literal notranslate"><span class="pre">ACAImage.centroid_fm()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.flicker_init"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_init()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.aca_image.ACAImage.flicker_update"><code class="docutils literal notranslate"><span class="pre">ACAImage.flicker_update()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#chandra_aca.aca_image.AcaPsfLibrary"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary</span></code></a><ul>
-<li><a class="reference internal" href="#chandra_aca.aca_image.AcaPsfLibrary.get_psf_image"><code class="docutils literal notranslate"><span class="pre">AcaPsfLibrary.get_psf_image()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#chandra_aca.aca_image.EIGHT_LABELS"><code class="docutils literal notranslate"><span class="pre">EIGHT_LABELS</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.aca_image.centroid_fm"><code class="docutils literal notranslate"><span class="pre">centroid_fm()</span></code></a></li>
-<li><a class="reference internal" href="#chandra_aca.aca_image.get_aca_images"><code class="docutils literal notranslate"><span class="pre">get_aca_images()</span></code></a></li>
-<li><a class="reference internal" href="#acaimage-class">ACAImage class</a><ul>
-<li><a class="reference internal" href="#creation">Creation</a></li>
-<li><a class="reference internal" href="#image-access-and-setting">Image access and setting</a></li>
-<li><a class="reference internal" href="#image-arithmetic-operations">Image arithmetic operations</a></li>
-<li><a class="reference internal" href="#meta-data">Meta-data</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="drift.html"
-                          title="previous chapter">chandra_aca.drift</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="centroid_resid.html"
-                          title="next chapter">chandra_aca.centroid_resid</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/aca_image.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<form action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
-<footer class="footer">
-  <p class="pull-right">
-    <a href="_sources/aca_image.rst.txt"
-       rel="nofollow">Page Source</a> &nbsp;
-    <a href="#">Back to Top</a></p>
-  <p>
-    &copy; Copyright 2015, Tom Aldcroft, Jean Connelly.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 8.1.3. &nbsp;
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      <br/>
+    
   </p>
-</footer>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
   </body>
 </html>

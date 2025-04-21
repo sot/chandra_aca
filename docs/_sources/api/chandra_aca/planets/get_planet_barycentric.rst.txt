@@ -1,0 +1,40 @@
+chandra_aca.planets.get_planet_barycentric
+==========================================
+
+.. py:function:: chandra_aca.planets.get_planet_barycentric(body, time = None)
+
+   
+   Get barycentric position for solar system ``body`` at ``time``.
+
+   This uses the built-in JPL ephemeris file DE432s and jplephem.
+
+   ``body`` must be one of "sun", "mercury", "venus", "earth-moon-barycenter", "earth",
+   "moon", "mars", "jupiter", "saturn", "uranus", "neptune", or "pluto".
+
+   :Parameters:
+
+       **body**
+           Body name (lower case planet name)
+
+       **time**
+           Time or times for returned position (default=NOW)
+
+
+
+   :Returns:
+
+       barycentric position (km) as (x, y, z) or N x (x, y, z)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

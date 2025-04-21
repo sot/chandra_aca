@@ -1,0 +1,291 @@
+chandra_aca.centroid_resid.CentroidResiduals
+============================================
+
+.. py:class:: chandra_aca.centroid_resid.CentroidResiduals(start, stop)
+
+   Bases: :py:obj:`object`
+
+
+   
+   Class to calculate star centroid residuals.
+
+   This class is designed to set up and perform the residual calculations on
+   any desired combination of source centroids and source attitudes.  For the common use cases,
+   centroids, attitudes, and commanded star positions are retrieved automatically from archived
+   sources.
+
+   Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:
+
+   http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+
+   and
+
+   http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
+
+   Users should see the class method ``for_slot`` for a convenient way to get centroid
+   residuals on an ``obsid`` for an ACA ``slot`` (aka image number).
+
+   Example usage::
+
+    >>> import numpy as np
+    >>> from chandra_aca.centroid_resid import CentroidResiduals
+    >>> cr = CentroidResiduals.for_slot(obsid=20001, slot=5)
+    >>> np.max(np.abs(cr.dyags))
+    0.87602233734844503
+    >>> np.max(np.abs(cr.dzags))
+    1.2035827855862777
+    >>> cr.atts[0]
+    array([-0.07933254,  0.87065874, -0.47833673,  0.08278696])
+    >>> cr.agasc_id
+    649201816
+
+   This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
+   and ground centroids.  Here is another example that does the same thing without using the
+   ``for_slot`` convenience.
+
+   Example usage::
+
+    >>> import numpy as np
+    >>> from chandra_aca.centroid_resid import CentroidResiduals
+    >>> cr = CentroidResiduals(start='2017:169:18:54:50.138', stop='2017:170:05:13:58.190')
+    >>> cr.set_atts('ground')
+    >>> cr.set_centroids('ground', slot=5)
+    >>> cr.set_star(agasc_id=649201816)
+    >>> cr.calc_residuals()
+    >>> np.max(np.abs(cr.dyags))
+    0.87602233734844503
+
+   :param start: start time of interval for residuals (DateTime compatible)
+   :param stop: stop time of interval for residuals (DateTime compatible)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: centroid_source
+      :value: None
+
+
+
+   .. py:attribute:: att_source
+      :value: None
+
+
+
+   .. py:attribute:: ra
+      :value: None
+
+
+
+   .. py:attribute:: dec
+      :value: None
+
+
+
+   .. py:attribute:: centroid_dt
+      :value: None
+
+
+
+   .. py:attribute:: obsid
+      :value: None
+
+
+
+   .. py:attribute:: start
+
+
+   .. py:attribute:: stop
+
+
+   .. py:method:: set_centroids(source, slot, alg=8, apply_dt=True)
+
+      
+      Assign centroids.
+
+      Assign centroids from ``source`` and ``slot`` to the objects centroid attributes
+      (yag, zag, yag_times, zag_times)
+
+      For the supported sources (ground, obc) the centroids are fetched from the mica L1
+      archive or telemetry.
+
+      yag, zag, yag_times an zag_times can also be set directly without use of this method.
+
+      :Parameters:
+
+          **source**
+              'ground' | 'obc'
+
+          **slot**
+              ACA slot
+
+          **alg**
+              for ground processing, use centroids from this algorithm.
+
+          **apply_dt**
+              apply centroid time offsets via 'set_offsets'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: set_atts(source)
+
+      
+      Get attitude solution quaternions from ``source``.
+
+      One could also just set atts and att_times attributes directly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: set_atts_from_solfiles(asol_files, acal_files, aqual_files, filter=True)
+
+
+   .. py:method:: set_star(agasc_id=None, slot=None)
+
+      
+      Set self.ra and dec from either agasc_id *or* slot.
+
+      This assumes use of star in default agasc miniagasc (no 1.4 or 1.5 or very faint stars)
+      Lookup by "slot" relies on database of starcheck catalogs.
+
+      This also sets self.agasc_id.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:property:: yags
+
+
+   .. py:property:: yag_times
+
+
+   .. py:property:: zags
+
+
+   .. py:property:: zag_times
+
+
+   .. py:method:: set_offsets()
+
+      
+      Apply time offsets to centroids.
+
+      Apply time offsets to centroids based on type and source of centroid, obsid
+      (suggesting 8x8 or 6x6 data), telemetry source ('maude' or 'cxc') and aspect solution
+      source. These time offsets were fit.  See fit notebooks at:
+
+      http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+
+      and
+
+      http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: calc_residuals()
+
+      
+      Calculate star residuals.
+
+      Calculate residuals based on attitude and ra/dec of star.  Note that the sampling and times
+      of yags may be different from zags so these should be done independently.
+
+      Residuals are available in self.dyags and self.dzags.
+      Predicted values from attitude and star position in self.pred_yags and self.pred_zags
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: for_slot(obsid=None, start=None, stop=None, slot=None, att_source='ground', centroid_source='ground')
+      :classmethod:
+
+

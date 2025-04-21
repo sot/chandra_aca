@@ -1,0 +1,29 @@
+chandra_aca.maude_decom.filter_vcdu_jumps
+=========================================
+
+.. py:function:: chandra_aca.maude_decom.filter_vcdu_jumps(vcdu_counters)
+
+   
+   Return a boolean mask to filter VCDU counters that are not continuous.
+
+   The returned mask ensures that::
+
+       - VCDU counters are a strictly monotonic sequence.
+       - VCDU counters come in packets of four, with each group starting with a multiple of 4.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

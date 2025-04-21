@@ -1,0 +1,52 @@
+chandra_aca.maude_decom._group_packets
+======================================
+
+.. py:function:: chandra_aca.maude_decom._group_packets(packets, discard=True)
+
+   
+   Group ACA image telemetry packets to form full images.
+
+   ACA telemetry is packed in packets of 225 bytes, and each of these is split in four VCDU frames.
+   Each ACA telemetry packet includes pixel telemetry for 16 pixels in each of the 8 slots.
+   A 4x4 image is complete in one packet, whereas 6x6 and 8x8 images are split into two and four
+   packets respectively.
+
+   This function takes a list of dictionaries, with each dictionary containing the pixel
+   telemetry for one slot in a VCDU frame. Each dictionary must have the keys 'MJF', 'MNF'
+   and 'IMGTYPE'. It returns a list of lists of dicts, where each list of dicts contains the pixel
+   telemetry for a full image.
+
+   The function assumes:
+   - all entries correspond to the same slot
+   - the entries are ordered by increasing VCDU counter
+   - missing/repeated VCDU counters have been removed
+
+   If this is not the case, the results will be incorrect.
+
+   :Parameters:
+
+       **packets**
+           list of ACA sub-packets
+
+       **discard**
+           bool to discard incomplete ACA packets
+
+
+
+   :Returns:
+
+       list of ACA packets
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

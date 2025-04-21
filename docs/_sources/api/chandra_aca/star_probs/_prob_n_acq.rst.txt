@@ -1,0 +1,25 @@
+chandra_aca.star_probs._prob_n_acq
+==================================
+
+.. py:function:: chandra_aca.star_probs._prob_n_acq(star_probs, n_stars, n_acq_probs)
+
+   
+   Jit-able portion of prob_n_acq
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,74 @@
+chandra_aca.drift
+=================
+
+.. py:module:: chandra_aca.drift
+
+.. autoapi-nested-parse::
+
+   Function(s) related to ACA alignment.
+
+   In particular compute the dynamical pointing offset required to achieve
+   a desired zero-offset target aimpoint.
+
+   A key element of this module is the fitting analysis here:
+   https://github.com/sot/aimpoint_mon/blob/master/fit_aimpoint_drift-2018-11.ipynb
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.drift.DRIFT_PARS
+   chandra_aca.drift.ASOL_TO_CHIP
+   chandra_aca.drift.SIM_MM_TO_ARCSEC
+
+
+Classes
+-------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/drift/AcaDriftModel
+
+.. autoapisummary::
+
+   chandra_aca.drift.AcaDriftModel
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/drift/load_drift_pars
+   /api/chandra_aca/drift/get_fid_offset
+   /api/chandra_aca/drift/get_aca_offsets
+   /api/chandra_aca/drift/get_default_zero_offset_table
+   /api/chandra_aca/drift/get_target_aimpoint
+
+.. autoapisummary::
+
+   chandra_aca.drift.load_drift_pars
+   chandra_aca.drift.get_fid_offset
+   chandra_aca.drift.get_aca_offsets
+   chandra_aca.drift.get_default_zero_offset_table
+   chandra_aca.drift.get_target_aimpoint
+
+
+Module Contents
+---------------
+
+.. py:data:: DRIFT_PARS
+
+.. py:data:: ASOL_TO_CHIP
+
+.. py:data:: SIM_MM_TO_ARCSEC
+   :value: 20.493
+
+

@@ -1,0 +1,36 @@
+chandra_aca.transform.mag_to_count_rate
+=======================================
+
+.. py:function:: chandra_aca.transform.mag_to_count_rate(mag)
+
+   
+   Convert ACA mag to count rate in e- / sec
+
+   Based on $CALDB/data/chandra/pcad/ccd_char/acapD1998-12-14ccdN0002.fits
+   columns mag0=10.32 and cnt_rate_mag0=5263.0.  To convert to raw telemetered
+   counts (ADU), divide e- by the gain of 5.0 e-/ADU.
+
+   :Parameters:
+
+       **mag**
+           star magnitude in ACA mag
+
+
+
+   :Returns:
+
+       count rate (e-/sec)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

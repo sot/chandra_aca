@@ -1,0 +1,34 @@
+chandra_aca.star_probs.get_box_delta
+====================================
+
+.. py:function:: chandra_aca.star_probs.get_box_delta(halfwidth)
+
+   
+   Transform from halfwidth (arcsec) to the box_delta value.
+
+   This box_delta value gets added to failure probability (in probit space).
+
+   :Parameters:
+
+       **halfwidth**
+           scalar or ndarray of box sizes (halfwidth, arcsec)
+
+
+
+   :Returns:
+
+       box deltas
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

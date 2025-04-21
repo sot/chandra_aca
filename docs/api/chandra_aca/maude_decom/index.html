@@ -1,0 +1,704 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.50.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=d9e78d80"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=30646c52"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/chandra_aca/maude_decom/index';</script>
+    <link rel="canonical" href="https://sot.github.io/chandra_aca/api/chandra_aca/maude_decom/index.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="chandra_aca.maude_decom._AcaImageHeaderDecom" href="_AcaImageHeaderDecom.html" />
+    <link rel="prev" title="chandra_aca.drift.get_target_aimpoint" href="../drift/get_target_aimpoint.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="4.50.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><a href="../../../index.html" style="text-decoration: none;">
+    <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
+</a>
+&nbsp;
+<span style="font-size: x-large;">4.50.0</span></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../aca_image.html">
+    ACA images
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../maude_decom.html">
+    MAUDE ACA telemetry
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sot/chandra_aca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github-square fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">chandra_aca</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">chandra_aca.maude_decom</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-chandra_aca.maude_decom">
+<span id="chandra-aca-maude-decom"></span><h1>chandra_aca.maude_decom<a class="headerlink" href="#module-chandra_aca.maude_decom" title="Link to this heading">#</a></h1>
+<p>Classes and functions to help fetching ACA telemetry data using MAUDE.</p>
+<p>See <a class="reference internal" href="../../../maude_decom.html#maude-decom"><span class="std std-ref">MAUDE ACA telemetry</span></a> for more details and examples.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.MAUDE_SINGLE_FETCH_LIMIT" title="chandra_aca.maude_decom.MAUDE_SINGLE_FETCH_LIMIT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAUDE_SINGLE_FETCH_LIMIT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.MAUDE_FETCH_LIMIT" title="chandra_aca.maude_decom.MAUDE_FETCH_LIMIT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAUDE_FETCH_LIMIT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.MAX_MJF" title="chandra_aca.maude_decom.MAX_MJF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAX_MJF</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.MAX_MNF" title="chandra_aca.maude_decom.MAX_MNF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAX_MNF</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.MAX_VCDU" title="chandra_aca.maude_decom.MAX_VCDU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAX_VCDU</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.PIXEL_MAP" title="chandra_aca.maude_decom.PIXEL_MAP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIXEL_MAP</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.PIXEL_MASK" title="chandra_aca.maude_decom.PIXEL_MASK"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIXEL_MASK</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.PIXEL_MAP_INV" title="chandra_aca.maude_decom.PIXEL_MAP_INV"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIXEL_MAP_INV</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom._msid_prefix" title="chandra_aca.maude_decom._msid_prefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_msid_prefix</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.ACA_MSID_LIST" title="chandra_aca.maude_decom.ACA_MSID_LIST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA_MSID_LIST</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.ACA_SLOT_MSID_LIST" title="chandra_aca.maude_decom.ACA_SLOT_MSID_LIST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA_SLOT_MSID_LIST</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom._a2p" title="chandra_aca.maude_decom._a2p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_a2p</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom._IMG_INDICES" title="chandra_aca.maude_decom._IMG_INDICES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_IMG_INDICES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom._aca_front_fmt" title="chandra_aca.maude_decom._aca_front_fmt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_aca_front_fmt</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom._size_bits" title="chandra_aca.maude_decom._size_bits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_size_bits</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom._pixel_bits" title="chandra_aca.maude_decom._pixel_bits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_pixel_bits</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.maude_decom._bits" title="chandra_aca.maude_decom._bits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_bits</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.maude_decom.ACA_PACKETS_DTYPE" title="chandra_aca.maude_decom.ACA_PACKETS_DTYPE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA_PACKETS_DTYPE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_AcaImageHeaderDecom.html#chandra_aca.maude_decom._AcaImageHeaderDecom" title="chandra_aca.maude_decom._AcaImageHeaderDecom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_AcaImageHeaderDecom</span></code></a></p></td>
+<td><p>Class to decommute ACA image telemtry headers.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_aca_msid_list.html#chandra_aca.maude_decom._aca_msid_list" title="chandra_aca.maude_decom._aca_msid_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_aca_msid_list</span></code></a>(pea)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_aca_image_msid_list.html#chandra_aca.maude_decom._aca_image_msid_list" title="chandra_aca.maude_decom._aca_image_msid_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_aca_image_msid_list</span></code></a>(pea)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_packbits.html#chandra_aca.maude_decom._packbits" title="chandra_aca.maude_decom._packbits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_packbits</span></code></a>(a[, unsigned])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="unpack_aca_telemetry.html#chandra_aca.maude_decom.unpack_aca_telemetry" title="chandra_aca.maude_decom.unpack_aca_telemetry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unpack_aca_telemetry</span></code></a>(packet)</p></td>
+<td><p>Unpack ACA telemetry encoded in 225-byte packets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_combine_aca_packets.html#chandra_aca.maude_decom._combine_aca_packets" title="chandra_aca.maude_decom._combine_aca_packets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_combine_aca_packets</span></code></a>(aca_packets)</p></td>
+<td><p>Combine a list of ACA packets into a single record.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_group_packets.html#chandra_aca.maude_decom._group_packets" title="chandra_aca.maude_decom._group_packets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_group_packets</span></code></a>(packets[, discard])</p></td>
+<td><p>Group ACA image telemetry packets to form full images.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="filter_vcdu_jumps.html#chandra_aca.maude_decom.filter_vcdu_jumps" title="chandra_aca.maude_decom.filter_vcdu_jumps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_vcdu_jumps</span></code></a>(vcdu_counters)</p></td>
+<td><p>Return a boolean mask to filter VCDU counters that are not continuous.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="get_raw_aca_packets.html#chandra_aca.maude_decom.get_raw_aca_packets" title="chandra_aca.maude_decom.get_raw_aca_packets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_raw_aca_packets</span></code></a>(start, stop[, maude_result])</p></td>
+<td><p>Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_aca_packets_to_table.html#chandra_aca.maude_decom._aca_packets_to_table" title="chandra_aca.maude_decom._aca_packets_to_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_aca_packets_to_table</span></code></a>(aca_packets[, dtype])</p></td>
+<td><p>Store ACA packets in a table.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="get_aca_packets.html#chandra_aca.maude_decom.get_aca_packets" title="chandra_aca.maude_decom.get_aca_packets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_aca_packets</span></code></a>(start, stop[, level0, combine, ...])</p></td>
+<td><p>Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_get_aca_packets.html#chandra_aca.maude_decom._get_aca_packets" title="chandra_aca.maude_decom._get_aca_packets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_aca_packets</span></code></a>(aca_packets, start, stop[, combine, ...])</p></td>
+<td><p>This is a convenience function that splits get_aca_packets for testing without MAUDE.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="get_aca_images.html#chandra_aca.maude_decom.get_aca_images" title="chandra_aca.maude_decom.get_aca_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_aca_images</span></code></a>(start, stop, **kwargs)</p></td>
+<td><p>Fetch ACA image telemetry</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="get_raw_aca_blobs.html#chandra_aca.maude_decom.get_raw_aca_blobs" title="chandra_aca.maude_decom.get_raw_aca_blobs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_raw_aca_blobs</span></code></a>(start, stop[, maude_result])</p></td>
+<td><p>Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="blob_to_aca_image_dict.html#chandra_aca.maude_decom.blob_to_aca_image_dict" title="chandra_aca.maude_decom.blob_to_aca_image_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blob_to_aca_image_dict</span></code></a>(blob, imgnum[, pea])</p></td>
+<td><p>Assemble ACA image MSIDs from a blob into a dictionary.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.MAUDE_SINGLE_FETCH_LIMIT">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">MAUDE_SINGLE_FETCH_LIMIT</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#MAUDE_SINGLE_FETCH_LIMIT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.MAUDE_SINGLE_FETCH_LIMIT" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.MAUDE_FETCH_LIMIT">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">MAUDE_FETCH_LIMIT</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#MAUDE_FETCH_LIMIT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.MAUDE_FETCH_LIMIT" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.MAX_MJF">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">MAX_MJF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">131071</span></em><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#MAX_MJF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.MAX_MJF" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.MAX_MNF">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">MAX_MNF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">127</span></em><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#MAX_MNF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.MAX_MNF" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.MAX_VCDU">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">MAX_VCDU</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16777215</span></em><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#MAX_VCDU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.MAX_VCDU" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.PIXEL_MAP">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">PIXEL_MAP</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#PIXEL_MAP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.PIXEL_MAP" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.PIXEL_MASK">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">PIXEL_MASK</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#PIXEL_MASK"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.PIXEL_MASK" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.PIXEL_MAP_INV">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">PIXEL_MAP_INV</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#PIXEL_MAP_INV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.PIXEL_MAP_INV" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom._msid_prefix">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">_msid_prefix</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#_msid_prefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom._msid_prefix" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.ACA_MSID_LIST">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">ACA_MSID_LIST</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#ACA_MSID_LIST"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.ACA_MSID_LIST" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.ACA_SLOT_MSID_LIST">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">ACA_SLOT_MSID_LIST</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#ACA_SLOT_MSID_LIST"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.ACA_SLOT_MSID_LIST" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom._a2p">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">_a2p</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['A',</span> <span class="pre">'B',</span> <span class="pre">'C',</span> <span class="pre">'D',</span> <span class="pre">'E',</span> <span class="pre">'F',</span> <span class="pre">'G',</span> <span class="pre">'H',</span> <span class="pre">'I',</span> <span class="pre">'J',</span> <span class="pre">'K',</span> <span class="pre">'L',</span> <span class="pre">'M',</span> <span class="pre">'N',</span> <span class="pre">'O',</span> <span class="pre">'P']</span></em><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#_a2p"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom._a2p" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom._IMG_INDICES">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">_IMG_INDICES</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#_IMG_INDICES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom._IMG_INDICES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom._aca_front_fmt">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">_aca_front_fmt</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#_aca_front_fmt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom._aca_front_fmt" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom._size_bits">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">_size_bits</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#_size_bits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom._size_bits" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom._pixel_bits">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">_pixel_bits</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#_pixel_bits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom._pixel_bits" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom._bits">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">_bits</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#_bits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom._bits" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chandra_aca.maude_decom.ACA_PACKETS_DTYPE">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.maude_decom.</span></span><span class="sig-name descname"><span class="pre">ACA_PACKETS_DTYPE</span></span><a class="reference internal" href="../../../_modules/chandra_aca/maude_decom.html#ACA_PACKETS_DTYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.maude_decom.ACA_PACKETS_DTYPE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../drift/get_target_aimpoint.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">chandra_aca.drift.get_target_aimpoint</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="_AcaImageHeaderDecom.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">chandra_aca.maude_decom._AcaImageHeaderDecom</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.MAUDE_SINGLE_FETCH_LIMIT"><code class="docutils literal notranslate"><span class="pre">MAUDE_SINGLE_FETCH_LIMIT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.MAUDE_FETCH_LIMIT"><code class="docutils literal notranslate"><span class="pre">MAUDE_FETCH_LIMIT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.MAX_MJF"><code class="docutils literal notranslate"><span class="pre">MAX_MJF</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.MAX_MNF"><code class="docutils literal notranslate"><span class="pre">MAX_MNF</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.MAX_VCDU"><code class="docutils literal notranslate"><span class="pre">MAX_VCDU</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.PIXEL_MAP"><code class="docutils literal notranslate"><span class="pre">PIXEL_MAP</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.PIXEL_MASK"><code class="docutils literal notranslate"><span class="pre">PIXEL_MASK</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.PIXEL_MAP_INV"><code class="docutils literal notranslate"><span class="pre">PIXEL_MAP_INV</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom._msid_prefix"><code class="docutils literal notranslate"><span class="pre">_msid_prefix</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.ACA_MSID_LIST"><code class="docutils literal notranslate"><span class="pre">ACA_MSID_LIST</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.ACA_SLOT_MSID_LIST"><code class="docutils literal notranslate"><span class="pre">ACA_SLOT_MSID_LIST</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom._a2p"><code class="docutils literal notranslate"><span class="pre">_a2p</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom._IMG_INDICES"><code class="docutils literal notranslate"><span class="pre">_IMG_INDICES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom._aca_front_fmt"><code class="docutils literal notranslate"><span class="pre">_aca_front_fmt</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom._size_bits"><code class="docutils literal notranslate"><span class="pre">_size_bits</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom._pixel_bits"><code class="docutils literal notranslate"><span class="pre">_pixel_bits</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom._bits"><code class="docutils literal notranslate"><span class="pre">_bits</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.maude_decom.ACA_PACKETS_DTYPE"><code class="docutils literal notranslate"><span class="pre">ACA_PACKETS_DTYPE</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

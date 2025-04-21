@@ -1,0 +1,57 @@
+chandra_aca.attitude.calc_roll
+==============================
+
+.. py:function:: chandra_aca.attitude.calc_roll(yag, zag, yag_obs, zag_obs, sigma=None)
+
+   
+   Calc S/C delta roll for observed star positions relative to reference.
+
+   This function computes a S/C delta roll that transforms the reference star
+   positions yag/zag into the observed positions yag_obs/zag_obs.  The units
+   for these values can be anything (arcsec, deg) but must all be consistent.
+
+   The inputs are assumed to be a list or array that corresponds to a single
+   readout of at least two stars.
+
+   The algorithm is a simple but fast linear least-squared solution which uses
+   a small angle assumption to linearize the rotation matrix from
+   [[cos(th) -sin(th)], [sin(th), cos(th)]] to [[1, -th], [th, 1]].
+   In practice anything below 1.0 degree is fine.
+
+   If there are different measurement uncertainties for the different
+   star inputs then one can supply an array of sigma values corresponding
+   to each star.
+
+   :Parameters:
+
+       **yag**
+           reference yag (list or array)
+
+       **zag**
+           reference zag (list or array)
+
+       **yag_obs**
+           observed yag (list or array)
+
+       **zag_obs**
+           observed zag (list or array)
+
+
+
+   :Returns:
+
+       roll (deg)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

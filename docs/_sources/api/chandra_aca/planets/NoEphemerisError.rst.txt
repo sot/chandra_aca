@@ -1,0 +1,28 @@
+chandra_aca.planets.NoEphemerisError
+====================================
+
+.. py:exception:: chandra_aca.planets.NoEphemerisError
+
+   Bases: :py:obj:`Exception`
+
+
+   
+   If there is no Chandra orbital ephemeris available
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

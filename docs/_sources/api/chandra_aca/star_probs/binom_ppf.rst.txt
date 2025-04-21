@@ -1,0 +1,55 @@
+chandra_aca.star_probs.binom_ppf
+================================
+
+.. py:function:: chandra_aca.star_probs.binom_ppf(k, n, conf, n_sample=1000)
+
+   
+   Compute percent point function (inverse of CDF) for binomial.
+
+   Here the percentage is with respect to the "p" (binomial probability) parameter
+   not the "k" parameter.  The latter is what one gets with scipy.stats.binom.ppf().
+
+   This function internally generates ``n_sample`` samples of the binomal PMF in
+   order to compute the CDF and finally interpolate to get the PPF.
+
+   The following example returns the 1-sigma (0.17 - 0.84) confidence interval
+   on the true binomial probability for an experiment with 4 successes in 5 trials.
+
+   Example::
+
+     >>> binom_ppf(4, 5, [0.17, 0.84])
+     array([ 0.55463945,  0.87748177])
+
+   :Parameters:
+
+       **k**
+           int, number of successes (0 < k <= n)
+
+       **n**
+           int, number of trials
+
+       **conf**
+           float or array of floats, percent point values
+
+       **n_sample**
+           number of PMF samples for interpolation
+
+
+
+   :Returns:
+
+       percent point function values corresponding to ``conf``
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,44 @@
+chandra_aca.dark_subtract.get_dark_current_imgs
+===============================================
+
+.. py:function:: chandra_aca.dark_subtract.get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccds)
+
+   
+   Get the scaled dark current values for a table of ACA images.
+
+   This scales the dark current to the appropriate temperature and integration time,
+   returning the dark current in DN matching the ACA images in img_table.
+
+   :Parameters:
+
+       **img_table** : astropy.table.Table
+           Table of ACA images with columns 'IMG', 'IMGROW0_8X8', 'IMGCOL0_8X8', 'INTEG'.
+
+       **img_dark** : 1024x1024 array
+           Dark calibration image.
+
+       **tccd_dark** : float
+           Reference temperature of the dark calibration image.
+
+       **t_ccds** : array
+           Cheta temperature values at the times of img_table.
+
+
+
+   :Returns:
+
+       **imgs_dark** : np.array (len(img_table), 8, 8)
+           Temperature scaled dark current for each ACA image in img_table (DN).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

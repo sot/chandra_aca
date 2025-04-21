@@ -1,0 +1,46 @@
+chandra_aca.planets.get_earth_boresight_angle
+=============================================
+
+.. py:function:: chandra_aca.planets.get_earth_boresight_angle(start, stop)
+
+   
+   Calculate Earth boresight angle from Chandra.
+
+   The boresight angle is the angle from the ACA boresight to the Earth limb or center.
+   This assumes that the Earth is spherical with radius 6371 km. The Earth position
+   relative to Chandra is interpolated from cheta's ``orbitephem0``.
+
+   The opening angle is the angle from the Earth center to limb as viewed from Chandra.
+
+   :Parameters:
+
+       **start** : CxoTime-compatible
+           Start time
+
+       **stop** : CxoTime-compatible
+           Stop time
+
+
+
+   :Returns:
+
+       EarthBoresightAngles
+           Dataclass with attributes:
+           
+           - times (CxoTime)
+           - earth_limb_angle (deg)
+           - earth_open_angle (deg)
+           - earth_center_angle (deg)
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

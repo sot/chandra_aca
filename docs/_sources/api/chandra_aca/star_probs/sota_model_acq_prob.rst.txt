@@ -1,0 +1,59 @@
+chandra_aca.star_probs.sota_model_acq_prob
+==========================================
+
+.. py:function:: chandra_aca.star_probs.sota_model_acq_prob(mag, warm_frac, color=0, halfwidth=120)
+
+   
+   Calculate raw SOTA model probability of acquisition success.
+
+   This is for a star with ``mag`` magnitude and a CCD warm fraction ``warm_frac``.
+   This is not typically used directly since it does not account for star properties
+   like spoiled or color=0.7.
+
+   Uses the empirical relation::
+
+      P_fail_probit = offset(mag) + scale(mag) * warm_frac + box_delta(halfwidth)
+      P_acq_fail = Normal_CDF()
+      P_acq_success = 1 - P_acq_fail
+
+   This is based on the dark model and acquisition success model presented in the State
+   of the ACA 2013, and subsequently updated to use a Probit transform and separately
+   fit B-V=1.5 stars.  It was updated in 2017 to include a fitted dependence on the
+   search box halfwidth.  See:
+
+   https://github.com/sot/skanb/blob/master/pea-test-set/fit_box_size_acq_prob.ipynb
+   https://github.com/sot/aca_stats/blob/master/fit_acq_prob_model-2017-07-sota.ipynb
+
+   :Parameters:
+
+       **mag**
+           ACA magnitude (float or np.ndarray)
+
+       **warm_frac**
+           N100 warm fraction (float or np.ndarray)
+
+       **color**
+           B-V color to check for B-V=1.5 => red star (float or np.ndarray)
+
+       **halfwidth**
+           search box halfwidth (arcsec, default=120)
+
+
+
+   :Returns:
+
+       Acquisition success probability(s)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

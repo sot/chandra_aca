@@ -1,0 +1,41 @@
+chandra_aca.radec_to_yagzag
+===========================
+
+.. py:function:: chandra_aca.radec_to_yagzag(ra, dec, q_att)
+
+   
+   Calculate ACA Y-angle, Z-angle from RA, Dec and pointing quaternion.
+
+   The input ``ra`` and ``dec`` values can be 1-d arrays in which case the output
+   ``yag`` and ``zag`` will be corresponding arrays of the same length.
+
+   :Parameters:
+
+       **ra**
+           Right Ascension (degrees)
+
+       **dec**
+           Declination (degrees)
+
+       **q_att**
+           ACA pointing quaternion (Quat or Quat-compatible input)
+
+
+
+   :Returns:
+
+       yag, zag (arcsec)
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

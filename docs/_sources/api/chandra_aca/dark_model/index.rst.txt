@@ -1,0 +1,116 @@
+chandra_aca.dark_model
+======================
+
+.. py:module:: chandra_aca.dark_model
+
+.. autoapi-nested-parse::
+
+   Routines related to the Chandra ACA dark current models.
+
+   The canonical model for ACA dark current is a based on smoothed
+   twice-broken power-law fits of dark current histograms from Jan-2007
+   though Aug-2017.  This analysis was done entirely with dark current maps scaled to -14 C.
+
+   See: /proj/sot/ska/analysis/dark_current_model/dark_model.ipynb
+   and other files in that directory.
+
+   Alternatively:
+   http://nbviewer.ipython.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model.ipynb
+
+   The dark_temp_scale_img method in this file uses a more recent 2023 approach with per-pixel scaling.
+
+   https://nbviewer.org/url/asc.harvard.edu/mta/ASPECT/analysis/dark_current_model/dark_model-2023.ipynb
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.dark_model.CACHE
+   chandra_aca.dark_model.dx
+   chandra_aca.dark_model.sigma
+   chandra_aca.dark_model.xg
+   chandra_aca.dark_model.yg
+   chandra_aca.dark_model.NPIX
+   chandra_aca.dark_model.xbins
+   chandra_aca.dark_model.xall
+   chandra_aca.dark_model.imin
+   chandra_aca.dark_model.imax
+   chandra_aca.dark_model.warm_threshold
+   chandra_aca.dark_model.DARK_SCALE_4C
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/dark_model/dark_temp_scale
+   /api/chandra_aca/dark_model/get_dark_hist
+   /api/chandra_aca/dark_model/smooth_broken_pow
+   /api/chandra_aca/dark_model/smooth_twice_broken_pow
+   /api/chandra_aca/dark_model/temp_scalefac
+   /api/chandra_aca/dark_model/as_array
+   /api/chandra_aca/dark_model/get_sbp_pars
+   /api/chandra_aca/dark_model/get_warm_fracs
+   /api/chandra_aca/dark_model/synthetic_dark_image
+   /api/chandra_aca/dark_model/dark_temp_scale_img
+
+.. autoapisummary::
+
+   chandra_aca.dark_model.dark_temp_scale
+   chandra_aca.dark_model.get_dark_hist
+   chandra_aca.dark_model.smooth_broken_pow
+   chandra_aca.dark_model.smooth_twice_broken_pow
+   chandra_aca.dark_model.temp_scalefac
+   chandra_aca.dark_model.as_array
+   chandra_aca.dark_model.get_sbp_pars
+   chandra_aca.dark_model.get_warm_fracs
+   chandra_aca.dark_model.synthetic_dark_image
+   chandra_aca.dark_model.dark_temp_scale_img
+
+
+Module Contents
+---------------
+
+.. py:data:: CACHE
+
+.. py:data:: dx
+   :value: 0.1
+
+
+.. py:data:: sigma
+   :value: 0.3
+
+
+.. py:data:: xg
+
+.. py:data:: yg
+
+.. py:data:: NPIX
+   :value: 1048576
+
+
+.. py:data:: xbins
+
+.. py:data:: xall
+
+.. py:data:: imin
+   :value: 0
+
+
+.. py:data:: imax
+
+.. py:data:: warm_threshold
+   :value: 100.0
+
+
+.. py:data:: DARK_SCALE_4C
+   :value: 1.4285714285714286
+
+

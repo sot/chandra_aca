@@ -1,0 +1,36 @@
+chandra_aca.dark_model.get_dark_hist
+====================================
+
+.. py:function:: chandra_aca.dark_model.get_dark_hist(date, t_ccd)
+
+   
+   Return the dark current histogram corresponding to ``date`` and ``t_ccd``.
+
+
+   :Parameters:
+
+       **date**
+           date in any DateTime format
+
+       **t_ccd**
+           CCD temperature (deg C)
+
+
+
+   :Returns:
+
+       bin_centers, bins, darkhist
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,0 +1,4 @@
+chandra_aca.maude_decom._packbits
+=================================
+
+.. py:function:: chandra_aca.maude_decom._packbits(a, unsigned=True)

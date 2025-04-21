@@ -1,0 +1,134 @@
+chandra_aca.star_probs
+======================
+
+.. py:module:: chandra_aca.star_probs
+
+.. autoapi-nested-parse::
+
+   Functions related to probabilities for star acquisition and guide tracking.
+
+   Current default acquisition probability model: ``grid-*`` (latest grid model) This can
+   be changed by setting the module configuration value ``conf.default_model`` to an
+   available model or model glob in the ``chandra_models`` repository.
+
+   The grid-local-quadratic-2023-05 model definition and fit values based on:
+
+   - https://github.com/sot/aca_stats/blob/master/fit_acq_model-2023-05-local-quadratic.ipynb
+   - https://github.com/sot/aca_stats/blob/master/validate-2023-05-local-quadratic.ipynb
+   - SS&AWG review 2023-02-01
+
+   The grid-floor-2020-02 model definition and fit values based on:
+
+   - https://github.com/sot/aca_stats/blob/master/fit_acq_model-2020-02-binned-poly-binom-floor.ipynb
+   - SSAWG review: 2020-01-29
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.star_probs.SPLINE_FUNCS
+   chandra_aca.star_probs.WARM_THRESHOLD
+   chandra_aca.star_probs.MIN_ACQ_PROB
+   chandra_aca.star_probs.MAX_ACQ_PROB
+   chandra_aca.star_probs.MULT_STARS_ENABLED
+   chandra_aca.star_probs.conf
+
+
+Classes
+-------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/star_probs/ConfigItem
+   /api/chandra_aca/star_probs/Conf
+
+.. autoapisummary::
+
+   chandra_aca.star_probs.ConfigItem
+   chandra_aca.star_probs.Conf
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/star_probs/get_box_delta
+   /api/chandra_aca/star_probs/set_acq_model_ms_filter
+   /api/chandra_aca/star_probs/t_ccd_warm_limit
+   /api/chandra_aca/star_probs/_prob_n_acq
+   /api/chandra_aca/star_probs/prob_n_acq
+   /api/chandra_aca/star_probs/acq_success_prob
+   /api/chandra_aca/star_probs/get_default_acq_prob_model_info
+   /api/chandra_aca/star_probs/clip_and_warn
+   /api/chandra_aca/star_probs/get_grid_axis_values
+   /api/chandra_aca/star_probs/get_grid_func_model
+   /api/chandra_aca/star_probs/_get_grid_func_model
+   /api/chandra_aca/star_probs/_read_grid_func_model
+   /api/chandra_aca/star_probs/_get_date_from_model_filename
+   /api/chandra_aca/star_probs/grid_model_acq_prob
+   /api/chandra_aca/star_probs/spline_model_acq_prob
+   /api/chandra_aca/star_probs/model_acq_success_prob
+   /api/chandra_aca/star_probs/sota_model_acq_prob
+   /api/chandra_aca/star_probs/mag_for_p_acq
+   /api/chandra_aca/star_probs/guide_count
+   /api/chandra_aca/star_probs/t_ccd_warm_limit_for_guide
+   /api/chandra_aca/star_probs/binom_ppf
+   /api/chandra_aca/star_probs/binomial_confidence_interval
+
+.. autoapisummary::
+
+   chandra_aca.star_probs.get_box_delta
+   chandra_aca.star_probs.set_acq_model_ms_filter
+   chandra_aca.star_probs.t_ccd_warm_limit
+   chandra_aca.star_probs._prob_n_acq
+   chandra_aca.star_probs.prob_n_acq
+   chandra_aca.star_probs.acq_success_prob
+   chandra_aca.star_probs.get_default_acq_prob_model_info
+   chandra_aca.star_probs.clip_and_warn
+   chandra_aca.star_probs.get_grid_axis_values
+   chandra_aca.star_probs.get_grid_func_model
+   chandra_aca.star_probs._get_grid_func_model
+   chandra_aca.star_probs._read_grid_func_model
+   chandra_aca.star_probs._get_date_from_model_filename
+   chandra_aca.star_probs.grid_model_acq_prob
+   chandra_aca.star_probs.spline_model_acq_prob
+   chandra_aca.star_probs.model_acq_success_prob
+   chandra_aca.star_probs.sota_model_acq_prob
+   chandra_aca.star_probs.mag_for_p_acq
+   chandra_aca.star_probs.guide_count
+   chandra_aca.star_probs.t_ccd_warm_limit_for_guide
+   chandra_aca.star_probs.binom_ppf
+   chandra_aca.star_probs.binomial_confidence_interval
+
+
+Module Contents
+---------------
+
+.. py:data:: SPLINE_FUNCS
+
+.. py:data:: WARM_THRESHOLD
+   :value: 100
+
+
+.. py:data:: MIN_ACQ_PROB
+   :value: 1e-06
+
+
+.. py:data:: MAX_ACQ_PROB
+   :value: 0.985
+
+
+.. py:data:: MULT_STARS_ENABLED
+   :value: False
+
+
+.. py:data:: conf
+

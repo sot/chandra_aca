@@ -1,0 +1,97 @@
+chandra_aca.planets
+===================
+
+.. py:module:: chandra_aca.planets
+
+.. autoapi-nested-parse::
+
+   Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
+
+   Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
+   Horizons positions are used as the "truth".
+
+   - `get_planet_chandra` errors:
+       - Venus: < 0.25 arcsec with a peak around 0.02
+       - Mars: < 0.45 arcsec with a peak around 0.1
+       - Jupiter: < 0.2 arcsec with a peak around 0.1
+       - Saturn: < 0.2 arcsec with a peak around 0.1
+
+   - `get_planet_eci` errors:
+       - Venus: < 12 arcmin with peak around 2 arcmin
+       - Mars: < 8 arcmin with peak around 1.5 arcmin
+       - Jupiter: < 1 arcmin with peak around 0.5 arcmin
+       - Saturn: < 0.5 arcmin with peak around 0.3 arcmin
+
+   See the ``validation/planet-accuracy.ipynb`` notebook for details.
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.planets.GET_PLANET_ECI_ERRORS
+   chandra_aca.planets.GET_PLANET_CHANDRA_ERRORS
+
+
+Exceptions
+----------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/planets/NoEphemerisError
+
+.. autoapisummary::
+
+   chandra_aca.planets.NoEphemerisError
+
+
+Classes
+-------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/planets/EarthBoresightAngles
+
+.. autoapisummary::
+
+   chandra_aca.planets.EarthBoresightAngles
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/planets/get_planet_angular_sep
+   /api/chandra_aca/planets/get_planet_barycentric
+   /api/chandra_aca/planets/get_planet_eci
+   /api/chandra_aca/planets/get_planet_chandra
+   /api/chandra_aca/planets/get_planet_chandra_horizons
+   /api/chandra_aca/planets/get_earth_boresight_angle
+   /api/chandra_aca/planets/get_earth_blocks
+
+.. autoapisummary::
+
+   chandra_aca.planets.get_planet_angular_sep
+   chandra_aca.planets.get_planet_barycentric
+   chandra_aca.planets.get_planet_eci
+   chandra_aca.planets.get_planet_chandra
+   chandra_aca.planets.get_planet_chandra_horizons
+   chandra_aca.planets.get_earth_boresight_angle
+   chandra_aca.planets.get_earth_blocks
+
+
+Module Contents
+---------------
+
+.. py:data:: GET_PLANET_ECI_ERRORS
+
+.. py:data:: GET_PLANET_CHANDRA_ERRORS
+

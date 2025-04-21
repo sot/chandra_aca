@@ -1,0 +1,32 @@
+chandra_aca.dark_model.synthetic_dark_image
+===========================================
+
+.. py:function:: chandra_aca.dark_model.synthetic_dark_image(date, t_ccd_ref=None)
+
+   
+   Generate a synthetic dark current image corresponding to the specified ``date`` and ``t_ccd``.
+
+
+   :Parameters:
+
+       **date**
+           (DateTime compatible)
+
+       **t_ccd_ref**
+           ACA CCD temperature
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

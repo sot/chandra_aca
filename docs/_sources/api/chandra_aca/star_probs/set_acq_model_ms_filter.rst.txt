@@ -1,0 +1,33 @@
+chandra_aca.star_probs.set_acq_model_ms_filter
+==============================================
+
+.. py:function:: chandra_aca.star_probs.set_acq_model_ms_filter(ms_enabled=False)
+
+   
+   Set acq model multiple star filter.
+
+   This chooses one of two sets of acquisition model fit parameters based
+   on ``ms_enabled``.  The default is ``False``:
+
+   - True: MS filtering enabled (prior to FEB0816 loads), where stars would
+     be rejected if MS flag was set
+   - False: MS filtering disabled (including and after FEB0816 loads)
+
+   The selected fit parameters are global/module-wide.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
