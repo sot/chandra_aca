@@ -905,21 +905,18 @@ def get_aca_images(
     import chandra_aca.dark_subtract
     import chandra_aca.maude_decom
 
-    # Get aca images over the time range
+    # Set up configuration for maude or cxc
     if source == "maude":
-        imgs_table = chandra_aca.maude_decom.get_aca_images(start, stop, **maude_kwargs)
-        if bgsub:
-            t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-                imgs_table["TIME"], source=source, **maude_kwargs
-            )
+        get_aca_images_func = chandra_aca.maude_decom.get_aca_images
     elif source == "cxc":
-        imgs_table = mica.archive.aca_l0.get_aca_images(start, stop)
-        if bgsub:
-            t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-                imgs_table["TIME"], source=source
-            )
+        get_aca_images_func = mica.archive.aca_l0.get_aca_images
+        # Explicitly set maude_kwargs to empty dict for cxc source
+        maude_kwargs = {}
     else:
         raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
+
+    # Get images
+    imgs_table = get_aca_images_func(start, stop, **maude_kwargs)
 
     # Get background subtracted values if bgsub is True.
     # There's nothing to do if there are no images (len(imgs_table) == 0),
@@ -933,6 +930,9 @@ def get_aca_images(
         )
         img_dark = dark_data["image"]
         tccd_dark = dark_data["ccd_temp"]
+        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+            imgs_table["TIME"], source=source, **maude_kwargs
+        )
         imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
             imgs_table, img_dark, tccd_dark, t_ccds
         )
