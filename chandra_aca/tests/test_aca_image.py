@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from pathlib import Path
 
+import astropy.units as u
 import mica.common
 import numpy as np
 import pytest
@@ -488,6 +489,14 @@ def test_flicker_test_sequence():
             ]
         ),
     )
+
+
+def test_get_short_range_aca_images():
+    date = "2025:120:03:59:29.057"
+    images = chandra_aca.aca_image.get_aca_images(
+        start=date, stop=CxoTime(date) + 7 * u.s, bgsub=False
+    )
+    assert len(images) == 16
 
 
 def images_check_range(start, stop, img_table, *, bgsub):

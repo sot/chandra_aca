@@ -908,14 +908,16 @@ def get_aca_images(
     # Get aca images over the time range
     if source == "maude":
         imgs_table = chandra_aca.maude_decom.get_aca_images(start, stop, **maude_kwargs)
-        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-            imgs_table["TIME"], source=source, **maude_kwargs
-        )
+        if bgsub:
+            t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+                imgs_table["TIME"], source=source, **maude_kwargs
+            )
     elif source == "cxc":
         imgs_table = mica.archive.aca_l0.get_aca_images(start, stop)
-        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-            imgs_table["TIME"], source=source
-        )
+        if bgsub:
+            t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+                imgs_table["TIME"], source=source
+            )
     else:
         raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
 
