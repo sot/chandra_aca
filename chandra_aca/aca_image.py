@@ -918,10 +918,13 @@ def get_aca_images(
     # Get images
     imgs_table = get_aca_images_func(start, stop, **maude_kwargs)
 
-    # Get background subtracted values if bgsub is True.
-    # There's nothing to do if there are no images (len(imgs_table) == 0),
-    # so special case that.
-    if bgsub and len(imgs_table) > 0:
+    # If bgsub is False, then just return the table as-is.
+    if not bgsub:
+        return imgs_table
+
+    # If bgsub is True, then calculate and add to the table.
+    # If the table has zero length then just add the columns with zero length.
+    if len(imgs_table) > 0:
         dark_data = mica.archive.aca_dark.get_dark_cal_props(
             imgs_table["TIME"].min(),
             select="nearest",
@@ -942,8 +945,7 @@ def get_aca_images(
         imgs_table["IMG_BGSUB"] = imgs_bgsub
         imgs_table["IMG_DARK"] = imgs_dark
         imgs_table["T_CCD_SMOOTH"] = t_ccds
-
-    if bgsub and len(imgs_table) == 0:
+    else:
         # Add the columns to the table even if there are no rows
         imgs_table["IMG_BGSUB"] = np.zeros(shape=(0, 8, 8))
         imgs_table["IMG_DARK"] = np.zeros(shape=(0, 8, 8))
