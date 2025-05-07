@@ -18,7 +18,7 @@ __all__ = [
 
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_tccd_data(
-    times, smooth_window=30, median_window=3, source="maude", maude_channel=None
+    times, smooth_window=30, median_window=3, source="maude", channel=None
 ):
     """
     Get the CCD temperature for given times and interpolate and smooth.
@@ -36,7 +36,7 @@ def get_tccd_data(
         Median filter window to remove outliers (default=3).
     smooth_window : int, optional
         Smooth data using a hanning window of this length in samples (default=30).
-    maude_channel : str, optional
+    channel : str, optional
         Maude channel to use (default is flight).
 
     Returns
@@ -60,8 +60,8 @@ def get_tccd_data(
     if source == "maude":
         # Override the cheta data_source to be explicit about maude source.
         data_source = "maude allow_subset=False"
-        if maude_channel is not None:
-            data_source += f" channel={maude_channel}"
+        if channel is not None:
+            data_source += f" channel={channel}"
         with fetch_sci.data_source(data_source):
             dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
     elif source == "cxc":

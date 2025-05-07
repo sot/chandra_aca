@@ -905,24 +905,26 @@ def get_aca_images(
     import chandra_aca.dark_subtract
     import chandra_aca.maude_decom
 
-    # Get aca images over the time range
+    # Set up configuration for maude or cxc
     if source == "maude":
-        imgs_table = chandra_aca.maude_decom.get_aca_images(start, stop, **maude_kwargs)
-        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-            imgs_table["TIME"], source=source, **maude_kwargs
-        )
+        get_aca_images_func = chandra_aca.maude_decom.get_aca_images
     elif source == "cxc":
-        imgs_table = mica.archive.aca_l0.get_aca_images(start, stop)
-        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-            imgs_table["TIME"], source=source
-        )
+        get_aca_images_func = mica.archive.aca_l0.get_aca_images
+        # Explicitly set maude_kwargs to empty dict for cxc source
+        maude_kwargs = {}
     else:
         raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
 
-    # Get background subtracted values if bgsub is True.
-    # There's nothing to do if there are no images (len(imgs_table) == 0),
-    # so special case that.
-    if bgsub and len(imgs_table) > 0:
+    # Get images
+    imgs_table = get_aca_images_func(start, stop, **maude_kwargs)
+
+    # If bgsub is False, then just return the table as-is.
+    if not bgsub:
+        return imgs_table
+
+    # If bgsub is True, then calculate and add to the table.
+    # If the table has zero length then just add the columns with zero length.
+    if len(imgs_table) > 0:
         dark_data = mica.archive.aca_dark.get_dark_cal_props(
             imgs_table["TIME"].min(),
             select="nearest",
@@ -931,6 +933,9 @@ def get_aca_images(
         )
         img_dark = dark_data["image"]
         tccd_dark = dark_data["ccd_temp"]
+        t_ccds = chandra_aca.dark_subtract.get_tccd_data(
+            imgs_table["TIME"], source=source, **maude_kwargs
+        )
         imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
             imgs_table, img_dark, tccd_dark, t_ccds
         )
@@ -940,8 +945,7 @@ def get_aca_images(
         imgs_table["IMG_BGSUB"] = imgs_bgsub
         imgs_table["IMG_DARK"] = imgs_dark
         imgs_table["T_CCD_SMOOTH"] = t_ccds
-
-    if bgsub and len(imgs_table) == 0:
+    else:
         # Add the columns to the table even if there are no rows
         imgs_table["IMG_BGSUB"] = np.zeros(shape=(0, 8, 8))
         imgs_table["IMG_DARK"] = np.zeros(shape=(0, 8, 8))

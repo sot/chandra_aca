@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from pathlib import Path
 
+import astropy.units as u
 import mica.common
 import numpy as np
 import pytest
@@ -488,6 +489,42 @@ def test_flicker_test_sequence():
             ]
         ),
     )
+
+
+def test_get_short_range_aca_images():
+    date = "2025:120:03:59:29.057"
+    images = chandra_aca.aca_image.get_aca_images(
+        start=date, stop=CxoTime(date) + 7 * u.s, source="maude", bgsub=False
+    )
+    assert len(images) == 16
+
+
+def test_get_aca_image_maude_channel():
+    # This is a SIM time when we had 4x4 images in all slots
+    date = "2025:071:15:15:20.020"
+    images_asvt = chandra_aca.aca_image.get_aca_images(
+        start=date,
+        stop=CxoTime(date) + 7 * u.s,
+        source="maude",
+        bgsub=False,
+        channel="ASVT",
+    )
+    assert len(images_asvt) == 56
+    # This is a 4x4
+    assert np.count_nonzero(~images_asvt[0]["IMG"].mask) == 16
+
+    # For the same times in flight these are different
+    images_flight = chandra_aca.aca_image.get_aca_images(
+        start=date,
+        stop=CxoTime(date) + 7 * u.s,
+        source="maude",
+        bgsub=False,
+        channel="FLIGHT",
+    )
+    # This is 8x8
+    assert np.count_nonzero(~images_flight[0]["IMG"].mask) == 64
+    # and there are fewer images
+    assert len(images_flight) == 16
 
 
 def images_check_range(start, stop, img_table, *, bgsub):
