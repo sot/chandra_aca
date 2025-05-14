@@ -494,7 +494,7 @@ def test_flicker_test_sequence():
 def test_get_short_range_aca_images():
     date = "2025:120:03:59:29.057"
     images = chandra_aca.aca_image.get_aca_images(
-        start=date, stop=CxoTime(date) + 7 * u.s, source="maude", bgsub=False
+        start=date, stop=CxoTime(date) + 8 * u.s, source="maude", bgsub=False
     )
     assert len(images) == 16
 
