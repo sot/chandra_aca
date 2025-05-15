@@ -61,7 +61,7 @@ def get_tccd_data(
         # Override the cheta data_source to be explicit about maude source.
         data_source = "maude allow_subset=False"
         if channel is not None:
-            data_source += f" channel={channel}"
+            data_source += f" channel='{channel}'"
         with fetch_sci.data_source(data_source):
             dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
     elif source == "cxc":
