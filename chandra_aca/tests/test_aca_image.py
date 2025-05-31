@@ -499,6 +499,19 @@ def test_get_short_range_aca_images():
     assert len(images) == 16
 
 
+def test_get_asvt_tccd_aca_images():
+    date = "2022:045:09:23:12.076"
+    images = chandra_aca.aca_image.get_aca_images(
+        start=date,
+        stop=CxoTime(date) + 8 * u.s,
+        source="maude",
+        bgsub=True,
+        channel="ASVT",
+    )
+    assert len(images) == 16
+    assert np.isclose(images["T_CCD_SMOOTH"][0], 0.21606728395062028)
+
+
 def test_get_aca_image_maude_channel():
     # This is a SIM time when we had 4x4 images in all slots
     date = "2025:071:15:15:20.020"

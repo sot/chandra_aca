@@ -170,6 +170,14 @@ def test_get_tccd_data():
         assert np.allclose(t_ccd_maude, t_ccd)
 
 
+def test_get_tccd_data_asvt():
+    start = "2025:012:11:28:11.641"
+    stop = "2025:012:11:29:11.641"
+    times = CxoTime.linspace(start, stop, 30)
+    t_ccd_maude_asvt = get_tccd_data(times.secs, source="maude", channel="ASVT")
+    assert np.allclose(t_ccd_maude_asvt, -1.78, atol=0.25, rtol=0)
+
+
 def test_get_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
     """
     Confirm the pattern of dark current images matches the reference.
