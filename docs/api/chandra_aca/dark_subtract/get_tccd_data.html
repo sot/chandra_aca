@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.dark_subtract.get_tccd_data &#8212; chandra_aca 4.50.0 documentation</title>
+    <title>chandra_aca.dark_subtract.get_tccd_data &#8212; chandra_aca 4.51.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=d9e78d80"></script>
+    <script src="../../../_static/documentation_options.js?v=a832c7d9"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.dark_subtract" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.50.0" />
+  <meta name="docsearch:version" content="4.51.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.50.0</span></div>
+<span style="font-size: x-large;">4.51.0</span></div>
     
   </div>
   
@@ -351,7 +351,7 @@
 <h1>chandra_aca.dark_subtract.get_tccd_data<a class="headerlink" href="#chandra-aca-dark-subtract-get-tccd-data" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.dark_subtract.get_tccd_data">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_subtract.</span></span><span class="sig-name descname"><span class="pre">get_tccd_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">median_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'maude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maude_channel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.dark_subtract.get_tccd_data" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.dark_subtract.</span></span><span class="sig-name descname"><span class="pre">get_tccd_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">median_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'maude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.dark_subtract.get_tccd_data" title="Link to this definition">#</a></dt>
 <dd><p>Get the CCD temperature for given times and interpolate and smooth.</p>
 <p>This is a light wrapper around cheta.fetch_sci.Msid(“aacccdpt”, start, stop)
 to handle an option to use the maude data source in an explicit way.</p>
@@ -366,7 +366,7 @@ to handle an option to use the maude data source in an explicit way.</p>
 </dd>
 <dt><strong>smooth_window</strong><span class="classifier">int, optional</span></dt><dd><p>Smooth data using a hanning window of this length in samples (default=30).</p>
 </dd>
-<dt><strong>maude_channel</strong><span class="classifier">str, optional</span></dt><dd><p>Maude channel to use (default is flight).</p>
+<dt><strong>channel</strong><span class="classifier">str, optional</span></dt><dd><p>Maude channel to use (default is flight).</p>
 </dd>
 </dl>
 </dd>

@@ -1,7 +1,7 @@
 chandra_aca.dark_subtract.get_tccd_data
 =======================================
 
-.. py:function:: chandra_aca.dark_subtract.get_tccd_data(times, smooth_window=30, median_window=3, source='maude', maude_channel=None)
+.. py:function:: chandra_aca.dark_subtract.get_tccd_data(times, smooth_window=30, median_window=3, source='maude', channel=None)
 
    
    Get the CCD temperature for given times and interpolate and smooth.
@@ -23,7 +23,7 @@ chandra_aca.dark_subtract.get_tccd_data
        **smooth_window** : int, optional
            Smooth data using a hanning window of this length in samples (default=30).
 
-       **maude_channel** : str, optional
+       **channel** : str, optional
            Maude channel to use (default is flight).
 
 
