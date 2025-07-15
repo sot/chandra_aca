@@ -525,6 +525,8 @@ def test_get_aca_image_maude_channel():
     assert len(images_asvt) == 56
     # This is a 4x4
     assert np.count_nonzero(~images_asvt[0]["IMG"].mask) == 16
+    assert np.all(images_asvt["IMGSIZE"] == 4)
+    assert np.all(images_asvt["IMGTYPE"] == 0)
 
     # For the same times in flight these are different
     images_flight = chandra_aca.aca_image.get_aca_images(
@@ -538,6 +540,8 @@ def test_get_aca_image_maude_channel():
     assert np.count_nonzero(~images_flight[0]["IMG"].mask) == 64
     # and there are fewer images
     assert len(images_flight) == 16
+    assert np.all(images_flight["IMGSIZE"] == 8)
+    assert np.all(images_flight["IMGTYPE"] == 4)
 
 
 def images_check_range(start, stop, img_table, *, bgsub):
