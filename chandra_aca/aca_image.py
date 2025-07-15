@@ -860,8 +860,15 @@ def get_aca_images(
 
     The returned table of ACA images and ancillary data will include the default
     columns returned by chandra_aca.maude_decom.get_aca_images or
-    mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
-    table will also include columns::
+    mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be
+    added to the maude_decom aca_images so images from either source will have
+    that column::
+
+             name            dtype  unit
+      --------------------- ------- -----------
+         IMGSIZE              int32  pixels
+
+    If bgsub is True then the table will also include columns::
 
              name            dtype  unit
       --------------------- ------- -----------
@@ -917,6 +924,13 @@ def get_aca_images(
 
     # Get images
     imgs_table = get_aca_images_func(start, stop, **maude_kwargs)
+
+    # Add an IMGSIZE column if not present (maude)
+    # IMGTYPE 4 -> 8, 1 -> 6, 0 -> 4
+    if "IMGSIZE" not in imgs_table.colnames:
+        imgs_table["IMGSIZE"] = np.zeros(len(imgs_table), dtype=np.int32)
+        for itype, size in zip([4, 1, 0], [8, 6, 4], strict=True):
+            imgs_table["IMGSIZE"][imgs_table["IMGTYPE"] == itype] = size
 
     # If bgsub is False, then just return the table as-is.
     if not bgsub:
