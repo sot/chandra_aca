@@ -8,8 +8,15 @@ chandra_aca.aca_image.get_aca_images
 
    The returned table of ACA images and ancillary data will include the default
    columns returned by chandra_aca.maude_decom.get_aca_images or
-   mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
-   table will also include columns::
+   mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be
+   added to the maude_decom aca_images so images from either source will have
+   that column::
+
+            name            dtype  unit
+     --------------------- ------- -----------
+        IMGSIZE              int32  pixels
+
+   If bgsub is True then the table will also include columns::
 
             name            dtype  unit
      --------------------- ------- -----------

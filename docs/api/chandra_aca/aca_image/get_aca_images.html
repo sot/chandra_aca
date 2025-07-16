@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.aca_image.get_aca_images &#8212; chandra_aca 4.51.0 documentation</title>
+    <title>chandra_aca.aca_image.get_aca_images &#8212; chandra_aca 4.51.1 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=a832c7d9"></script>
+    <script src="../../../_static/documentation_options.js?v=0c4a43c0"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.aca_image.centroid_fm" href="centroid_fm.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.51.0" />
+  <meta name="docsearch:version" content="4.51.1" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.51.0</span></div>
+<span style="font-size: x-large;">4.51.1</span></div>
     
   </div>
   
@@ -355,8 +355,15 @@
 <dd><p>Get ACA images and ancillary data from either the MAUDE or CXC data sources.</p>
 <p>The returned table of ACA images and ancillary data will include the default
 columns returned by chandra_aca.maude_decom.get_aca_images or
-mica.archive.aca_l0.get_aca_images. If bgsub is True (the default) then the
-table will also include columns:</p>
+mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be
+added to the maude_decom aca_images so images from either source will have
+that column:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       <span class="n">name</span>            <span class="n">dtype</span>  <span class="n">unit</span>
+<span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
+   <span class="n">IMGSIZE</span>              <span class="n">int32</span>  <span class="n">pixels</span>
+</pre></div>
+</div>
+<p>If bgsub is True then the table will also include columns:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       <span class="n">name</span>            <span class="n">dtype</span>  <span class="n">unit</span>
 <span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
    <span class="n">IMG_BGSUB</span>          <span class="n">float64</span>  <span class="n">DN</span>
