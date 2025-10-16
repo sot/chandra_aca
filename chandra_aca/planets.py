@@ -448,6 +448,9 @@ def get_planet_chandra(
             for key in ["x", "y", "z"]
         }
 
+    else:
+        raise ValueError(f'ephem_source "{ephem_source}" should be "cheta" or "stk"')
+
     pos_earth = get_planet_barycentric("earth", time)
 
     chandra_eci = np.array(
