@@ -434,7 +434,7 @@ def get_planet_chandra(
 
         ephem = {
             key: np.interp(times, dat[msid].times, dat[msid].vals)
-            for key, msid in zip(keys, msids, strict=False)
+            for key, msid in zip(keys, msids, strict=True)
         }
 
     elif ephem_source == "stk":
