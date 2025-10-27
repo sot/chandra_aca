@@ -402,54 +402,37 @@ def get_planet_chandra(
         Time or times for returned position (default=NOW)
     ephem_source : str
         Source of Chandra ephemeris: 'cheta' (default) or 'stk'
-        'cheta' uses cheta's orbitephem0 MSIDs
-        'stk' uses the STK ephemeris from cheta.comps.ephem_stk
+        'cheta' uses cheta's orbitephem0_* MSIDs
+        'stk' uses orbitephem_stk_*
 
     Returns
     -------
     ndarray (float)
         Position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
     """
+    from cheta import fetch  # noqa: PLC0415
 
     time = CxoTime(time)
-    times = np.atleast_1d(time.secs)
 
-    if ephem_source == "cheta":
-        from cheta import fetch
-
-        msids = ["orbitephem0_x", "orbitephem0_y", "orbitephem0_z"]
-        keys = ["x", "y", "z"]
-        # Get position of Chandra relative to Earth
-        try:
-            dat = fetch.MSIDset(
-                msids,
-                np.min(time) - 500 * u.s,
-                np.max(time) + 500 * u.s,
-            )
-        except ValueError:
-            raise NoEphemerisError("Chandra ephemeris not available") from None
-
-        if len(dat["orbitephem0_x"].vals) == 0:
-            raise NoEphemerisError("Chandra ephemeris not available")
-
-        ephem = {
-            key: np.interp(times, dat[msid].times, dat[msid].vals)
-            for key, msid in zip(keys, msids, strict=True)
-        }
-
-    elif ephem_source == "stk":
-        from cheta.comps import ephem_stk
-
-        chandra_ephem = ephem_stk.get_ephemeris_stk(
-            start=np.min(time) - 500 * u.s, stop=np.max(time) + 500 * u.s
+    prefix = "0" if ephem_source == "cheta" else "_stk"
+    msids = [f"orbitephem{prefix}_x", f"orbitephem{prefix}_y", f"orbitephem{prefix}_z"]
+    # Get position of Chandra relative to Earth
+    try:
+        dat = fetch.MSIDset(
+            msids,
+            np.min(time) - 500 * u.s,
+            np.max(time) + 500 * u.s,
         )
-        ephem = {
-            key: np.interp(times, chandra_ephem["time"], chandra_ephem[key])
-            for key in ["x", "y", "z"]
-        }
+    except ValueError:
+        raise NoEphemerisError("Chandra ephemeris not available") from None
 
-    else:
-        raise ValueError(f'ephem_source "{ephem_source}" should be "cheta" or "stk"')
+    if len(dat[msids[0]].vals) == 0:
+        raise NoEphemerisError("Chandra ephemeris not available")
+
+    ephem = {
+        key: np.interp(time.secs, dat[msid].times, dat[msid].vals)
+        for key, msid in zip(["x", "y", "z"], msids, strict=True)
+    }
 
     pos_earth = get_planet_barycentric("earth", time)
 
