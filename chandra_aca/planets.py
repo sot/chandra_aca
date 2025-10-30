@@ -374,16 +374,15 @@ def get_planet_eci(
     return pos_planet - pos_observer
 
 
-def get_planet_chandra(
-    body: str, time: CxoTimeLike = None, ephem_source: str = "cheta"
-):
+def get_planet_chandra(body: str, time: CxoTimeLike = None, ephem_source: str = "cxc"):
     """Get position for solar system ``body`` at ``time`` relative to Chandra.
 
-    This uses the built-in JPL ephemeris file DE432s and jplephem, along with
-    the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
-    is computed at the supplied ``time`` minus the light-travel time from
-    Chandra to ``body`` to generate the apparent position from Chandra at
-    ``time``.
+    This uses the built-in JPL ephemeris file DE432s and jplephem for the planet
+    position relative to Earth center, along with the predictive Chandra orbital
+    ephemeris from either the OFLS (default) or STK. The ``body`` position is computed
+    at the supplied ``time`` minus the light travel time from Earth to ``body`` to
+    generate the apparent position from Chandra at ``time``. Note that light travel time
+    from Chandra to Earth (up to 0.5 seconds) is ignored.
 
     Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
     follows when using cheta predictive ephemeris, where the JPL Horizons
@@ -401,9 +400,10 @@ def get_planet_chandra(
     time : CxoTimeLike
         Time or times for returned position (default=NOW)
     ephem_source : str
-        Source of Chandra ephemeris: 'cheta' (default) or 'stk'
-        'cheta' uses cheta's orbitephem0_* MSIDs
-        'stk' uses orbitephem_stk_*
+        Source of Chandra ephemeris: 'cxc' (default) or 'stk':
+
+        - 'cxc': ``orbitephem0_*`` MSIDs from the OFLS in the cheta CXC telemetry archive.
+        - 'stk': ``orbitephem_stk_*`` computed MSIDs from STK predictions on OCCweb.
 
     Returns
     -------
@@ -412,10 +412,12 @@ def get_planet_chandra(
     """
     from cheta import fetch  # noqa: PLC0415
 
-    time = CxoTime(time)
+    if ephem_source not in ["cxc", "stk"]:
+        raise ValueError("ephem_source must be 'cxc' or 'stk'")
 
-    prefix = "0" if ephem_source == "cheta" else "_stk"
-    msids = [f"orbitephem{prefix}_x", f"orbitephem{prefix}_y", f"orbitephem{prefix}_z"]
+    time = CxoTime(time)
+    suffix = "0" if ephem_source == "cxc" else "_stk"
+    msids = [f"orbitephem{suffix}_x", f"orbitephem{suffix}_y", f"orbitephem{suffix}_z"]
     # Get position of Chandra relative to Earth
     try:
         dat = fetch.MSIDset(
