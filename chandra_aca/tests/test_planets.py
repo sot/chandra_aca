@@ -35,6 +35,9 @@ def test_planet_positions():
     eci = get_planet_chandra("saturn", "2020:324:11:44")
     assert np.allclose(eci, [7.13516810e08, -1.27285190e09, -5.62368753e08])
 
+    eci = get_planet_chandra("saturn", "2020:324:11:44", ephem_source="stk")
+    assert np.allclose(eci, [7.13516810e08, -1.27285190e09, -5.62368753e08])
+
     # Independent functional test to compare with JPL Horizons (Saturn from
     # Chandra Observatory -151)
     ra, dec = eci_to_radec(eci)
@@ -43,7 +46,8 @@ def test_planet_positions():
     assert sphere_dist(ra, dec, ra2, dec2) * 3600 < 1.0
 
 
-def test_venus_position1():
+@pytest.mark.parametrize("ephem_source", ["cxc", "stk"])
+def test_venus_position1(ephem_source):
     """Obsid 18695 starcat at 2017:010:05:07:20.875, approx obs star 0510z"""
 
     # Output from JPL Horizons for Venus from Chandra
@@ -51,18 +55,19 @@ def test_venus_position1():
     sc = SkyCoord("22:36:02.59", "-09:39:07.2", unit=(u.hr, u.deg))
     q_att = [-0.54137601, 0.17071483, -0.10344611, 0.81674192]
 
-    eci = get_planet_chandra("venus", date)
+    eci = get_planet_chandra("venus", date, ephem_source=ephem_source)
     ra, dec = eci_to_radec(eci)
     yag, zag = radec_to_yagzag(ra, dec, q_att)
     # Confirm yag value is on "left side" of CCD, opposite all stars in 18695
-    assert np.isclose(yag, 209.70, rtol=0, atol=0.01)
+    assert np.isclose(yag, 209.67, rtol=0, atol=0.03)
     assert np.isclose(zag, 72.48, rtol=0, atol=0.01)
 
     dist = sphere_dist(ra, dec, sc.ra.to_value(u.deg), sc.dec.to_value(u.deg)) * 3600
     assert np.all(dist < 0.2)
 
 
-def test_venus_position2():
+@pytest.mark.parametrize("ephem_source", ["cxc", "stk"])
+def test_venus_position2(ephem_source):
     # *******************************************************************************
     # Target body name: Venus (299)                     {source: CHANDRA_MERGED}
     # Center body name: Chandra Observatory (spacecraft) (-151) {source: CHANDRA_MERGED}
@@ -91,7 +96,7 @@ def test_venus_position2():
     date = CxoTime(dat["date"])
     sc = SkyCoord(dat["ra"], dat["dec"], unit=(u.hr, u.deg))
 
-    eci = get_planet_chandra("venus", date)
+    eci = get_planet_chandra("venus", date, ephem_source=ephem_source)
     ra, dec = eci_to_radec(eci)
 
     dist = sphere_dist(ra, dec, sc.ra.to_value(u.deg), sc.dec.to_value(u.deg)) * 3600

@@ -374,17 +374,19 @@ def get_planet_eci(
     return pos_planet - pos_observer
 
 
-def get_planet_chandra(body: str, time: CxoTimeLike = None):
+def get_planet_chandra(body: str, time: CxoTimeLike = None, ephem_source: str = "cxc"):
     """Get position for solar system ``body`` at ``time`` relative to Chandra.
 
-    This uses the built-in JPL ephemeris file DE432s and jplephem, along with
-    the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
-    is computed at the supplied ``time`` minus the light-travel time from
-    Chandra to ``body`` to generate the apparent position from Chandra at
-    ``time``.
+    This uses the built-in JPL ephemeris file DE432s and jplephem for the planet
+    position relative to Earth center, along with the predictive Chandra orbital
+    ephemeris from either the OFLS (default) or STK. The ``body`` position is computed
+    at the supplied ``time`` minus the light travel time from Earth to ``body`` to
+    generate the apparent position from Chandra at ``time``. Note that light travel time
+    from Chandra to Earth (up to 0.5 seconds) is ignored.
 
     Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
-    follows, where the JPL Horizons positions are used as the "truth".
+    follows when using cheta predictive ephemeris, where the JPL Horizons
+    positions are used as the "truth".
 
     - Venus: < 0.25 arcsec with a peak around 0.02
     - Mars: < 0.45 arcsec with a peak around 0.1
@@ -397,39 +399,52 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None):
         Body name
     time : CxoTimeLike
         Time or times for returned position (default=NOW)
+    ephem_source : str
+        Source of Chandra ephemeris: 'cxc' (default) or 'stk':
+
+        - 'cxc': ``orbitephem0_*`` MSIDs from the OFLS in the cheta CXC telemetry archive.
+        - 'stk': ``orbitephem_stk_*`` computed MSIDs from STK predictions on OCCweb.
 
     Returns
     -------
     ndarray (float)
         Position relative to Chandra (km) as (x, y, z) or N x (x, y, z)
     """
-    from cheta import fetch
+    from cheta import fetch  # noqa: PLC0415
+
+    if ephem_source not in ["cxc", "stk"]:
+        raise ValueError("ephem_source must be 'cxc' or 'stk'")
 
     time = CxoTime(time)
-
+    suffix = "0" if ephem_source == "cxc" else "_stk"
+    msids = [f"orbitephem{suffix}_x", f"orbitephem{suffix}_y", f"orbitephem{suffix}_z"]
     # Get position of Chandra relative to Earth
     try:
         dat = fetch.MSIDset(
-            ["orbitephem0_x", "orbitephem0_y", "orbitephem0_z"],
+            msids,
             np.min(time) - 500 * u.s,
             np.max(time) + 500 * u.s,
         )
     except ValueError:
         raise NoEphemerisError("Chandra ephemeris not available") from None
 
-    if len(dat["orbitephem0_x"].vals) == 0:
+    if len(dat[msids[0]].vals) == 0:
         raise NoEphemerisError("Chandra ephemeris not available")
 
-    times = np.atleast_1d(time.secs)
-    ephem = {key: np.interp(times, dat[key].times, dat[key].vals) for key in dat}
+    ephem = {
+        key: np.interp(time.secs, dat[msid].times, dat[msid].vals)
+        for key, msid in zip(["x", "y", "z"], msids, strict=True)
+    }
 
     pos_earth = get_planet_barycentric("earth", time)
 
-    # Chandra position in km
-    chandra_eci = np.zeros_like(pos_earth)
-    chandra_eci[..., 0] = ephem["orbitephem0_x"].reshape(time.shape) / 1000
-    chandra_eci[..., 1] = ephem["orbitephem0_y"].reshape(time.shape) / 1000
-    chandra_eci[..., 2] = ephem["orbitephem0_z"].reshape(time.shape) / 1000
+    chandra_eci = np.array(
+        [
+            ephem["x"] / 1000,  # convert m to km
+            ephem["y"] / 1000,
+            ephem["z"] / 1000,
+        ]
+    ).transpose()
     planet_chandra = get_planet_eci(body, time, pos_observer=pos_earth + chandra_eci)
 
     return planet_chandra
