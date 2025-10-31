@@ -46,7 +46,7 @@ def test_planet_positions():
     assert sphere_dist(ra, dec, ra2, dec2) * 3600 < 1.0
 
 
-@pytest.mark.parametrize("ephem_source", ["cheta", "stk"])
+@pytest.mark.parametrize("ephem_source", ["cxc", "stk"])
 def test_venus_position1(ephem_source):
     """Obsid 18695 starcat at 2017:010:05:07:20.875, approx obs star 0510z"""
 
@@ -66,7 +66,7 @@ def test_venus_position1(ephem_source):
     assert np.all(dist < 0.2)
 
 
-@pytest.mark.parametrize("ephem_source", ["cheta", "stk"])
+@pytest.mark.parametrize("ephem_source", ["cxc", "stk"])
 def test_venus_position2(ephem_source):
     # *******************************************************************************
     # Target body name: Venus (299)                     {source: CHANDRA_MERGED}
