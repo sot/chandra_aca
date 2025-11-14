@@ -1,19 +1,21 @@
 chandra_aca.planets.get_planet_chandra
 ======================================
 
-.. py:function:: chandra_aca.planets.get_planet_chandra(body, time = None)
+.. py:function:: chandra_aca.planets.get_planet_chandra(body, time = None, ephem_source = 'cxc')
 
    
    Get position for solar system ``body`` at ``time`` relative to Chandra.
 
-   This uses the built-in JPL ephemeris file DE432s and jplephem, along with
-   the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
-   is computed at the supplied ``time`` minus the light-travel time from
-   Chandra to ``body`` to generate the apparent position from Chandra at
-   ``time``.
+   This uses the built-in JPL ephemeris file DE432s and jplephem for the planet
+   position relative to Earth center, along with the predictive Chandra orbital
+   ephemeris from either the OFLS (default) or STK. The ``body`` position is computed
+   at the supplied ``time`` minus the light travel time from Earth to ``body`` to
+   generate the apparent position from Chandra at ``time``. Note that light travel time
+   from Chandra to Earth (up to 0.5 seconds) is ignored.
 
    Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
-   follows, where the JPL Horizons positions are used as the "truth".
+   follows when using cheta predictive ephemeris, where the JPL Horizons
+   positions are used as the "truth".
 
    - Venus: < 0.25 arcsec with a peak around 0.02
    - Mars: < 0.45 arcsec with a peak around 0.1
@@ -27,6 +29,12 @@ chandra_aca.planets.get_planet_chandra
 
        **time** : CxoTimeLike
            Time or times for returned position (default=NOW)
+
+       **ephem_source** : str
+           Source of Chandra ephemeris: 'cxc' (default) or 'stk':
+           
+           - 'cxc': ``orbitephem0_*`` MSIDs from the OFLS in the cheta CXC telemetry archive.
+           - 'stk': ``orbitephem_stk_*`` computed MSIDs from STK predictions on OCCweb.
 
 
 

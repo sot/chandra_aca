@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.planets.get_planet_chandra &#8212; chandra_aca 4.51.1 documentation</title>
+    <title>chandra_aca.planets.get_planet_chandra &#8212; chandra_aca 4.52.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=0c4a43c0"></script>
+    <script src="../../../_static/documentation_options.js?v=3a4d1932"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.planets.get_planet_eci" href="get_planet_eci.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.51.1" />
+  <meta name="docsearch:version" content="4.52.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.51.1</span></div>
+<span style="font-size: x-large;">4.52.0</span></div>
     
   </div>
   
@@ -351,15 +351,17 @@
 <h1>chandra_aca.planets.get_planet_chandra<a class="headerlink" href="#chandra-aca-planets-get-planet-chandra" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.planets.get_planet_chandra">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.planets.</span></span><span class="sig-name descname"><span class="pre">get_planet_chandra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ephem_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cxc'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.planets.get_planet_chandra" title="Link to this definition">#</a></dt>
 <dd><p>Get position for solar system <code class="docutils literal notranslate"><span class="pre">body</span></code> at <code class="docutils literal notranslate"><span class="pre">time</span></code> relative to Chandra.</p>
-<p>This uses the built-in JPL ephemeris file DE432s and jplephem, along with
-the CXC predictive Chandra orbital ephemeris (from the OFLS). The position
-is computed at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light-travel time from
-Chandra to <code class="docutils literal notranslate"><span class="pre">body</span></code> to generate the apparent position from Chandra at
-<code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<p>This uses the built-in JPL ephemeris file DE432s and jplephem for the planet
+position relative to Earth center, along with the predictive Chandra orbital
+ephemeris from either the OFLS (default) or STK. The <code class="docutils literal notranslate"><span class="pre">body</span></code> position is computed
+at the supplied <code class="docutils literal notranslate"><span class="pre">time</span></code> minus the light travel time from Earth to <code class="docutils literal notranslate"><span class="pre">body</span></code> to
+generate the apparent position from Chandra at <code class="docutils literal notranslate"><span class="pre">time</span></code>. Note that light travel time
+from Chandra to Earth (up to 0.5 seconds) is ignored.</p>
 <p>Estimated accuracy of planet coordinates (RA, Dec) from Chandra is as
-follows, where the JPL Horizons positions are used as the “truth”.</p>
+follows when using cheta predictive ephemeris, where the JPL Horizons
+positions are used as the “truth”.</p>
 <ul class="simple">
 <li><p>Venus: &lt; 0.25 arcsec with a peak around 0.02</p></li>
 <li><p>Mars: &lt; 0.45 arcsec with a peak around 0.1</p></li>
@@ -372,6 +374,12 @@ follows, where the JPL Horizons positions are used as the “truth”.</p>
 <dt><strong>body</strong><span class="classifier">str</span></dt><dd><p>Body name</p>
 </dd>
 <dt><strong>time</strong><span class="classifier">CxoTimeLike</span></dt><dd><p>Time or times for returned position (default=NOW)</p>
+</dd>
+<dt><strong>ephem_source</strong><span class="classifier">str</span></dt><dd><p>Source of Chandra ephemeris: ‘cxc’ (default) or ‘stk’:</p>
+<ul class="simple">
+<li><p>‘cxc’: <code class="docutils literal notranslate"><span class="pre">orbitephem0_*</span></code> MSIDs from the OFLS in the cheta CXC telemetry archive.</p></li>
+<li><p>‘stk’: <code class="docutils literal notranslate"><span class="pre">orbitephem_stk_*</span></code> computed MSIDs from STK predictions on OCCweb.</p></li>
+</ul>
 </dd>
 </dl>
 </dd>
