@@ -1280,7 +1280,7 @@ def test_end_integ_time(combine):
     # Test the relation between END_INTEG_TIME and VCDU TIME (maude) found in the ACA L0 ICD
     # this is true only for the first sub-image, subsequent sub-images have a different VCDU time
     # whereas END_INTEG_TIME does not change.
-    first_sub_image = np.in1d(table_maude["IMGTYPE"], [0, 1, 4])
+    first_sub_image = np.isin(table_maude["IMGTYPE"], [0, 1, 4])
     assert np.all(
         np.isclose(
             table_maude["END_INTEG_TIME"][first_sub_image],
