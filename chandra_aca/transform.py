@@ -107,7 +107,7 @@ def broadcast_arrays(*args):
     """
     is_scalar = all(np.array(arg).ndim == 0 for arg in args)
     args = np.atleast_1d(*args)
-    outs = [is_scalar] + np.broadcast_arrays(*args)
+    outs = [is_scalar] + list(np.broadcast_arrays(*args))
     return outs
 
 

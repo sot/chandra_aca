@@ -296,7 +296,7 @@ def _packbits(a, unsigned=True):
     # This handles integer types only
     n = len(a)
     if not unsigned and a[0]:
-        return np.int64(np.sum(a * _bits[-n:]) - (1 << n))
+        return np.int64(np.sum(a * _bits[-n:])) - (1 << n)
     return np.sum(a * _bits[-n:])
 
 
