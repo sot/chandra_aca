@@ -121,7 +121,7 @@ def read_manvr_mon_images(
                 t_ccds[:5] = t_ccds[5]
                 t_ccds_list.append(t_ccds)
                 times_list.append(dat["time0"] + 4.1 * np.arange(n_samp))
-                idx_manvrs_list.append(idx_manvr + np.arange(n_samp, dtype=np.int32))
+                idx_manvrs_list.append(idx_manvr + np.zeros(n_samp, dtype=np.int32))
                 idx_manvr += 1
 
     dat = apt.Table()
