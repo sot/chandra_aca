@@ -47,7 +47,7 @@ def imgs_root_dir_path(data_dir: Path | str | None = None) -> Path:
     return Path(data_dir)
 
 
-def read_manvr_mon_images(
+def read_manvr_mon_images(  # noqa: PLR0915
     start: CxoTimeLike,
     stop: CxoTimeLike,
     t_ccd_ref: float | None = -10.0,
@@ -103,7 +103,10 @@ def read_manvr_mon_images(
     imgs_list = []
     masks_list = []
     times_list = []
+    row0s_list = []
+    col0s_list = []
     t_ccds_list = []
+    earth_limb_angles_list = []
     idx_manvrs_list = []
     idx_manvr = 0
 
@@ -117,9 +120,13 @@ def read_manvr_mon_images(
                 imgs_list.append(np.moveaxis(dat["slot_imgs"], -1, 0))
                 # Masks will be [sample, slot].
                 masks_list.append(np.moveaxis(dat["slot_masks"], -1, 0))
+                # Repeat slot_row0s n_samp times for each sample.
+                row0s_list.append(np.repeat(dat["slot_row0s"][None, :], n_samp, axis=0))
+                col0s_list.append(np.repeat(dat["slot_col0s"][None, :], n_samp, axis=0))
                 t_ccds = dat["t_ccd"]
                 t_ccds[:5] = t_ccds[5]
                 t_ccds_list.append(t_ccds)
+                earth_limb_angles_list.append(dat["earth_limb_angle"])
                 times_list.append(dat["time0"] + 4.1 * np.arange(n_samp))
                 idx_manvrs_list.append(idx_manvr + np.zeros(n_samp, dtype=np.int32))
                 idx_manvr += 1
@@ -134,10 +141,16 @@ def read_manvr_mon_images(
     dat["corr_sum_outlier"] = (masks & ImgStatus.CORR_SUM_OUTLIER.value) != 0
     dat["bad_pixels"] = (masks & ImgStatus.HAS_BAD_PIX.value) != 0
     dat["t_ccd"] = np.concatenate(t_ccds_list)
+    dat["earth_limb_angle"] = np.concatenate(earth_limb_angles_list)
     dat["idx_manvr"] = np.concatenate(idx_manvrs_list)
+    dat["row0"] = np.concatenate(row0s_list)
+    dat["col0"] = np.concatenate(col0s_list)
 
     ok = (dat["time"] >= start.secs) & (dat["time"] < stop.secs)
     dat = dat[ok]
+
+    # Make idx_manvr start at 0
+    dat["idx_manvr"] -= dat["idx_manvr"][0]
 
     dat["img_corr"] = dat["img_raw"] * DN_TO_ELEC
     if t_ccd_ref is not None:
@@ -150,5 +163,16 @@ def read_manvr_mon_images(
     # here.
     bad_pix = np.any((dat["img_raw"] < -5) | (dat["img_raw"] > 30000), axis=(2, 3))
     dat["bad_pixels"] = bad_pix
+
+    # Remake masks now as well
+    dat["mask"][:] = np.uint8(0)
+    dat["mask"][dat["sum_outlier"]] |= ImgStatus.SUM_OUTLIER.value
+    dat["mask"][dat["corr_sum_outlier"]] |= ImgStatus.CORR_SUM_OUTLIER.value
+    dat["mask"][dat["bad_pixels"]] |= ImgStatus.HAS_BAD_PIX.value
+
+    # Formatting
+    dat["time"].info.format = ".3f"
+    dat["img_corr"].info.format = ".0f"
+    dat["t_ccd"].info.format = ".2f"
 
     return dat
