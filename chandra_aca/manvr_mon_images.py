@@ -52,6 +52,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
     stop: CxoTimeLike,
     t_ccd_ref: float | None = -10.0,
     scale_4c: float | None = None,
+    require_same_row_col: bool = True,
     data_dir: Path | str | None = None,
 ) -> apt.Table:
     """Read ACA maneuver monitor window images from archived data files.
@@ -73,6 +74,10 @@ def read_manvr_mon_images(  # noqa: PLR0915
     scale_4c : float or None, optional
         Scaling factor in dark current temperature dependence. If None, uses default
         from dark_temp_scale(). Default is None.
+    require_same_row_col : bool, optional
+        If True, only include images where all slots have the same row0 and col0
+        values across the entire time range. This uses the median values to filter.
+        Default is True.
     data_dir : Path or str, optional
         Root directory containing the archived image files organized as
         data_dir/YYYY/DOY/*.npz. Default is ``$SKA/data/manvr_mon_images``.
@@ -174,5 +179,17 @@ def read_manvr_mon_images(  # noqa: PLR0915
     dat["time"].info.format = ".3f"
     dat["img_corr"].info.format = ".0f"
     dat["t_ccd"].info.format = ".2f"
+
+    if require_same_row_col:
+        # Compute the median of row0 and col0 across all samples and slots
+        # then choose only rows with those values.
+        median_row0 = np.median(dat["row0"], axis=0)
+        median_col0 = np.median(dat["col0"], axis=0)
+        ok = np.all(
+            (dat["row0"] == median_row0[None, :])
+            & (dat["col0"] == median_col0[None, :]),
+            axis=1,
+        )
+        dat = dat[ok]
 
     return dat
