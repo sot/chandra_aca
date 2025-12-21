@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from cxotime import CxoTime
 
 from chandra_aca.dark_model import dark_temp_scale
@@ -123,3 +124,32 @@ def test_read_manvr_mon_images_exact_interval():
     # Contained within start / stop
     exp_exact = ["2025:301:02:00:00.141", "2025:301:02:09:58.741"]
     assert np.all(CxoTime(dat_exact["time"][[0, -1]]).date == exp_exact)
+
+
+@pytest.mark.parametrize("exact_interval", [True, False])
+def test_read_manvr_mon_images_zero_length(exact_interval):
+    """Test a short interval not containing manvr mon data (during NPNT)"""
+    dat = read_manvr_mon_images(
+        "2024:001:01:00:00", "2024:001:01:01:00", exact_interval=exact_interval
+    )
+    assert len(dat) == 0
+    exp = [
+        "      name        dtype    shape   unit format description class  n_bad length",
+        "---------------- ------- --------- ---- ------ ----------- ------ ----- ------",
+        "            time float64                   .3f             Column     0      0",
+        "         img_raw   int16 (8, 8, 8)                         Column     0      0",
+        "            mask   uint8      (8,)                         Column     0      0",
+        "     sum_outlier    bool      (8,)                         Column     0      0",
+        "corr_sum_outlier    bool      (8,)                         Column     0      0",
+        "      bad_pixels    bool      (8,)                         Column     0      0",
+        "           t_ccd float64                   .2f             Column     0      0",
+        "earth_limb_angle float32                                   Column     0      0",
+        " moon_limb_angle float32                                   Column     0      0",
+        "            rate float32                                   Column     0      0",
+        "       idx_manvr   int32                                   Column     0      0",
+        "            row0   int16      (8,)                         Column     0      0",
+        "            col0   int16      (8,)                         Column     0      0",
+        "        img_corr float32 (8, 8, 8)         .0f             Column     0      0",
+    ]
+
+    assert dat.info(out=None).pformat() == exp

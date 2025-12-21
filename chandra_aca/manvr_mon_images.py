@@ -168,17 +168,6 @@ def read_manvr_mon_images(  # noqa: PLR0915
     dat["row0"] = np.concatenate(row0s_list)
     dat["col0"] = np.concatenate(col0s_list)
 
-    i0, i1 = np.searchsorted(dat["time"], [start.secs, stop.secs])
-    if not exact_interval:
-        idx_manvr0 = dat["idx_manvr"][i0]
-        i0 = np.searchsorted(dat["idx_manvr"], idx_manvr0, side="left")
-        idx_manvr1 = dat["idx_manvr"][i1 - 1]
-        i1 = np.searchsorted(dat["idx_manvr"], idx_manvr1, side="right")
-    dat = dat[i0:i1]
-
-    # Make idx_manvr start at 0
-    dat["idx_manvr"] -= dat["idx_manvr"][0]
-
     dat["img_corr"] = dat["img_raw"] * DN_TO_ELEC
     if t_ccd_ref is not None:
         dark_scale = dark_temp_scale(dat["t_ccd"], t_ccd_ref, scale_4c=scale_4c)
@@ -200,21 +189,33 @@ def read_manvr_mon_images(  # noqa: PLR0915
     dat["mask"][dat["corr_sum_outlier"]] |= ImgStatus.CORR_SUM_OUTLIER.value
     dat["mask"][dat["bad_pixels"]] |= ImgStatus.HAS_BAD_PIX.value
 
+    i0, i1 = np.searchsorted(dat["time"], [start.secs, stop.secs])
+    if not exact_interval:
+        idx_manvr0 = dat["idx_manvr"][i0]
+        i0 = np.searchsorted(dat["idx_manvr"], idx_manvr0, side="left")
+        idx_manvr1 = dat["idx_manvr"][i1 - 1]
+        i1 = np.searchsorted(dat["idx_manvr"], idx_manvr1, side="right")
+    dat = dat[i0:i1]
+
+    if len(dat) > 0:
+        # Make idx_manvr start at 0
+        dat["idx_manvr"] -= dat["idx_manvr"][0]
+
+        if require_same_row_col:
+            # Compute the median of row0 and col0 across all samples and slots
+            # then choose only rows with those values.
+            median_row0 = np.median(dat["row0"], axis=0)
+            median_col0 = np.median(dat["col0"], axis=0)
+            ok = np.all(
+                (dat["row0"] == median_row0[None, :])
+                & (dat["col0"] == median_col0[None, :]),
+                axis=1,
+            )
+            dat = dat[ok]
+
     # Formatting
     dat["time"].info.format = ".3f"
     dat["img_corr"].info.format = ".0f"
     dat["t_ccd"].info.format = ".2f"
-
-    if require_same_row_col:
-        # Compute the median of row0 and col0 across all samples and slots
-        # then choose only rows with those values.
-        median_row0 = np.median(dat["row0"], axis=0)
-        median_col0 = np.median(dat["col0"], axis=0)
-        ok = np.all(
-            (dat["row0"] == median_row0[None, :])
-            & (dat["col0"] == median_col0[None, :]),
-            axis=1,
-        )
-        dat = dat[ok]
 
     return dat
