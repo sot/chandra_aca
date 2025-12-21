@@ -53,6 +53,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
     t_ccd_ref: float | None = -10.0,
     scale_4c: float | None = None,
     require_same_row_col: bool = True,
+    exact_interval: bool = False,
     data_dir: Path | str | None = None,
 ) -> apt.Table:
     """Read ACA maneuver monitor window images from archived data files.
@@ -78,6 +79,10 @@ def read_manvr_mon_images(  # noqa: PLR0915
         If True, only include images where all slots have the same row0 and col0
         values across the entire time range. This uses the median values to filter.
         Default is True.
+    exact_interval : bool, optional
+        If True, only include images with times exactly within start and stop.
+        Otherwise include all times within the maneuvers that are included within start
+        and stop. Default is False.
     data_dir : Path or str, optional
         Root directory containing the archived image files organized as
         data_dir/YYYY/DOY/*.npz. Default is ``$SKA/data/manvr_mon_images``.
@@ -151,8 +156,13 @@ def read_manvr_mon_images(  # noqa: PLR0915
     dat["row0"] = np.concatenate(row0s_list)
     dat["col0"] = np.concatenate(col0s_list)
 
-    ok = (dat["time"] >= start.secs) & (dat["time"] < stop.secs)
-    dat = dat[ok]
+    i0, i1 = np.searchsorted(dat["time"], [start.secs, stop.secs])
+    if not exact_interval:
+        idx_manvr0 = dat["idx_manvr"][i0]
+        i0 = np.searchsorted(dat["idx_manvr"], idx_manvr0, side="left")
+        idx_manvr1 = dat["idx_manvr"][i1 - 1]
+        i1 = np.searchsorted(dat["idx_manvr"], idx_manvr1, side="right")
+    dat = dat[i0:i1]
 
     # Make idx_manvr start at 0
     dat["idx_manvr"] -= dat["idx_manvr"][0]
