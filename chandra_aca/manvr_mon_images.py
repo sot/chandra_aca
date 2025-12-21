@@ -94,11 +94,17 @@ def read_manvr_mon_images(  # noqa: PLR0915
         - time: observation times in CXO seconds since 1998.0
         - img_raw: raw monitor window images in DN [slot, row, col]
         - img_corr: corrected images in e-/s with temperature scaling [slot, row, col]
+        - mask: combined bit mask for image status flags [slot]
         - sum_outlier: boolean flag for images with total sum outliers [slot]
         - corr_sum_outlier: boolean flag for bgd-subtracted sum outliers [slot]
         - bad_pixels: boolean flag for images with bad pixels [slot]
         - t_ccd: CCD temperatures in Celsius
+        - earth_limb_angle: Earth limb angle in degrees
+        - moon_limb_angle: Moon limb angle in degrees
+        - rate: spacecraft rate in arcsec/sec
         - idx_manvr: maneuver index for each sample
+        - row0: row0 position for each slot [slot]
+        - col0: col0 position for each slot [slot]
 
     Notes
     -----
@@ -117,6 +123,8 @@ def read_manvr_mon_images(  # noqa: PLR0915
     col0s_list = []
     t_ccds_list = []
     earth_limb_angles_list = []
+    moon_limb_angles_list = []
+    rates_list = []
     idx_manvrs_list = []
     idx_manvr = 0
 
@@ -137,6 +145,8 @@ def read_manvr_mon_images(  # noqa: PLR0915
                 t_ccds[:5] = t_ccds[5]
                 t_ccds_list.append(t_ccds)
                 earth_limb_angles_list.append(dat["earth_limb_angle"])
+                moon_limb_angles_list.append(dat["moon_limb_angle"])
+                rates_list.append(dat["rate"])
                 times_list.append(dat["time0"] + 4.1 * np.arange(n_samp))
                 idx_manvrs_list.append(idx_manvr + np.zeros(n_samp, dtype=np.int32))
                 idx_manvr += 1
@@ -152,6 +162,8 @@ def read_manvr_mon_images(  # noqa: PLR0915
     dat["bad_pixels"] = (masks & ImgStatus.HAS_BAD_PIX.value) != 0
     dat["t_ccd"] = np.concatenate(t_ccds_list)
     dat["earth_limb_angle"] = np.concatenate(earth_limb_angles_list)
+    dat["moon_limb_angle"] = np.concatenate(moon_limb_angles_list)
+    dat["rate"] = np.concatenate(rates_list)
     dat["idx_manvr"] = np.concatenate(idx_manvrs_list)
     dat["row0"] = np.concatenate(row0s_list)
     dat["col0"] = np.concatenate(col0s_list)
