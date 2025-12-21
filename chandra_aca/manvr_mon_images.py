@@ -166,7 +166,10 @@ def read_manvr_mon_images(  # noqa: PLR0915
     # are slightly negative due to background subtraction. Recompute here using -5 DN.
     # Note that slot 5 goes to -15 DN for some reason but we treat all slots the same
     # here.
-    bad_pix = np.any((dat["img_raw"] < -5) | (dat["img_raw"] > 30000), axis=(2, 3))
+    bad_pix = np.any(
+        (dat["img_raw"] < BAD_PIXEL_LOW) | (dat["img_raw"] > BAD_PIXEL_HIGH),
+        axis=(2, 3),
+    )
     dat["bad_pixels"] = bad_pix
 
     # Remake masks now as well
