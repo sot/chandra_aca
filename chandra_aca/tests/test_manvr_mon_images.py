@@ -1,4 +1,5 @@
 import numpy as np
+from cxotime import CxoTime
 
 from chandra_aca.dark_model import dark_temp_scale
 from chandra_aca.manvr_mon_images import DN_TO_ELEC, read_manvr_mon_images
@@ -92,3 +93,33 @@ def test_read_manvr_mon_images_require_same_row_col_false():
     # Check for known case where the col0 values differ (in slot 7)
     median_col0 = np.median(dat["col0"], axis=0)
     assert not np.all(dat["col0"] == median_col0[None, :])
+
+
+def test_read_manvr_mon_images_exact_interval():
+    """Test exact_interval parameter behavior"""
+    # Test with a narrow time range that falls within a maneuver
+    start = "2025:301:02:00:00"
+    stop = "2025:301:02:10:00"
+
+    # Get data with exact_interval=False (default - include full maneuvers)
+    dat_full_manvr = read_manvr_mon_images(
+        start=start,
+        stop=stop,
+        exact_interval=False,
+    )
+
+    # Has data outside of start/stop but contained within maneuver starting at
+    # 2025:301:01:51:26.182.
+    exp_full = ["2025:301:01:51:31.741", "2025:301:02:21:35.741"]
+    assert np.all(CxoTime(dat_full_manvr["time"][[0, -1]]).date == exp_full)
+
+    # Get data with exact_interval=True (only exact time range)
+    dat_exact = read_manvr_mon_images(
+        start=start,
+        stop=stop,
+        exact_interval=True,
+    )
+
+    # Contained within start / stop
+    exp_exact = ["2025:301:02:00:00.141", "2025:301:02:09:58.741"]
+    assert np.all(CxoTime(dat_exact["time"][[0, -1]]).date == exp_exact)
