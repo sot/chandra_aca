@@ -497,7 +497,7 @@ def get_planet_chandra_ccd_position(
     att : Quaternion or Quat-compatible
         The attitude Quaternion.
     ccd_pad : float, optional
-        Padding in arcseconds to add to the CCD size when determining if position
+        Padding in pixels to add to the CCD size when determining if position
         is included in the returned list.
     ephem_source : str
         Source of Chandra ephemeris: 'cxc' (default) or 'stk'.
