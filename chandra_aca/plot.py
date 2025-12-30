@@ -409,9 +409,9 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
     duration : float
         Duration of plot (secs)
     lim0 : float
-        Lower limit on x, y axis (row)
+        Lower limit on row, col
     lim1 : float
-        Upper limit on x, y axis (col)
+        Upper limit on row, col
 
     Returns
     -------
