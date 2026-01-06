@@ -68,7 +68,7 @@ GET_PLANET_CHANDRA_ERRORS = {
 
 # Table of magnitude ranges and actions for ACA bright objects
 MAG_ACTION = {
-    4: {"mag_start": -30.0, "mag_stop": -5.0, "label": "< -5.0"},
+    4: {"mag_start": -30.0, "mag_stop": -5.0, "label": "obo too bright"},
     3: {"mag_start": -5.0, "mag_stop": -2.9, "label": "full mitigation"},
     2: {"mag_start": -2.9, "mag_stop": -2.0, "label": "partial mitigation"},
     1: {"mag_start": -2.0, "mag_stop": 0.0, "label": "instrument notify"},
