@@ -17,6 +17,7 @@ from chandra_aca.planets import (
     get_planet_chandra,
     get_planet_chandra_horizons,
     get_planet_eci,
+    get_planet_mag_states,
 )
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 
@@ -217,6 +218,22 @@ def test_convert_time_format_spk_none():
     time1 = CxoTime(None).secs
     # Times within 10 seconds
     assert np.isclose(time0, time1, atol=10, rtol=0)
+
+
+def test_get_planet_mag_states():
+    mag_states = get_planet_mag_states("jupiter", start="2024:001", stop="2024:100")
+    assert mag_states.pformat_all() == [
+        "      datestart              datestop        duration      tstart        tstop           label        mag_start mag_stop",
+        "--------------------- --------------------- ---------- ------------- ------------- ------------------ --------- --------",
+        "2023:315:13:30:00.000 2024:127:00:30:00.000 15246000.0 816096669.184 831342669.184 partial mitigation      -2.9     -2.0",
+    ]
+
+    mag_states = get_planet_mag_states("venus", start="2020:001", stop="2020:002")
+    assert mag_states.pformat_all() == [
+        "      datestart              datestop         duration      tstart        tstop           label      mag_start mag_stop",
+        "--------------------- --------------------- ------------ ------------ -------------- --------------- --------- --------",
+        "1998:365:23:30:01.000 2041:001:00:30:00.000 1325466005.0 31534264.184 1357000269.184 full mitigation      -5.0     -2.9",
+    ]
 
 
 def test_earth_boresight():

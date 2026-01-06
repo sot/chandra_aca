@@ -46,6 +46,7 @@ __all__ = (
     "get_earth_boresight_angle",
     "get_earth_blocks",
     "get_earth_moon_limb_angles",
+    "PlanetPositionTable",
     "EarthBoresightAngles",
     "NoEphemerisError",
     "GET_PLANET_ECI_ERRORS",
@@ -167,6 +168,37 @@ def convert_time_format_spk(time, fmt_out):
         out = time
 
     return out
+
+
+def get_planet_mag_states(planet, start, stop):
+    """
+    Get planet magnitude states from chandra_aca data files.
+
+    Parameters
+    ----------
+    planet : str
+        Planet name (lower case planet name)
+    start : CxoTimeLike
+        Start time
+    stop : CxoTimeLike
+        Stop time
+    Returns
+    -------
+    astropy Table
+        Planet magnitude states overlapping the start/stop times.
+    """
+    # Let's validate that planet is just one of the supported planets
+    if planet not in ("mars", "jupiter", "saturn", "venus"):
+        raise ValueError(
+            f"{planet} is not supported, must be one of "
+            '("mars", "jupiter", "saturn", "venus")'
+        )
+    start_secs = CxoTime(start).secs
+    stop_secs = CxoTime(stop).secs
+    file = Path(__file__).parent / "data" / f"planet_mag_states_{planet}.dat"
+    dat = Table.read(file, format="ascii")
+    sel = (dat["tstart"] < stop_secs) & (dat["tstop"] > start_secs)
+    return dat[sel]
 
 
 def get_planet_angular_sep(
@@ -480,7 +512,7 @@ def get_planet_chandra_ccd_position(
     date: CxoTimeLike,
     duration: float,
     att: QuatLike,
-    ccd_pad: float = None,
+    ccd_pad: float = 0.0,
     ephem_source: str = "cxc",
 ) -> PlanetPositionTable:
     """
@@ -498,7 +530,7 @@ def get_planet_chandra_ccd_position(
         The attitude Quaternion.
     ccd_pad : float, optional
         Padding in pixels to add to the CCD size when determining if position
-        is included in the returned list.
+        is included in the returned list (default=0.0).
     ephem_source : str
         Source of Chandra ephemeris: 'cxc' (default) or 'stk'.
 
