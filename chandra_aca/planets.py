@@ -75,6 +75,8 @@ MAG_ACTION = {
     0: {"mag_start": 0.0, "mag_stop": 40.0, "label": "no action"},
 }
 
+BRIGHT_PLANET_LIST = ["jupiter", "saturn", "mars", "venus"]
+
 
 class NoEphemerisError(Exception):
     """If there is no Chandra orbital ephemeris available"""

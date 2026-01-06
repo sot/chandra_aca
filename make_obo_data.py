@@ -8,7 +8,7 @@ from astropy.table import Table, vstack
 from cheta.utils import state_intervals
 from cxotime import CxoTime
 
-from chandra_aca.planets import MAG_ACTION, get_planet_horizons
+from chandra_aca.planets import BRIGHT_PLANET_LIST, MAG_ACTION, get_planet_horizons
 
 
 # %%
@@ -54,7 +54,7 @@ def make_planet_mag_states(planet):
 
 
 # %%
-for planet in ["mars", "jupiter", "saturn", "venus"]:
+for planet in BRIGHT_PLANET_LIST:
     states = make_planet_mag_states(planet)
     states.write(
         f"chandra_aca/data/planet_mag_states_{planet}.dat",
