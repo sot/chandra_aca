@@ -38,7 +38,7 @@ def make_planet_mag_states(planet):
     else:
         dat = dat[np.isfinite(dat["mag"])]
     dat["magid"] = 0
-    for bin_id, bin in MAG_ACTION.items():
+    for bin_id, bin in enumerate(MAG_ACTION):
         sel = (dat["mag"] >= bin["mag_start"]) & (dat["mag"] < bin["mag_stop"])
         dat["magid"][sel] = bin_id
     states = state_intervals(CxoTime(dat["time"]).secs, dat["magid"])

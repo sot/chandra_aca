@@ -67,13 +67,14 @@ GET_PLANET_CHANDRA_ERRORS = {
 }
 
 # Table of magnitude ranges and actions for ACA bright objects
-MAG_ACTION = {
-    4: {"mag_start": -30.0, "mag_stop": -5.0, "label": "obo too bright"},
-    3: {"mag_start": -5.0, "mag_stop": -2.9, "label": "full mitigation"},
-    2: {"mag_start": -2.9, "mag_stop": -2.0, "label": "partial mitigation"},
-    1: {"mag_start": -2.0, "mag_stop": 0.0, "label": "instrument notify"},
-    0: {"mag_start": 0.0, "mag_stop": 40.0, "label": "no action"},
-}
+# Ordered by severity (most severe first)
+MAG_ACTION = [
+    {"mag_start": -30.0, "mag_stop": -5.0, "label": "obo too bright"},
+    {"mag_start": -5.0, "mag_stop": -2.9, "label": "full mitigation"},
+    {"mag_start": -2.9, "mag_stop": -2.0, "label": "partial mitigation"},
+    {"mag_start": -2.0, "mag_stop": 0.0, "label": "instrument notify"},
+    {"mag_start": 0.0, "mag_stop": 40.0, "label": "no action"},
+]
 
 BRIGHT_PLANET_LIST = ["jupiter", "saturn", "mars", "venus"]
 
@@ -190,10 +191,9 @@ def get_planet_mag_states(planet, start, stop):
         Planet magnitude states overlapping the start/stop times.
     """
     # Let's validate that planet is just one of the supported planets
-    if planet not in ("mars", "jupiter", "saturn", "venus"):
+    if planet not in BRIGHT_PLANET_LIST:
         raise ValueError(
-            f"{planet} is not supported, must be one of "
-            '("mars", "jupiter", "saturn", "venus")'
+            f"{planet} is not supported, must be one of {BRIGHT_PLANET_LIST}"
         )
     start_secs = CxoTime(start).secs
     stop_secs = CxoTime(stop).secs
@@ -675,6 +675,13 @@ def get_planet_horizons(
     step_size : str, optional
         Step size for time sampling (e.g. '1 h' or '30 m').
         If not supplied, the step size is computed to give ``n_times`` samples.
+
+    Returns
+    -------
+    astropy Table
+        Table with columns: time, ra, dec, rate_ra, rate_dec, mag, surf_brt, ang_diam.
+        The ``time`` column is a ``CxoTime`` object. The table meta includes
+        ``response_text`` (full Horizons response) and ``response_json`` (parsed JSON).
     """
     import requests
 
