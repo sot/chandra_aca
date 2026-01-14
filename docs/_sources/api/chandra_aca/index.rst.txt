@@ -18,6 +18,7 @@ Submodules
    /api/chandra_aca/dark_subtract/index
    /api/chandra_aca/darkbins/index
    /api/chandra_aca/drift/index
+   /api/chandra_aca/manvr_mon_images/index
    /api/chandra_aca/maude_decom/index
    /api/chandra_aca/planets/index
    /api/chandra_aca/plot/index

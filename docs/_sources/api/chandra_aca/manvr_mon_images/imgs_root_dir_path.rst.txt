@@ -1,0 +1,25 @@
+chandra_aca.manvr_mon_images.imgs_root_dir_path
+===============================================
+
+.. py:function:: chandra_aca.manvr_mon_images.imgs_root_dir_path(data_dir = None)
+
+   
+   Get root path to store monitor window images.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

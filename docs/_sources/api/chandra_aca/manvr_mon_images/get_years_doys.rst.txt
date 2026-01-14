@@ -1,0 +1,25 @@
+chandra_aca.manvr_mon_images.get_years_doys
+===========================================
+
+.. py:function:: chandra_aca.manvr_mon_images.get_years_doys(start, stop)
+
+   
+   Generate (year, doy) tuples for days between start and stop with margin.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

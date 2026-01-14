@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.52.1 documentation</title>
+    <title>chandra_aca.maude_decom &#8212; chandra_aca 4.53.0 documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -40,9 +40,9 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=9e359d2b"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/documentation_options.js?v=4b98536b"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/chandra_aca/maude_decom';</script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.52.1" />
+  <meta name="docsearch:version" content="4.53.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.52.1</span></div>
+<span style="font-size: x-large;">4.53.0</span></div>
     
   </div>
   
@@ -346,16 +346,16 @@
 <span class="sd">See :ref:`maude_decom` for more details and examples.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">from</span> <span class="nn">struct</span> <span class="kn">import</span> <span class="n">Struct</span>
-<span class="kn">from</span> <span class="nn">struct</span> <span class="kn">import</span> <span class="n">unpack</span> <span class="k">as</span> <span class="n">_unpack</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">Struct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">unpack</span> <span class="k">as</span> <span class="n">_unpack</span>
 
-<span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
-<span class="kn">import</span> <span class="nn">maude</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
-<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">maude</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cxotime</span><span class="w"> </span><span class="kn">import</span> <span class="n">CxoTime</span><span class="p">,</span> <span class="n">CxoTimeLike</span>
 
 <span class="c1"># Maude fetch limits</span>
 <div class="viewcode-block" id="MAUDE_SINGLE_FETCH_LIMIT">
@@ -466,7 +466,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_aca_msid_list</span><span class="p">(</span><span class="n">pea</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_aca_msid_list</span><span class="p">(</span><span class="n">pea</span><span class="p">):</span>
     <span class="c1"># helper method to make a dictionary with all global (non-slot) MSIDs used here</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;AOACSTAT&quot;</span><span class="p">,</span>  <span class="c1"># ASPECT CAMERA DATA PROCESSING OVERALL STATUS FLAG</span>
@@ -481,7 +481,7 @@
     <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">_aca_image_msid_list</span><span class="p">(</span><span class="n">pea</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_aca_image_msid_list</span><span class="p">(</span><span class="n">pea</span><span class="p">):</span>
     <span class="c1"># helper method to make a list of dictionaries with MSIDs for each slot in a given PEA.</span>
     <span class="n">msid_prefix</span> <span class="o">=</span> <span class="n">_msid_prefix</span><span class="p">[</span><span class="n">pea</span><span class="p">]</span>
 
@@ -684,7 +684,7 @@
 
 
 <span class="c1"># I&#39;m sure there is a better way...</span>
-<span class="k">def</span> <span class="nf">_packbits</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">unsigned</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_packbits</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">unsigned</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="c1"># take something like this: [1,0,1,1,0] and return 2^4 + 2^2 + 2</span>
     <span class="c1"># This handles integer types only</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -693,7 +693,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">_bits</span><span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">:])</span>
 
 
-<span class="k">class</span> <span class="nc">_AcaImageHeaderDecom</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_AcaImageHeaderDecom</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to decommute ACA image telemtry headers.</span>
 
@@ -702,7 +702,7 @@
 <span class="sd">    types, and the packets are known, it will return the header 3 data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_aca_header_1</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_aca_header_1</span><span class="p">,</span>
@@ -714,11 +714,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_aca_header_3</span><span class="p">,</span>
         <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">imgtype</span><span class="p">,</span> <span class="n">byte_array</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">imgtype</span><span class="p">,</span> <span class="n">byte_array</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">[</span><span class="n">imgtype</span><span class="p">](</span><span class="n">byte_array</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_aca_header_1</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_aca_header_1</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unpack ACA header 1 (ACA User Manual 5.3.2.2.1).</span>
 
@@ -750,7 +750,7 @@
         <span class="p">}</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_aca_header_2</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_aca_header_2</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unpack ACA header 2 (ACA User Manual 5.3.2.2.2).</span>
 
@@ -780,7 +780,7 @@
         <span class="p">}</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_aca_header_3</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_aca_header_3</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unpack ACA header 3 (ACA User Manual 5.3.2.2.3).</span>
 
@@ -796,7 +796,7 @@
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;DIAGNOSTIC&quot;</span><span class="p">:</span> <span class="n">_unpack</span><span class="p">(</span><span class="s2">&quot;BBBBBB&quot;</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:])}</span>
 
 
-<span class="k">def</span> <span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">unpack_aca_telemetry</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Unpack ACA telemetry encoded in 225-byte packets.</span>
 
@@ -864,7 +864,7 @@
     <span class="k">return</span> <span class="n">slots</span>
 
 
-<span class="k">def</span> <span class="nf">_combine_aca_packets</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_combine_aca_packets</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Combine a list of ACA packets into a single record.</span>
 
@@ -898,7 +898,7 @@
     <span class="k">return</span> <span class="n">res</span>
 
 
-<span class="k">def</span> <span class="nf">_group_packets</span><span class="p">(</span><span class="n">packets</span><span class="p">,</span> <span class="n">discard</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_group_packets</span><span class="p">(</span><span class="n">packets</span><span class="p">,</span> <span class="n">discard</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Group ACA image telemetry packets to form full images.</span>
 
@@ -959,7 +959,7 @@
         <span class="k">yield</span> <span class="n">res</span>
 
 
-<span class="k">def</span> <span class="nf">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">filter_vcdu_jumps</span><span class="p">(</span><span class="n">vcdu_counters</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return a boolean mask to filter VCDU counters that are not continuous.</span>
 
@@ -991,7 +991,7 @@
     <span class="k">return</span> <span class="n">selected</span>
 
 
-<span class="k">def</span> <span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_raw_aca_packets</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch 1025-byte VCDU frames using MAUDE and extract a list of 225-byte ACA packets.</span>
 
@@ -1168,7 +1168,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_aca_packets_to_table</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_aca_packets_to_table</span><span class="p">(</span><span class="n">aca_packets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Store ACA packets in a table.</span>
 
@@ -1183,7 +1183,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    astropy.table.Table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">copy</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 
     <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dtype</span> <span class="o">=</span> <span class="n">ACA_PACKETS_DTYPE</span>
@@ -1206,7 +1206,7 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<span class="k">def</span> <span class="nf">get_aca_packets</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_aca_packets</span><span class="p">(</span>
     <span class="n">start</span><span class="p">,</span>
     <span class="n">stop</span><span class="p">,</span>
     <span class="n">level0</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1458,7 +1458,7 @@
     <span class="k">return</span> <span class="n">aca_data</span>
 
 
-<span class="k">def</span> <span class="nf">_get_aca_packets</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_aca_packets</span><span class="p">(</span>
     <span class="n">aca_packets</span><span class="p">,</span>
     <span class="n">start</span><span class="p">,</span>
     <span class="n">stop</span><span class="p">,</span>
@@ -1559,7 +1559,7 @@
     <span class="k">return</span> <span class="n">table</span>
 
 
-<span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_aca_images</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch ACA image telemetry</span>
 
@@ -1697,7 +1697,7 @@
 <span class="c1">######################</span>
 
 
-<span class="k">def</span> <span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_raw_aca_blobs</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">maude_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch MAUDE blobs and group them according to the underlying 225-byte ACA packets.</span>
 
@@ -1773,7 +1773,7 @@
     <span class="k">return</span> <span class="n">result</span>
 
 
-<span class="k">def</span> <span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">blob_to_aca_image_dict</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">imgnum</span><span class="p">,</span> <span class="n">pea</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assemble ACA image MSIDs from a blob into a dictionary.</span>
 
@@ -1970,7 +1970,7 @@
 
   <p class="copyright">
     
-      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      © Copyright 2026, Smithsonian Astrophysical Observatory.
       <br/>
     
   </p>
@@ -1979,7 +1979,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>

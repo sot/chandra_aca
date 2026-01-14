@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.maude_decom.get_aca_packets &#8212; chandra_aca 4.52.1 documentation</title>
+    <title>chandra_aca.maude_decom.get_aca_packets &#8212; chandra_aca 4.53.0 documentation</title>
   
   
   
@@ -30,7 +30,7 @@
   <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -41,9 +41,9 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=9e359d2b"></script>
-    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/documentation_options.js?v=4b98536b"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/chandra_aca/maude_decom/get_aca_packets';</script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.maude_decom._aca_packets_to_table" href="_aca_packets_to_table.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.52.1" />
+  <meta name="docsearch:version" content="4.53.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.52.1</span></div>
+<span style="font-size: x-large;">4.53.0</span></div>
     
   </div>
   
@@ -355,7 +355,7 @@
 <dd><p>Fetch VCDU 1025-byte frames, extract ACA packets, unpack them and store them in a table.</p>
 <p>Incomplete ACA packets (if there is a minor frame missing) can be combined or not into records
 with complete ACA telemetry. Compare these to calls to the function:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">chandra_aca</span><span class="w"> </span><span class="kn">import</span> <span class="n">maude_decom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
@@ -373,7 +373,7 @@ with complete ACA telemetry. Compare these to calls to the function:</p>
 <p>Using combined=False, results in records with incomplete images. In this case, data can be
 missing from some records. For example, with 8X8 images, IMGROW0 and IMGCOL0 are present in the
 first ACA packet (image type 4) while the temperature is present in the second (image type 5):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">maude_decom</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">chandra_aca</span><span class="w"> </span><span class="kn">import</span> <span class="n">maude_decom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_packets</span><span class="p">(</span><span class="mi">684089000</span><span class="p">,</span> <span class="mi">684089016</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;IMGNUM&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">,</span> <span class="s1">&#39;MJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MNF&#39;</span><span class="p">,</span> <span class="s1">&#39;COMMCNT&#39;</span><span class="p">,</span> <span class="s1">&#39;GLBSTAT&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGROW0&#39;</span><span class="p">,</span> <span class="s1">&#39;IMGCOL0&#39;</span><span class="p">,</span>
@@ -608,7 +608,7 @@ restrictive dtype is used, a KeyError can be raised.</p>
 
   <p class="copyright">
     
-      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      © Copyright 2026, Smithsonian Astrophysical Observatory.
       <br/>
     
   </p>
@@ -617,7 +617,7 @@ restrictive dtype is used, a KeyError can be raised.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>

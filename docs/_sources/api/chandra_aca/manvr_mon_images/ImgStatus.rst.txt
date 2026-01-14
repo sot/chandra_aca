@@ -1,0 +1,37 @@
+chandra_aca.manvr_mon_images.ImgStatus
+======================================
+
+.. py:class:: chandra_aca.manvr_mon_images.ImgStatus(*args, **kwds)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   
+   Bit flags for image masks.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: SUM_OUTLIER
+
+
+   .. py:attribute:: CORR_SUM_OUTLIER
+
+
+   .. py:attribute:: HAS_BAD_PIX
+

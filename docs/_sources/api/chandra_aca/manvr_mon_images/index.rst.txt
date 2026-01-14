@@ -1,0 +1,66 @@
+chandra_aca.manvr_mon_images
+============================
+
+.. py:module:: chandra_aca.manvr_mon_images
+
+.. autoapi-nested-parse::
+
+   Read ACA maneuver monitor window image data
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   chandra_aca.manvr_mon_images.DN_TO_ELEC
+   chandra_aca.manvr_mon_images.BAD_PIXEL_LOW
+   chandra_aca.manvr_mon_images.BAD_PIXEL_HIGH
+
+
+Classes
+-------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/manvr_mon_images/ImgStatus
+
+.. autoapisummary::
+
+   chandra_aca.manvr_mon_images.ImgStatus
+
+
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/manvr_mon_images/get_years_doys
+   /api/chandra_aca/manvr_mon_images/imgs_root_dir_path
+   /api/chandra_aca/manvr_mon_images/read_manvr_mon_images
+
+.. autoapisummary::
+
+   chandra_aca.manvr_mon_images.get_years_doys
+   chandra_aca.manvr_mon_images.imgs_root_dir_path
+   chandra_aca.manvr_mon_images.read_manvr_mon_images
+
+
+Module Contents
+---------------
+
+.. py:data:: DN_TO_ELEC
+
+.. py:data:: BAD_PIXEL_LOW
+   :value: -5
+
+
+.. py:data:: BAD_PIXEL_HIGH
+   :value: 30000
+
+

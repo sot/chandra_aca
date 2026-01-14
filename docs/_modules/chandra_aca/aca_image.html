@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.52.1 documentation</title>
+    <title>chandra_aca.aca_image &#8212; chandra_aca 4.53.0 documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -40,9 +40,9 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=9e359d2b"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/documentation_options.js?v=4b98536b"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/chandra_aca/aca_image';</script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.52.1" />
+  <meta name="docsearch:version" content="4.53.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.52.1</span></div>
+<span style="font-size: x-large;">4.53.0</span></div>
     
   </div>
   
@@ -347,18 +347,18 @@
 <span class="sd">See :ref:`aca_image` for more details and examples.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">count</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">count</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">floor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">import</span> <span class="nn">numba</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
-<span class="kn">from</span> <span class="nn">cxotime</span> <span class="kn">import</span> <span class="n">CxoTimeLike</span>
-<span class="kn">from</span> <span class="nn">ska_helpers</span> <span class="kn">import</span> <span class="n">retry</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cxotime</span><span class="w"> </span><span class="kn">import</span> <span class="n">CxoTimeLike</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ska_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ACAImage&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid_fm&quot;</span><span class="p">,</span> <span class="s2">&quot;AcaPsfLibrary&quot;</span><span class="p">,</span> <span class="s2">&quot;EIGHT_LABELS&quot;</span><span class="p">,</span> <span class="s2">&quot;get_aca_images&quot;</span><span class="p">]</span>
 
@@ -382,7 +382,7 @@
 <span class="sd">row and highest col; pixel I4 has the highest row and lowest column.&quot;&quot;&quot;</span>
 
 
-<span class="k">def</span> <span class="nf">_operator_factory</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_operator_factory</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate data model methods.</span>
 
@@ -396,7 +396,7 @@
     <span class="n">op</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s2">&quot;__</span><span class="si">{}</span><span class="s2">__&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">operator</span><span class="p">))</span>
     <span class="n">inplace_op</span> <span class="o">=</span> <span class="n">op</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s2">&quot;__i</span><span class="si">{}</span><span class="s2">__&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">operator</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ACAImage</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_aca_coords</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aca_coords</span><span class="p">):</span>
             <span class="c1"># If inplace then work on the original self, else use a copy</span>
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -440,7 +440,7 @@
     <span class="k">return</span> <span class="n">_operator</span>
 
 
-<span class="k">class</span> <span class="nc">ACAImage</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ACAImage</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ACA Image class.</span>
 
@@ -476,7 +476,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">aca</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">aca</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a light copy of self with _aca_coords on.</span>
 
@@ -488,7 +488,7 @@
         <span class="n">obj</span><span class="o">.</span><span class="n">_aca_coords</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">obj</span>
 
-    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;meta&quot;</span><span class="p">,</span> <span class="p">{})</span>
 
         <span class="c1"># Set default row0 and col0 to 0 (if not already in meta), and</span>
@@ -518,7 +518,7 @@
         <span class="c1"># Finally, we must return the newly created object:</span>
         <span class="k">return</span> <span class="n">obj</span>
 
-    <span class="k">def</span> <span class="nf">__array_finalize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__array_finalize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="c1"># see InfoArray.__array_finalize__ for comments</span>
         <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
@@ -542,7 +542,7 @@
     <span class="fm">__imod__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;imod&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="fm">__ipow__</span> <span class="o">=</span> <span class="n">_operator_factory</span><span class="p">(</span><span class="s2">&quot;ipow&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_adjust_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_adjust_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This is the money method that does all the work of manipulating</span>
 <span class="sd">        an item and subsequent row0/col0 when accessing and slicing.</span>
@@ -604,7 +604,7 @@
 
         <span class="k">return</span> <span class="n">item</span><span class="p">,</span> <span class="n">out_rc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">out_rc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
         <span class="n">item</span><span class="p">,</span> <span class="n">row0</span><span class="p">,</span> <span class="n">col0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
         <span class="n">out</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ACAImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -618,7 +618,7 @@
 
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">item</span><span class="p">,</span> <span class="n">row0</span><span class="p">,</span> <span class="n">col0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
         <span class="n">aca_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aca_coords</span>
@@ -628,7 +628,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_aca_coords</span> <span class="o">=</span> <span class="n">aca_coords</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Make an integerized version for viewing more nicely</span>
         <span class="n">outarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2"> row0=</span><span class="si">{}</span><span class="s2"> col0=</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -636,7 +636,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">isupper</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
@@ -645,13 +645,13 @@
 
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ACAImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">isupper</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">(</span><span class="n">ACAImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_fm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        First moment centroid of ``self`` using 6x6 mousebitten image for input 6x6 or 8x8 images.</span>
 
@@ -680,27 +680,27 @@
 
         <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span>
 
-    <span class="k">def</span> <span class="fm">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">()</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">row0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">row0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGROW0&quot;</span><span class="p">]</span>
 
     <span class="nd">@row0</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">row0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">row0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGROW0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">col0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">col0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGCOL0&quot;</span><span class="p">]</span>
 
     <span class="nd">@col0</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">col0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">col0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;IMGCOL0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_read_flicker_cdfs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_flicker_cdfs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read flickering pixel model cumulative distribution functions and associated metadata.</span>
 
@@ -710,7 +710,7 @@
 <span class="sd">        /proj/sot/ska/www/ASPECT/ipynb/chandra_aca/flickering-pixel-model.ipynb</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
 
         <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;flicker_cdf.fits.gz&quot;</span>
         <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdus</span><span class="p">:</span>
@@ -732,7 +732,7 @@
             <span class="n">cdf_bins</span> <span class="o">=</span> <span class="p">[</span><span class="n">hdr</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cdf_bin</span><span class="si">{</span><span class="n">ii</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;n_bin&quot;</span><span class="p">])]</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">flicker_cdf_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cdf_bins</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">flicker_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flicker_mean_time</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">flicker_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flicker_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flicker_mean_time</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">flicker_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize instance variables to allow for flickering pixel updates.</span>
 
 <span class="sd">        The ``flicker_scale`` can be interpreted as follows: if the pixel</span>
@@ -805,7 +805,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flicker_times</span> <span class="o">=</span> <span class="n">t_flicker</span> <span class="o">*</span> <span class="n">phase</span>
 
-    <span class="k">def</span> <span class="nf">flicker_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">use_numba</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flicker_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">use_numba</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Do a flicker update.</span>
 
@@ -846,7 +846,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_flicker_update_vectorized</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_flicker_update_vectorized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_flicker_update_vectorized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flicker_times</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">flicker_mask_vals</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dt</span>
 
         <span class="c1"># When flicker_times &lt; 0 that means a flicker occurs</span>
@@ -886,12 +886,12 @@
 
 
 <span class="nd">@numba</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_numba_random_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_numba_random_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">):</span>
     <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
 
 <span class="nd">@numba</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_flicker_update_numba</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_flicker_update_numba</span><span class="p">(</span>
     <span class="n">dt</span><span class="p">,</span>
     <span class="n">nvals</span><span class="p">,</span>
     <span class="n">test_idx</span><span class="p">,</span>
@@ -956,7 +956,7 @@
 
 
 <span class="nd">@numba</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">np_interp</span><span class="p">(</span><span class="n">yin</span><span class="p">,</span> <span class="n">xin</span><span class="p">,</span> <span class="n">xout</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">np_interp</span><span class="p">(</span><span class="n">yin</span><span class="p">,</span> <span class="n">xin</span><span class="p">,</span> <span class="n">xout</span><span class="p">):</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">xin</span><span class="p">,</span> <span class="n">xout</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -974,7 +974,7 @@
     <span class="k">return</span> <span class="n">yout</span>
 
 
-<span class="k">def</span> <span class="nf">_prep_6x6</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_prep_6x6</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Subtract background and in case of 8x8 image cut and return the 6x6 inner section.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -994,7 +994,7 @@
     <span class="k">return</span> <span class="n">img</span>
 
 
-<span class="k">def</span> <span class="nf">centroid_fm</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">centroid_fm</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bgd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">norm_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    First moment centroid of ``img``.</span>
 
@@ -1050,7 +1050,7 @@
     <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">norm</span>
 
 
-<span class="k">class</span> <span class="nc">AcaPsfLibrary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AcaPsfLibrary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    AcaPsfLibrary class</span>
 
@@ -1077,8 +1077,8 @@
 <span class="sd">    :returns: AcaPsfLibrary object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>  <span class="c1"># Table is a somewhat-heavy import</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>  <span class="c1"># Table is a somewhat-heavy import</span>
 
         <span class="n">psfs</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -1101,7 +1101,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">psfs</span> <span class="o">=</span> <span class="n">psfs</span>
 
-    <span class="k">def</span> <span class="nf">get_psf_image</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_psf_image</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">row</span><span class="p">,</span>
         <span class="n">col</span><span class="p">,</span>
@@ -1197,7 +1197,7 @@
 
 
 <span class="nd">@retry</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exceptions</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">tries</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">get_aca_images</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_aca_images</span><span class="p">(</span>
     <span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">bgsub</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;maude&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1251,11 +1251,11 @@
 <span class="sd">    imgs_table : astropy.table.Table</span>
 <span class="sd">        Table of ACA images and ancillary data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">mica.archive.aca_dark</span>
-    <span class="kn">import</span> <span class="nn">mica.archive.aca_l0</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">mica.archive.aca_dark</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">mica.archive.aca_l0</span>
 
-    <span class="kn">import</span> <span class="nn">chandra_aca.dark_subtract</span>
-    <span class="kn">import</span> <span class="nn">chandra_aca.maude_decom</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">chandra_aca.dark_subtract</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">chandra_aca.maude_decom</span>
 
     <span class="c1"># Set up configuration for maude or cxc</span>
     <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;maude&quot;</span><span class="p">:</span>
@@ -1352,7 +1352,7 @@
 
   <p class="copyright">
     
-      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      © Copyright 2026, Smithsonian Astrophysical Observatory.
       <br/>
     
   </p>
@@ -1361,7 +1361,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>

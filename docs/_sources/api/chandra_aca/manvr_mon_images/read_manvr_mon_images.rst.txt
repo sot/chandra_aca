@@ -1,0 +1,81 @@
+chandra_aca.manvr_mon_images.read_manvr_mon_images
+==================================================
+
+.. py:function:: chandra_aca.manvr_mon_images.read_manvr_mon_images(start, stop, t_ccd_ref = -10.0, scale_4c = None, require_same_row_col = True, exact_interval = False, data_dir = None)
+
+   
+   Read ACA maneuver monitor window images from archived data files.
+
+   This function loads processed monitor window images from the compressed .npz
+   archive files created by save_imgs(). It concatenates data across multiple
+   files and date ranges, applies temperature correction if requested, and
+   returns an astropy Table.
+
+   :Parameters:
+
+       **start** : CxoTimeLike
+           Start time for data retrieval (any format accepted by CxoTime).
+
+       **stop** : CxoTimeLike
+           Stop time for data retrieval (any format accepted by CxoTime).
+
+       **t_ccd_ref** : float or None, optional
+           Reference CCD temperature in Celsius for dark current scaling. If None, no
+           temperature correction is applied. Default is -10.0.
+
+       **scale_4c** : float or None, optional
+           Scaling factor in dark current temperature dependence. If None, uses default
+           from dark_temp_scale(). Default is None.
+
+       **require_same_row_col** : bool, optional
+           If True, only include images where all slots have the same row0 and col0
+           values across the entire time range. This uses the median values to filter.
+           Default is True.
+
+       **exact_interval** : bool, optional
+           If True, only include images with times exactly within start and stop.
+           Otherwise include all times within the maneuvers that are included within start
+           and stop. Default is False.
+
+       **data_dir** : Path or str, optional
+           Root directory containing the archived image files organized as
+           data_dir/YYYY/DOY/*.npz. Default is ``$SKA/data/manvr_mon_images``.
+
+
+
+   :Returns:
+
+       **dat** : apt.Table
+           Table containing concatenated monitor window data with columns:
+           - time: observation times in CXO seconds since 1998.0
+           - img_raw: raw monitor window images in DN [slot, row, col]
+           - img_corr: corrected images in e-/s with temperature scaling [slot, row, col]
+           - mask: combined bit mask for image status flags [slot]
+           - sum_outlier: boolean flag for images with total sum outliers [slot]
+           - corr_sum_outlier: boolean flag for bgd-subtracted sum outliers [slot]
+           - bad_pixels: boolean flag for images with bad pixels [slot]
+           - t_ccd: CCD temperatures in Celsius
+           - earth_limb_angle: Earth limb angle in degrees
+           - moon_limb_angle: Moon limb angle in degrees
+           - rate: spacecraft rate in arcsec/sec
+           - idx_manvr: maneuver index for each sample
+           - row0: row0 position for each slot [slot]
+           - col0: col0 position for each slot [slot]
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   - Raw images in DN are converted to e-/s using factor 5.0/1.696
+   - Temperature correction uses dark_temp_scale() from chandra_aca.dark_model
+   - Early CCD temperature samples are replaced with 5th sample to avoid artifacts
+
+
+
+   ..
+       !! processed by numpydoc !!

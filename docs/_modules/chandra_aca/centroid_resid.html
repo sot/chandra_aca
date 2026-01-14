@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.centroid_resid &#8212; chandra_aca 4.52.1 documentation</title>
+    <title>chandra_aca.centroid_resid &#8212; chandra_aca 4.53.0 documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -40,9 +40,9 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=9e359d2b"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/documentation_options.js?v=4b98536b"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/chandra_aca/centroid_resid';</script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.52.1" />
+  <meta name="docsearch:version" content="4.53.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.52.1</span></div>
+<span style="font-size: x-large;">4.53.0</span></div>
     
   </div>
   
@@ -341,20 +341,20 @@
                   
   <h1>Source code for chandra_aca.centroid_resid</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">import</span> <span class="nn">agasc</span>
-<span class="kn">import</span> <span class="nn">mica.starcheck</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
-<span class="kn">from</span> <span class="nn">Chandra.Time</span> <span class="kn">import</span> <span class="n">DateTime</span>
-<span class="kn">from</span> <span class="nn">kadi</span> <span class="kn">import</span> <span class="n">events</span>
-<span class="kn">from</span> <span class="nn">mica.archive</span> <span class="kn">import</span> <span class="n">asp_l1</span>
-<span class="kn">from</span> <span class="nn">Quaternion</span> <span class="kn">import</span> <span class="n">Quat</span>
-<span class="kn">from</span> <span class="nn">Ska.engarchive</span> <span class="kn">import</span> <span class="n">fetch</span>
-<span class="kn">from</span> <span class="nn">Ska.Numpy</span> <span class="kn">import</span> <span class="n">interpolate</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">agasc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mica.starcheck</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">vstack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Chandra.Time</span><span class="w"> </span><span class="kn">import</span> <span class="n">DateTime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kadi</span><span class="w"> </span><span class="kn">import</span> <span class="n">events</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mica.archive</span><span class="w"> </span><span class="kn">import</span> <span class="n">asp_l1</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Quaternion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Ska.engarchive</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Ska.Numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate</span>
 
-<span class="kn">from</span> <span class="nn">chandra_aca</span> <span class="kn">import</span> <span class="n">transform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chandra_aca</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span>
 
 <div class="viewcode-block" id="R2A">
 <a class="viewcode-back" href="../../api/chandra_aca/centroid_resid/index.html#chandra_aca.centroid_resid.R2A">[docs]</a>
@@ -362,7 +362,7 @@
 
 
 
-<span class="k">class</span> <span class="nc">CentroidResiduals</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CentroidResiduals</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to calculate star centroid residuals.</span>
 
@@ -425,11 +425,11 @@
     <span class="n">centroid_dt</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">obsid</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
 
-    <span class="k">def</span> <span class="nf">set_centroids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">apply_dt</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_centroids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">apply_dt</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assign centroids.</span>
 
@@ -497,7 +497,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">set_atts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_atts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get attitude solution quaternions from ``source``.</span>
 
 <span class="sd">        One could also just set atts and att_times attributes directly.</span>
@@ -538,7 +538,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">atts</span> <span class="o">=</span> <span class="n">atts</span><span class="p">[</span><span class="n">ok</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># (N, 4) numpy array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">att_times</span> <span class="o">=</span> <span class="n">att_times</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">set_atts_from_solfiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asol_files</span><span class="p">,</span> <span class="n">acal_files</span><span class="p">,</span> <span class="n">aqual_files</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_atts_from_solfiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asol_files</span><span class="p">,</span> <span class="n">acal_files</span><span class="p">,</span> <span class="n">aqual_files</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="n">atts</span><span class="p">,</span> <span class="n">att_times</span><span class="p">,</span> <span class="n">asol_recs</span> <span class="o">=</span> <span class="n">asp_l1</span><span class="o">.</span><span class="n">get_atts_from_files</span><span class="p">(</span>
             <span class="n">asol_files</span><span class="p">,</span> <span class="n">acal_files</span><span class="p">,</span> <span class="n">aqual_files</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span>
         <span class="p">)</span>
@@ -548,7 +548,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">atts</span> <span class="o">=</span> <span class="n">atts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">att_times</span> <span class="o">=</span> <span class="n">att_times</span>
 
-    <span class="k">def</span> <span class="nf">set_star</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agasc_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_star</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agasc_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set self.ra and dec from either agasc_id *or* slot.</span>
 
@@ -581,11 +581,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dec</span> <span class="o">=</span> <span class="n">star</span><span class="p">[</span><span class="s2">&quot;DEC_PMCORR&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">yags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yags</span>
 
     <span class="nd">@yags</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">yags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">fetch</span><span class="o">.</span><span class="n">MSID</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_yags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_yag_times</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">times</span>
@@ -593,19 +593,19 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_yags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">yag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yag_times</span>
 
     <span class="nd">@yag_times</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">yag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_yag_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">zags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zags</span>
 
     <span class="nd">@zags</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">zags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">fetch</span><span class="o">.</span><span class="n">MSID</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_zags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">vals</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_zag_times</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">times</span>
@@ -613,14 +613,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_zags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">zag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zag_times</span>
 
     <span class="nd">@zag_times</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">zag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zag_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zag_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_offsets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_offsets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply time offsets to centroids.</span>
 
@@ -687,7 +687,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">yag_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yag_times</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zag_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zag_times</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_dt</span>
 
-    <span class="k">def</span> <span class="nf">calc_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calc_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate star residuals.</span>
 
@@ -726,7 +726,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dzags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zags</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_zags</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">for_slot</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">for_slot</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">obsid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -792,7 +792,7 @@
 
   <p class="copyright">
     
-      © Copyright 2025, Smithsonian Astrophysical Observatory.
+      © Copyright 2026, Smithsonian Astrophysical Observatory.
       <br/>
     
   </p>
@@ -801,7 +801,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>
