@@ -109,6 +109,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
         - corr_sum_outlier: boolean flag for bgd-subtracted sum outliers [slot]
         - bad_pixels: boolean flag for images with bad pixels [slot]
         - t_ccd: CCD temperatures in Celsius
+        - zero_offset: zero offset values for each quadrant [quad]
         - earth_limb_angle: Earth limb angle in degrees
         - moon_limb_angle: Moon limb angle in degrees
         - rate: spacecraft rate in arcsec/sec
@@ -136,6 +137,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
     moon_limb_angles_list = []
     rates_list = []
     idx_manvrs_list = []
+    zero_offsets_list = []
     idx_manvr = 0
 
     for year, doy in get_years_doys(start, stop):
@@ -154,6 +156,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
                 t_ccds = dat["t_ccd"]
                 t_ccds[:5] = t_ccds[5]
                 t_ccds_list.append(t_ccds)
+                zero_offsets_list.append(dat["zero_offsets"])
                 earth_limb_angles_list.append(dat["earth_limb_angle"])
                 moon_limb_angles_list.append(dat["moon_limb_angle"])
                 rates_list.append(dat["rate"])
@@ -171,6 +174,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
     dat["corr_sum_outlier"] = (masks & ImgStatus.CORR_SUM_OUTLIER.value) != 0
     dat["bad_pixels"] = (masks & ImgStatus.HAS_BAD_PIX.value) != 0
     dat["t_ccd"] = np.concatenate(t_ccds_list)
+    dat["zero_offsets"] = np.concatenate(zero_offsets_list)
     dat["earth_limb_angle"] = np.concatenate(earth_limb_angles_list)
     dat["moon_limb_angle"] = np.concatenate(moon_limb_angles_list)
     dat["rate"] = np.concatenate(rates_list)
