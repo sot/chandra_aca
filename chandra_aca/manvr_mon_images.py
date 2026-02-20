@@ -109,7 +109,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
         - corr_sum_outlier: boolean flag for bgd-subtracted sum outliers [slot]
         - bad_pixels: boolean flag for images with bad pixels [slot]
         - t_ccd: CCD temperatures in Celsius
-        - zero_offset: zero offset values for each quadrant [quad]
+        - zero_offsets: zero offset values for each quadrant [quad]
         - earth_limb_angle: Earth limb angle in degrees
         - moon_limb_angle: Moon limb angle in degrees
         - rate: spacecraft rate in arcsec/sec
@@ -272,7 +272,7 @@ def get_constraint_flags(
         excluded. If None, no filtering on Moon limb angle is applied. Default is 5.0
         degrees.
     rate_limit : float or None, optional
-        Maximum acceptable rate (arcsec/sec). Images with smaller rates are excluded. If
+        Minimum acceptable rate (arcsec/sec). Images with smaller rates are excluded. If
         None, no filtering on rate is applied. Default is 40.0.
     dt_recovery : float or None, optional
         Time in seconds after an attitude limb violation during which images are also
@@ -391,9 +391,9 @@ def get_att_violations(
     mon_imgs,
     ss_obj="earth+moon",
     angle_limit=5.0,
-    dt_recovery=240.0,
+    dt_recovery=300.0,
 ):
-    """Get attitude violiations in a ``mon_imgs`` table for Earth or moon.
+    """Get attitude violations in a ``mon_imgs`` table for Earth or moon.
 
     Parameters
     ----------
@@ -407,13 +407,14 @@ def get_att_violations(
     dt_recovery : float
         Time in seconds after violation exit at which CCD is considered recovered.
         Analysis indicates this is nominally around 4 minutes but can vary.
+        Default is 300 seconds.
 
     Returns
     -------
     apt.Table
         Table of attitude violation intervals with columns:
         - start: start time of violation interval (date string U21)
-        - stop: start time of violation interval (date string U21)
+        - stop: stop time of violation interval (date string U21)
         - tstart: start time of violation interval (float)
         - tstop: stop time of violation interval (float)
         - duration: duration of violation interval in seconds (float)
