@@ -256,7 +256,7 @@ def get_constraint_flags(
 
     - EARTH_VIOLATION: Earth limb angle below ela_limit
     - MOON_VIOLATION: Moon limb angle below mla_limit
-    - RATE_VIOLATION: spacecraft rate above rate_limit
+    - RATE_VIOLATION: spacecraft rate below rate_limit
     - CCD_RECOVERY: within dt_recovery seconds after exit from an attitude violation
 
     Parameters
