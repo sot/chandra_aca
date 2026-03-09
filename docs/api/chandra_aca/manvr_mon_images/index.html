@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.manvr_mon_images &#8212; chandra_aca 4.53.0 documentation</title>
+    <title>chandra_aca.manvr_mon_images &#8212; chandra_aca 4.54.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=4b98536b"></script>
+    <script src="../../../_static/documentation_options.js?v=c5c3a2a5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.drift.get_target_aimpoint" href="../drift/get_target_aimpoint.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.53.0" />
+  <meta name="docsearch:version" content="4.54.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.53.0</span></div>
+<span style="font-size: x-large;">4.54.0</span></div>
     
   </div>
   
@@ -391,6 +391,18 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="read_manvr_mon_images.html#chandra_aca.manvr_mon_images.read_manvr_mon_images" title="chandra_aca.manvr_mon_images.read_manvr_mon_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_manvr_mon_images</span></code></a>(start, stop[, t_ccd_ref, ...])</p></td>
 <td><p>Read ACA maneuver monitor window images from archived data files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="get_constraint_flags.html#chandra_aca.manvr_mon_images.get_constraint_flags" title="chandra_aca.manvr_mon_images.get_constraint_flags"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_constraint_flags</span></code></a>(dat[, ela_limit, mla_limit, ...])</p></td>
+<td><p>Get flags of images violating attitude / rate constraints.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="get_att_violations_one.html#chandra_aca.manvr_mon_images.get_att_violations_one" title="chandra_aca.manvr_mon_images.get_att_violations_one"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_att_violations_one</span></code></a>(times, limb_angles, *, idx0, ...)</p></td>
+<td><p>Get attitude violiations in a single maneuver segment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="get_manvr_indices.html#chandra_aca.manvr_mon_images.get_manvr_indices" title="chandra_aca.manvr_mon_images.get_manvr_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_manvr_indices</span></code></a>(mon_imgs)</p></td>
+<td><p>Get indices to split mon_imgs into maneuvers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="get_att_violations.html#chandra_aca.manvr_mon_images.get_att_violations" title="chandra_aca.manvr_mon_images.get_att_violations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_att_violations</span></code></a>(mon_imgs[, ss_obj, angle_limit, ...])</p></td>
+<td><p>Get attitude violations in a <code class="docutils literal notranslate"><span class="pre">mon_imgs</span></code> table for Earth or moon.</p></td>
 </tr>
 </tbody>
 </table>

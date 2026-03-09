@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.manvr_mon_images.read_manvr_mon_images &#8212; chandra_aca 4.53.0 documentation</title>
+    <title>chandra_aca.manvr_mon_images.read_manvr_mon_images &#8212; chandra_aca 4.54.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=4b98536b"></script>
+    <script src="../../../_static/documentation_options.js?v=c5c3a2a5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,11 +50,11 @@
     <link rel="canonical" href="https://sot.github.io/chandra_aca/api/chandra_aca/manvr_mon_images/read_manvr_mon_images.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="chandra_aca.maude_decom" href="../maude_decom/index.html" />
+    <link rel="next" title="chandra_aca.manvr_mon_images.get_constraint_flags" href="get_constraint_flags.html" />
     <link rel="prev" title="chandra_aca.manvr_mon_images.imgs_root_dir_path" href="imgs_root_dir_path.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.53.0" />
+  <meta name="docsearch:version" content="4.54.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.53.0</span></div>
+<span style="font-size: x-large;">4.54.0</span></div>
     
   </div>
   
@@ -351,7 +351,7 @@
 <h1>chandra_aca.manvr_mon_images.read_manvr_mon_images<a class="headerlink" href="#chandra-aca-manvr-mon-images-read-manvr-mon-images" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.manvr_mon_images.read_manvr_mon_images">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.manvr_mon_images.</span></span><span class="sig-name descname"><span class="pre">read_manvr_mon_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_4c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_same_row_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.manvr_mon_images.read_manvr_mon_images" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.manvr_mon_images.</span></span><span class="sig-name descname"><span class="pre">read_manvr_mon_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_4c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_same_row_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.manvr_mon_images.read_manvr_mon_images" title="Link to this definition">#</a></dt>
 <dd><p>Read ACA maneuver monitor window images from archived data files.</p>
 <p>This function loads processed monitor window images from the compressed .npz
 archive files created by save_imgs(). It concatenates data across multiple
@@ -369,6 +369,10 @@ temperature correction is applied. Default is -10.0.</p>
 </dd>
 <dt><strong>scale_4c</strong><span class="classifier">float or None, optional</span></dt><dd><p>Scaling factor in dark current temperature dependence. If None, uses default
 from dark_temp_scale(). Default is None.</p>
+</dd>
+<dt><strong>filter_constraints</strong><span class="classifier">bool or dict, optional</span></dt><dd><p>If True, filter images based on Earth / moon limb angle and rate constraints. If
+a dict, use the dict as keyword arguments to get_constraint_flags() to specify
+custom constraints. Default is False.</p>
 </dd>
 <dt><strong>require_same_row_col</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, only include images where all slots have the same row0 and col0
 values across the entire time range. This uses the median values to filter.
@@ -394,6 +398,7 @@ data_dir/YYYY/DOY/<a href="#id1"><span class="problematic" id="id2">*</span></a>
 - corr_sum_outlier: boolean flag for bgd-subtracted sum outliers [slot]
 - bad_pixels: boolean flag for images with bad pixels [slot]
 - t_ccd: CCD temperatures in Celsius
+- zero_offsets: zero offset values for each quadrant [quad]
 - earth_limb_angle: Earth limb angle in degrees
 - moon_limb_angle: Moon limb angle in degrees
 - rate: spacecraft rate in arcsec/sec
@@ -434,11 +439,11 @@ data_dir/YYYY/DOY/<a href="#id1"><span class="problematic" id="id2">*</span></a>
       </div>
     </a>
     <a class="right-next"
-       href="../maude_decom/index.html"
+       href="get_constraint_flags.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">chandra_aca.maude_decom</p>
+        <p class="prev-next-title">chandra_aca.manvr_mon_images.get_constraint_flags</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

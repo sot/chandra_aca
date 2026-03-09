@@ -1,0 +1,52 @@
+chandra_aca.manvr_mon_images.get_att_violations_one
+===================================================
+
+.. py:function:: chandra_aca.manvr_mon_images.get_att_violations_one(times, limb_angles, *, idx0, angle_limit, dt_recovery)
+
+   
+   Get attitude violiations in a single maneuver segment.
+
+
+   :Parameters:
+
+       **times** : np.ndarray
+           Array of times in CXO seconds.
+
+       **limb_angles** : np.ndarray
+           Array of limb angles in degrees corresponding to times.
+
+       **idx0** : int
+           Starting index offset for the times in the full dataset.
+
+       **angle_limit** : float
+           Minimum acceptable limb angle in degrees.
+
+       **dt_recovery** : float
+           Time in seconds after violation exit at which CCD is considered recovered.
+           Analysis indicates this is nominally around 4 minutes but can vary.
+
+
+
+   :Returns:
+
+       apt.Table or None
+           Table of attitude violation intervals with columns:
+           - tstart: start time of violation interval
+           - tstop: stop time of violation interval
+           - idx_start: starting index of violation interval in full dataset
+           - idx_stop: stopping index of violation interval in full dataset
+           - idx_recovery: index at which CCD is considered recovered
+           - duration: duration of violation interval in seconds
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

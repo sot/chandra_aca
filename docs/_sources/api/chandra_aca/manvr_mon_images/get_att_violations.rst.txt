@@ -1,0 +1,53 @@
+chandra_aca.manvr_mon_images.get_att_violations
+===============================================
+
+.. py:function:: chandra_aca.manvr_mon_images.get_att_violations(mon_imgs, ss_obj='earth+moon', angle_limit=5.0, dt_recovery=300.0)
+
+   
+   Get attitude violations in a ``mon_imgs`` table for Earth or moon.
+
+
+   :Parameters:
+
+       **mon_imgs** : apt.Table
+           Table of monitor window images as returned by read_manvr_mon_images().
+
+       **ss_obj** : str
+           Solar system object to check violations for, either 'earth', 'moon', or
+           'earth+moon' (default).
+
+       **angle_limit** : float
+           Minimum acceptable limb angle in degrees.
+
+       **dt_recovery** : float
+           Time in seconds after violation exit at which CCD is considered recovered.
+           Analysis indicates this is nominally around 4 minutes but can vary.
+           Default is 300 seconds.
+
+
+
+   :Returns:
+
+       apt.Table
+           Table of attitude violation intervals with columns:
+           - start: start time of violation interval (date string U21)
+           - stop: stop time of violation interval (date string U21)
+           - tstart: start time of violation interval (float)
+           - tstop: stop time of violation interval (float)
+           - duration: duration of violation interval in seconds (float)
+           - idx_start: starting index of violation interval in full dataset (int)
+           - idx_stop: stopping index of violation interval in full dataset (int)
+           - idx_recovery: index at which CCD is considered recovered (int)
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

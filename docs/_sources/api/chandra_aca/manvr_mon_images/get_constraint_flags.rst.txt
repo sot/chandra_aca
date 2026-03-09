@@ -1,0 +1,60 @@
+chandra_aca.manvr_mon_images.get_constraint_flags
+=================================================
+
+.. py:function:: chandra_aca.manvr_mon_images.get_constraint_flags(dat, ela_limit = 5.0, mla_limit = 5.0, rate_limit = 40.0, dt_recovery = 300.0)
+
+   
+   Get flags of images violating attitude / rate constraints.
+
+   This emulates expected operational constraints on times when background scans will
+   be commanded.
+
+   The flags are from the ``image_status`` enum:
+
+   - EARTH_VIOLATION: Earth limb angle below ela_limit
+   - MOON_VIOLATION: Moon limb angle below mla_limit
+   - RATE_VIOLATION: spacecraft rate below rate_limit
+   - CCD_RECOVERY: within dt_recovery seconds after exit from an attitude violation
+
+   :Parameters:
+
+       **dat** : apt.Table
+           Table containing monitor window images as returned by read_manvr_mon_images().
+
+       **ela_limit** : float or None, optional
+           Minimum acceptable Earth limb angle in degrees. Images with smaller angles are
+           excluded. If None, no filtering on Earth limb angle is applied. Default is 5.0
+           degrees.
+
+       **mla_limit** : float or None, optional
+           Minimum acceptable Moon limb angle in degrees. Images with smaller angles are
+           excluded. If None, no filtering on Moon limb angle is applied. Default is 5.0
+           degrees.
+
+       **rate_limit** : float or None, optional
+           Minimum acceptable rate (arcsec/sec). Images with smaller rates are excluded. If
+           None, no filtering on rate is applied. Default is 40.0.
+
+       **dt_recovery** : float or None, optional
+           Time in seconds after an attitude limb violation during which images are also
+           excluded. Default is 300 seconds.
+
+
+
+   :Returns:
+
+       **flags** : np.ndarray[np.uint8]
+           Bit mask flag array indicating which images to exclude (1) based on constraints.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

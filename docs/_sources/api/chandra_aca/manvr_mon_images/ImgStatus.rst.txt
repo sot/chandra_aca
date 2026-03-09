@@ -35,3 +35,15 @@ chandra_aca.manvr_mon_images.ImgStatus
 
    .. py:attribute:: HAS_BAD_PIX
 
+
+   .. py:attribute:: EARTH_VIOLATION
+
+
+   .. py:attribute:: MOON_VIOLATION
+
+
+   .. py:attribute:: RATE_VIOLATION
+
+
+   .. py:attribute:: CCD_RECOVERY
+

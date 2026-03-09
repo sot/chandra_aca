@@ -1,7 +1,7 @@
 chandra_aca.manvr_mon_images.read_manvr_mon_images
 ==================================================
 
-.. py:function:: chandra_aca.manvr_mon_images.read_manvr_mon_images(start, stop, t_ccd_ref = -10.0, scale_4c = None, require_same_row_col = True, exact_interval = False, data_dir = None)
+.. py:function:: chandra_aca.manvr_mon_images.read_manvr_mon_images(start, stop, t_ccd_ref = -10.0, scale_4c = None, filter_constraints = False, require_same_row_col = True, exact_interval = False, data_dir = None)
 
    
    Read ACA maneuver monitor window images from archived data files.
@@ -26,6 +26,11 @@ chandra_aca.manvr_mon_images.read_manvr_mon_images
        **scale_4c** : float or None, optional
            Scaling factor in dark current temperature dependence. If None, uses default
            from dark_temp_scale(). Default is None.
+
+       **filter_constraints** : bool or dict, optional
+           If True, filter images based on Earth / moon limb angle and rate constraints. If
+           a dict, use the dict as keyword arguments to get_constraint_flags() to specify
+           custom constraints. Default is False.
 
        **require_same_row_col** : bool, optional
            If True, only include images where all slots have the same row0 and col0
@@ -55,6 +60,7 @@ chandra_aca.manvr_mon_images.read_manvr_mon_images
            - corr_sum_outlier: boolean flag for bgd-subtracted sum outliers [slot]
            - bad_pixels: boolean flag for images with bad pixels [slot]
            - t_ccd: CCD temperatures in Celsius
+           - zero_offsets: zero offset values for each quadrant [quad]
            - earth_limb_angle: Earth limb angle in degrees
            - moon_limb_angle: Moon limb angle in degrees
            - rate: spacecraft rate in arcsec/sec

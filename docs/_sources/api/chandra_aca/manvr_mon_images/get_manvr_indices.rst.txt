@@ -1,0 +1,37 @@
+chandra_aca.manvr_mon_images.get_manvr_indices
+==============================================
+
+.. py:function:: chandra_aca.manvr_mon_images.get_manvr_indices(mon_imgs)
+
+   
+   Get indices to split mon_imgs into maneuvers.
+
+   Since the table is already sorted by idx_manvr, this is a faster more-lightweight
+   way to get maneuver boundaries than using astropy ``group_by("idx_manvr")``.
+
+   :Parameters:
+
+       **mon_imgs** : apt.Table
+           Table of monitor window images as returned by read_manvr_mon_images().
+
+
+
+   :Returns:
+
+       np.ndarray
+           Array of indices into mon_imgs that mark the start of each maneuver, with
+           the final index being the length of mon_imgs. This is conveniently used with
+           itertools.pairwise().
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

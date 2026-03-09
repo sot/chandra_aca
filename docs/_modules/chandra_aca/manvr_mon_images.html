@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.manvr_mon_images &#8212; chandra_aca 4.53.0 documentation</title>
+    <title>chandra_aca.manvr_mon_images &#8212; chandra_aca 4.54.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=4b98536b"></script>
+    <script src="../../_static/documentation_options.js?v=c5c3a2a5"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.53.0" />
+  <meta name="docsearch:version" content="4.54.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.53.0</span></div>
+<span style="font-size: x-large;">4.54.0</span></div>
     
   </div>
   
@@ -344,6 +344,7 @@
 
 <span class="c1"># Standard library imports</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span>
@@ -374,9 +375,13 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">ImgStatus</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Bit flags for image masks.&quot;&quot;&quot;</span>
 
-    <span class="n">SUM_OUTLIER</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mb">0b001</span><span class="p">)</span>
-    <span class="n">CORR_SUM_OUTLIER</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mb">0b010</span><span class="p">)</span>
-    <span class="n">HAS_BAD_PIX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mb">0b100</span><span class="p">)</span>
+    <span class="n">SUM_OUTLIER</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">CORR_SUM_OUTLIER</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">HAS_BAD_PIX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">EARTH_VIOLATION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">MOON_VIOLATION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">RATE_VIOLATION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>
+    <span class="n">CCD_RECOVERY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_years_doys</span><span class="p">(</span>
@@ -403,6 +408,7 @@
     <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
     <span class="n">t_ccd_ref</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span>
     <span class="n">scale_4c</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_constraints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">require_same_row_col</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">exact_interval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">data_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -426,6 +432,10 @@
 <span class="sd">    scale_4c : float or None, optional</span>
 <span class="sd">        Scaling factor in dark current temperature dependence. If None, uses default</span>
 <span class="sd">        from dark_temp_scale(). Default is None.</span>
+<span class="sd">    filter_constraints : bool or dict, optional</span>
+<span class="sd">        If True, filter images based on Earth / moon limb angle and rate constraints. If</span>
+<span class="sd">        a dict, use the dict as keyword arguments to get_constraint_flags() to specify</span>
+<span class="sd">        custom constraints. Default is False.</span>
 <span class="sd">    require_same_row_col : bool, optional</span>
 <span class="sd">        If True, only include images where all slots have the same row0 and col0</span>
 <span class="sd">        values across the entire time range. This uses the median values to filter.</span>
@@ -450,6 +460,7 @@
 <span class="sd">        - corr_sum_outlier: boolean flag for bgd-subtracted sum outliers [slot]</span>
 <span class="sd">        - bad_pixels: boolean flag for images with bad pixels [slot]</span>
 <span class="sd">        - t_ccd: CCD temperatures in Celsius</span>
+<span class="sd">        - zero_offsets: zero offset values for each quadrant [quad]</span>
 <span class="sd">        - earth_limb_angle: Earth limb angle in degrees</span>
 <span class="sd">        - moon_limb_angle: Moon limb angle in degrees</span>
 <span class="sd">        - rate: spacecraft rate in arcsec/sec</span>
@@ -477,6 +488,7 @@
     <span class="n">moon_limb_angles_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">rates_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">idx_manvrs_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">zero_offsets_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">idx_manvr</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">for</span> <span class="n">year</span><span class="p">,</span> <span class="n">doy</span> <span class="ow">in</span> <span class="n">get_years_doys</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
@@ -495,6 +507,7 @@
                 <span class="n">t_ccds</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;t_ccd&quot;</span><span class="p">]</span>
                 <span class="n">t_ccds</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_ccds</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
                 <span class="n">t_ccds_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_ccds</span><span class="p">)</span>
+                <span class="n">zero_offsets_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;zero_offsets&quot;</span><span class="p">])</span>
                 <span class="n">earth_limb_angles_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;earth_limb_angle&quot;</span><span class="p">])</span>
                 <span class="n">moon_limb_angles_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;moon_limb_angle&quot;</span><span class="p">])</span>
                 <span class="n">rates_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">])</span>
@@ -512,6 +525,7 @@
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;corr_sum_outlier&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">masks</span> <span class="o">&amp;</span> <span class="n">ImgStatus</span><span class="o">.</span><span class="n">CORR_SUM_OUTLIER</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;bad_pixels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">masks</span> <span class="o">&amp;</span> <span class="n">ImgStatus</span><span class="o">.</span><span class="n">HAS_BAD_PIX</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;t_ccd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">t_ccds_list</span><span class="p">)</span>
+    <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;zero_offsets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">zero_offsets_list</span><span class="p">)</span>
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;earth_limb_angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">earth_limb_angles_list</span><span class="p">)</span>
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;moon_limb_angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">moon_limb_angles_list</span><span class="p">)</span>
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">rates_list</span><span class="p">)</span>
@@ -569,7 +583,240 @@
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;img_corr&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">&quot;.0f&quot;</span>
     <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;t_ccd&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span>
 
+    <span class="k">if</span> <span class="n">filter_constraints</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">filter_constraints</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_constraints</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="n">get_constraint_flags</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="n">flags</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+
     <span class="k">return</span> <span class="n">dat</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_constraint_flags</span><span class="p">(</span>
+    <span class="n">dat</span><span class="p">,</span>
+    <span class="n">ela_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">mla_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">rate_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">40.0</span><span class="p">,</span>
+    <span class="n">dt_recovery</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">300.0</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get flags of images violating attitude / rate constraints.</span>
+
+<span class="sd">    This emulates expected operational constraints on times when background scans will</span>
+<span class="sd">    be commanded.</span>
+
+<span class="sd">    The flags are from the ``image_status`` enum:</span>
+
+<span class="sd">    - EARTH_VIOLATION: Earth limb angle below ela_limit</span>
+<span class="sd">    - MOON_VIOLATION: Moon limb angle below mla_limit</span>
+<span class="sd">    - RATE_VIOLATION: spacecraft rate below rate_limit</span>
+<span class="sd">    - CCD_RECOVERY: within dt_recovery seconds after exit from an attitude violation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dat : apt.Table</span>
+<span class="sd">        Table containing monitor window images as returned by read_manvr_mon_images().</span>
+<span class="sd">    ela_limit : float or None, optional</span>
+<span class="sd">        Minimum acceptable Earth limb angle in degrees. Images with smaller angles are</span>
+<span class="sd">        excluded. If None, no filtering on Earth limb angle is applied. Default is 5.0</span>
+<span class="sd">        degrees.</span>
+<span class="sd">    mla_limit : float or None, optional</span>
+<span class="sd">        Minimum acceptable Moon limb angle in degrees. Images with smaller angles are</span>
+<span class="sd">        excluded. If None, no filtering on Moon limb angle is applied. Default is 5.0</span>
+<span class="sd">        degrees.</span>
+<span class="sd">    rate_limit : float or None, optional</span>
+<span class="sd">        Minimum acceptable rate (arcsec/sec). Images with smaller rates are excluded. If</span>
+<span class="sd">        None, no filtering on rate is applied. Default is 40.0.</span>
+<span class="sd">    dt_recovery : float or None, optional</span>
+<span class="sd">        Time in seconds after an attitude limb violation during which images are also</span>
+<span class="sd">        excluded. Default is 300 seconds.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    flags : np.ndarray[np.uint8]</span>
+<span class="sd">        Bit mask flag array indicating which images to exclude (1) based on constraints.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">n_samp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samp</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ss_obj</span><span class="p">,</span> <span class="n">angle_limit</span><span class="p">,</span> <span class="n">mask_value</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span> <span class="n">ela_limit</span><span class="p">,</span> <span class="n">ImgStatus</span><span class="o">.</span><span class="n">EARTH_VIOLATION</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;moon&quot;</span><span class="p">,</span> <span class="n">mla_limit</span><span class="p">,</span> <span class="n">ImgStatus</span><span class="o">.</span><span class="n">MOON_VIOLATION</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">angle_limit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">viols</span> <span class="o">=</span> <span class="n">get_att_violations</span><span class="p">(</span>
+            <span class="n">dat</span><span class="p">,</span>
+            <span class="n">ss_obj</span><span class="o">=</span><span class="n">ss_obj</span><span class="p">,</span>
+            <span class="n">angle_limit</span><span class="o">=</span><span class="n">angle_limit</span><span class="p">,</span>
+            <span class="n">dt_recovery</span><span class="o">=</span><span class="n">dt_recovery</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">viol</span> <span class="ow">in</span> <span class="n">viols</span><span class="p">:</span>
+            <span class="n">idx_flag</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">viol</span><span class="p">[</span><span class="s2">&quot;idx_start&quot;</span><span class="p">],</span> <span class="n">viol</span><span class="p">[</span><span class="s2">&quot;idx_stop&quot;</span><span class="p">])</span>
+            <span class="n">flags</span><span class="p">[</span><span class="n">idx_flag</span><span class="p">]</span> <span class="o">|=</span> <span class="n">mask_value</span>
+            <span class="n">idx_flag</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">viol</span><span class="p">[</span><span class="s2">&quot;idx_stop&quot;</span><span class="p">],</span> <span class="n">viol</span><span class="p">[</span><span class="s2">&quot;idx_recovery&quot;</span><span class="p">])</span>
+            <span class="n">flags</span><span class="p">[</span><span class="n">idx_flag</span><span class="p">]</span> <span class="o">|=</span> <span class="n">ImgStatus</span><span class="o">.</span><span class="n">CCD_RECOVERY</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">if</span> <span class="n">rate_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rate_viol</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rate_limit</span>
+        <span class="n">flags</span><span class="p">[</span><span class="n">rate_viol</span><span class="p">]</span> <span class="o">|=</span> <span class="n">ImgStatus</span><span class="o">.</span><span class="n">RATE_VIOLATION</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">flags</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_att_violations_one</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">,</span>
+    <span class="n">limb_angles</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">idx0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">angle_limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">dt_recovery</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get attitude violiations in a single maneuver segment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : np.ndarray</span>
+<span class="sd">        Array of times in CXO seconds.</span>
+<span class="sd">    limb_angles : np.ndarray</span>
+<span class="sd">        Array of limb angles in degrees corresponding to times.</span>
+<span class="sd">    idx0 : int</span>
+<span class="sd">        Starting index offset for the times in the full dataset.</span>
+<span class="sd">    angle_limit : float</span>
+<span class="sd">        Minimum acceptable limb angle in degrees.</span>
+<span class="sd">    dt_recovery : float</span>
+<span class="sd">        Time in seconds after violation exit at which CCD is considered recovered.</span>
+<span class="sd">        Analysis indicates this is nominally around 4 minutes but can vary.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    apt.Table or None</span>
+<span class="sd">        Table of attitude violation intervals with columns:</span>
+<span class="sd">        - tstart: start time of violation interval</span>
+<span class="sd">        - tstop: stop time of violation interval</span>
+<span class="sd">        - idx_start: starting index of violation interval in full dataset</span>
+<span class="sd">        - idx_stop: stopping index of violation interval in full dataset</span>
+<span class="sd">        - idx_recovery: index at which CCD is considered recovered</span>
+<span class="sd">        - duration: duration of violation interval in seconds</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cheta.utils</span>
+
+    <span class="n">att_viols</span> <span class="o">=</span> <span class="n">cheta</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">logical_intervals</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">limb_angles</span> <span class="o">&lt;</span> <span class="n">angle_limit</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">att_viols</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">i0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">att_viols</span><span class="p">[</span><span class="s2">&quot;tstart&quot;</span><span class="p">])</span>
+    <span class="n">i1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">att_viols</span><span class="p">[</span><span class="s2">&quot;tstop&quot;</span><span class="p">])</span>
+    <span class="n">i_recovery</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">att_viols</span><span class="p">[</span><span class="s2">&quot;tstop&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">dt_recovery</span><span class="p">)</span>
+
+    <span class="n">att_viols</span><span class="p">[</span><span class="s2">&quot;idx_start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i0</span> <span class="o">+</span> <span class="n">idx0</span>
+    <span class="n">att_viols</span><span class="p">[</span><span class="s2">&quot;idx_stop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i1</span> <span class="o">+</span> <span class="n">idx0</span>
+    <span class="n">att_viols</span><span class="p">[</span><span class="s2">&quot;idx_recovery&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_recovery</span> <span class="o">+</span> <span class="n">idx0</span>
+
+    <span class="k">return</span> <span class="n">att_viols</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_manvr_indices</span><span class="p">(</span><span class="n">mon_imgs</span><span class="p">:</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get indices to split mon_imgs into maneuvers.</span>
+
+<span class="sd">    Since the table is already sorted by idx_manvr, this is a faster more-lightweight</span>
+<span class="sd">    way to get maneuver boundaries than using astropy ``group_by(&quot;idx_manvr&quot;)``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mon_imgs : apt.Table</span>
+<span class="sd">        Table of monitor window images as returned by read_manvr_mon_images().</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Array of indices into mon_imgs that mark the start of each maneuver, with</span>
+<span class="sd">        the final index being the length of mon_imgs. This is conveniently used with</span>
+<span class="sd">        itertools.pairwise().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">indices_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">mon_imgs</span><span class="p">[</span><span class="s2">&quot;idx_manvr&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">indices_</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">mon_imgs</span><span class="p">)]])</span>
+    <span class="k">return</span> <span class="n">indices</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_att_violations</span><span class="p">(</span>
+    <span class="n">mon_imgs</span><span class="p">,</span>
+    <span class="n">ss_obj</span><span class="o">=</span><span class="s2">&quot;earth+moon&quot;</span><span class="p">,</span>
+    <span class="n">angle_limit</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">dt_recovery</span><span class="o">=</span><span class="mf">300.0</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get attitude violations in a ``mon_imgs`` table for Earth or moon.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mon_imgs : apt.Table</span>
+<span class="sd">        Table of monitor window images as returned by read_manvr_mon_images().</span>
+<span class="sd">    ss_obj : str</span>
+<span class="sd">        Solar system object to check violations for, either &#39;earth&#39;, &#39;moon&#39;, or</span>
+<span class="sd">        &#39;earth+moon&#39; (default).</span>
+<span class="sd">    angle_limit : float</span>
+<span class="sd">        Minimum acceptable limb angle in degrees.</span>
+<span class="sd">    dt_recovery : float</span>
+<span class="sd">        Time in seconds after violation exit at which CCD is considered recovered.</span>
+<span class="sd">        Analysis indicates this is nominally around 4 minutes but can vary.</span>
+<span class="sd">        Default is 300 seconds.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    apt.Table</span>
+<span class="sd">        Table of attitude violation intervals with columns:</span>
+<span class="sd">        - start: start time of violation interval (date string U21)</span>
+<span class="sd">        - stop: stop time of violation interval (date string U21)</span>
+<span class="sd">        - tstart: start time of violation interval (float)</span>
+<span class="sd">        - tstop: stop time of violation interval (float)</span>
+<span class="sd">        - duration: duration of violation interval in seconds (float)</span>
+<span class="sd">        - idx_start: starting index of violation interval in full dataset (int)</span>
+<span class="sd">        - idx_stop: stopping index of violation interval in full dataset (int)</span>
+<span class="sd">        - idx_recovery: index at which CCD is considered recovered (int)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">att_viols_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">pairwise</span><span class="p">(</span><span class="n">get_manvr_indices</span><span class="p">(</span><span class="n">mon_imgs</span><span class="p">)):</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">mon_imgs</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">][</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span>
+
+        <span class="n">limb_angles</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+                <span class="n">mon_imgs</span><span class="p">[</span><span class="s2">&quot;earth_limb_angle&quot;</span><span class="p">][</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span>
+                <span class="n">mon_imgs</span><span class="p">[</span><span class="s2">&quot;moon_limb_angle&quot;</span><span class="p">][</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">ss_obj</span> <span class="o">==</span> <span class="s2">&quot;earth+moon&quot;</span>
+            <span class="k">else</span> <span class="n">mon_imgs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ss_obj</span><span class="si">}</span><span class="s2">_limb_angle&quot;</span><span class="p">][</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">att_viol</span> <span class="o">=</span> <span class="n">get_att_violations_one</span><span class="p">(</span>
+            <span class="n">times</span><span class="p">,</span>
+            <span class="n">limb_angles</span><span class="p">,</span>
+            <span class="n">idx0</span><span class="o">=</span><span class="n">i0</span><span class="p">,</span>
+            <span class="n">angle_limit</span><span class="o">=</span><span class="n">angle_limit</span><span class="p">,</span>
+            <span class="n">dt_recovery</span><span class="o">=</span><span class="n">dt_recovery</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">att_viol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">att_viol</span><span class="p">[</span><span class="s2">&quot;idx_manvr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mon_imgs</span><span class="p">[</span><span class="s2">&quot;idx_manvr&quot;</span><span class="p">][</span><span class="n">i0</span><span class="p">]</span>
+            <span class="n">att_viols_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_viol</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">att_viols_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Create zero-length table with the expected columns and dtypes from docstring</span>
+        <span class="n">att_viols</span> <span class="o">=</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;U21&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;U21&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;tstart&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                <span class="s2">&quot;tstop&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                <span class="s2">&quot;idx_start&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+                <span class="s2">&quot;idx_stop&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+                <span class="s2">&quot;idx_recovery&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+                <span class="s2">&quot;idx_manvr&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">att_viols</span> <span class="o">=</span> <span class="n">apt</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">att_viols_list</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">att_viols</span>
 </pre></div>
 
                 </article>

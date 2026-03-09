@@ -43,12 +43,20 @@ Functions
    /api/chandra_aca/manvr_mon_images/get_years_doys
    /api/chandra_aca/manvr_mon_images/imgs_root_dir_path
    /api/chandra_aca/manvr_mon_images/read_manvr_mon_images
+   /api/chandra_aca/manvr_mon_images/get_constraint_flags
+   /api/chandra_aca/manvr_mon_images/get_att_violations_one
+   /api/chandra_aca/manvr_mon_images/get_manvr_indices
+   /api/chandra_aca/manvr_mon_images/get_att_violations
 
 .. autoapisummary::
 
    chandra_aca.manvr_mon_images.get_years_doys
    chandra_aca.manvr_mon_images.imgs_root_dir_path
    chandra_aca.manvr_mon_images.read_manvr_mon_images
+   chandra_aca.manvr_mon_images.get_constraint_flags
+   chandra_aca.manvr_mon_images.get_att_violations_one
+   chandra_aca.manvr_mon_images.get_manvr_indices
+   chandra_aca.manvr_mon_images.get_att_violations
 
 
 Module Contents
