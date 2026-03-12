@@ -72,11 +72,11 @@ def get_tccd_data(
 
     yin = dat.vals.copy()
 
-    if median_window > 0:
+    if median_window > 0 and len(yin) > median_window:
         # Filter the data using a median filter from scipy
         yin = scipy.signal.medfilt(yin, kernel_size=median_window)
 
-    if smooth_window > 0:
+    if smooth_window > 0 and len(yin) > smooth_window:
         # And then smooth it with hanning and window_len = smooth_window
         yin = smooth(yin, window_len=smooth_window)
 
