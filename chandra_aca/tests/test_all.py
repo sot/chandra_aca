@@ -14,6 +14,9 @@ from Quaternion import Quat
 import chandra_aca
 from chandra_aca import drift
 from chandra_aca.transform import (
+    PIX_TO_ANG_FLIGHT,
+    _poly_convert,
+    _poly_convert_numba,
     calc_aca_from_targ,
     calc_target_offsets,
     eci_to_radec,
@@ -24,6 +27,8 @@ from chandra_aca.transform import (
     yagzag_to_pixels,
     yagzag_to_radec,
 )
+
+os.environ["CHANDRA_ACA_TRANSFORM_USE_LEGACY_COEFFS"] = "1"
 
 dirname = os.path.dirname(__file__)
 
@@ -161,6 +166,19 @@ def test_pix_zero_loc():
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
 
 
+def test_yagzag_to_pixels_nd_input():
+    row = np.arange(24.0).reshape(2, 3, 4) - 12.0
+    col = np.arange(24.0).reshape(2, 3, 4) * 0.5 - 6.0
+
+    yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=20.0)
+    row_rt, col_rt = chandra_aca.yagzag_to_pixels(yang, zang, t_aca=20.0)
+
+    assert row_rt.shape == row.shape
+    assert col_rt.shape == col.shape
+    np.testing.assert_allclose(row_rt, row, rtol=0, atol=0.01)
+    np.testing.assert_allclose(col_rt, col, rtol=0, atol=0.01)
+
+
 @pytest.mark.parametrize(
     "func", [chandra_aca.pixels_to_yagzag, chandra_aca.yagzag_to_pixels]
 )
@@ -187,6 +205,28 @@ def test_transform_broadcast(func):
     assert isinstance(z, np.float64)
     assert not isinstance(y, np.ndarray)
     assert not isinstance(z, np.ndarray)
+
+
+def test_poly_convert_numba_scalar():
+    r = 100.0
+    c = -200.0
+    t_aca = 22.5
+
+    yag_legacy, _ = _poly_convert(r, c, PIX_TO_ANG_FLIGHT.transpose(), t_aca)
+    yag_numba = _poly_convert_numba(r, c, PIX_TO_ANG_FLIGHT[0], t_aca)
+
+    assert np.isclose(yag_legacy, yag_numba, rtol=0, atol=1e-12)
+
+
+def test_poly_convert_numba_array():
+    r = np.array([-200.0, 0.0, 100.0, 300.0])
+    c = np.array([250.0, -10.0, 20.0, -400.0])
+    t_aca = 15.0
+
+    _, zags_legacy = _poly_convert(r, c, PIX_TO_ANG_FLIGHT.transpose(), t_aca)
+    zags_numba = _poly_convert_numba(r, c, PIX_TO_ANG_FLIGHT[1], t_aca)
+
+    np.testing.assert_allclose(zags_numba, zags_legacy, rtol=0, atol=1e-12)
 
 
 def test_radec_to_yagzag():
