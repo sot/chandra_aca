@@ -138,6 +138,7 @@ PIX_TO_ANG_GROUND = np.array(
         [-3.82947347e-09, 9.81968414e-09],
         [-3.87317729e-07, 3.94460903e-06],
     ],
+    dtype=np.float64,
 ).transpose()
 
 # Coefficients for converting from ACA angle (yag, zag) (arcsec) to pixel (row, col)
@@ -187,6 +188,7 @@ ANG_TO_PIX_GROUND = np.array(
         [-7.15660261e-12, 3.04028795e-12],
         [-1.54074493e-07, 3.94104327e-07],
     ],
+    dtype=np.float64,
 ).transpose()
 
 # Define flight pixel to angle coefficents with a name that is consistent with new
@@ -388,12 +390,17 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
     shape, yangs, zangs = broadcast_arrays_flatten(yang, zang)
     yangs = np.atleast_1d(yangs).astype(np.float64)
     zangs = np.atleast_1d(zangs).astype(np.float64)
+    t_aca = float(t_aca)
 
     coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
+    coeff_y = coeff[0]
+    coeff_z = coeff[1]
+    coeff_row0 = ANG_TO_PIX_GROUND[0]
+    coeff_col0 = ANG_TO_PIX_GROUND[1]
 
     # Starting values for minimization
-    row0s = _poly_convert_numba(yangs, zangs, ANG_TO_PIX_GROUND[0], t_aca=t_aca)
-    col0s = _poly_convert_numba(yangs, zangs, ANG_TO_PIX_GROUND[1], t_aca=t_aca)
+    row0s = _poly_convert_numba_jit(yangs, zangs, coeff_row0, t_aca)
+    col0s = _poly_convert_numba_jit(yangs, zangs, coeff_col0, t_aca)
     rows = row0s.copy()
     cols = col0s.copy()
 
@@ -410,8 +417,8 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
     inv11 = dy_dr / det
 
     for _ in range(max_iter):
-        y_est = _poly_convert_numba(rows, cols, coeff[0], t_aca=t_aca)
-        z_est = _poly_convert_numba(rows, cols, coeff[1], t_aca=t_aca)
+        y_est = _poly_convert_numba_jit(rows, cols, coeff_y, t_aca)
+        z_est = _poly_convert_numba_jit(rows, cols, coeff_z, t_aca)
         dy = y_est - yangs
         dz = z_est - zangs
 
