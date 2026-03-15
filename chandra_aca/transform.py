@@ -353,9 +353,9 @@ def yagzag_to_pixels(
     use_legacy = "CHANDRA_ACA_TRANSFORM_USE_LEGACY_COEFFS" in os.environ
 
     if use_legacy:
-        row, col = _poly_convert(yang, zang, ACA2PIX_coeff)
+        row, col = _poly_convert(yang, zang, ACA2PIX_coeff, t_aca=t_aca)
     else:
-        row, col = _yagzag_to_pixels_by_inversion(
+        row, col = _yagzag_to_pixels_by_inversion_newton(
             yang, zang, t_aca=t_aca, flight=flight
         )
 
@@ -375,6 +375,62 @@ def yagzag_to_pixels(
     return row, col
 
 
+def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
+    """Use Newton iterations to transform yang/zang to row/col.
+
+    This directly inverts ``pixels_to_yagzag`` using a fast fixed-Jacobian
+    Newton update. Accuracy target is ~0.05 arcsec in y/z.
+    """
+
+    tol = 0.05
+    max_iter = 6
+
+    shape, yangs, zangs = broadcast_arrays_flatten(yang, zang)
+    yangs = np.atleast_1d(yangs).astype(np.float64)
+    zangs = np.atleast_1d(zangs).astype(np.float64)
+
+    coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
+
+    # Starting values for minimization
+    row0s = _poly_convert_numba(yangs, zangs, ANG_TO_PIX_GROUND[0], t_aca=t_aca)
+    col0s = _poly_convert_numba(yangs, zangs, ANG_TO_PIX_GROUND[1], t_aca=t_aca)
+    rows = row0s.copy()
+    cols = col0s.copy()
+
+    # Fixed Jacobian from dominant linear terms around nominal plate scale
+    dy_dc = coeff[0][1]
+    dy_dr = coeff[0][2]
+    dz_dc = coeff[1][1]
+    dz_dr = coeff[1][2]
+    det = dy_dr * dz_dc - dy_dc * dz_dr
+
+    inv00 = dz_dc / det
+    inv01 = -dy_dc / det
+    inv10 = -dz_dr / det
+    inv11 = dy_dr / det
+
+    for _ in range(max_iter):
+        y_est = _poly_convert_numba(rows, cols, coeff[0], t_aca=t_aca)
+        z_est = _poly_convert_numba(rows, cols, coeff[1], t_aca=t_aca)
+        dy = y_est - yangs
+        dz = z_est - zangs
+
+        if np.max(np.abs(dy)) <= tol and np.max(np.abs(dz)) <= tol:
+            break
+
+        drow = inv00 * dy + inv01 * dz
+        dcol = inv10 * dy + inv11 * dz
+        rows -= drow
+        cols -= dcol
+
+    if shape:
+        rows.shape = shape
+        cols.shape = shape
+        return rows, cols
+    else:
+        return rows[0], cols[0]
+
+
 def _yagzag_to_pixels_by_inversion(yang, zang, t_aca, flight):
     """Use scipy.optimize.minimize to transform yang/zang to row/col
 
@@ -392,7 +448,7 @@ def _yagzag_to_pixels_by_inversion(yang, zang, t_aca, flight):
     rows = np.empty_like(yangs)
     cols = np.empty_like(zangs)
     for ii, row0, col0, yang0, zang0 in zip(
-        itertools.count(), row0s, col0s, yangs, zangs
+        itertools.count(), row0s, col0s, yangs, zangs, strict=False
     ):
 
         def min_func(rc):
@@ -413,7 +469,7 @@ def _yagzag_to_pixels_by_inversion(yang, zang, t_aca, flight):
         return rows[0], cols[0]
 
 
-def _poly_convert(y, z, coeffs, t_aca=None):
+def _poly_convert(y, z, coeffs, t_aca):
     # Convert to avoid overflow errors with the polys on int32
     y = np.asarray(y, dtype=np.float64)
     z = np.asarray(z, dtype=np.float64)
