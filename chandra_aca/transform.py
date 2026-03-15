@@ -398,12 +398,6 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
     coeff_row0 = ANG_TO_PIX_GROUND[0]
     coeff_col0 = ANG_TO_PIX_GROUND[1]
 
-    # Starting values for minimization
-    row0s = _poly_convert_numba_jit(yangs, zangs, coeff_row0, t_aca)
-    col0s = _poly_convert_numba_jit(yangs, zangs, coeff_col0, t_aca)
-    rows = row0s.copy()
-    cols = col0s.copy()
-
     # Fixed Jacobian from dominant linear terms around nominal plate scale
     dy_dc = coeff[0][1]
     dy_dr = coeff[0][2]
@@ -416,19 +410,21 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
     inv10 = -dz_dr / det
     inv11 = dy_dr / det
 
-    for _ in range(max_iter):
-        y_est = _poly_convert_numba_jit(rows, cols, coeff_y, t_aca)
-        z_est = _poly_convert_numba_jit(rows, cols, coeff_z, t_aca)
-        dy = y_est - yangs
-        dz = z_est - zangs
-
-        if np.max(np.abs(dy)) <= tol and np.max(np.abs(dz)) <= tol:
-            break
-
-        drow = inv00 * dy + inv01 * dz
-        dcol = inv10 * dy + inv11 * dz
-        rows -= drow
-        cols -= dcol
+    rows, cols = _yagzag_to_pixels_by_inversion_newton_jit(
+        yangs,
+        zangs,
+        coeff_y,
+        coeff_z,
+        coeff_row0,
+        coeff_col0,
+        t_aca,
+        tol,
+        max_iter,
+        inv00,
+        inv01,
+        inv10,
+        inv11,
+    )
 
     if shape:
         rows.shape = shape
@@ -547,31 +543,83 @@ def _poly_convert_numba_jit(
     for ii in range(r.size):
         rr = r[ii]
         cc = c[ii]
-        t = t_aca
-
-        out[ii] = (
-            coeffs[0]
-            + coeffs[1] * cc
-            + coeffs[2] * rr
-            + coeffs[3] * t
-            + coeffs[4] * cc * cc
-            + coeffs[5] * cc * rr
-            + coeffs[6] * cc * t
-            + coeffs[7] * rr * rr
-            + coeffs[8] * rr * t
-            + coeffs[9] * t * t
-            + coeffs[10] * cc * cc * cc
-            + coeffs[11] * rr * cc * cc
-            + coeffs[12] * t * cc * cc
-            + coeffs[13] * cc * rr * rr
-            + coeffs[14] * cc * rr * t
-            + coeffs[15] * cc * t * t
-            + coeffs[16] * rr * rr * rr
-            + coeffs[17] * t * rr * rr
-            + coeffs[18] * rr * t * t
-        )
+        out[ii] = _poly_eval_scalar_numba(rr, cc, coeffs, t_aca)
 
     return out
+
+
+@numba.njit(cache=True)
+def _poly_eval_scalar_numba(
+    r: float, c: float, coeffs: np.ndarray, t_aca: float
+) -> float:
+    return (
+        coeffs[0]
+        + coeffs[1] * c
+        + coeffs[2] * r
+        + coeffs[3] * t_aca
+        + coeffs[4] * c * c
+        + coeffs[5] * c * r
+        + coeffs[6] * c * t_aca
+        + coeffs[7] * r * r
+        + coeffs[8] * r * t_aca
+        + coeffs[9] * t_aca * t_aca
+        + coeffs[10] * c * c * c
+        + coeffs[11] * r * c * c
+        + coeffs[12] * t_aca * c * c
+        + coeffs[13] * c * r * r
+        + coeffs[14] * c * r * t_aca
+        + coeffs[15] * c * t_aca * t_aca
+        + coeffs[16] * r * r * r
+        + coeffs[17] * t_aca * r * r
+        + coeffs[18] * r * t_aca * t_aca
+    )
+
+
+@numba.njit(cache=True)
+def _yagzag_to_pixels_by_inversion_newton_jit(
+    yangs: np.ndarray,
+    zangs: np.ndarray,
+    coeff_y: np.ndarray,
+    coeff_z: np.ndarray,
+    coeff_row0: np.ndarray,
+    coeff_col0: np.ndarray,
+    t_aca: float,
+    tol: float,
+    max_iter: int,
+    inv00: float,
+    inv01: float,
+    inv10: float,
+    inv11: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    rows = np.empty_like(yangs)
+    cols = np.empty_like(zangs)
+
+    for ii in range(yangs.size):
+        yang0 = yangs[ii]
+        zang0 = zangs[ii]
+
+        row = _poly_eval_scalar_numba(yang0, zang0, coeff_row0, t_aca)
+        col = _poly_eval_scalar_numba(yang0, zang0, coeff_col0, t_aca)
+
+        for _ in range(max_iter):
+            y_est = _poly_eval_scalar_numba(row, col, coeff_y, t_aca)
+            z_est = _poly_eval_scalar_numba(row, col, coeff_z, t_aca)
+
+            dy = y_est - yang0
+            dz = z_est - zang0
+
+            if abs(dy) <= tol and abs(dz) <= tol:
+                break
+
+            drow = inv00 * dy + inv01 * dz
+            dcol = inv10 * dy + inv11 * dz
+            row -= drow
+            col -= dcol
+
+        rows[ii] = row
+        cols[ii] = col
+
+    return rows, cols
 
 
 def _poly_convert_numba(
