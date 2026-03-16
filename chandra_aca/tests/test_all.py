@@ -1,4 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import os
+
 import numpy as np
 import pytest
 import requests
@@ -24,14 +26,16 @@ from chandra_aca.transform import (
     yagzag_to_radec,
 )
 
-# Set legacy mode for tests
-conf.transform_use_legacy_coeffs = True
-
-import os
-
-dirname = os.path.dirname(__file__)
+TEST_DATA_DIR = os.path.dirname(__file__)
 
 TOLERANCE = 0.05
+
+
+@pytest.fixture(params=[True, False], ids=["legacy_coeffs", "2020_coeffs"])
+def transform_use_both_coeffs(monkeypatch, request):
+    monkeypatch.setattr(conf, "transform_use_legacy_coeffs", request.param)
+    return request.param
+
 
 # SI_ALIGN matrix used from just after launch through NOV0215 (Nov 2015) loads.
 SI_ALIGN_CLASSIC = np.array(
@@ -78,7 +82,7 @@ date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
 """
 
 
-def test_edge_checking():
+def test_edge_checking(transform_use_both_coeffs):
     """Test row/col edge checking"""
 
     # Within limits, doesn't fail
@@ -96,8 +100,8 @@ def test_edge_checking():
         yagzag_to_pixels(yag, zag)
 
 
-def test_pix_to_angle():
-    pix_to_angle = ascii.read(os.path.join(dirname, "data", "pix_to_angle.txt"))
+def test_pix_to_angle(transform_use_both_coeffs):
+    pix_to_angle = ascii.read(os.path.join(TEST_DATA_DIR, "data", "pix_to_angle.txt"))
 
     print(
         "testing {} row/col pairs match to {} arcsec".format(
@@ -111,7 +115,7 @@ def test_pix_to_angle():
     np.testing.assert_allclose(pix_to_angle["zang"], pyzang, atol=TOLERANCE, rtol=0)
 
 
-def test_pix_to_angle_flight():
+def test_pix_to_angle_flight(transform_use_both_coeffs):
     """
     This is a minimal regression test.  For actual validation that the
     values are correct see aca_track/predict_track.ipynb notebook.
@@ -123,8 +127,8 @@ def test_pix_to_angle_flight():
     assert np.allclose([yag, zag], [-467.8793858, 475.4463912])
 
 
-def test_angle_to_pix():
-    angle_to_pix = ascii.read(os.path.join(dirname, "data", "angle_to_pix.txt"))
+def test_angle_to_pix(transform_use_both_coeffs):
+    angle_to_pix = ascii.read(os.path.join(TEST_DATA_DIR, "data", "angle_to_pix.txt"))
     print(
         "testing {} yang/zang pairs match to {} pixels".format(
             len(angle_to_pix), TOLERANCE
@@ -137,14 +141,14 @@ def test_angle_to_pix():
     np.testing.assert_allclose(angle_to_pix["col"], pycol, atol=TOLERANCE, rtol=0)
 
 
-def test_angle_to_pix_types():
+def test_angle_to_pix_types(transform_use_both_coeffs):
     for ftype in [int, float, np.int32, np.int64, np.float32]:
         pyrow, pycol = chandra_aca.yagzag_to_pixels(ftype(2540), ftype(1660))
         assert np.isclose(pyrow, -506.71, rtol=0, atol=0.01)
         assert np.isclose(pycol, 341.19, rtol=0, atol=0.01)
 
 
-def test_pix_zero_loc():
+def test_pix_zero_loc(transform_use_both_coeffs):
     r, c = 100, 200
     ye, ze = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc="edge")
     yc, zc = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc="center")
@@ -165,9 +169,8 @@ def test_pix_zero_loc():
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
 
 
-def test_yagzag_to_pixels_nd_input():
-    row = np.arange(24.0).reshape(2, 3, 4) - 12.0
-    col = np.arange(24.0).reshape(2, 3, 4) * 0.5 - 6.0
+def test_yagzag_to_pixels_nd_input_legacy(transform_use_both_coeffs):
+    row, col = np.meshgrid(np.linspace(-511, 511, 25), np.linspace(-511, 511, 25))
 
     yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=20.0)
     row_rt, col_rt = chandra_aca.yagzag_to_pixels(yang, zang, t_aca=20.0)
@@ -179,9 +182,7 @@ def test_yagzag_to_pixels_nd_input():
 
 
 @pytest.mark.parametrize("flight", [True, False])
-def test_yagzag_to_pixels_nd_input_nonlegacy(monkeypatch, flight):
-    monkeypatch.setattr(conf, "transform_use_legacy_coeffs", False)
-
+def test_yagzag_to_pixels_nd_input_2020_coeffs(transform_use_both_coeffs, flight):
     row, col = np.meshgrid(np.linspace(-511, 511, 25), np.linspace(-511, 511, 25))
 
     t_aca = 20.0
@@ -202,7 +203,7 @@ def test_yagzag_to_pixels_nd_input_nonlegacy(monkeypatch, flight):
 @pytest.mark.parametrize(
     "func", [chandra_aca.pixels_to_yagzag, chandra_aca.yagzag_to_pixels]
 )
-def test_transform_broadcast(func):
+def test_transform_broadcast(transform_use_both_coeffs, func):
     rows = [-100, 100]
     cols = [-200, 200]
 
