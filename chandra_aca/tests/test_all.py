@@ -1,8 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import division, print_function
 
-import os
-
 import numpy as np
 import pytest
 import requests
@@ -19,6 +17,7 @@ from chandra_aca.transform import (
     _poly_convert_numba,
     calc_aca_from_targ,
     calc_target_offsets,
+    conf,
     eci_to_radec,
     pixels_to_yagzag,
     radec_to_eci,
@@ -28,7 +27,10 @@ from chandra_aca.transform import (
     yagzag_to_radec,
 )
 
-os.environ["CHANDRA_ACA_TRANSFORM_USE_LEGACY_COEFFS"] = "1"
+# Set legacy mode for tests
+conf.use_legacy_coeffs = True
+
+import os
 
 dirname = os.path.dirname(__file__)
 

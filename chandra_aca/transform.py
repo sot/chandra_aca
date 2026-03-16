@@ -7,7 +7,28 @@ The transform modules includes:
 - Science target coordinate to ACA frame conversions
 """
 
-import os
+# Configuration for chandra_aca transform
+from astropy import config
+from astropy.config import ConfigNamespace
+
+
+class ConfigItem(config.ConfigItem):
+    rootname = "chandra_aca"
+
+
+class Conf(ConfigNamespace):
+    """
+    Configuration parameters for chandra_aca.transform.
+    """
+
+    use_legacy_coeffs = ConfigItem(
+        False,
+        "Use legacy coefficients for ACA transforms instead of new ground/flight values.",
+    )
+
+
+conf = Conf()
+
 
 import numba
 import numpy as np
@@ -283,7 +304,7 @@ def pixels_to_yagzag(
     -------
     (yang, zang) each vector of the same length as row/col
     """
-    use_legacy = "CHANDRA_ACA_TRANSFORM_USE_LEGACY_COEFFS" in os.environ
+    use_legacy = conf.use_legacy_coeffs
 
     row = np.asarray(row, dtype=np.float64)
     col = np.asarray(col, dtype=np.float64)
@@ -351,7 +372,7 @@ def yagzag_to_pixels(
     """
     yang = np.asarray(yang, dtype=np.float64)
     zang = np.asarray(zang, dtype=np.float64)
-    use_legacy = "CHANDRA_ACA_TRANSFORM_USE_LEGACY_COEFFS" in os.environ
+    use_legacy = conf.use_legacy_coeffs
 
     if use_legacy:
         row, col = _poly_convert(yang, zang, ACA2PIX_coeff, t_aca=t_aca)
