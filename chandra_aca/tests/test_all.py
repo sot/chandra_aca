@@ -17,8 +17,6 @@ from chandra_aca.transform import (
     PIX_TO_ANG_FLIGHT,
     _poly_convert,
     _poly_convert_numba,
-    _yagzag_to_pixels_by_inversion,
-    _yagzag_to_pixels_by_inversion_newton,
     calc_aca_from_targ,
     calc_target_offsets,
     eci_to_radec,
@@ -179,30 +177,6 @@ def test_yagzag_to_pixels_nd_input():
     assert col_rt.shape == col.shape
     np.testing.assert_allclose(row_rt, row, rtol=0, atol=0.01)
     np.testing.assert_allclose(col_rt, col, rtol=0, atol=0.01)
-
-
-def test_yagzag_to_pixels_inversion_newton_matches_scipy(monkeypatch):
-    monkeypatch.delenv("CHANDRA_ACA_TRANSFORM_USE_LEGACY_COEFFS", raising=False)
-
-    row = np.arange(24.0).reshape(2, 3, 4) - 12.0
-    col = np.arange(24.0).reshape(2, 3, 4) * 0.5 - 6.0
-    yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=20.0)
-
-    row_sp, col_sp = _yagzag_to_pixels_by_inversion(
-        yang, zang, t_aca=20.0, flight=False
-    )
-    row_nw, col_nw = _yagzag_to_pixels_by_inversion_newton(
-        yang, zang, t_aca=20.0, flight=False
-    )
-
-    np.testing.assert_allclose(row_nw, row_sp, rtol=0, atol=0.01)
-    np.testing.assert_allclose(col_nw, col_sp, rtol=0, atol=0.01)
-
-    yang_nw, zang_nw = chandra_aca.pixels_to_yagzag(
-        row_nw, col_nw, t_aca=20.0, allow_bad=True
-    )
-    np.testing.assert_allclose(yang_nw, yang, rtol=0, atol=0.05)
-    np.testing.assert_allclose(zang_nw, zang, rtol=0, atol=0.05)
 
 
 def test_yagzag_to_pixels_nd_input_nonlegacy(monkeypatch):

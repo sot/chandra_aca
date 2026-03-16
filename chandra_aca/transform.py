@@ -7,7 +7,6 @@ The transform modules includes:
 - Science target coordinate to ACA frame conversions
 """
 
-import itertools
 import os
 
 import numba
@@ -425,44 +424,6 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
         inv10,
         inv11,
     )
-
-    if shape:
-        rows.shape = shape
-        cols.shape = shape
-        return rows, cols
-    else:
-        return rows[0], cols[0]
-
-
-def _yagzag_to_pixels_by_inversion(yang, zang, t_aca, flight):
-    """Use scipy.optimize.minimize to transform yang/zang to row/col
-
-    This uses optimization to directly invert the transform.pixels_to_yagzag function.
-    """
-    from scipy.optimize import minimize
-
-    shape, yangs, zangs = broadcast_arrays_flatten(yang, zang)
-    yangs = np.atleast_1d(yangs).astype(np.float64, copy=False)
-    zangs = np.atleast_1d(zangs).astype(np.float64, copy=False)
-
-    # Starting values for minimization
-    row0s = _poly_convert_numba(yangs, zangs, ANG_TO_PIX_GROUND[0], t_aca=t_aca)
-    col0s = _poly_convert_numba(yangs, zangs, ANG_TO_PIX_GROUND[1], t_aca=t_aca)
-    rows = np.empty_like(yangs)
-    cols = np.empty_like(zangs)
-    for ii, row0, col0, yang0, zang0 in zip(
-        itertools.count(), row0s, col0s, yangs, zangs, strict=False
-    ):
-
-        def min_func(rc):
-            r, c = rc
-            # Could optimize to avoid validation / type munging
-            y, z = pixels_to_yagzag(r, c, flight=flight, t_aca=t_aca, allow_bad=True)
-            return (y - yang0) ** 2 + (z - zang0) ** 2  # noqa: B023
-
-        res = minimize(min_func, x0=[row0, col0], method="Nelder-Mead")
-        rows[ii] = res.x[0]
-        cols[ii] = res.x[1]
 
     if shape:
         rows.shape = shape
