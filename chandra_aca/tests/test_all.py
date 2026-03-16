@@ -1,6 +1,4 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from __future__ import division, print_function
-
 import numpy as np
 import pytest
 import requests
@@ -10,14 +8,13 @@ from Chandra.Time import DateTime
 from Quaternion import Quat
 
 import chandra_aca
-from chandra_aca import drift
+from chandra_aca import conf, drift
 from chandra_aca.transform import (
     PIX_TO_ANG_FLIGHT,
     _poly_convert,
     _poly_convert_numba,
     calc_aca_from_targ,
     calc_target_offsets,
-    conf,
     eci_to_radec,
     pixels_to_yagzag,
     radec_to_eci,
@@ -28,7 +25,7 @@ from chandra_aca.transform import (
 )
 
 # Set legacy mode for tests
-conf.use_legacy_coeffs = True
+conf.transform_use_legacy_coeffs = True
 
 import os
 
@@ -181,15 +178,20 @@ def test_yagzag_to_pixels_nd_input():
     np.testing.assert_allclose(col_rt, col, rtol=0, atol=0.01)
 
 
-def test_yagzag_to_pixels_nd_input_nonlegacy(monkeypatch):
-    monkeypatch.delenv("CHANDRA_ACA_TRANSFORM_USE_LEGACY_COEFFS", raising=False)
+@pytest.mark.parametrize("flight", [True, False])
+def test_yagzag_to_pixels_nd_input_nonlegacy(monkeypatch, flight):
+    monkeypatch.setattr(conf, "transform_use_legacy_coeffs", False)
 
-    row = np.arange(24.0).reshape(2, 3, 4) - 12.0
-    col = np.arange(24.0).reshape(2, 3, 4) * 0.5 - 6.0
+    row, col = np.meshgrid(np.linspace(-511, 511, 25), np.linspace(-511, 511, 25))
 
-    yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=20.0)
-    row_rt, col_rt = chandra_aca.yagzag_to_pixels(yang, zang, t_aca=20.0)
-    yang_rt, zang_rt = chandra_aca.pixels_to_yagzag(row_rt, col_rt, t_aca=20.0)
+    t_aca = 20.0
+    yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=t_aca, flight=flight)
+    row_rt, col_rt = chandra_aca.yagzag_to_pixels(
+        yang, zang, t_aca=t_aca, flight=flight
+    )
+    yang_rt, zang_rt = chandra_aca.pixels_to_yagzag(
+        row_rt, col_rt, t_aca=t_aca, flight=flight
+    )
 
     assert row_rt.shape == row.shape
     assert col_rt.shape == col.shape
