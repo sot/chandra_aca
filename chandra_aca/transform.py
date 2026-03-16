@@ -388,8 +388,8 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
     max_iter = 6
 
     shape, yangs, zangs = broadcast_arrays_flatten(yang, zang)
-    yangs = np.atleast_1d(yangs).astype(np.float64)
-    zangs = np.atleast_1d(zangs).astype(np.float64)
+    yangs = np.atleast_1d(yangs).astype(np.float64, copy=False)
+    zangs = np.atleast_1d(zangs).astype(np.float64, copy=False)
     t_aca = float(t_aca)
 
     coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
@@ -442,8 +442,8 @@ def _yagzag_to_pixels_by_inversion(yang, zang, t_aca, flight):
     from scipy.optimize import minimize
 
     shape, yangs, zangs = broadcast_arrays_flatten(yang, zang)
-    yangs = np.atleast_1d(yangs).astype(np.float64)
-    zangs = np.atleast_1d(zangs).astype(np.float64)
+    yangs = np.atleast_1d(yangs).astype(np.float64, copy=False)
+    zangs = np.atleast_1d(zangs).astype(np.float64, copy=False)
 
     # Starting values for minimization
     row0s = _poly_convert_numba(yangs, zangs, ANG_TO_PIX_GROUND[0], t_aca=t_aca)
