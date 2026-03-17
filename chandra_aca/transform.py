@@ -254,7 +254,7 @@ def broadcast_arrays_flatten(*args):
 
 
 def pixels_to_yagzag(
-    row, col, *, allow_bad=False, flight=False, t_aca=20.0, pix_zero_loc="edge"
+    row, col, *, allow_bad=False, flight=False, t_aca=None, pix_zero_loc="edge"
 ):
     """
     Convert ACA row/column positions to ACA y-angle, z-angle.
@@ -278,7 +278,8 @@ def pixels_to_yagzag(
     flight
         Use flight EEPROM coefficients instead of default ground values.
     t_aca
-        ACA temperature (degC) for use with flight (default=20C)
+        ACA temperature (degC) for use with flight (default=35C normally or 20C if
+        conf.transform_use_legacy_coeffs is True).
     pix_zero_loc
         row/col coords are integral at 'edge' or 'center'
 
@@ -287,6 +288,10 @@ def pixels_to_yagzag(
     (yang, zang) each vector of the same length as row/col
     """
     use_legacy = conf.transform_use_legacy_coeffs
+    if t_aca is None:
+        t_aca = 20.0 if use_legacy else 35.0
+    else:
+        t_aca = float(t_aca)
 
     row = np.asarray(row, dtype=np.float64)
     col = np.asarray(col, dtype=np.float64)
@@ -322,9 +327,9 @@ def yagzag_to_pixels(
     zang,
     *,
     allow_bad=False,
-    t_aca=20,
-    pix_zero_loc="edge",
     flight=False,
+    t_aca=None,
+    pix_zero_loc="edge",
 ):
     """
     Convert ACA y-angle/z-angle positions to ACA pixel row, column.
@@ -345,6 +350,11 @@ def yagzag_to_pixels(
         ACA z-angle (single value, list, or 1-d numpy array)
     allow_bad : boolean switch.  If true, method will not throw errors
         if the resulting row/col values are nominally off the ACA CCD.
+    t_aca
+        ACA temperature (degC) for use with flight (default=35C normally or 20C if
+        conf.transform_use_legacy_coeffs is True).
+    flight
+        Use flight EEPROM coefficients instead of default ground values.
     pix_zero_loc
         row/col coords are integral at 'edge' or 'center'
 
@@ -355,6 +365,10 @@ def yagzag_to_pixels(
     yang = np.asarray(yang, dtype=np.float64)
     zang = np.asarray(zang, dtype=np.float64)
     use_legacy = conf.transform_use_legacy_coeffs
+    if t_aca is None:
+        t_aca = 20.0 if use_legacy else 35.0
+    else:
+        t_aca = float(t_aca)
 
     if use_legacy:
         # Note: t_aca is passed for consistency but since ACA2PIX_coeff is 10 elements

@@ -119,7 +119,7 @@ def test_pix_to_angle(transform_use_both_coeffs):
     atol = TOLERANCE_LEGACY if conf.transform_use_legacy_coeffs else TOLERANCE_2020
     print("testing {} row/col pairs match to {} arcsec".format(len(pix_to_angle), atol))
     pyyang, pyzang = chandra_aca.pixels_to_yagzag(
-        pix_to_angle["row"], pix_to_angle["col"]
+        pix_to_angle["row"], pix_to_angle["col"], t_aca=20
     )
     np.testing.assert_allclose(pix_to_angle["yang"], pyyang, atol=atol, rtol=0)
     np.testing.assert_allclose(pix_to_angle["zang"], pyzang, atol=atol, rtol=0)
@@ -144,7 +144,7 @@ def test_angle_to_pix(transform_use_both_coeffs):
         "testing {} yang/zang pairs match to {} pixels".format(len(angle_to_pix), atol)
     )
     pyrow, pycol = chandra_aca.yagzag_to_pixels(
-        angle_to_pix["yang"], angle_to_pix["zang"]
+        angle_to_pix["yang"], angle_to_pix["zang"], t_aca=20
     )
     np.testing.assert_allclose(angle_to_pix["row"], pyrow, atol=atol, rtol=0)
     np.testing.assert_allclose(angle_to_pix["col"], pycol, atol=atol, rtol=0)
@@ -154,7 +154,7 @@ def test_angle_to_pix_types(transform_use_both_coeffs):
     row_exp = -506.71 if transform_use_both_coeffs else -506.89
     col_exp = 341.19 if transform_use_both_coeffs else 341.30
     for ftype in [int, float, np.int32, np.int64, np.float32]:
-        pyrow, pycol = chandra_aca.yagzag_to_pixels(ftype(2540), ftype(1660))
+        pyrow, pycol = chandra_aca.yagzag_to_pixels(ftype(2540), ftype(1660), t_aca=20)
         assert np.isclose(pyrow, row_exp, rtol=0, atol=0.01)
         assert np.isclose(pycol, col_exp, rtol=0, atol=0.01)
 
