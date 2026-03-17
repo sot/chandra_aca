@@ -19,5 +19,11 @@ class Conf(ConfigNamespace):
         "2020 ground/flight values",
     )
 
+    t_aca_default = ConfigItem(
+        35.0,
+        "Default ACA temperature (degC) used by transform coordinate conversions "
+        "when t_aca is not supplied and transform_use_legacy_coeffs is False.",
+    )
+
 
 conf = Conf()

@@ -278,8 +278,9 @@ def pixels_to_yagzag(
     flight
         Use flight EEPROM coefficients instead of default ground values.
     t_aca
-        ACA temperature (degC) for use with flight (default=35C normally or 20C if
-        conf.transform_use_legacy_coeffs is True).
+        ACA temperature (degC) for use with flight. If not supplied, defaults to
+        ``20.0`` when ``conf.transform_use_legacy_coeffs`` is True, otherwise
+        ``conf.t_aca_default`` (35.0 by default).
     pix_zero_loc
         row/col coords are integral at 'edge' or 'center'
 
@@ -289,7 +290,7 @@ def pixels_to_yagzag(
     """
     use_legacy = conf.transform_use_legacy_coeffs
     if t_aca is None:
-        t_aca = 20.0 if use_legacy else 35.0
+        t_aca = 20.0 if use_legacy else float(conf.t_aca_default)
     else:
         t_aca = float(t_aca)
 
@@ -351,8 +352,9 @@ def yagzag_to_pixels(
     allow_bad : boolean switch.  If true, method will not throw errors
         if the resulting row/col values are nominally off the ACA CCD.
     t_aca
-        ACA temperature (degC) for use with flight (default=35C normally or 20C if
-        conf.transform_use_legacy_coeffs is True).
+        ACA temperature (degC) for use with flight. If not supplied, defaults to
+        ``20.0`` when ``conf.transform_use_legacy_coeffs`` is True, otherwise
+        ``conf.t_aca_default`` (35.0 by default).
     flight
         Use flight EEPROM coefficients instead of default ground values.
     pix_zero_loc
@@ -366,7 +368,7 @@ def yagzag_to_pixels(
     zang = np.asarray(zang, dtype=np.float64)
     use_legacy = conf.transform_use_legacy_coeffs
     if t_aca is None:
-        t_aca = 20.0 if use_legacy else 35.0
+        t_aca = 20.0 if use_legacy else float(conf.t_aca_default)
     else:
         t_aca = float(t_aca)
 
