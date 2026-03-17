@@ -1,11 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-import os
+from pathlib import Path
 
+import astropy.table as apt
 import numpy as np
 import pytest
 import requests
-from astropy.io import ascii
-from astropy.table import Table
 from Chandra.Time import DateTime
 from Quaternion import Quat
 
@@ -26,7 +25,7 @@ from chandra_aca.transform import (
     yagzag_to_radec,
 )
 
-TEST_DATA_DIR = os.path.dirname(__file__)
+TEST_DATA_DIR = Path(__file__).parent / "data"
 
 # Tolerance for matching original Perl-based pixel / angle pairs using legacy and 2020
 # coeffs. The 2020 coeffs are more accurate in reality, but match the Perl values less
@@ -116,7 +115,7 @@ def test_pix_to_angle(transform_use_both_coeffs):
 
     The fixture updates the conf.transform_use_legacy_coeffs value, and the test adjusts the matching tolerance accordingly.
     """
-    pix_to_angle = ascii.read(os.path.join(TEST_DATA_DIR, "data", "pix_to_angle.txt"))
+    pix_to_angle = apt.Table.read(TEST_DATA_DIR / "pix_to_angle.txt", format="ascii")
     atol = TOLERANCE_LEGACY if conf.transform_use_legacy_coeffs else TOLERANCE_2020
     print("testing {} row/col pairs match to {} arcsec".format(len(pix_to_angle), atol))
     pyyang, pyzang = chandra_aca.pixels_to_yagzag(
@@ -139,7 +138,7 @@ def test_pix_to_angle_flight(transform_use_both_coeffs):
 
 
 def test_angle_to_pix(transform_use_both_coeffs):
-    angle_to_pix = ascii.read(os.path.join(TEST_DATA_DIR, "data", "angle_to_pix.txt"))
+    angle_to_pix = apt.Table.read(TEST_DATA_DIR / "angle_to_pix.txt", format="ascii")
     atol = TOLERANCE_LEGACY if conf.transform_use_legacy_coeffs else TOLERANCE_2020
     print(
         "testing {} yang/zang pairs match to {} pixels".format(len(angle_to_pix), atol)
@@ -181,21 +180,52 @@ def test_pix_zero_loc(transform_use_both_coeffs):
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
 
 
-def test_yagzag_to_pixels_nd_input_legacy(transform_use_both_coeffs):
-    row, col = np.meshgrid(np.linspace(-511, 511, 25), np.linspace(-511, 511, 25))
+def test_pixels_to_yagzag_regression_2020():
+    """Regression test to confirm that the 2020 coeffs match calibration flight data.
 
-    yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=20.0)
-    row_rt, col_rt = chandra_aca.yagzag_to_pixels(yang, zang, t_aca=20.0)
-    atol = 0.12 if conf.transform_use_legacy_coeffs else 0.01
+    This uses a subset of the "star_pairs.fits" data in the 2020 calibration analysis.
+    Here row_obs and col_obs are derived from ACA image data (via aspect L1), while
+    yag_star and zag_star are derived from the star RA, Dec and the attitude estimate
+    from aspect L1.
+    ```
+    pairs =   apt.Table.read("star_pairs.fits")
+    star_obss = pairs[500:][::10]["yag1", "zag1", "row1", "col1", "t_aca"]
+    for name in star_obss.colnames:
+        star_obss[name] = star_obss[name].astype(np.float32)
+    star_obss.rename_column("yag1", "yag_star")
+    star_obss.rename_column("zag1", "zag_star")
+    star_obss.rename_column("row1", "row_obs")
+    star_obss.rename_column("col1", "col_obs")
+    star_obss.write("chandra_aca/tests/data/star_obs_2020.fits.gz", overwrite=True)
+    ```
 
-    assert row_rt.shape == row.shape
-    assert col_rt.shape == col.shape
-    np.testing.assert_allclose(row_rt, row, rtol=0, atol=atol)
-    np.testing.assert_allclose(col_rt, col, rtol=0, atol=atol)
+    """
+    star_obss = apt.Table.read(TEST_DATA_DIR / "star_obs_2020.fits.gz")
+    yag_obss = []
+    zag_obss = []
+    for star_obs in star_obss:
+        yag_obs, zag_obs = pixels_to_yagzag(
+            star_obs["row_obs"],
+            star_obs["col_obs"],
+            t_aca=star_obs["t_aca"],
+            pix_zero_loc="center",
+        )
+        yag_obss.append(yag_obs)
+        zag_obss.append(zag_obs)
+
+    # Regression test that the transform gives expected results. The significant offset
+    # of the mean from zero is interesting but acceptable. The goal here is ensuring
+    # future updates don't change the transform.
+    dy = yag_obss - star_obss["yag_star"]
+    dz = zag_obss - star_obss["zag_star"]
+    assert np.isclose(np.mean(dy), 0.31, rtol=0, atol=0.01)
+    assert np.isclose(np.mean(dz), 0.17, rtol=0, atol=0.01)
+    assert np.isclose(np.std(dy), 0.27, rtol=0, atol=0.01)
+    assert np.isclose(np.std(dz), 0.21, rtol=0, atol=0.01)
 
 
 @pytest.mark.parametrize("flight", [True, False])
-def test_yagzag_to_pixels_nd_input(transform_use_both_coeffs, flight):
+def test_pixels_to_yagzag_to_pixels_roundtrip(transform_use_both_coeffs, flight):
     row, col = np.meshgrid(np.linspace(-511, 511, 25), np.linspace(-511, 511, 25))
 
     if conf.transform_use_legacy_coeffs and flight:
@@ -328,7 +358,7 @@ def test_get_aimpoint():
         assert r.status_code == 200
         zot = None
     except Exception:
-        zot = Table.read(ZERO_OFFSET_TABLE, format="ascii")
+        zot = apt.Table.read(ZERO_OFFSET_TABLE, format="ascii")
 
     for obstest, answer in zip(obstests, answers, strict=False):
         chipx, chipy, chip_id = drift.get_target_aimpoint(
@@ -337,7 +367,7 @@ def test_get_aimpoint():
         assert chipx == answer[0]
         assert chipy == answer[1]
         assert chip_id == answer[2]
-    zot = Table.read(
+    zot = apt.Table.read(
         """date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
 2012-12-15      15               ACIS-I    888   999   -1        1.6""",
         format="ascii",
