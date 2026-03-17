@@ -82,10 +82,14 @@ PIX2ACA_eeprom_arcsec = np.array(
 # Convert from arcsec to radians
 PIX2ACA_eeprom = np.radians(PIX2ACA_eeprom_arcsec / 3600)
 
+###################################################################################
+# 2020 coefficients. See:
+# https://cxc.cfa.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/
+###################################################################################
+
 # Ground (aspect pipeline) coefficients for converting from pixels (row, col) to ACA
 # angle (yag, zag) (arcsec). See:
 # https://nbviewer.org/urls/cxc.cfa.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/fit-yz-plate-scale-no-rotation.ipynb
-# https://cxc.cfa.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/
 #  0 [ones,
 #  1 c,
 #  2 r,
@@ -138,8 +142,9 @@ PIX_TO_ANG_GROUND = np.array(
     dtype=np.float64,
 ).transpose()
 
-# Coefficients for converting from ACA angle (yag, zag) (arcsec) to pixel (row, col)
-# This uses the final `coeffs_fit_all` coefficients from
+# Coefficients for converting from ACA angle (yag, zag) (arcsec) to pixel (row, col).
+# This is ONLY used to provide a good starting point for Newton's method inversion of
+# pixels_to_yagzag. This uses the final `coeffs_fit_all` coefficients from
 # https://nbviewer.org/urls/cxc.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/fit-rc-plate-scale.ipynb.
 # In that notebook the actual coefficient values were not printed, but it was re-run and
 # these are the values.
@@ -352,6 +357,8 @@ def yagzag_to_pixels(
     use_legacy = conf.transform_use_legacy_coeffs
 
     if use_legacy:
+        # Note: t_aca is passed for consistency but since ACA2PIX_coeff is 10 elements
+        # it is not actually used.
         row, col = _poly_convert(yang, zang, ACA2PIX_coeff, t_aca=t_aca)
     else:
         row, col = _yagzag_to_pixels_by_inversion_newton(
