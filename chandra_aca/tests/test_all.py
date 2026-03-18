@@ -27,24 +27,9 @@ from chandra_aca.transform import (
 
 TEST_DATA_DIR = Path(__file__).parent / "data"
 
-# Tolerance for matching original Perl-based pixel / angle pairs using legacy and 2020
-# coeffs. The 2020 coeffs are more accurate in reality, but match the Perl values less
-# closely than legacy. These values are used for both angle-to-pix and pix-to-angle
-# comparisons (i.e. in implied units of either arcsec or pixels), reflecting that
-# angle-to-pix was historically much less accurate (given) the factor of 5 arcsec/pixel.
-TOLERANCE_LEGACY = 0.05
-TOLERANCE_2020 = 0.9
-
-
-@pytest.fixture
-def transform_use_legacy_coeffs(monkeypatch):
-    monkeypatch.setattr(conf, "transform_use_legacy_coeffs", True)
-
-
-@pytest.fixture(params=[True, False], ids=["legacy_coeffs", "2020_coeffs"])
-def transform_use_both_coeffs(monkeypatch, request):
-    monkeypatch.setattr(conf, "transform_use_legacy_coeffs", request.param)
-    return request.param
+# Tolerance for matching original Perl-based pixel / angle pairs.
+# The 2020 coefficients are used for all tests.
+TOLERANCE = 0.9
 
 
 # SI_ALIGN matrix used from just after launch through NOV0215 (Nov 2015) loads.
@@ -92,7 +77,7 @@ date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
 """
 
 
-def test_edge_checking(transform_use_both_coeffs):
+def test_edge_checking():
     """Test row/col edge checking"""
 
     # Within limits, doesn't fail
@@ -110,22 +95,22 @@ def test_edge_checking(transform_use_both_coeffs):
         yagzag_to_pixels(yag, zag, allow_bad=False)
 
 
-def test_pix_to_angle(transform_use_both_coeffs):
-    """Test pixel to angle conversion for legacy and 2020 coeffs.
-
-    The fixture updates the conf.transform_use_legacy_coeffs value, and the test adjusts the matching tolerance accordingly.
-    """
+def test_pix_to_angle():
+    """Test pixel to angle conversion using 2020 coefficients."""
     pix_to_angle = apt.Table.read(TEST_DATA_DIR / "pix_to_angle.txt", format="ascii")
-    atol = TOLERANCE_LEGACY if conf.transform_use_legacy_coeffs else TOLERANCE_2020
-    print("testing {} row/col pairs match to {} arcsec".format(len(pix_to_angle), atol))
+    print(
+        "testing {} row/col pairs match to {} arcsec".format(
+            len(pix_to_angle), TOLERANCE
+        )
+    )
     pyyang, pyzang = chandra_aca.pixels_to_yagzag(
         pix_to_angle["row"], pix_to_angle["col"], t_aca=20
     )
-    np.testing.assert_allclose(pix_to_angle["yang"], pyyang, atol=atol, rtol=0)
-    np.testing.assert_allclose(pix_to_angle["zang"], pyzang, atol=atol, rtol=0)
+    np.testing.assert_allclose(pix_to_angle["yang"], pyyang, atol=TOLERANCE, rtol=0)
+    np.testing.assert_allclose(pix_to_angle["zang"], pyzang, atol=TOLERANCE, rtol=0)
 
 
-def test_pix_to_angle_flight(transform_use_both_coeffs):
+def test_pix_to_angle_flight():
     """
     This is a minimal regression test.  For actual validation that the
     values are correct see aca_track/predict_track.ipynb notebook.
@@ -137,29 +122,30 @@ def test_pix_to_angle_flight(transform_use_both_coeffs):
     assert np.allclose([yag, zag], [-467.8793858, 475.4463912])
 
 
-def test_angle_to_pix(transform_use_both_coeffs):
+def test_angle_to_pix():
     angle_to_pix = apt.Table.read(TEST_DATA_DIR / "angle_to_pix.txt", format="ascii")
-    atol = TOLERANCE_LEGACY if conf.transform_use_legacy_coeffs else TOLERANCE_2020
     print(
-        "testing {} yang/zang pairs match to {} pixels".format(len(angle_to_pix), atol)
+        "testing {} yang/zang pairs match to {} pixels".format(
+            len(angle_to_pix), TOLERANCE
+        )
     )
     pyrow, pycol = chandra_aca.yagzag_to_pixels(
         angle_to_pix["yang"], angle_to_pix["zang"], t_aca=20
     )
-    np.testing.assert_allclose(angle_to_pix["row"], pyrow, atol=atol, rtol=0)
-    np.testing.assert_allclose(angle_to_pix["col"], pycol, atol=atol, rtol=0)
+    np.testing.assert_allclose(angle_to_pix["row"], pyrow, atol=TOLERANCE, rtol=0)
+    np.testing.assert_allclose(angle_to_pix["col"], pycol, atol=TOLERANCE, rtol=0)
 
 
-def test_angle_to_pix_types(transform_use_both_coeffs):
-    row_exp = -506.71 if transform_use_both_coeffs else -506.89
-    col_exp = 341.19 if transform_use_both_coeffs else 341.30
+def test_angle_to_pix_types():
+    row_exp = -506.89
+    col_exp = 341.30
     for ftype in [int, float, np.int32, np.int64, np.float32]:
         pyrow, pycol = chandra_aca.yagzag_to_pixels(ftype(2540), ftype(1660), t_aca=20)
         assert np.isclose(pyrow, row_exp, rtol=0, atol=0.01)
         assert np.isclose(pycol, col_exp, rtol=0, atol=0.01)
 
 
-def test_pix_zero_loc(transform_use_both_coeffs):
+def test_pix_zero_loc():
     r, c = 100, 200
     ye, ze = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc="edge")
     yc, zc = chandra_aca.pixels_to_yagzag(r, c, pix_zero_loc="center")
@@ -181,7 +167,6 @@ def test_pix_zero_loc(transform_use_both_coeffs):
 
 
 def test_t_aca_default_config_pixels_to_yagzag(monkeypatch):
-    monkeypatch.setattr(conf, "transform_use_legacy_coeffs", False)
     monkeypatch.setattr(conf, "t_aca_default", 37.5)
 
     yang0, zang0 = chandra_aca.pixels_to_yagzag(100.0, 200.0)
@@ -192,7 +177,6 @@ def test_t_aca_default_config_pixels_to_yagzag(monkeypatch):
 
 
 def test_t_aca_default_config_yagzag_to_pixels(monkeypatch):
-    monkeypatch.setattr(conf, "transform_use_legacy_coeffs", False)
     monkeypatch.setattr(conf, "t_aca_default", 37.5)
 
     row0, col0 = chandra_aca.yagzag_to_pixels(100.0, 200.0)
@@ -247,18 +231,15 @@ def test_pixels_to_yagzag_regression_2020():
 
 
 @pytest.mark.parametrize("flight", [True, False])
-def test_pixels_to_yagzag_to_pixels_roundtrip(transform_use_both_coeffs, flight):
+def test_pixels_to_yagzag_to_pixels_roundtrip(flight):
     row, col = np.meshgrid(np.linspace(-511, 511, 25), np.linspace(-511, 511, 25))
-
-    if conf.transform_use_legacy_coeffs and flight:
-        pytest.skip("legacy yagzag_to_pixels does not support flight coefficients")
 
     t_aca = 20.0
     yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=t_aca, flight=flight)
     row_rt, col_rt = chandra_aca.yagzag_to_pixels(
         yang, zang, t_aca=t_aca, flight=flight
     )
-    atol = 0.12 if conf.transform_use_legacy_coeffs else 0.01
+    atol = 0.01
 
     assert row_rt.shape == row.shape
     assert col_rt.shape == col.shape
@@ -269,7 +250,7 @@ def test_pixels_to_yagzag_to_pixels_roundtrip(transform_use_both_coeffs, flight)
 @pytest.mark.parametrize(
     "func", [chandra_aca.pixels_to_yagzag, chandra_aca.yagzag_to_pixels]
 )
-def test_transform_broadcast(transform_use_both_coeffs, func):
+def test_transform_broadcast(func):
     rows = [-100, 100]
     cols = [-200, 200]
 

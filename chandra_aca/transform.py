@@ -14,41 +14,8 @@ from Quaternion import Quat
 from chandra_aca import conf, dark_model
 
 ###################################################################################
-# Legacy coefficients to avoid regression diffs in other packages in cases where
-# updating the tests is inconvenient.
+# Flight EEPROM coefficients (used for flight mode in coordinate transforms)
 ###################################################################################
-
-# coefficients for converting from ACA angle to pixels (ground)
-ACA2PIX_coeff = np.array(
-    [
-        [6.08840495576943, 4.92618563916467],
-        [0.000376181788609776, 0.200203020554239],
-        [-0.200249577514165, 0.000332284183255046],
-        [-2.7052897180601e-009, -5.35702097772202e-009],
-        [9.75572638037165e-010, 1.91073314224894e-008],
-        [-2.94865155316778e-008, -4.85766581852866e-009],
-        [8.31198018312775e-013, 2.01092070428495e-010],
-        [-1.96043819238097e-010, 5.09721545876414e-016],
-        [5.14134244771463e-013, 1.99339355492595e-010],
-        [-1.97282476269237e-010, 2.52739834319184e-014],
-    ]
-)
-
-# coefficients for converting from pixels to ACA angle in radians
-PIX2ACA_coeff = np.array(
-    [
-        [1.471572165932506e-04, -1.195271491928579e-04],
-        [4.554462091388806e-08, 2.421478755190295e-05],
-        [-2.420905844425065e-05, 4.005224006503938e-08],
-        [-4.989939217701764e-12, 1.188134673090465e-11],
-        [-6.116309500303049e-12, 1.832694593246024e-11],
-        [-2.793916972292602e-11, 5.823266376976988e-12],
-        [2.420403450703432e-16, -5.923401659857833e-13],
-        [5.751137659424387e-13, -1.666025332027183e-15],
-        [-9.934587837231732e-16, -5.847450395792513e-13],
-        [5.807475081470944e-13, -1.842673748068349e-15],
-    ]
-)
 
 # From /proj/sot/ska/analysis/aca_plate_scale/calib_prelaunch/eeprom_cal.txt
 # This is the full 20-coefficient solution that includes a
@@ -78,9 +45,6 @@ PIX2ACA_eeprom_arcsec = np.array(
         [5.06476499e-07, 4.46331687e-06],
     ]
 )
-
-# Convert from arcsec to radians
-PIX2ACA_eeprom = np.radians(PIX2ACA_eeprom_arcsec / 3600)
 
 ###################################################################################
 # 2020 coefficients. See:
@@ -279,7 +243,6 @@ def pixels_to_yagzag(
         Use flight EEPROM coefficients instead of default ground values.
     t_aca
         ACA temperature (degC) for use with flight. If not supplied, defaults to
-        ``20.0`` when ``conf.transform_use_legacy_coeffs`` is True, otherwise
         ``conf.t_aca_default`` (35.0 by default).
     pix_zero_loc
         row/col coords are integral at 'edge' or 'center'
@@ -288,9 +251,8 @@ def pixels_to_yagzag(
     -------
     (yang, zang) each vector of the same length as row/col
     """
-    use_legacy = conf.transform_use_legacy_coeffs
     if t_aca is None:
-        t_aca = 20.0 if use_legacy else float(conf.t_aca_default)
+        t_aca = float(conf.t_aca_default)
     else:
         t_aca = float(t_aca)
 
@@ -310,15 +272,10 @@ def pixels_to_yagzag(
     if not allow_bad and (np.any(np.abs(row) > 512.0) or np.any(np.abs(col) > 512.0)):
         raise ValueError("Coordinate off CCD")
 
-    if use_legacy:
-        # Use legacy coefficients (19 x 2 or 10 x 2) which are in radians
-        coeff = (PIX2ACA_eeprom if flight else PIX2ACA_coeff) * 3600 * np.degrees(1.0)
-        yang, zang = _poly_convert(row, col, coeff, t_aca)
-    else:
-        # Use 2020 coefficients (2 x 19)
-        coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
-        yang = _poly_convert_numba(row, col, coeff[0], t_aca)
-        zang = _poly_convert_numba(row, col, coeff[1], t_aca)
+    # Use 2020 coefficients (2 x 19)
+    coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
+    yang = _poly_convert_numba(row, col, coeff[0], t_aca)
+    zang = _poly_convert_numba(row, col, coeff[1], t_aca)
 
     return yang, zang
 
@@ -353,7 +310,6 @@ def yagzag_to_pixels(
         if the resulting row/col values are nominally off the ACA CCD.
     t_aca
         ACA temperature (degC) for use with flight. If not supplied, defaults to
-        ``20.0`` when ``conf.transform_use_legacy_coeffs`` is True, otherwise
         ``conf.t_aca_default`` (35.0 by default).
     flight
         Use flight EEPROM coefficients instead of default ground values.
@@ -366,20 +322,14 @@ def yagzag_to_pixels(
     """
     yang = np.asarray(yang, dtype=np.float64)
     zang = np.asarray(zang, dtype=np.float64)
-    use_legacy = conf.transform_use_legacy_coeffs
     if t_aca is None:
-        t_aca = 20.0 if use_legacy else float(conf.t_aca_default)
+        t_aca = float(conf.t_aca_default)
     else:
         t_aca = float(t_aca)
 
-    if use_legacy:
-        # Note: t_aca is passed for consistency but since ACA2PIX_coeff is 10 elements
-        # it is not actually used.
-        row, col = _poly_convert(yang, zang, ACA2PIX_coeff, t_aca=t_aca)
-    else:
-        row, col = _yagzag_to_pixels_by_inversion_newton(
-            yang, zang, t_aca=t_aca, flight=flight
-        )
+    row, col = _yagzag_to_pixels_by_inversion_newton(
+        yang, zang, t_aca=t_aca, flight=flight
+    )
 
     # Row/col are in edge coordinates at this point, check if they are on
     # the CCD unless allow_bad is True.
