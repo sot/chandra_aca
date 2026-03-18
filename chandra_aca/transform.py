@@ -415,6 +415,9 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
     coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
     coeff_y = coeff[0]
     coeff_z = coeff[1]
+    # Coefficients for the initial estimate of row/col from yang/zang. This is only used
+    # as the starting point for the Newton iterations, so the difference between FLIGHT
+    # and GROUND doesn't matter (and we don't have inverse FLIGHT coeffs).
     coeff_row0 = ANG_TO_PIX_GROUND[0]
     coeff_col0 = ANG_TO_PIX_GROUND[1]
 
