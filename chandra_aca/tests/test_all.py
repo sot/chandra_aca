@@ -100,14 +100,14 @@ def test_edge_checking(transform_use_both_coeffs):
     yagzag_to_pixels(yag, zag)
 
     with pytest.raises(ValueError):
-        pixels_to_yagzag(512.2, 0)
+        pixels_to_yagzag(512.2, 0, allow_bad=False)
 
     with pytest.raises(ValueError):
-        pixels_to_yagzag(0, -512.2)
+        pixels_to_yagzag(0, -512.2, allow_bad=False)
 
-    yag, zag = pixels_to_yagzag(512.2, -512.2, allow_bad=True)
+    yag, zag = pixels_to_yagzag(512.2, -512.2)
     with pytest.raises(ValueError):
-        yagzag_to_pixels(yag, zag)
+        yagzag_to_pixels(yag, zag, allow_bad=False)
 
 
 def test_pix_to_angle(transform_use_both_coeffs):

@@ -254,7 +254,7 @@ def broadcast_arrays_flatten(*args):
 
 
 def pixels_to_yagzag(
-    row, col, *, allow_bad=False, flight=False, t_aca=None, pix_zero_loc="edge"
+    row, col, *, allow_bad=True, flight=False, t_aca=None, pix_zero_loc="edge"
 ):
     """
     Convert ACA row/column positions to ACA y-angle, z-angle.
@@ -273,7 +273,7 @@ def pixels_to_yagzag(
         ACA pixel row (single value, list, or 1-d numpy array)
     col
         ACA pixel column (single value, list, or 1-d numpy array)
-    allow_bad : boolean switch.  If true, method will not throw errors
+    allow_bad : boolean switch.  If True (default), method will not throw errors
         if the row/col values are nominally off the ACA CCD.
     flight
         Use flight EEPROM coefficients instead of default ground values.
@@ -327,7 +327,7 @@ def yagzag_to_pixels(
     yang,
     zang,
     *,
-    allow_bad=False,
+    allow_bad=True,
     flight=False,
     t_aca=None,
     pix_zero_loc="edge",
@@ -349,7 +349,7 @@ def yagzag_to_pixels(
         ACA y-angle (single value, list, or 1-d numpy array)
     zang
         ACA z-angle (single value, list, or 1-d numpy array)
-    allow_bad : boolean switch.  If true, method will not throw errors
+    allow_bad : boolean switch.  If True (default), method will not throw errors
         if the resulting row/col values are nominally off the ACA CCD.
     t_aca
         ACA temperature (degC) for use with flight. If not supplied, defaults to
