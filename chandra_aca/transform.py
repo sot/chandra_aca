@@ -322,6 +322,10 @@ def yagzag_to_pixels(
     """
     yang = np.asarray(yang, dtype=np.float64)
     zang = np.asarray(zang, dtype=np.float64)
+
+    if yang.shape != zang.shape:
+        raise ValueError("Mismatched shape of yang/zang")
+
     if t_aca is None:
         t_aca = float(conf.t_aca_default)
     else:
@@ -357,9 +361,10 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
     tol = 0.05
     max_iter = 6
 
-    shape, yangs, zangs = broadcast_arrays_flatten(yang, zang)
-    yangs = np.atleast_1d(yangs).astype(np.float64, copy=False)
-    zangs = np.atleast_1d(zangs).astype(np.float64, copy=False)
+    is_scalar = yang.ndim == 0
+    shape = yang.shape
+    yangs = np.atleast_1d(yang).ravel()
+    zangs = np.atleast_1d(zang).ravel()
     t_aca = float(t_aca)
 
     coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
@@ -399,12 +404,12 @@ def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
         inv11,
     )
 
-    if shape:
+    if not is_scalar:
         rows.shape = shape
         cols.shape = shape
         return rows, cols
-    else:
-        return rows[0], cols[0]
+
+    return rows[0], cols[0]
 
 
 def _poly_convert(y, z, coeffs, t_aca):
