@@ -7,6 +7,8 @@ The transform modules includes:
 - Science target coordinate to ACA frame conversions
 """
 
+from typing import Literal
+
 import numba
 import numpy as np
 from Quaternion import Quat
@@ -216,8 +218,14 @@ def broadcast_arrays_flatten(*args):
 
 
 def pixels_to_yagzag(
-    row, col, *, allow_bad=True, flight=False, t_aca=35.0, pix_zero_loc="edge"
-):
+    row: float | list[float] | np.ndarray,
+    col: float | list[float] | np.ndarray,
+    *,
+    allow_bad: bool = True,
+    flight: bool = False,
+    t_aca: float = 35.0,
+    pix_zero_loc: Literal["edge", "center"] = "edge",
+) -> tuple[float | np.ndarray, float | np.ndarray]:
     """
     Convert ACA row/column positions to ACA y-angle, z-angle.
 
@@ -231,22 +239,24 @@ def pixels_to_yagzag(
 
     Parameters
     ----------
-    row
-        ACA pixel row (single value, list, or 1-d numpy array)
-    col
-        ACA pixel column (single value, list, or 1-d numpy array)
-    allow_bad : boolean switch.  If True (default), method will not throw errors
+    row : float | list[float] | np.ndarray
+        ACA pixel row value(s).
+    col : float | list[float] | np.ndarray
+        ACA pixel column value(s).
+    allow_bad : bool
+        If True (default), method will not throw errors
         if the row/col values are nominally off the ACA CCD.
-    flight
+    flight : bool
         Use flight EEPROM coefficients instead of default ground values.
-    t_aca
-        ACA temperature (degC) for use with flight. If not supplied, defaults to 35 C.
-    pix_zero_loc
-        row/col coords are integral at 'edge' or 'center'
+    t_aca : float
+        ACA temperature (degC) for use with flight.
+    pix_zero_loc : {"edge", "center"}
+        Row/col coordinates are integral at 'edge' or 'center'.
 
     Returns
     -------
-    (yang, zang) each vector of the same length as row/col
+    tuple[float | np.ndarray, float | np.ndarray]
+        ACA (yang, zang) values in arcsec.
     """
     t_aca = float(t_aca)
 
@@ -275,14 +285,14 @@ def pixels_to_yagzag(
 
 
 def yagzag_to_pixels(
-    yang,
-    zang,
+    yang: float | list[float] | np.ndarray,
+    zang: float | list[float] | np.ndarray,
     *,
-    allow_bad=True,
-    flight=False,
-    t_aca=35.0,
-    pix_zero_loc="edge",
-):
+    allow_bad: bool = True,
+    flight: bool = False,
+    t_aca: float = 35.0,
+    pix_zero_loc: Literal["edge", "center"] = "edge",
+) -> tuple[float | np.ndarray, float | np.ndarray]:
     """
     Convert ACA y-angle/z-angle positions to ACA pixel row, column.
 
@@ -296,22 +306,24 @@ def yagzag_to_pixels(
 
     Parameters
     ----------
-    yang
-        ACA y-angle (single value, list, or 1-d numpy array)
-    zang
-        ACA z-angle (single value, list, or 1-d numpy array)
-    allow_bad : boolean switch.  If True (default), method will not throw errors
+    yang : float | list[float] | np.ndarray
+        ACA y-angle value(s) in arcsec.
+    zang : float | list[float] | np.ndarray
+        ACA z-angle value(s) in arcsec.
+    allow_bad : bool
+        If True (default), method will not throw errors
         if the resulting row/col values are nominally off the ACA CCD.
-    t_aca
-        ACA temperature (degC) for use with flight. If not supplied, defaults to 35 C.
-    flight
+    t_aca : float
+        ACA temperature (degC) for use with flight.
+    flight : bool
         Use flight EEPROM coefficients instead of default ground values.
-    pix_zero_loc
-        row/col coords are integral at 'edge' or 'center'
+    pix_zero_loc : {"edge", "center"}
+        Row/col coordinates are integral at 'edge' or 'center'.
 
     Returns
     -------
-    (row, col) each vector of the same length as row/col
+    tuple[float | np.ndarray, float | np.ndarray]
+        ACA (row, col) values.
     """
     yang = np.asarray(yang, dtype=np.float64)
     zang = np.asarray(zang, dtype=np.float64)
