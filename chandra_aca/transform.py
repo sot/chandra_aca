@@ -11,8 +11,6 @@ import numba
 import numpy as np
 from Quaternion import Quat
 
-from chandra_aca import conf, dark_model
-
 ###################################################################################
 # Flight EEPROM coefficients (used for flight mode in coordinate transforms)
 ###################################################################################
@@ -218,7 +216,7 @@ def broadcast_arrays_flatten(*args):
 
 
 def pixels_to_yagzag(
-    row, col, *, allow_bad=True, flight=False, t_aca=None, pix_zero_loc="edge"
+    row, col, *, allow_bad=True, flight=False, t_aca=35.0, pix_zero_loc="edge"
 ):
     """
     Convert ACA row/column positions to ACA y-angle, z-angle.
@@ -242,8 +240,7 @@ def pixels_to_yagzag(
     flight
         Use flight EEPROM coefficients instead of default ground values.
     t_aca
-        ACA temperature (degC) for use with flight. If not supplied, defaults to
-        ``conf.t_aca_default`` (35.0 by default).
+        ACA temperature (degC) for use with flight. If not supplied, defaults to 35 C.
     pix_zero_loc
         row/col coords are integral at 'edge' or 'center'
 
@@ -251,10 +248,7 @@ def pixels_to_yagzag(
     -------
     (yang, zang) each vector of the same length as row/col
     """
-    if t_aca is None:
-        t_aca = float(conf.t_aca_default)
-    else:
-        t_aca = float(t_aca)
+    t_aca = float(t_aca)
 
     row = np.asarray(row, dtype=np.float64)
     col = np.asarray(col, dtype=np.float64)
@@ -286,7 +280,7 @@ def yagzag_to_pixels(
     *,
     allow_bad=True,
     flight=False,
-    t_aca=None,
+    t_aca=35.0,
     pix_zero_loc="edge",
 ):
     """
@@ -309,8 +303,7 @@ def yagzag_to_pixels(
     allow_bad : boolean switch.  If True (default), method will not throw errors
         if the resulting row/col values are nominally off the ACA CCD.
     t_aca
-        ACA temperature (degC) for use with flight. If not supplied, defaults to
-        ``conf.t_aca_default`` (35.0 by default).
+        ACA temperature (degC) for use with flight. If not supplied, defaults to 35 C.
     flight
         Use flight EEPROM coefficients instead of default ground values.
     pix_zero_loc
@@ -326,10 +319,7 @@ def yagzag_to_pixels(
     if yang.shape != zang.shape:
         raise ValueError("Mismatched shape of yang/zang")
 
-    if t_aca is None:
-        t_aca = float(conf.t_aca_default)
-    else:
-        t_aca = float(t_aca)
+    t_aca = float(t_aca)
 
     row, col = _yagzag_to_pixels_by_inversion_newton(
         yang, zang, t_aca=t_aca, flight=flight
@@ -758,6 +748,8 @@ def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
     float, array
     Magnitude(s) with the same expected signal to noise as ref_mag at ref_t_ccd
     """
+    from chandra_aca import dark_model
+
     # Allow array inputs
     t_ccd, ref_mag, ref_t_ccd = np.broadcast_arrays(t_ccd, ref_mag, ref_t_ccd)
 

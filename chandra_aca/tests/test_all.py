@@ -9,7 +9,7 @@ from Chandra.Time import DateTime
 from Quaternion import Quat
 
 import chandra_aca
-from chandra_aca import conf, drift
+from chandra_aca import drift
 from chandra_aca.transform import (
     PIX_TO_ANG_FLIGHT,
     _poly_convert,
@@ -164,26 +164,6 @@ def test_pix_zero_loc():
     assert np.isclose(rc - r, 0, rtol=0, atol=0.01)
     assert np.isclose(ce - c, 0, rtol=0, atol=0.01)
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
-
-
-def test_t_aca_default_config_pixels_to_yagzag(monkeypatch):
-    monkeypatch.setattr(conf, "t_aca_default", 37.5)
-
-    yang0, zang0 = chandra_aca.pixels_to_yagzag(100.0, 200.0)
-    yang1, zang1 = chandra_aca.pixels_to_yagzag(100.0, 200.0, t_aca=37.5)
-
-    assert np.isclose(yang0, yang1, rtol=0, atol=0)
-    assert np.isclose(zang0, zang1, rtol=0, atol=0)
-
-
-def test_t_aca_default_config_yagzag_to_pixels(monkeypatch):
-    monkeypatch.setattr(conf, "t_aca_default", 37.5)
-
-    row0, col0 = chandra_aca.yagzag_to_pixels(100.0, 200.0)
-    row1, col1 = chandra_aca.yagzag_to_pixels(100.0, 200.0, t_aca=37.5)
-
-    assert np.isclose(row0, row1, rtol=0, atol=0)
-    assert np.isclose(col0, col1, rtol=0, atol=0)
 
 
 def test_pixels_to_yagzag_regression_2020():
