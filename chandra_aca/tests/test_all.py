@@ -190,9 +190,10 @@ def test_pixels_to_yagzag_regression_2020():
     """Regression test to confirm that the 2020 coeffs match calibration flight data.
 
     This uses a subset of the "star_pairs.fits" data in the 2020 calibration analysis.
-    Here row_obs and col_obs are derived from ACA image data (via aspect L1), while
-    yag_star and zag_star are derived from the star RA, Dec and the attitude estimate
-    from aspect L1.
+    in ``$SKA/analysis/aca_plate_scale/calib_2020``. Here row_obs and col_obs are
+    derived from ACA image data (via aspect L1), while yag_star and zag_star are derived
+    from the star RA, Dec and the attitude estimate from aspect L1.
+
     ```
     pairs =   apt.Table.read("star_pairs.fits")
     star_obss = pairs[500:][::10]["yag1", "zag1", "row1", "col1", "t_aca"]
