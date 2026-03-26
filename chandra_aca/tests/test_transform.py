@@ -1,19 +1,19 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from __future__ import division, print_function
+from pathlib import Path
 
-import os
-
+import astropy.table as apt
 import numpy as np
 import pytest
 import requests
-from astropy.io import ascii
-from astropy.table import Table
 from Chandra.Time import DateTime
 from Quaternion import Quat
 
 import chandra_aca
 from chandra_aca import drift
 from chandra_aca.transform import (
+    PIX_TO_ANG_FLIGHT,
+    _poly_convert,
+    _poly_convert_numba,
     calc_aca_from_targ,
     calc_target_offsets,
     eci_to_radec,
@@ -25,9 +25,12 @@ from chandra_aca.transform import (
     yagzag_to_radec,
 )
 
-dirname = os.path.dirname(__file__)
+TEST_DATA_DIR = Path(__file__).parent / "data"
 
-TOLERANCE = 0.05
+# Tolerance for matching original Perl-based pixel / angle pairs.
+# The 2020 coefficients are used for all tests.
+TOLERANCE = 0.9
+
 
 # SI_ALIGN matrix used from just after launch through NOV0215 (Nov 2015) loads.
 SI_ALIGN_CLASSIC = np.array(
@@ -82,26 +85,26 @@ def test_edge_checking():
     yagzag_to_pixels(yag, zag)
 
     with pytest.raises(ValueError):
-        pixels_to_yagzag(512.2, 0)
+        pixels_to_yagzag(512.2, 0, allow_bad=False)
 
     with pytest.raises(ValueError):
-        pixels_to_yagzag(0, -512.2)
+        pixels_to_yagzag(0, -512.2, allow_bad=False)
 
-    yag, zag = pixels_to_yagzag(512.2, -512.2, allow_bad=True)
+    yag, zag = pixels_to_yagzag(512.2, -512.2)
     with pytest.raises(ValueError):
-        yagzag_to_pixels(yag, zag)
+        yagzag_to_pixels(yag, zag, allow_bad=False)
 
 
 def test_pix_to_angle():
-    pix_to_angle = ascii.read(os.path.join(dirname, "data", "pix_to_angle.txt"))
-
+    """Test pixel to angle conversion using 2020 coefficients."""
+    pix_to_angle = apt.Table.read(TEST_DATA_DIR / "pix_to_angle.txt", format="ascii")
     print(
         "testing {} row/col pairs match to {} arcsec".format(
             len(pix_to_angle), TOLERANCE
         )
     )
     pyyang, pyzang = chandra_aca.pixels_to_yagzag(
-        pix_to_angle["row"], pix_to_angle["col"]
+        pix_to_angle["row"], pix_to_angle["col"], t_aca=20
     )
     np.testing.assert_allclose(pix_to_angle["yang"], pyyang, atol=TOLERANCE, rtol=0)
     np.testing.assert_allclose(pix_to_angle["zang"], pyzang, atol=TOLERANCE, rtol=0)
@@ -120,24 +123,26 @@ def test_pix_to_angle_flight():
 
 
 def test_angle_to_pix():
-    angle_to_pix = ascii.read(os.path.join(dirname, "data", "angle_to_pix.txt"))
+    angle_to_pix = apt.Table.read(TEST_DATA_DIR / "angle_to_pix.txt", format="ascii")
     print(
         "testing {} yang/zang pairs match to {} pixels".format(
             len(angle_to_pix), TOLERANCE
         )
     )
     pyrow, pycol = chandra_aca.yagzag_to_pixels(
-        angle_to_pix["yang"], angle_to_pix["zang"]
+        angle_to_pix["yang"], angle_to_pix["zang"], t_aca=20
     )
     np.testing.assert_allclose(angle_to_pix["row"], pyrow, atol=TOLERANCE, rtol=0)
     np.testing.assert_allclose(angle_to_pix["col"], pycol, atol=TOLERANCE, rtol=0)
 
 
 def test_angle_to_pix_types():
+    row_exp = -506.89
+    col_exp = 341.30
     for ftype in [int, float, np.int32, np.int64, np.float32]:
-        pyrow, pycol = chandra_aca.yagzag_to_pixels(ftype(2540), ftype(1660))
-        assert np.isclose(pyrow, -506.71, rtol=0, atol=0.01)
-        assert np.isclose(pycol, 341.19, rtol=0, atol=0.01)
+        pyrow, pycol = chandra_aca.yagzag_to_pixels(ftype(2540), ftype(1660), t_aca=20)
+        assert np.isclose(pyrow, row_exp, rtol=0, atol=0.01)
+        assert np.isclose(pycol, col_exp, rtol=0, atol=0.01)
 
 
 def test_pix_zero_loc():
@@ -159,6 +164,68 @@ def test_pix_zero_loc():
     assert np.isclose(rc - r, 0, rtol=0, atol=0.01)
     assert np.isclose(ce - c, 0, rtol=0, atol=0.01)
     assert np.isclose(cc - c, 0, rtol=0, atol=0.01)
+
+
+def test_pixels_to_yagzag_regression_2020():
+    """Regression test to confirm that the 2020 coeffs match calibration flight data.
+
+    This uses a subset of the "star_pairs.fits" data in the 2020 calibration analysis.
+    in ``$SKA/analysis/aca_plate_scale/calib_2020``. Here row_obs and col_obs are
+    derived from ACA image data (via aspect L1), while yag_star and zag_star are derived
+    from the star RA, Dec and the attitude estimate from aspect L1.
+
+    ```
+    pairs =   apt.Table.read("star_pairs.fits")
+    star_obss = pairs[500:][::10]["yag1", "zag1", "row1", "col1", "t_aca"]
+    for name in star_obss.colnames:
+        star_obss[name] = star_obss[name].astype(np.float32)
+    star_obss.rename_column("yag1", "yag_star")
+    star_obss.rename_column("zag1", "zag_star")
+    star_obss.rename_column("row1", "row_obs")
+    star_obss.rename_column("col1", "col_obs")
+    star_obss.write("chandra_aca/tests/data/star_obs_2020.fits.gz", overwrite=True)
+    ```
+
+    """
+    star_obss = apt.Table.read(TEST_DATA_DIR / "star_obs_2020.fits.gz")
+    yag_obss = []
+    zag_obss = []
+    for star_obs in star_obss:
+        yag_obs, zag_obs = pixels_to_yagzag(
+            star_obs["row_obs"],
+            star_obs["col_obs"],
+            t_aca=star_obs["t_aca"],
+            pix_zero_loc="center",
+        )
+        yag_obss.append(yag_obs)
+        zag_obss.append(zag_obs)
+
+    # Regression test that the transform gives expected results. The significant offset
+    # of the mean from zero is interesting but acceptable. The goal here is ensuring
+    # future updates don't change the transform.
+    dy = yag_obss - star_obss["yag_star"]
+    dz = zag_obss - star_obss["zag_star"]
+    assert np.isclose(np.mean(dy), 0.31, rtol=0, atol=0.01)
+    assert np.isclose(np.mean(dz), 0.17, rtol=0, atol=0.01)
+    assert np.isclose(np.std(dy), 0.27, rtol=0, atol=0.01)
+    assert np.isclose(np.std(dz), 0.21, rtol=0, atol=0.01)
+
+
+@pytest.mark.parametrize("flight", [True, False])
+def test_pixels_to_yagzag_to_pixels_roundtrip(flight):
+    row, col = np.meshgrid(np.linspace(-511, 511, 25), np.linspace(-511, 511, 25))
+
+    t_aca = 20.0
+    yang, zang = chandra_aca.pixels_to_yagzag(row, col, t_aca=t_aca, flight=flight)
+    row_rt, col_rt = chandra_aca.yagzag_to_pixels(
+        yang, zang, t_aca=t_aca, flight=flight
+    )
+    atol = 0.01
+
+    assert row_rt.shape == row.shape
+    assert col_rt.shape == col.shape
+    np.testing.assert_allclose(row_rt, row, rtol=0, atol=atol)
+    np.testing.assert_allclose(col_rt, col, rtol=0, atol=atol)
 
 
 @pytest.mark.parametrize(
@@ -187,6 +254,28 @@ def test_transform_broadcast(func):
     assert isinstance(z, np.float64)
     assert not isinstance(y, np.ndarray)
     assert not isinstance(z, np.ndarray)
+
+
+def test_poly_convert_numba_scalar():
+    r = 100.0
+    c = -200.0
+    t_aca = 22.5
+
+    yag_legacy, _ = _poly_convert(r, c, PIX_TO_ANG_FLIGHT.transpose(), t_aca)
+    yag_numba = _poly_convert_numba(r, c, PIX_TO_ANG_FLIGHT[0], t_aca)
+
+    assert np.isclose(yag_legacy, yag_numba, rtol=0, atol=1e-12)
+
+
+def test_poly_convert_numba_array():
+    r = np.array([-200.0, 0.0, 100.0, 300.0])
+    c = np.array([250.0, -10.0, 20.0, -400.0])
+    t_aca = 15.0
+
+    _, zags_legacy = _poly_convert(r, c, PIX_TO_ANG_FLIGHT.transpose(), t_aca)
+    zags_numba = _poly_convert_numba(r, c, PIX_TO_ANG_FLIGHT[1], t_aca)
+
+    np.testing.assert_allclose(zags_numba, zags_legacy, rtol=0, atol=1e-12)
 
 
 def test_radec_to_yagzag():
@@ -253,7 +342,7 @@ def test_get_aimpoint():
         assert r.status_code == 200
         zot = None
     except Exception:
-        zot = Table.read(ZERO_OFFSET_TABLE, format="ascii")
+        zot = apt.Table.read(ZERO_OFFSET_TABLE, format="ascii")
 
     for obstest, answer in zip(obstests, answers, strict=False):
         chipx, chipy, chip_id = drift.get_target_aimpoint(
@@ -262,7 +351,7 @@ def test_get_aimpoint():
         assert chipx == answer[0]
         assert chipy == answer[1]
         assert chip_id == answer[2]
-    zot = Table.read(
+    zot = apt.Table.read(
         """date_effective  cycle_effective  detector  chipx   chipy   chip_id  obsvis_cal
 2012-12-15      15               ACIS-I    888   999   -1        1.6""",
         format="ascii",

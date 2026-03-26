@@ -7,51 +7,24 @@ The transform modules includes:
 - Science target coordinate to ACA frame conversions
 """
 
+from typing import Literal
+
+import numba
 import numpy as np
 from Quaternion import Quat
 
-from chandra_aca import dark_model
-
-# coefficients for converting from ACA angle to pixels (ground)
-ACA2PIX_coeff = np.array(
-    [
-        [6.08840495576943, 4.92618563916467],
-        [0.000376181788609776, 0.200203020554239],
-        [-0.200249577514165, 0.000332284183255046],
-        [-2.7052897180601e-009, -5.35702097772202e-009],
-        [9.75572638037165e-010, 1.91073314224894e-008],
-        [-2.94865155316778e-008, -4.85766581852866e-009],
-        [8.31198018312775e-013, 2.01092070428495e-010],
-        [-1.96043819238097e-010, 5.09721545876414e-016],
-        [5.14134244771463e-013, 1.99339355492595e-010],
-        [-1.97282476269237e-010, 2.52739834319184e-014],
-    ]
-)
-
-# coefficients for converting from pixels to ACA angle in radians
-PIX2ACA_coeff = np.array(
-    [
-        [1.471572165932506e-04, -1.195271491928579e-04],
-        [4.554462091388806e-08, 2.421478755190295e-05],
-        [-2.420905844425065e-05, 4.005224006503938e-08],
-        [-4.989939217701764e-12, 1.188134673090465e-11],
-        [-6.116309500303049e-12, 1.832694593246024e-11],
-        [-2.793916972292602e-11, 5.823266376976988e-12],
-        [2.420403450703432e-16, -5.923401659857833e-13],
-        [5.751137659424387e-13, -1.666025332027183e-15],
-        [-9.934587837231732e-16, -5.847450395792513e-13],
-        [5.807475081470944e-13, -1.842673748068349e-15],
-    ]
-)
+###################################################################################
+# Flight EEPROM coefficients (used for flight mode in coordinate transforms)
+###################################################################################
 
 # From /proj/sot/ska/analysis/aca_plate_scale/calib_prelaunch/eeprom_cal.txt
 # This is the full 20-coefficient solution that includes a
 # temperature dependence (but not a zero-order dependence).
 # The ground coefficients do not include the terms that have
 # temperature term.
-PIX2ACA_eeprom = np.array(
+PIX2ACA_eeprom_arcsec = np.array(
     [
-        [3.03464844e01, -2.46503906e01],
+        [30.3464844, -24.6503906],  # location of (0, 0) pixel
         [9.38110352e-03, 4.99642792e00],
         [-4.99528198e00, 9.14611816e-03],
         [0.00000000e00, 0.00000000e00],
@@ -73,8 +46,120 @@ PIX2ACA_eeprom = np.array(
     ]
 )
 
-# Convert from arcsec to radians
-PIX2ACA_eeprom = np.radians(PIX2ACA_eeprom / 3600)
+###################################################################################
+# 2020 coefficients. See:
+# https://cxc.cfa.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/
+###################################################################################
+
+# Ground (aspect pipeline) coefficients for converting from pixels (row, col) to ACA
+# angle (yag, zag) (arcsec). See:
+# https://nbviewer.org/urls/cxc.cfa.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/fit-yz-plate-scale-no-rotation.ipynb
+#  0 [ones,
+#  1 c,
+#  2 r,
+#  3 t,  <!! Leave at 0
+#  4 c * c,
+#  5 c * r,
+#  6 c * t,  <= Temperature
+#  7 r * r,
+#  8 r * t,  <= Temperature
+#  9 t * t,  <!! Leave at 0
+# 10 c * c * c,
+# 11 r * c * c,
+# 12 t * c * c,  <= Temperature
+# 13 c * r * r,
+# 14 c * r * t,  <= Temperature
+# 15 c * t * t,  <= Temperature
+# 16 r * r * r,
+# 17 t * r * r,  <= Temperature
+# 18 r * t * t,  <= Temperature
+#
+# NOTE: the original notebook includes a 20th row `t * t * t` with a value of 0.0, but
+# this is not consistent with flight or _poly_convert so we just drop it.
+# This has also been adjusted as follows:
+# - Convert from deg to arcsec
+# - Add (+2.5, -2.5) arcsec to the zero point values. The original analysis used center
+# row/col to match the aspect pipeline, but this code assumes edge row/col. Compare to
+# the FLIGHT coeeff [30.3464844, -24.6503906].
+PIX_TO_ANG_GROUND = np.array(
+    [
+        [30.3464845, -24.6503911],  # yag/zag location of row/col (0, 0) (arcsec)
+        [8.23205783e-03, 4.99591058],  # linear plate scale arcsec / pixel in col
+        [-4.99553676, 9.23841252e-03],  # linear plate scale arcsec / pixel in row
+        [0.00000000e00, 0.00000000e00],
+        [-1.37602599e-06, 2.42501739e-06],
+        [-1.09954525e-06, 4.56650996e-06],
+        [-2.90995528e-07, -1.39358988e-04],
+        [-6.20856605e-06, 1.25436052e-06],
+        [1.54786392e-04, -1.17830290e-04],
+        [0.00000000e00, 0.00000000e00],
+        [5.48539877e-10, -1.20837365e-07],
+        [1.17004831e-07, -3.32899187e-10],
+        [1.18654095e-08, -5.22646769e-09],
+        [-1.47271099e-10, -1.17362370e-07],
+        [-5.27874970e-09, -6.02546684e-09],
+        [5.17812325e-08, -3.09403378e-07],
+        [1.18612895e-07, -3.38209660e-10],
+        [-3.82947347e-09, 9.81968414e-09],
+        [-3.87317729e-07, 3.94460903e-06],
+    ],
+    dtype=np.float64,
+).transpose()
+
+# Coefficients for converting from ACA angle (yag, zag) (arcsec) to pixel (row, col).
+# This is ONLY used to provide a good starting point for Newton's method inversion of
+# pixels_to_yagzag. This uses the final `coeffs_fit_all` coefficients from
+# https://nbviewer.org/urls/cxc.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/fit-rc-plate-scale.ipynb.
+# In that notebook the actual coefficient values were not printed, but it was re-run and
+# these are the values.
+#  0 [ones,
+#  1 z,
+#  2 y,
+#  3 t,  <!! Leave at 0
+#  4 z * z,
+#  5 z * y,
+#  6 z * t,  <= Temperature
+#  7 y * y,
+#  8 y * t,  <= Temperature
+#  9 t * t,  <!! Leave at 0
+# 10 z * z * z,
+# 11 y * z * z,
+# 12 t * z * z,  <= Temperature
+# 13 z * y * y,
+# 14 z * y * t,  <= Temperature
+# 15 z * t * t,  <= Temperature
+# 16 y * y * y,
+# 17 t * y * y,  <= Temperature
+# 18 y * t * t,  <= Temperature
+# 19 t * t * t]  <!! Leave at 0
+ANG_TO_PIX_GROUND = np.array(
+    [
+        [6.08840496, 4.92618564],  # pixel location of (0, 0) yag, zag
+        [3.85885523e-04, 0.200184894],  # linear plate scale pixels / arcsec in zag
+        [-0.200224551, 3.85458793e-04],  # linear plate scale pixels / arcsec in yag
+        [0.00000000e00, 0.00000000e00],
+        [-5.83863054e-09, -1.43156559e-08],
+        [-3.82253195e-09, 2.62976678e-08],
+        [-6.64135115e-06, 1.48724550e-06],
+        [-3.54580684e-08, -6.04764636e-09],
+        [8.62191298e-07, -5.99108232e-06],
+        [0.00000000e00, 0.00000000e00],
+        [1.06571736e-12, 2.01178012e-10],
+        [-1.96863305e-10, 4.19981450e-13],
+        [1.18393143e-10, 3.80110516e-10],
+        [6.45978452e-13, 1.96738124e-10],
+        [2.85962857e-10, 2.03208326e-11],
+        [3.96857730e-07, 1.01919863e-07],
+        [-1.98850298e-10, -1.84355310e-12],
+        [-7.15660261e-12, 3.04028795e-12],
+        [-1.54074493e-07, 3.94104327e-07],
+    ],
+    dtype=np.float64,
+).transpose()
+
+# Define flight pixel to angle coefficents with a name that is consistent with new
+# coefficients from 2020 plate scale ground calibration coefficients.
+PIX_TO_ANG_FLIGHT = PIX2ACA_eeprom_arcsec.transpose()
 
 ACA_MAG0 = 10.32
 ACA_CNT_RATE_MAG0 = 5263.0
@@ -105,7 +190,7 @@ def broadcast_arrays(*args):
     :returns: [is_scalar, \*flat_args]
 
     """
-    is_scalar = all(np.array(arg).ndim == 0 for arg in args)
+    is_scalar = all(np.asarray(arg).ndim == 0 for arg in args)
     args = np.atleast_1d(*args)
     outs = [is_scalar] + list(np.broadcast_arrays(*args))
     return outs
@@ -133,8 +218,14 @@ def broadcast_arrays_flatten(*args):
 
 
 def pixels_to_yagzag(
-    row, col, allow_bad=False, flight=False, t_aca=20, pix_zero_loc="edge"
-):
+    row: float | list[float] | np.ndarray,
+    col: float | list[float] | np.ndarray,
+    *,
+    allow_bad: bool = True,
+    flight: bool = False,
+    t_aca: float = 35.0,
+    pix_zero_loc: Literal["edge", "center"] = "edge",
+) -> tuple[float | np.ndarray, float | np.ndarray]:
     """
     Convert ACA row/column positions to ACA y-angle, z-angle.
 
@@ -148,25 +239,29 @@ def pixels_to_yagzag(
 
     Parameters
     ----------
-    row
-        ACA pixel row (single value, list, or 1-d numpy array)
-    col
-        ACA pixel column (single value, list, or 1-d numpy array)
-    allow_bad : boolean switch.  If true, method will not throw errors
+    row : float | list[float] | np.ndarray
+        ACA pixel row value(s).
+    col : float | list[float] | np.ndarray
+        ACA pixel column value(s).
+    allow_bad : bool
+        If True (default), method will not throw errors
         if the row/col values are nominally off the ACA CCD.
-    flight
+    flight : bool
         Use flight EEPROM coefficients instead of default ground values.
-    t_aca
-        ACA temperature (degC) for use with flight (default=20C)
-    pix_zero_loc
-        row/col coords are integral at 'edge' or 'center'
+    t_aca : float
+        ACA temperature (degC) for use with flight.
+    pix_zero_loc : {"edge", "center"}
+        Row/col coordinates are integral at 'edge' or 'center'.
 
     Returns
     -------
-    (yang, zang) each vector of the same length as row/col
+    tuple[float | np.ndarray, float | np.ndarray]
+        ACA (yang, zang) values in arcsec.
     """
-    row = np.asarray(row)
-    col = np.asarray(col)
+    t_aca = float(t_aca)
+
+    row = np.asarray(row, dtype=np.float64)
+    col = np.asarray(col, dtype=np.float64)
 
     if pix_zero_loc == "center":
         # Transform row/col values from 'center' convention to 'edge'
@@ -181,14 +276,23 @@ def pixels_to_yagzag(
     if not allow_bad and (np.any(np.abs(row) > 512.0) or np.any(np.abs(col) > 512.0)):
         raise ValueError("Coordinate off CCD")
 
-    coeff = PIX2ACA_eeprom if flight else PIX2ACA_coeff
-    yrad, zrad = _poly_convert(row, col, coeff, t_aca)
+    # Use 2020 coefficients (2 x 19)
+    coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
+    yang = _poly_convert_numba(row, col, coeff[0], t_aca)
+    zang = _poly_convert_numba(row, col, coeff[1], t_aca)
 
-    # Convert to arcsecs from radians
-    return 3600 * np.degrees(yrad), 3600 * np.degrees(zrad)
+    return yang, zang
 
 
-def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc="edge"):
+def yagzag_to_pixels(
+    yang: float | list[float] | np.ndarray,
+    zang: float | list[float] | np.ndarray,
+    *,
+    allow_bad: bool = True,
+    flight: bool = False,
+    t_aca: float = 35.0,
+    pix_zero_loc: Literal["edge", "center"] = "edge",
+) -> tuple[float | np.ndarray, float | np.ndarray]:
     """
     Convert ACA y-angle/z-angle positions to ACA pixel row, column.
 
@@ -202,22 +306,36 @@ def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc="edge"):
 
     Parameters
     ----------
-    yang
-        ACA y-angle (single value, list, or 1-d numpy array)
-    zang
-        ACA z-angle (single value, list, or 1-d numpy array)
-    allow_bad : boolean switch.  If true, method will not throw errors
+    yang : float | list[float] | np.ndarray
+        ACA y-angle value(s) in arcsec.
+    zang : float | list[float] | np.ndarray
+        ACA z-angle value(s) in arcsec.
+    allow_bad : bool
+        If True (default), method will not throw errors
         if the resulting row/col values are nominally off the ACA CCD.
-    pix_zero_loc
-        row/col coords are integral at 'edge' or 'center'
+    t_aca : float
+        ACA temperature (degC) for use with flight.
+    flight : bool
+        Use flight EEPROM coefficients instead of default ground values.
+    pix_zero_loc : {"edge", "center"}
+        Row/col coordinates are integral at 'edge' or 'center'.
 
     Returns
     -------
-    (row, col) each vector of the same length as row/col
+    tuple[float | np.ndarray, float | np.ndarray]
+        ACA (row, col) values.
     """
-    yang = np.asarray(yang)
-    zang = np.asarray(zang)
-    row, col = _poly_convert(yang, zang, ACA2PIX_coeff)
+    yang = np.asarray(yang, dtype=np.float64)
+    zang = np.asarray(zang, dtype=np.float64)
+
+    if yang.shape != zang.shape:
+        raise ValueError("Mismatched shape of yang/zang")
+
+    t_aca = float(t_aca)
+
+    row, col = _yagzag_to_pixels_by_inversion_newton(
+        yang, zang, t_aca=t_aca, flight=flight
+    )
 
     # Row/col are in edge coordinates at this point, check if they are on
     # the CCD unless allow_bad is True.
@@ -227,15 +345,76 @@ def yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc="edge"):
     if pix_zero_loc == "center":
         # Transform row/col values from 'edge' convention (as returned
         # by _poly_convert) to the 'center' convention requested by user.
-        row = row - 0.5
-        col = col - 0.5
+        row -= 0.5
+        col -= 0.5
     elif pix_zero_loc != "edge":
         raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
 
     return row, col
 
 
-def _poly_convert(y, z, coeffs, t_aca=None):
+def _yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight):
+    """Use Newton iterations to transform yang/zang to row/col.
+
+    This directly inverts ``pixels_to_yagzag`` using a fast fixed-Jacobian
+    Newton update. Accuracy target is ~0.05 arcsec in y/z.
+    """
+
+    tol = 0.05
+    max_iter = 6
+
+    is_scalar = yang.ndim == 0
+    shape = yang.shape
+    yangs = np.atleast_1d(yang).ravel()
+    zangs = np.atleast_1d(zang).ravel()
+    t_aca = float(t_aca)
+
+    coeff = PIX_TO_ANG_FLIGHT if flight else PIX_TO_ANG_GROUND
+    coeff_y = coeff[0]
+    coeff_z = coeff[1]
+    # Coefficients for the initial estimate of row/col from yang/zang. This is only used
+    # as the starting point for the Newton iterations, so the difference between FLIGHT
+    # and GROUND doesn't matter (and we don't have inverse FLIGHT coeffs).
+    coeff_row0 = ANG_TO_PIX_GROUND[0]
+    coeff_col0 = ANG_TO_PIX_GROUND[1]
+
+    # Fixed Jacobian from dominant linear terms around nominal plate scale
+    dy_dc = coeff[0][1]
+    dy_dr = coeff[0][2]
+    dz_dc = coeff[1][1]
+    dz_dr = coeff[1][2]
+    det = dy_dr * dz_dc - dy_dc * dz_dr
+
+    inv00 = dz_dc / det
+    inv01 = -dy_dc / det
+    inv10 = -dz_dr / det
+    inv11 = dy_dr / det
+
+    rows, cols = _yagzag_to_pixels_by_inversion_newton_jit(
+        yangs,
+        zangs,
+        coeff_y,
+        coeff_z,
+        coeff_row0,
+        coeff_col0,
+        t_aca,
+        tol,
+        max_iter,
+        inv00,
+        inv01,
+        inv10,
+        inv11,
+    )
+
+    if not is_scalar:
+        rows.shape = shape
+        cols.shape = shape
+        return rows, cols
+
+    return rows[0], cols[0]
+
+
+def _poly_convert(y, z, coeffs, t_aca):
     # Convert to avoid overflow errors with the polys on int32
     y = np.asarray(y, dtype=np.float64)
     z = np.asarray(z, dtype=np.float64)
@@ -292,6 +471,141 @@ def _poly_convert(y, z, coeffs, t_aca=None):
         newz.shape = shape
 
     return newy, newz
+
+
+@numba.njit(cache=True)
+def _poly_convert_numba_jit(
+    r: np.ndarray,
+    c: np.ndarray,
+    coeffs: np.ndarray,
+    t_aca: float,
+) -> np.ndarray:
+    out = np.empty(r.size, dtype=np.float64)
+
+    for ii in range(r.size):
+        rr = r[ii]
+        cc = c[ii]
+        out[ii] = _poly_eval_scalar_numba(rr, cc, coeffs, t_aca)
+
+    return out
+
+
+@numba.njit(cache=True)
+def _poly_eval_scalar_numba(
+    r: float, c: float, coeffs: np.ndarray, t_aca: float
+) -> float:
+    return (
+        coeffs[0]
+        + coeffs[1] * c
+        + coeffs[2] * r
+        + coeffs[3] * t_aca
+        + coeffs[4] * c * c
+        + coeffs[5] * c * r
+        + coeffs[6] * c * t_aca
+        + coeffs[7] * r * r
+        + coeffs[8] * r * t_aca
+        + coeffs[9] * t_aca * t_aca
+        + coeffs[10] * c * c * c
+        + coeffs[11] * r * c * c
+        + coeffs[12] * t_aca * c * c
+        + coeffs[13] * c * r * r
+        + coeffs[14] * c * r * t_aca
+        + coeffs[15] * c * t_aca * t_aca
+        + coeffs[16] * r * r * r
+        + coeffs[17] * t_aca * r * r
+        + coeffs[18] * r * t_aca * t_aca
+    )
+
+
+@numba.njit(cache=True)
+def _yagzag_to_pixels_by_inversion_newton_jit(
+    yangs: np.ndarray,
+    zangs: np.ndarray,
+    coeff_y: np.ndarray,
+    coeff_z: np.ndarray,
+    coeff_row0: np.ndarray,
+    coeff_col0: np.ndarray,
+    t_aca: float,
+    tol: float,
+    max_iter: int,
+    inv00: float,
+    inv01: float,
+    inv10: float,
+    inv11: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    rows = np.empty_like(yangs)
+    cols = np.empty_like(zangs)
+
+    for ii in range(yangs.size):
+        yang0 = yangs[ii]
+        zang0 = zangs[ii]
+
+        row = _poly_eval_scalar_numba(yang0, zang0, coeff_row0, t_aca)
+        col = _poly_eval_scalar_numba(yang0, zang0, coeff_col0, t_aca)
+
+        for _ in range(max_iter):
+            y_est = _poly_eval_scalar_numba(row, col, coeff_y, t_aca)
+            z_est = _poly_eval_scalar_numba(row, col, coeff_z, t_aca)
+
+            dy = y_est - yang0
+            dz = z_est - zang0
+
+            if abs(dy) <= tol and abs(dz) <= tol:
+                break
+
+            drow = inv00 * dy + inv01 * dz
+            dcol = inv10 * dy + inv11 * dz
+            row -= drow
+            col -= dcol
+
+        rows[ii] = row
+        cols[ii] = col
+
+    return rows, cols
+
+
+def _poly_convert_numba(
+    r: float | np.ndarray[float],
+    c: float | np.ndarray[float],
+    coeffs: np.ndarray[float],
+    t_aca: float = 20.0,
+):
+    """Convert r, c values using a polynomial conversion via numba.
+
+    Parameters
+    ----------
+    r
+        row values (float or array of floats)
+    c
+        column values (float or array of floats)
+    coeffs
+        polynomial coefficients (fixed at 19 elements)
+    t_aca
+        temperature for use with flight coefficients (degC)
+
+    Returns
+    -------
+    np.ndarray
+        Converted values (same shape as input r and c)
+    """
+    # Convert to avoid overflow errors with the polys on int32
+    r = np.asarray(r, dtype=np.float64)
+    c = np.asarray(c, dtype=np.float64)
+    coeffs = np.asarray(coeffs, dtype=np.float64)
+    if not isinstance(t_aca, float):
+        t_aca = float(t_aca)
+
+    if r.size != c.size:
+        raise ValueError("size mismatch")
+
+    shape = r.shape
+    vals = _poly_convert_numba_jit(r.ravel(), c.ravel(), coeffs, t_aca)
+    if shape:
+        vals.shape = shape
+    else:
+        vals = vals[0]
+
+    return vals
 
 
 def radec_to_eci(ra, dec):
@@ -446,6 +760,8 @@ def snr_mag_for_t_ccd(t_ccd, ref_mag, ref_t_ccd, scale_4c=None):
     float, array
     Magnitude(s) with the same expected signal to noise as ref_mag at ref_t_ccd
     """
+    from chandra_aca import dark_model
+
     # Allow array inputs
     t_ccd, ref_mag, ref_t_ccd = np.broadcast_arrays(t_ccd, ref_mag, ref_t_ccd)
 

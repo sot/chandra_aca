@@ -95,7 +95,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
         and stop. Default is False.
     data_dir : Path or str, optional
         Root directory containing the archived image files organized as
-        data_dir/YYYY/DOY/*.npz. Default is ``$SKA/data/manvr_mon_images``.
+        ``data_dir/YYYY/DOY/*.npz``. Default is ``$SKA/data/manvr_mon_images``.
 
     Returns
     -------
