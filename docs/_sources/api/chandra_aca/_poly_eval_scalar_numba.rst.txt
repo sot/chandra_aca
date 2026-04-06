@@ -1,0 +1,4 @@
+chandra_aca._poly_eval_scalar_numba
+===================================
+
+.. py:function:: chandra_aca._poly_eval_scalar_numba(r, c, coeffs, t_aca)

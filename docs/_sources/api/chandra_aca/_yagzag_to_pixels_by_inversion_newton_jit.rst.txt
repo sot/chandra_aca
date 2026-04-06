@@ -1,0 +1,4 @@
+chandra_aca._yagzag_to_pixels_by_inversion_newton_jit
+=====================================================
+
+.. py:function:: chandra_aca._yagzag_to_pixels_by_inversion_newton_jit(yangs, zangs, coeff_y, coeff_z, coeff_row0, coeff_col0, t_aca, tol, max_iter, inv00, inv01, inv10, inv11)

@@ -1,0 +1,42 @@
+chandra_aca._poly_convert_numba
+===============================
+
+.. py:function:: chandra_aca._poly_convert_numba(r, c, coeffs, t_aca = 20.0)
+
+   
+   Convert r, c values using a polynomial conversion via numba.
+
+
+   :Parameters:
+
+       **r**
+           row values (float or array of floats)
+
+       **c**
+           column values (float or array of floats)
+
+       **coeffs**
+           polynomial coefficients (fixed at 19 elements)
+
+       **t_aca**
+           temperature for use with flight coefficients (degC)
+
+
+
+   :Returns:
+
+       np.ndarray
+           Converted values (same shape as input r and c)
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

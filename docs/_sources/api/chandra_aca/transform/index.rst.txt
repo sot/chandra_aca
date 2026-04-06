@@ -20,10 +20,10 @@ Attributes
 
 .. autoapisummary::
 
-   chandra_aca.transform.ACA2PIX_coeff
-   chandra_aca.transform.PIX2ACA_coeff
-   chandra_aca.transform.PIX2ACA_eeprom
-   chandra_aca.transform.PIX2ACA_eeprom
+   chandra_aca.transform.PIX2ACA_eeprom_arcsec
+   chandra_aca.transform.PIX_TO_ANG_GROUND
+   chandra_aca.transform.ANG_TO_PIX_GROUND
+   chandra_aca.transform.PIX_TO_ANG_FLIGHT
    chandra_aca.transform.ACA_MAG0
    chandra_aca.transform.ACA_CNT_RATE_MAG0
    chandra_aca.transform.ODB_SI_ALIGN
@@ -39,7 +39,12 @@ Functions
    /api/chandra_aca/transform/broadcast_arrays_flatten
    /api/chandra_aca/transform/pixels_to_yagzag
    /api/chandra_aca/transform/yagzag_to_pixels
+   /api/chandra_aca/transform/_yagzag_to_pixels_by_inversion_newton
    /api/chandra_aca/transform/_poly_convert
+   /api/chandra_aca/transform/_poly_convert_numba_jit
+   /api/chandra_aca/transform/_poly_eval_scalar_numba
+   /api/chandra_aca/transform/_yagzag_to_pixels_by_inversion_newton_jit
+   /api/chandra_aca/transform/_poly_convert_numba
    /api/chandra_aca/transform/radec_to_eci
    /api/chandra_aca/transform/eci_to_radec
    /api/chandra_aca/transform/mag_to_count_rate
@@ -58,7 +63,12 @@ Functions
    chandra_aca.transform.broadcast_arrays_flatten
    chandra_aca.transform.pixels_to_yagzag
    chandra_aca.transform.yagzag_to_pixels
+   chandra_aca.transform._yagzag_to_pixels_by_inversion_newton
    chandra_aca.transform._poly_convert
+   chandra_aca.transform._poly_convert_numba_jit
+   chandra_aca.transform._poly_eval_scalar_numba
+   chandra_aca.transform._yagzag_to_pixels_by_inversion_newton_jit
+   chandra_aca.transform._poly_convert_numba
    chandra_aca.transform.radec_to_eci
    chandra_aca.transform.eci_to_radec
    chandra_aca.transform.mag_to_count_rate
@@ -75,13 +85,13 @@ Functions
 Module Contents
 ---------------
 
-.. py:data:: ACA2PIX_coeff
+.. py:data:: PIX2ACA_eeprom_arcsec
 
-.. py:data:: PIX2ACA_coeff
+.. py:data:: PIX_TO_ANG_GROUND
 
-.. py:data:: PIX2ACA_eeprom
+.. py:data:: ANG_TO_PIX_GROUND
 
-.. py:data:: PIX2ACA_eeprom
+.. py:data:: PIX_TO_ANG_FLIGHT
 
 .. py:data:: ACA_MAG0
    :value: 10.32

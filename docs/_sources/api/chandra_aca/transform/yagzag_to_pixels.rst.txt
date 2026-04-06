@@ -1,7 +1,7 @@
 chandra_aca.transform.yagzag_to_pixels
 ======================================
 
-.. py:function:: chandra_aca.transform.yagzag_to_pixels(yang, zang, allow_bad=False, pix_zero_loc='edge')
+.. py:function:: chandra_aca.transform.yagzag_to_pixels(yang, zang, *, allow_bad = True, flight = False, t_aca = 35.0, pix_zero_loc = 'edge')
 
    
    Convert ACA y-angle/z-angle positions to ACA pixel row, column.
@@ -16,24 +16,31 @@ chandra_aca.transform.yagzag_to_pixels
 
    :Parameters:
 
-       **yang**
-           ACA y-angle (single value, list, or 1-d numpy array)
+       **yang** : float | list[float] | np.ndarray
+           ACA y-angle value(s) in arcsec.
 
-       **zang**
-           ACA z-angle (single value, list, or 1-d numpy array)
+       **zang** : float | list[float] | np.ndarray
+           ACA z-angle value(s) in arcsec.
 
-       **allow_bad** : boolean switch.  If true, method will not throw errors
+       **allow_bad** : bool
+           If True (default), method will not throw errors
            if the resulting row/col values are nominally off the ACA CCD.
 
-       **pix_zero_loc**
-           row/col coords are integral at 'edge' or 'center'
+       **t_aca** : float
+           ACA temperature (degC) for use with flight.
+
+       **flight** : bool
+           Use flight EEPROM coefficients instead of default ground values.
+
+       **pix_zero_loc** : {"edge", "center"}
+           Row/col coordinates are integral at 'edge' or 'center'.
 
 
 
    :Returns:
 
-       (row, col) each vector of the same length as row/col
-           ..
+       tuple[float | np.ndarray, float | np.ndarray]
+           ACA (row, col) values.
 
 
 

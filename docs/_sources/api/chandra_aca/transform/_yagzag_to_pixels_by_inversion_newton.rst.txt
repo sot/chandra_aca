@@ -1,0 +1,27 @@
+chandra_aca.transform._yagzag_to_pixels_by_inversion_newton
+===========================================================
+
+.. py:function:: chandra_aca.transform._yagzag_to_pixels_by_inversion_newton(yang, zang, t_aca, flight)
+
+   
+   Use Newton iterations to transform yang/zang to row/col.
+
+   This directly inverts ``pixels_to_yagzag`` using a fast fixed-Jacobian
+   Newton update. Accuracy target is ~0.05 arcsec in y/z.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

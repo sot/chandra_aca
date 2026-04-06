@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.transform &#8212; chandra_aca 4.54.0 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.55.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=c5c3a2a5"></script>
+    <script src="../../../_static/documentation_options.js?v=b416e8fc"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.tests" href="../tests/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.54.0" />
+  <meta name="docsearch:version" content="4.55.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.54.0</span></div>
+<span style="font-size: x-large;">4.55.0</span></div>
     
   </div>
   
@@ -356,16 +356,16 @@
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.transform.ACA2PIX_coeff" title="chandra_aca.transform.ACA2PIX_coeff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA2PIX_coeff</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.transform.PIX2ACA_eeprom_arcsec" title="chandra_aca.transform.PIX2ACA_eeprom_arcsec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX2ACA_eeprom_arcsec</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.transform.PIX2ACA_coeff" title="chandra_aca.transform.PIX2ACA_coeff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX2ACA_coeff</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.transform.PIX_TO_ANG_GROUND" title="chandra_aca.transform.PIX_TO_ANG_GROUND"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX_TO_ANG_GROUND</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="chandra_aca.transform.PIX2ACA_eeprom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX2ACA_eeprom</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.transform.ANG_TO_PIX_GROUND" title="chandra_aca.transform.ANG_TO_PIX_GROUND"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ANG_TO_PIX_GROUND</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="chandra_aca.transform.PIX2ACA_eeprom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX2ACA_eeprom</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#chandra_aca.transform.PIX_TO_ANG_FLIGHT" title="chandra_aca.transform.PIX_TO_ANG_FLIGHT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PIX_TO_ANG_FLIGHT</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chandra_aca.transform.ACA_MAG0" title="chandra_aca.transform.ACA_MAG0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACA_MAG0</span></code></a></p></td>
@@ -393,46 +393,61 @@
 <tr class="row-even"><td><p><a class="reference internal" href="broadcast_arrays_flatten.html#chandra_aca.transform.broadcast_arrays_flatten" title="chandra_aca.transform.broadcast_arrays_flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">broadcast_arrays_flatten</span></code></a>(*args)</p></td>
 <td><p>Broadcast <code class="docutils literal notranslate"><span class="pre">*args</span></code> inputs to same shape and flatten.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="pixels_to_yagzag.html#chandra_aca.transform.pixels_to_yagzag" title="chandra_aca.transform.pixels_to_yagzag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixels_to_yagzag</span></code></a>(row, col[, allow_bad, flight, t_aca, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="pixels_to_yagzag.html#chandra_aca.transform.pixels_to_yagzag" title="chandra_aca.transform.pixels_to_yagzag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixels_to_yagzag</span></code></a>(row, col, *[, allow_bad, flight, ...])</p></td>
 <td><p>Convert ACA row/column positions to ACA y-angle, z-angle.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="yagzag_to_pixels.html#chandra_aca.transform.yagzag_to_pixels" title="chandra_aca.transform.yagzag_to_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yagzag_to_pixels</span></code></a>(yang, zang[, allow_bad, pix_zero_loc])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="yagzag_to_pixels.html#chandra_aca.transform.yagzag_to_pixels" title="chandra_aca.transform.yagzag_to_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yagzag_to_pixels</span></code></a>(yang, zang, *[, allow_bad, flight, ...])</p></td>
 <td><p>Convert ACA y-angle/z-angle positions to ACA pixel row, column.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_poly_convert.html#chandra_aca.transform._poly_convert" title="chandra_aca.transform._poly_convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_poly_convert</span></code></a>(y, z, coeffs[, t_aca])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_yagzag_to_pixels_by_inversion_newton.html#chandra_aca.transform._yagzag_to_pixels_by_inversion_newton" title="chandra_aca.transform._yagzag_to_pixels_by_inversion_newton"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_yagzag_to_pixels_by_inversion_newton</span></code></a>(yang, zang, ...)</p></td>
+<td><p>Use Newton iterations to transform yang/zang to row/col.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_poly_convert.html#chandra_aca.transform._poly_convert" title="chandra_aca.transform._poly_convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_poly_convert</span></code></a>(y, z, coeffs, t_aca)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="radec_to_eci.html#chandra_aca.transform.radec_to_eci" title="chandra_aca.transform.radec_to_eci"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radec_to_eci</span></code></a>(ra, dec)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_poly_convert_numba_jit.html#chandra_aca.transform._poly_convert_numba_jit" title="chandra_aca.transform._poly_convert_numba_jit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_poly_convert_numba_jit</span></code></a>(r, c, coeffs, t_aca)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_poly_eval_scalar_numba.html#chandra_aca.transform._poly_eval_scalar_numba" title="chandra_aca.transform._poly_eval_scalar_numba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_poly_eval_scalar_numba</span></code></a>(r, c, coeffs, t_aca)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_yagzag_to_pixels_by_inversion_newton_jit.html#chandra_aca.transform._yagzag_to_pixels_by_inversion_newton_jit" title="chandra_aca.transform._yagzag_to_pixels_by_inversion_newton_jit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_yagzag_to_pixels_by_inversion_newton_jit</span></code></a>(yangs, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_poly_convert_numba.html#chandra_aca.transform._poly_convert_numba" title="chandra_aca.transform._poly_convert_numba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_poly_convert_numba</span></code></a>(r, c, coeffs[, t_aca])</p></td>
+<td><p>Convert r, c values using a polynomial conversion via numba.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="radec_to_eci.html#chandra_aca.transform.radec_to_eci" title="chandra_aca.transform.radec_to_eci"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radec_to_eci</span></code></a>(ra, dec)</p></td>
 <td><p>Convert from RA,Dec to ECI.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="eci_to_radec.html#chandra_aca.transform.eci_to_radec" title="chandra_aca.transform.eci_to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eci_to_radec</span></code></a>(eci)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="eci_to_radec.html#chandra_aca.transform.eci_to_radec" title="chandra_aca.transform.eci_to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eci_to_radec</span></code></a>(eci)</p></td>
 <td><p>Convert from ECI vector(s) to RA, Dec.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="mag_to_count_rate.html#chandra_aca.transform.mag_to_count_rate" title="chandra_aca.transform.mag_to_count_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mag_to_count_rate</span></code></a>(mag)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mag_to_count_rate.html#chandra_aca.transform.mag_to_count_rate" title="chandra_aca.transform.mag_to_count_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mag_to_count_rate</span></code></a>(mag)</p></td>
 <td><p>Convert ACA mag to count rate in e- / sec</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="count_rate_to_mag.html#chandra_aca.transform.count_rate_to_mag" title="chandra_aca.transform.count_rate_to_mag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_rate_to_mag</span></code></a>(count_rate)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="count_rate_to_mag.html#chandra_aca.transform.count_rate_to_mag" title="chandra_aca.transform.count_rate_to_mag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_rate_to_mag</span></code></a>(count_rate)</p></td>
 <td><p>Convert count rate in e- / sec to ACA mag</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="snr_mag_for_t_ccd.html#chandra_aca.transform.snr_mag_for_t_ccd" title="chandra_aca.transform.snr_mag_for_t_ccd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">snr_mag_for_t_ccd</span></code></a>(t_ccd, ref_mag, ref_t_ccd[, scale_4c])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="snr_mag_for_t_ccd.html#chandra_aca.transform.snr_mag_for_t_ccd" title="chandra_aca.transform.snr_mag_for_t_ccd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">snr_mag_for_t_ccd</span></code></a>(t_ccd, ref_mag, ref_t_ccd[, scale_4c])</p></td>
 <td><p>Calculate signal-to-noise equivalent magnitude.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="calc_aca_from_targ.html#chandra_aca.transform.calc_aca_from_targ" title="chandra_aca.transform.calc_aca_from_targ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_aca_from_targ</span></code></a>(targ, y_off, z_off[, si_align])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="calc_aca_from_targ.html#chandra_aca.transform.calc_aca_from_targ" title="chandra_aca.transform.calc_aca_from_targ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_aca_from_targ</span></code></a>(targ, y_off, z_off[, si_align])</p></td>
 <td><p>Calculate PCAD (ACA) pointing attitude.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="calc_targ_from_aca.html#chandra_aca.transform.calc_targ_from_aca" title="chandra_aca.transform.calc_targ_from_aca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_targ_from_aca</span></code></a>(aca, y_off, z_off[, si_align])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="calc_targ_from_aca.html#chandra_aca.transform.calc_targ_from_aca" title="chandra_aca.transform.calc_targ_from_aca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_targ_from_aca</span></code></a>(aca, y_off, z_off[, si_align])</p></td>
 <td><p>Calculate target attitude.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="calc_target_offsets.html#chandra_aca.transform.calc_target_offsets" title="chandra_aca.transform.calc_target_offsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_target_offsets</span></code></a>(aca, ra_targ, dec_targ[, si_align])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="calc_target_offsets.html#chandra_aca.transform.calc_target_offsets" title="chandra_aca.transform.calc_target_offsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_target_offsets</span></code></a>(aca, ra_targ, dec_targ[, si_align])</p></td>
 <td><p>Calculate target offsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="radec_to_yagzag.html#chandra_aca.transform.radec_to_yagzag" title="chandra_aca.transform.radec_to_yagzag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radec_to_yagzag</span></code></a>(ra, dec, q_att)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="radec_to_yagzag.html#chandra_aca.transform.radec_to_yagzag" title="chandra_aca.transform.radec_to_yagzag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radec_to_yagzag</span></code></a>(ra, dec, q_att)</p></td>
 <td><p>Calculate ACA Y-angle, Z-angle from RA, Dec and pointing quaternion.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="yagzag_to_radec.html#chandra_aca.transform.yagzag_to_radec" title="chandra_aca.transform.yagzag_to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yagzag_to_radec</span></code></a>(yag, zag, q_att)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="yagzag_to_radec.html#chandra_aca.transform.yagzag_to_radec" title="chandra_aca.transform.yagzag_to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yagzag_to_radec</span></code></a>(yag, zag, q_att)</p></td>
 <td><p>Calculate RA, Dec from ACA Y-angle, Z-angle and pointing quaternion.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="normalize_vector.html#chandra_aca.transform.normalize_vector" title="chandra_aca.transform.normalize_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_vector</span></code></a>(vec[, ord])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="normalize_vector.html#chandra_aca.transform.normalize_vector" title="chandra_aca.transform.normalize_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_vector</span></code></a>(vec[, ord])</p></td>
 <td><p>Normalize <code class="docutils literal notranslate"><span class="pre">vec</span></code> over the last dimension.</p></td>
 </tr>
 </tbody>
@@ -442,23 +457,23 @@
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 <dl class="py data">
-<dt class="sig sig-object py" id="chandra_aca.transform.ACA2PIX_coeff">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">ACA2PIX_coeff</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#ACA2PIX_coeff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.ACA2PIX_coeff" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.PIX2ACA_eeprom_arcsec">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">PIX2ACA_eeprom_arcsec</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#PIX2ACA_eeprom_arcsec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.PIX2ACA_eeprom_arcsec" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
-<dt class="sig sig-object py" id="chandra_aca.transform.PIX2ACA_coeff">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">PIX2ACA_coeff</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#PIX2ACA_coeff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.PIX2ACA_coeff" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.PIX_TO_ANG_GROUND">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">PIX_TO_ANG_GROUND</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#PIX_TO_ANG_GROUND"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.PIX_TO_ANG_GROUND" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
-<dt class="sig sig-object py" id="chandra_aca.transform.PIX2ACA_eeprom">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">PIX2ACA_eeprom</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#PIX2ACA_eeprom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.PIX2ACA_eeprom" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.ANG_TO_PIX_GROUND">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">ANG_TO_PIX_GROUND</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#ANG_TO_PIX_GROUND"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.ANG_TO_PIX_GROUND" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">PIX2ACA_eeprom</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#PIX2ACA_eeprom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="chandra_aca.transform.PIX_TO_ANG_FLIGHT">
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.transform.</span></span><span class="sig-name descname"><span class="pre">PIX_TO_ANG_FLIGHT</span></span><a class="reference internal" href="../../../_modules/chandra_aca/transform.html#PIX_TO_ANG_FLIGHT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chandra_aca.transform.PIX_TO_ANG_FLIGHT" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -529,10 +544,10 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.ACA2PIX_coeff"><code class="docutils literal notranslate"><span class="pre">ACA2PIX_coeff</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.PIX2ACA_coeff"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_coeff</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.PIX2ACA_eeprom"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_eeprom</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_eeprom</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.PIX2ACA_eeprom_arcsec"><code class="docutils literal notranslate"><span class="pre">PIX2ACA_eeprom_arcsec</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.PIX_TO_ANG_GROUND"><code class="docutils literal notranslate"><span class="pre">PIX_TO_ANG_GROUND</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.ANG_TO_PIX_GROUND"><code class="docutils literal notranslate"><span class="pre">ANG_TO_PIX_GROUND</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.PIX_TO_ANG_FLIGHT"><code class="docutils literal notranslate"><span class="pre">PIX_TO_ANG_FLIGHT</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.ACA_MAG0"><code class="docutils literal notranslate"><span class="pre">ACA_MAG0</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.ACA_CNT_RATE_MAG0"><code class="docutils literal notranslate"><span class="pre">ACA_CNT_RATE_MAG0</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.transform.ODB_SI_ALIGN"><code class="docutils literal notranslate"><span class="pre">ODB_SI_ALIGN</span></code></a></li>

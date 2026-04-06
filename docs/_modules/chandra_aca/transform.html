@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.transform &#8212; chandra_aca 4.54.0 documentation</title>
+    <title>chandra_aca.transform &#8212; chandra_aca 4.55.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=c5c3a2a5"></script>
+    <script src="../../_static/documentation_options.js?v=b416e8fc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.54.0" />
+  <meta name="docsearch:version" content="4.55.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.54.0</span></div>
+<span style="font-size: x-large;">4.55.0</span></div>
     
   </div>
   
@@ -349,57 +349,26 @@
 <span class="sd">- Science target coordinate to ACA frame conversions</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">Quaternion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quat</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">chandra_aca</span><span class="w"> </span><span class="kn">import</span> <span class="n">dark_model</span>
-
-<span class="c1"># coefficients for converting from ACA angle to pixels (ground)</span>
-<div class="viewcode-block" id="ACA2PIX_coeff">
-<a class="viewcode-back" href="../../api/chandra_aca/transform/index.html#chandra_aca.ACA2PIX_coeff">[docs]</a>
-<span class="n">ACA2PIX_coeff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-    <span class="p">[</span>
-        <span class="p">[</span><span class="mf">6.08840495576943</span><span class="p">,</span> <span class="mf">4.92618563916467</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.000376181788609776</span><span class="p">,</span> <span class="mf">0.200203020554239</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">0.200249577514165</span><span class="p">,</span> <span class="mf">0.000332284183255046</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">2.7052897180601e-009</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.35702097772202e-009</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">9.75572638037165e-010</span><span class="p">,</span> <span class="mf">1.91073314224894e-008</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">2.94865155316778e-008</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.85766581852866e-009</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">8.31198018312775e-013</span><span class="p">,</span> <span class="mf">2.01092070428495e-010</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">1.96043819238097e-010</span><span class="p">,</span> <span class="mf">5.09721545876414e-016</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">5.14134244771463e-013</span><span class="p">,</span> <span class="mf">1.99339355492595e-010</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">1.97282476269237e-010</span><span class="p">,</span> <span class="mf">2.52739834319184e-014</span><span class="p">],</span>
-    <span class="p">]</span>
-<span class="p">)</span></div>
-
-
-<span class="c1"># coefficients for converting from pixels to ACA angle in radians</span>
-<div class="viewcode-block" id="PIX2ACA_coeff">
-<a class="viewcode-back" href="../../api/chandra_aca/transform/index.html#chandra_aca.PIX2ACA_coeff">[docs]</a>
-<span class="n">PIX2ACA_coeff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-    <span class="p">[</span>
-        <span class="p">[</span><span class="mf">1.471572165932506e-04</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.195271491928579e-04</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">4.554462091388806e-08</span><span class="p">,</span> <span class="mf">2.421478755190295e-05</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">2.420905844425065e-05</span><span class="p">,</span> <span class="mf">4.005224006503938e-08</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">4.989939217701764e-12</span><span class="p">,</span> <span class="mf">1.188134673090465e-11</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">6.116309500303049e-12</span><span class="p">,</span> <span class="mf">1.832694593246024e-11</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">2.793916972292602e-11</span><span class="p">,</span> <span class="mf">5.823266376976988e-12</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">2.420403450703432e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.923401659857833e-13</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">5.751137659424387e-13</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.666025332027183e-15</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="mf">9.934587837231732e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.847450395792513e-13</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">5.807475081470944e-13</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.842673748068349e-15</span><span class="p">],</span>
-    <span class="p">]</span>
-<span class="p">)</span></div>
-
+<span class="c1">###################################################################################</span>
+<span class="c1"># Flight EEPROM coefficients (used for flight mode in coordinate transforms)</span>
+<span class="c1">###################################################################################</span>
 
 <span class="c1"># From /proj/sot/ska/analysis/aca_plate_scale/calib_prelaunch/eeprom_cal.txt</span>
 <span class="c1"># This is the full 20-coefficient solution that includes a</span>
 <span class="c1"># temperature dependence (but not a zero-order dependence).</span>
 <span class="c1"># The ground coefficients do not include the terms that have</span>
 <span class="c1"># temperature term.</span>
-<span class="n">PIX2ACA_eeprom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+<div class="viewcode-block" id="PIX2ACA_eeprom_arcsec">
+<a class="viewcode-back" href="../../api/chandra_aca/transform/index.html#chandra_aca.PIX2ACA_eeprom_arcsec">[docs]</a>
+<span class="n">PIX2ACA_eeprom_arcsec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
     <span class="p">[</span>
-        <span class="p">[</span><span class="mf">3.03464844e01</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.46503906e01</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">30.3464844</span><span class="p">,</span> <span class="o">-</span><span class="mf">24.6503906</span><span class="p">],</span>  <span class="c1"># location of (0, 0) pixel</span>
         <span class="p">[</span><span class="mf">9.38110352e-03</span><span class="p">,</span> <span class="mf">4.99642792e00</span><span class="p">],</span>
         <span class="p">[</span><span class="o">-</span><span class="mf">4.99528198e00</span><span class="p">,</span> <span class="mf">9.14611816e-03</span><span class="p">],</span>
         <span class="p">[</span><span class="mf">0.00000000e00</span><span class="p">,</span> <span class="mf">0.00000000e00</span><span class="p">],</span>
@@ -419,12 +388,131 @@
         <span class="p">[</span><span class="o">-</span><span class="mf">3.70200723e-09</span><span class="p">,</span> <span class="mf">1.03842467e-08</span><span class="p">],</span>
         <span class="p">[</span><span class="mf">5.06476499e-07</span><span class="p">,</span> <span class="mf">4.46331687e-06</span><span class="p">],</span>
     <span class="p">]</span>
-<span class="p">)</span>
+<span class="p">)</span></div>
 
-<span class="c1"># Convert from arcsec to radians</span>
-<div class="viewcode-block" id="PIX2ACA_eeprom">
-<a class="viewcode-back" href="../../api/chandra_aca/transform/index.html#chandra_aca.PIX2ACA_eeprom">[docs]</a>
-<span class="n">PIX2ACA_eeprom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">PIX2ACA_eeprom</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span></div>
+
+<span class="c1">###################################################################################</span>
+<span class="c1"># 2020 coefficients. See:</span>
+<span class="c1"># https://cxc.cfa.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/</span>
+<span class="c1">###################################################################################</span>
+
+<span class="c1"># Ground (aspect pipeline) coefficients for converting from pixels (row, col) to ACA</span>
+<span class="c1"># angle (yag, zag) (arcsec). See:</span>
+<span class="c1"># https://nbviewer.org/urls/cxc.cfa.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/fit-yz-plate-scale-no-rotation.ipynb</span>
+<span class="c1">#  0 [ones,</span>
+<span class="c1">#  1 c,</span>
+<span class="c1">#  2 r,</span>
+<span class="c1">#  3 t,  &lt;!! Leave at 0</span>
+<span class="c1">#  4 c * c,</span>
+<span class="c1">#  5 c * r,</span>
+<span class="c1">#  6 c * t,  &lt;= Temperature</span>
+<span class="c1">#  7 r * r,</span>
+<span class="c1">#  8 r * t,  &lt;= Temperature</span>
+<span class="c1">#  9 t * t,  &lt;!! Leave at 0</span>
+<span class="c1"># 10 c * c * c,</span>
+<span class="c1"># 11 r * c * c,</span>
+<span class="c1"># 12 t * c * c,  &lt;= Temperature</span>
+<span class="c1"># 13 c * r * r,</span>
+<span class="c1"># 14 c * r * t,  &lt;= Temperature</span>
+<span class="c1"># 15 c * t * t,  &lt;= Temperature</span>
+<span class="c1"># 16 r * r * r,</span>
+<span class="c1"># 17 t * r * r,  &lt;= Temperature</span>
+<span class="c1"># 18 r * t * t,  &lt;= Temperature</span>
+<span class="c1">#</span>
+<span class="c1"># NOTE: the original notebook includes a 20th row `t * t * t` with a value of 0.0, but</span>
+<span class="c1"># this is not consistent with flight or _poly_convert so we just drop it.</span>
+<span class="c1"># This has also been adjusted as follows:</span>
+<span class="c1"># - Convert from deg to arcsec</span>
+<span class="c1"># - Add (+2.5, -2.5) arcsec to the zero point values. The original analysis used center</span>
+<span class="c1"># row/col to match the aspect pipeline, but this code assumes edge row/col. Compare to</span>
+<span class="c1"># the FLIGHT coeeff [30.3464844, -24.6503906].</span>
+<div class="viewcode-block" id="PIX_TO_ANG_GROUND">
+<a class="viewcode-back" href="../../api/chandra_aca/transform/index.html#chandra_aca.PIX_TO_ANG_GROUND">[docs]</a>
+<span class="n">PIX_TO_ANG_GROUND</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mf">30.3464845</span><span class="p">,</span> <span class="o">-</span><span class="mf">24.6503911</span><span class="p">],</span>  <span class="c1"># yag/zag location of row/col (0, 0) (arcsec)</span>
+        <span class="p">[</span><span class="mf">8.23205783e-03</span><span class="p">,</span> <span class="mf">4.99591058</span><span class="p">],</span>  <span class="c1"># linear plate scale arcsec / pixel in col</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">4.99553676</span><span class="p">,</span> <span class="mf">9.23841252e-03</span><span class="p">],</span>  <span class="c1"># linear plate scale arcsec / pixel in row</span>
+        <span class="p">[</span><span class="mf">0.00000000e00</span><span class="p">,</span> <span class="mf">0.00000000e00</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.37602599e-06</span><span class="p">,</span> <span class="mf">2.42501739e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.09954525e-06</span><span class="p">,</span> <span class="mf">4.56650996e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">2.90995528e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.39358988e-04</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">6.20856605e-06</span><span class="p">,</span> <span class="mf">1.25436052e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.54786392e-04</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.17830290e-04</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.00000000e00</span><span class="p">,</span> <span class="mf">0.00000000e00</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.48539877e-10</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.20837365e-07</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.17004831e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.32899187e-10</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.18654095e-08</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.22646769e-09</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.47271099e-10</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.17362370e-07</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">5.27874970e-09</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.02546684e-09</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.17812325e-08</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.09403378e-07</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.18612895e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.38209660e-10</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">3.82947347e-09</span><span class="p">,</span> <span class="mf">9.81968414e-09</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">3.87317729e-07</span><span class="p">,</span> <span class="mf">3.94460903e-06</span><span class="p">],</span>
+    <span class="p">],</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
+
+
+<span class="c1"># Coefficients for converting from ACA angle (yag, zag) (arcsec) to pixel (row, col).</span>
+<span class="c1"># This is ONLY used to provide a good starting point for Newton&#39;s method inversion of</span>
+<span class="c1"># pixels_to_yagzag. This uses the final `coeffs_fit_all` coefficients from</span>
+<span class="c1"># https://nbviewer.org/urls/cxc.harvard.edu/mta/ASPECT/aca_plate_scale/calib_2020/fit-rc-plate-scale.ipynb.</span>
+<span class="c1"># In that notebook the actual coefficient values were not printed, but it was re-run and</span>
+<span class="c1"># these are the values.</span>
+<span class="c1">#  0 [ones,</span>
+<span class="c1">#  1 z,</span>
+<span class="c1">#  2 y,</span>
+<span class="c1">#  3 t,  &lt;!! Leave at 0</span>
+<span class="c1">#  4 z * z,</span>
+<span class="c1">#  5 z * y,</span>
+<span class="c1">#  6 z * t,  &lt;= Temperature</span>
+<span class="c1">#  7 y * y,</span>
+<span class="c1">#  8 y * t,  &lt;= Temperature</span>
+<span class="c1">#  9 t * t,  &lt;!! Leave at 0</span>
+<span class="c1"># 10 z * z * z,</span>
+<span class="c1"># 11 y * z * z,</span>
+<span class="c1"># 12 t * z * z,  &lt;= Temperature</span>
+<span class="c1"># 13 z * y * y,</span>
+<span class="c1"># 14 z * y * t,  &lt;= Temperature</span>
+<span class="c1"># 15 z * t * t,  &lt;= Temperature</span>
+<span class="c1"># 16 y * y * y,</span>
+<span class="c1"># 17 t * y * y,  &lt;= Temperature</span>
+<span class="c1"># 18 y * t * t,  &lt;= Temperature</span>
+<span class="c1"># 19 t * t * t]  &lt;!! Leave at 0</span>
+<div class="viewcode-block" id="ANG_TO_PIX_GROUND">
+<a class="viewcode-back" href="../../api/chandra_aca/transform/index.html#chandra_aca.ANG_TO_PIX_GROUND">[docs]</a>
+<span class="n">ANG_TO_PIX_GROUND</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mf">6.08840496</span><span class="p">,</span> <span class="mf">4.92618564</span><span class="p">],</span>  <span class="c1"># pixel location of (0, 0) yag, zag</span>
+        <span class="p">[</span><span class="mf">3.85885523e-04</span><span class="p">,</span> <span class="mf">0.200184894</span><span class="p">],</span>  <span class="c1"># linear plate scale pixels / arcsec in zag</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">0.200224551</span><span class="p">,</span> <span class="mf">3.85458793e-04</span><span class="p">],</span>  <span class="c1"># linear plate scale pixels / arcsec in yag</span>
+        <span class="p">[</span><span class="mf">0.00000000e00</span><span class="p">,</span> <span class="mf">0.00000000e00</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">5.83863054e-09</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.43156559e-08</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">3.82253195e-09</span><span class="p">,</span> <span class="mf">2.62976678e-08</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">6.64135115e-06</span><span class="p">,</span> <span class="mf">1.48724550e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">3.54580684e-08</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.04764636e-09</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">8.62191298e-07</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.99108232e-06</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.00000000e00</span><span class="p">,</span> <span class="mf">0.00000000e00</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.06571736e-12</span><span class="p">,</span> <span class="mf">2.01178012e-10</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.96863305e-10</span><span class="p">,</span> <span class="mf">4.19981450e-13</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.18393143e-10</span><span class="p">,</span> <span class="mf">3.80110516e-10</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">6.45978452e-13</span><span class="p">,</span> <span class="mf">1.96738124e-10</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">2.85962857e-10</span><span class="p">,</span> <span class="mf">2.03208326e-11</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">3.96857730e-07</span><span class="p">,</span> <span class="mf">1.01919863e-07</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.98850298e-10</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.84355310e-12</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">7.15660261e-12</span><span class="p">,</span> <span class="mf">3.04028795e-12</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">1.54074493e-07</span><span class="p">,</span> <span class="mf">3.94104327e-07</span><span class="p">],</span>
+    <span class="p">],</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
+
+
+<span class="c1"># Define flight pixel to angle coefficents with a name that is consistent with new</span>
+<span class="c1"># coefficients from 2020 plate scale ground calibration coefficients.</span>
+<div class="viewcode-block" id="PIX_TO_ANG_FLIGHT">
+<a class="viewcode-back" href="../../api/chandra_aca/transform/index.html#chandra_aca.PIX_TO_ANG_FLIGHT">[docs]</a>
+<span class="n">PIX_TO_ANG_FLIGHT</span> <span class="o">=</span> <span class="n">PIX2ACA_eeprom_arcsec</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="ACA_MAG0">
@@ -465,7 +553,7 @@
 <span class="sd">    :returns: [is_scalar, \*flat_args]</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">is_scalar</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">is_scalar</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
     <span class="n">outs</span> <span class="o">=</span> <span class="p">[</span><span class="n">is_scalar</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">outs</span>
@@ -493,8 +581,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">pixels_to_yagzag</span><span class="p">(</span>
-    <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">flight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">t_aca</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;edge&quot;</span>
-<span class="p">):</span>
+    <span class="n">row</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">col</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">allow_bad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">flight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">t_aca</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">35.0</span><span class="p">,</span>
+    <span class="n">pix_zero_loc</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;edge&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;edge&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ACA row/column positions to ACA y-angle, z-angle.</span>
 
@@ -508,25 +602,29 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    row</span>
-<span class="sd">        ACA pixel row (single value, list, or 1-d numpy array)</span>
-<span class="sd">    col</span>
-<span class="sd">        ACA pixel column (single value, list, or 1-d numpy array)</span>
-<span class="sd">    allow_bad : boolean switch.  If true, method will not throw errors</span>
+<span class="sd">    row : float | list[float] | np.ndarray</span>
+<span class="sd">        ACA pixel row value(s).</span>
+<span class="sd">    col : float | list[float] | np.ndarray</span>
+<span class="sd">        ACA pixel column value(s).</span>
+<span class="sd">    allow_bad : bool</span>
+<span class="sd">        If True (default), method will not throw errors</span>
 <span class="sd">        if the row/col values are nominally off the ACA CCD.</span>
-<span class="sd">    flight</span>
+<span class="sd">    flight : bool</span>
 <span class="sd">        Use flight EEPROM coefficients instead of default ground values.</span>
-<span class="sd">    t_aca</span>
-<span class="sd">        ACA temperature (degC) for use with flight (default=20C)</span>
-<span class="sd">    pix_zero_loc</span>
-<span class="sd">        row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
+<span class="sd">    t_aca : float</span>
+<span class="sd">        ACA temperature (degC) for use with flight.</span>
+<span class="sd">    pix_zero_loc : {&quot;edge&quot;, &quot;center&quot;}</span>
+<span class="sd">        Row/col coordinates are integral at &#39;edge&#39; or &#39;center&#39;.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    (yang, zang) each vector of the same length as row/col</span>
+<span class="sd">    tuple[float | np.ndarray, float | np.ndarray]</span>
+<span class="sd">        ACA (yang, zang) values in arcsec.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-    <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="n">t_aca</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_aca</span><span class="p">)</span>
+
+    <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
         <span class="c1"># Transform row/col values from &#39;center&#39; convention to &#39;edge&#39;</span>
@@ -541,14 +639,23 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_bad</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">512.0</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Coordinate off CCD&quot;</span><span class="p">)</span>
 
-    <span class="n">coeff</span> <span class="o">=</span> <span class="n">PIX2ACA_eeprom</span> <span class="k">if</span> <span class="n">flight</span> <span class="k">else</span> <span class="n">PIX2ACA_coeff</span>
-    <span class="n">yrad</span><span class="p">,</span> <span class="n">zrad</span> <span class="o">=</span> <span class="n">_poly_convert</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">coeff</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">)</span>
+    <span class="c1"># Use 2020 coefficients (2 x 19)</span>
+    <span class="n">coeff</span> <span class="o">=</span> <span class="n">PIX_TO_ANG_FLIGHT</span> <span class="k">if</span> <span class="n">flight</span> <span class="k">else</span> <span class="n">PIX_TO_ANG_GROUND</span>
+    <span class="n">yang</span> <span class="o">=</span> <span class="n">_poly_convert_numba</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t_aca</span><span class="p">)</span>
+    <span class="n">zang</span> <span class="o">=</span> <span class="n">_poly_convert_numba</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">t_aca</span><span class="p">)</span>
 
-    <span class="c1"># Convert to arcsecs from radians</span>
-    <span class="k">return</span> <span class="mi">3600</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">yrad</span><span class="p">),</span> <span class="mi">3600</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">zrad</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">yang</span><span class="p">,</span> <span class="n">zang</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">yagzag_to_pixels</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">allow_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;edge&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">yagzag_to_pixels</span><span class="p">(</span>
+    <span class="n">yang</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">zang</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">allow_bad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">flight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">t_aca</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">35.0</span><span class="p">,</span>
+    <span class="n">pix_zero_loc</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;edge&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;edge&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ACA y-angle/z-angle positions to ACA pixel row, column.</span>
 
@@ -562,22 +669,36 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    yang</span>
-<span class="sd">        ACA y-angle (single value, list, or 1-d numpy array)</span>
-<span class="sd">    zang</span>
-<span class="sd">        ACA z-angle (single value, list, or 1-d numpy array)</span>
-<span class="sd">    allow_bad : boolean switch.  If true, method will not throw errors</span>
+<span class="sd">    yang : float | list[float] | np.ndarray</span>
+<span class="sd">        ACA y-angle value(s) in arcsec.</span>
+<span class="sd">    zang : float | list[float] | np.ndarray</span>
+<span class="sd">        ACA z-angle value(s) in arcsec.</span>
+<span class="sd">    allow_bad : bool</span>
+<span class="sd">        If True (default), method will not throw errors</span>
 <span class="sd">        if the resulting row/col values are nominally off the ACA CCD.</span>
-<span class="sd">    pix_zero_loc</span>
-<span class="sd">        row/col coords are integral at &#39;edge&#39; or &#39;center&#39;</span>
+<span class="sd">    t_aca : float</span>
+<span class="sd">        ACA temperature (degC) for use with flight.</span>
+<span class="sd">    flight : bool</span>
+<span class="sd">        Use flight EEPROM coefficients instead of default ground values.</span>
+<span class="sd">    pix_zero_loc : {&quot;edge&quot;, &quot;center&quot;}</span>
+<span class="sd">        Row/col coordinates are integral at &#39;edge&#39; or &#39;center&#39;.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    (row, col) each vector of the same length as row/col</span>
+<span class="sd">    tuple[float | np.ndarray, float | np.ndarray]</span>
+<span class="sd">        ACA (row, col) values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">yang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">yang</span><span class="p">)</span>
-    <span class="n">zang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">zang</span><span class="p">)</span>
-    <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">_poly_convert</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">ACA2PIX_coeff</span><span class="p">)</span>
+    <span class="n">yang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">zang</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">zang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">yang</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">zang</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Mismatched shape of yang/zang&quot;</span><span class="p">)</span>
+
+    <span class="n">t_aca</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_aca</span><span class="p">)</span>
+
+    <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">_yagzag_to_pixels_by_inversion_newton</span><span class="p">(</span>
+        <span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">t_aca</span><span class="o">=</span><span class="n">t_aca</span><span class="p">,</span> <span class="n">flight</span><span class="o">=</span><span class="n">flight</span>
+    <span class="p">)</span>
 
     <span class="c1"># Row/col are in edge coordinates at this point, check if they are on</span>
     <span class="c1"># the CCD unless allow_bad is True.</span>
@@ -587,15 +708,76 @@
     <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
         <span class="c1"># Transform row/col values from &#39;edge&#39; convention (as returned</span>
         <span class="c1"># by _poly_convert) to the &#39;center&#39; convention requested by user.</span>
-        <span class="n">row</span> <span class="o">=</span> <span class="n">row</span> <span class="o">-</span> <span class="mf">0.5</span>
-        <span class="n">col</span> <span class="o">=</span> <span class="n">col</span> <span class="o">-</span> <span class="mf">0.5</span>
+        <span class="n">row</span> <span class="o">-=</span> <span class="mf">0.5</span>
+        <span class="n">col</span> <span class="o">-=</span> <span class="mf">0.5</span>
     <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pix_zero_loc can be only &#39;edge&#39; or &#39;center&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_poly_convert</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">t_aca</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_yagzag_to_pixels_by_inversion_newton</span><span class="p">(</span><span class="n">yang</span><span class="p">,</span> <span class="n">zang</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">,</span> <span class="n">flight</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use Newton iterations to transform yang/zang to row/col.</span>
+
+<span class="sd">    This directly inverts ``pixels_to_yagzag`` using a fast fixed-Jacobian</span>
+<span class="sd">    Newton update. Accuracy target is ~0.05 arcsec in y/z.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tol</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">6</span>
+
+    <span class="n">is_scalar</span> <span class="o">=</span> <span class="n">yang</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">yang</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">yangs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">yang</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">zangs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">zang</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">t_aca</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_aca</span><span class="p">)</span>
+
+    <span class="n">coeff</span> <span class="o">=</span> <span class="n">PIX_TO_ANG_FLIGHT</span> <span class="k">if</span> <span class="n">flight</span> <span class="k">else</span> <span class="n">PIX_TO_ANG_GROUND</span>
+    <span class="n">coeff_y</span> <span class="o">=</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">coeff_z</span> <span class="o">=</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># Coefficients for the initial estimate of row/col from yang/zang. This is only used</span>
+    <span class="c1"># as the starting point for the Newton iterations, so the difference between FLIGHT</span>
+    <span class="c1"># and GROUND doesn&#39;t matter (and we don&#39;t have inverse FLIGHT coeffs).</span>
+    <span class="n">coeff_row0</span> <span class="o">=</span> <span class="n">ANG_TO_PIX_GROUND</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">coeff_col0</span> <span class="o">=</span> <span class="n">ANG_TO_PIX_GROUND</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Fixed Jacobian from dominant linear terms around nominal plate scale</span>
+    <span class="n">dy_dc</span> <span class="o">=</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dy_dr</span> <span class="o">=</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">dz_dc</span> <span class="o">=</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dz_dr</span> <span class="o">=</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">det</span> <span class="o">=</span> <span class="n">dy_dr</span> <span class="o">*</span> <span class="n">dz_dc</span> <span class="o">-</span> <span class="n">dy_dc</span> <span class="o">*</span> <span class="n">dz_dr</span>
+
+    <span class="n">inv00</span> <span class="o">=</span> <span class="n">dz_dc</span> <span class="o">/</span> <span class="n">det</span>
+    <span class="n">inv01</span> <span class="o">=</span> <span class="o">-</span><span class="n">dy_dc</span> <span class="o">/</span> <span class="n">det</span>
+    <span class="n">inv10</span> <span class="o">=</span> <span class="o">-</span><span class="n">dz_dr</span> <span class="o">/</span> <span class="n">det</span>
+    <span class="n">inv11</span> <span class="o">=</span> <span class="n">dy_dr</span> <span class="o">/</span> <span class="n">det</span>
+
+    <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">_yagzag_to_pixels_by_inversion_newton_jit</span><span class="p">(</span>
+        <span class="n">yangs</span><span class="p">,</span>
+        <span class="n">zangs</span><span class="p">,</span>
+        <span class="n">coeff_y</span><span class="p">,</span>
+        <span class="n">coeff_z</span><span class="p">,</span>
+        <span class="n">coeff_row0</span><span class="p">,</span>
+        <span class="n">coeff_col0</span><span class="p">,</span>
+        <span class="n">t_aca</span><span class="p">,</span>
+        <span class="n">tol</span><span class="p">,</span>
+        <span class="n">max_iter</span><span class="p">,</span>
+        <span class="n">inv00</span><span class="p">,</span>
+        <span class="n">inv01</span><span class="p">,</span>
+        <span class="n">inv10</span><span class="p">,</span>
+        <span class="n">inv11</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="n">cols</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="k">return</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+
+    <span class="k">return</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_poly_convert</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">):</span>
     <span class="c1"># Convert to avoid overflow errors with the polys on int32</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -652,6 +834,141 @@
         <span class="n">newz</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
 
     <span class="k">return</span> <span class="n">newy</span><span class="p">,</span> <span class="n">newz</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_poly_convert_numba_jit</span><span class="p">(</span>
+    <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">c</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coeffs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">t_aca</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">rr</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+        <span class="n">cc</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">_poly_eval_scalar_numba</span><span class="p">(</span><span class="n">rr</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_poly_eval_scalar_numba</span><span class="p">(</span>
+    <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">t_aca</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">r</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">t_aca</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">t_aca</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">*</span> <span class="n">t_aca</span> <span class="o">*</span> <span class="n">t_aca</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span> <span class="o">*</span> <span class="n">t_aca</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">t_aca</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">15</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span> <span class="o">*</span> <span class="n">t_aca</span> <span class="o">*</span> <span class="n">t_aca</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">17</span><span class="p">]</span> <span class="o">*</span> <span class="n">t_aca</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span>
+        <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">18</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">t_aca</span> <span class="o">*</span> <span class="n">t_aca</span>
+    <span class="p">)</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_yagzag_to_pixels_by_inversion_newton_jit</span><span class="p">(</span>
+    <span class="n">yangs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">zangs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coeff_y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coeff_z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coeff_row0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coeff_col0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">t_aca</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">inv00</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">inv01</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">inv10</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">inv11</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">yangs</span><span class="p">)</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">zangs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">yangs</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">yang0</span> <span class="o">=</span> <span class="n">yangs</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+        <span class="n">zang0</span> <span class="o">=</span> <span class="n">zangs</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="n">_poly_eval_scalar_numba</span><span class="p">(</span><span class="n">yang0</span><span class="p">,</span> <span class="n">zang0</span><span class="p">,</span> <span class="n">coeff_row0</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">)</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">_poly_eval_scalar_numba</span><span class="p">(</span><span class="n">yang0</span><span class="p">,</span> <span class="n">zang0</span><span class="p">,</span> <span class="n">coeff_col0</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
+            <span class="n">y_est</span> <span class="o">=</span> <span class="n">_poly_eval_scalar_numba</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">coeff_y</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">)</span>
+            <span class="n">z_est</span> <span class="o">=</span> <span class="n">_poly_eval_scalar_numba</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">coeff_z</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">)</span>
+
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">y_est</span> <span class="o">-</span> <span class="n">yang0</span>
+            <span class="n">dz</span> <span class="o">=</span> <span class="n">z_est</span> <span class="o">-</span> <span class="n">zang0</span>
+
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dy</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dz</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">drow</span> <span class="o">=</span> <span class="n">inv00</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">+</span> <span class="n">inv01</span> <span class="o">*</span> <span class="n">dz</span>
+            <span class="n">dcol</span> <span class="o">=</span> <span class="n">inv10</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">+</span> <span class="n">inv11</span> <span class="o">*</span> <span class="n">dz</span>
+            <span class="n">row</span> <span class="o">-=</span> <span class="n">drow</span>
+            <span class="n">col</span> <span class="o">-=</span> <span class="n">dcol</span>
+
+        <span class="n">rows</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span>
+        <span class="n">cols</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">col</span>
+
+    <span class="k">return</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_poly_convert_numba</span><span class="p">(</span>
+    <span class="n">r</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">c</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">coeffs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">t_aca</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20.0</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert r, c values using a polynomial conversion via numba.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r</span>
+<span class="sd">        row values (float or array of floats)</span>
+<span class="sd">    c</span>
+<span class="sd">        column values (float or array of floats)</span>
+<span class="sd">    coeffs</span>
+<span class="sd">        polynomial coefficients (fixed at 19 elements)</span>
+<span class="sd">    t_aca</span>
+<span class="sd">        temperature for use with flight coefficients (degC)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Converted values (same shape as input r and c)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert to avoid overflow errors with the polys on int32</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t_aca</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">t_aca</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_aca</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">c</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;size mismatch&quot;</span><span class="p">)</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="n">_poly_convert_numba_jit</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">c</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">t_aca</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">shape</span><span class="p">:</span>
+        <span class="n">vals</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">vals</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">radec_to_eci</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">):</span>
@@ -806,6 +1123,8 @@
 <span class="sd">    float, array</span>
 <span class="sd">    Magnitude(s) with the same expected signal to noise as ref_mag at ref_t_ccd</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">chandra_aca</span><span class="w"> </span><span class="kn">import</span> <span class="n">dark_model</span>
+
     <span class="c1"># Allow array inputs</span>
     <span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mag</span><span class="p">,</span> <span class="n">ref_t_ccd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">t_ccd</span><span class="p">,</span> <span class="n">ref_mag</span><span class="p">,</span> <span class="n">ref_t_ccd</span><span class="p">)</span>
 

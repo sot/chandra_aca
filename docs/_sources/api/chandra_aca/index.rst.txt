@@ -32,9 +32,10 @@ Attributes
 
 .. autoapisummary::
 
-   chandra_aca.ACA2PIX_coeff
-   chandra_aca.PIX2ACA_coeff
-   chandra_aca.PIX2ACA_eeprom
+   chandra_aca.PIX2ACA_eeprom_arcsec
+   chandra_aca.PIX_TO_ANG_GROUND
+   chandra_aca.ANG_TO_PIX_GROUND
+   chandra_aca.PIX_TO_ANG_FLIGHT
    chandra_aca.ACA_MAG0
    chandra_aca.ACA_CNT_RATE_MAG0
    chandra_aca.ODB_SI_ALIGN
@@ -51,7 +52,12 @@ Functions
    /api/chandra_aca/broadcast_arrays_flatten
    /api/chandra_aca/pixels_to_yagzag
    /api/chandra_aca/yagzag_to_pixels
+   /api/chandra_aca/_yagzag_to_pixels_by_inversion_newton
    /api/chandra_aca/_poly_convert
+   /api/chandra_aca/_poly_convert_numba_jit
+   /api/chandra_aca/_poly_eval_scalar_numba
+   /api/chandra_aca/_yagzag_to_pixels_by_inversion_newton_jit
+   /api/chandra_aca/_poly_convert_numba
    /api/chandra_aca/radec_to_eci
    /api/chandra_aca/eci_to_radec
    /api/chandra_aca/mag_to_count_rate
@@ -71,7 +77,12 @@ Functions
    chandra_aca.broadcast_arrays_flatten
    chandra_aca.pixels_to_yagzag
    chandra_aca.yagzag_to_pixels
+   chandra_aca._yagzag_to_pixels_by_inversion_newton
    chandra_aca._poly_convert
+   chandra_aca._poly_convert_numba_jit
+   chandra_aca._poly_eval_scalar_numba
+   chandra_aca._yagzag_to_pixels_by_inversion_newton_jit
+   chandra_aca._poly_convert_numba
    chandra_aca.radec_to_eci
    chandra_aca.eci_to_radec
    chandra_aca.mag_to_count_rate
@@ -89,11 +100,13 @@ Functions
 Package Contents
 ----------------
 
-.. py:data:: ACA2PIX_coeff
+.. py:data:: PIX2ACA_eeprom_arcsec
 
-.. py:data:: PIX2ACA_coeff
+.. py:data:: PIX_TO_ANG_GROUND
 
-.. py:data:: PIX2ACA_eeprom
+.. py:data:: ANG_TO_PIX_GROUND
+
+.. py:data:: PIX_TO_ANG_FLIGHT
 
 .. py:data:: ACA_MAG0
    :value: 10.32

@@ -1,0 +1,4 @@
+chandra_aca.transform._poly_convert_numba_jit
+=============================================
+
+.. py:function:: chandra_aca.transform._poly_convert_numba_jit(r, c, coeffs, t_aca)
