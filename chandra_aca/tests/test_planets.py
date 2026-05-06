@@ -238,6 +238,16 @@ def test_get_planet_mag_states():
     ]
 
 
+def test_get_planet_mag_states_invalid_planet():
+    with pytest.raises(ValueError, match="is not supported"):
+        get_planet_mag_states("pluto", start="2024:001", stop="2024:100")
+
+
+def test_get_planet_mag_states_no_overlap():
+    mag_states = get_planet_mag_states("jupiter", start="1998:001", stop="1998:002")
+    assert len(mag_states) == 0
+
+
 def test_get_planet_chandra_ccd_position_filters_on_ccd(monkeypatch):
     def fake_get_planet_chandra(planet, dates, ephem_source):
         return np.zeros((len(dates), 3))
@@ -301,6 +311,44 @@ def test_get_planet_chandra_ccd_position_empty(monkeypatch):
 
     assert isinstance(out, PlanetPositionTable)
     assert len(out) == 0
+
+
+def test_get_planet_chandra_ccd_position_forwards_ephem_and_boundary(monkeypatch):
+    got = {}
+
+    def fake_get_planet_chandra(planet, dates, ephem_source):
+        got["planet"] = planet
+        got["ephem_source"] = ephem_source
+        return np.zeros((len(dates), 3))
+
+    def fake_eci_to_radec(eci):
+        n_vals = len(eci)
+        return np.zeros(n_vals), np.zeros(n_vals)
+
+    def fake_radec_to_yagzag(ra, dec, att):
+        return np.zeros(len(ra)), np.zeros(len(ra))
+
+    def fake_yagzag_to_pixels(yag, zag, allow_bad=True):
+        # For ccd_pad=100, rows/cols at +-612 are included, beyond that excluded.
+        return np.array([612.0, -612.0, 613.0]), np.array([0.0, 0.0, 0.0])
+
+    monkeypatch.setattr("chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra)
+    monkeypatch.setattr("chandra_aca.planets.eci_to_radec", fake_eci_to_radec)
+    monkeypatch.setattr("chandra_aca.planets.radec_to_yagzag", fake_radec_to_yagzag)
+    monkeypatch.setattr("chandra_aca.planets.yagzag_to_pixels", fake_yagzag_to_pixels)
+
+    out = get_planet_chandra_ccd_position(
+        "saturn",
+        date="2024:001:00:00:00",
+        duration=2000,
+        att=[0, 0, 0, 1],
+        ccd_pad=100,
+        ephem_source="stk",
+    )
+
+    assert got["planet"] == "saturn"
+    assert got["ephem_source"] == "stk"
+    assert np.allclose(out["row"], [612.0, -612.0])
 
 
 def test_earth_boresight():
