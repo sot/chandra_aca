@@ -71,7 +71,10 @@ GET_PLANET_CHANDRA_ERRORS = {
 
 # Table of magnitude ranges and actions for ACA bright objects
 # Ordered by severity (most severe first)
-MAG_ACTION = [
+# These bins are used to compress ephemeris-derived magnitude time series into
+# state intervals so packaged data remains small while preserving about 1-hour
+# timing fidelity.
+MAG_ACTION_BINS = [
     {"mag_start": -30.0, "mag_stop": -5.0, "label": "obo too bright"},
     {"mag_start": -5.0, "mag_stop": -2.9, "label": "full mitigation"},
     {"mag_start": -2.9, "mag_stop": -2.0, "label": "partial mitigation"},
@@ -79,7 +82,7 @@ MAG_ACTION = [
     {"mag_start": 0.0, "mag_stop": 40.0, "label": "no action"},
 ]
 
-BRIGHT_PLANET_LIST = ["jupiter", "saturn", "mars", "venus"]
+BRIGHT_PLANETS = ("jupiter", "saturn", "mars", "venus")
 
 
 class NoEphemerisError(Exception):
@@ -194,16 +197,18 @@ def get_planet_mag_states(planet, start, stop):
         Planet magnitude states overlapping the start/stop times.
     """
     # Let's validate that planet is just one of the supported planets
-    if planet not in BRIGHT_PLANET_LIST:
+    if planet not in BRIGHT_PLANETS:
         raise ValueError(
-            f"{planet} is not supported, must be one of {BRIGHT_PLANET_LIST}"
+            f"{planet} is not supported, must be one of {BRIGHT_PLANETS}"
         )
     start_secs = CxoTime(start).secs
     stop_secs = CxoTime(stop).secs
-    file = Path(__file__).parent / "data" / f"planet_mag_states_{planet}.dat"
-    dat = Table.read(file, format="ascii")
-    sel = (dat["tstart"] < stop_secs) & (dat["tstop"] > start_secs)
-    return dat[sel]
+    states_path = Path(__file__).parent / "data" / f"planet_mag_states_{planet}.dat"
+    states_table = Table.read(states_path, format="ascii")
+    overlaps = (states_table["tstart"] < stop_secs) & (
+        states_table["tstop"] > start_secs
+    )
+    return states_table[overlaps]
 
 
 def get_planet_angular_sep(
@@ -564,14 +569,14 @@ def get_planet_chandra_ccd_position(
 
     # Limit data to entries within or just outside the CCD
     ok = (np.abs(row) <= ccd_limit) & (np.abs(col) <= ccd_limit)
-    out = PlanetPositionTable(
+    positions = PlanetPositionTable(
         {
             "time": times[ok],
             "row": row[ok],
             "col": col[ok],
         }
     )
-    return out
+    return positions
 
 
 def get_planet_chandra_horizons(
@@ -727,8 +732,8 @@ def get_planet_horizons(
             f"request {resp.url} failed: {resp.reason} ({resp.status_code})"
         )
 
-    resp_json: dict = resp.json()
-    result: str = resp_json["result"]
+    response_json: dict = resp.json()
+    result: str = response_json["result"]
     lines = result.splitlines()
 
     if "$$SOE" not in lines:
@@ -738,7 +743,7 @@ def get_planet_horizons(
     idx0 = lines.index("$$SOE") + 1
     idx1 = lines.index("$$EOE")
     lines = lines[idx0:idx1]
-    dat = ascii.read(
+    horizons_table = ascii.read(
         lines,
         format="no_header",
         delimiter=",",
@@ -757,33 +762,36 @@ def get_planet_horizons(
         ],
         fill_values=[("n.a.", "0")],
     )
-    times = [datetime.strptime(val[:20], "%Y-%b-%d %H:%M:%S") for val in dat["time"]]
-    dat["time"] = CxoTime(times, format="datetime")
-    dat["time"].format = "date"
-    dat["ra"].info.unit = u.deg
-    dat["dec"].info.unit = u.deg
-    dat["rate_ra"].info.unit = u.arcsec / u.hr
-    dat["rate_dec"].info.unit = u.arcsec / u.hr
-    dat["mag"].info.unit = u.mag
-    dat["surf_brt"].info.unit = u.mag / (u.arcsec**2)
-    dat["ang_diam"].info.unit = u.arcsec
+    times = [
+        datetime.strptime(val[:20], "%Y-%b-%d %H:%M:%S")
+        for val in horizons_table["time"]
+    ]
+    horizons_table["time"] = CxoTime(times, format="datetime")
+    horizons_table["time"].format = "date"
+    horizons_table["ra"].info.unit = u.deg
+    horizons_table["dec"].info.unit = u.deg
+    horizons_table["rate_ra"].info.unit = u.arcsec / u.hr
+    horizons_table["rate_dec"].info.unit = u.arcsec / u.hr
+    horizons_table["mag"].info.unit = u.mag
+    horizons_table["surf_brt"].info.unit = u.mag / (u.arcsec**2)
+    horizons_table["ang_diam"].info.unit = u.arcsec
 
-    dat["ra"].info.format = ".5f"
-    dat["dec"].info.format = ".5f"
-    dat["rate_ra"].info.format = ".2f"
-    dat["rate_dec"].info.format = ".2f"
-    dat["mag"].info.format = ".3f"
-    dat["surf_brt"].info.format = ".3f"
-    dat["ang_diam"].info.format = ".2f"
+    horizons_table["ra"].info.format = ".5f"
+    horizons_table["dec"].info.format = ".5f"
+    horizons_table["rate_ra"].info.format = ".2f"
+    horizons_table["rate_dec"].info.format = ".2f"
+    horizons_table["mag"].info.format = ".3f"
+    horizons_table["surf_brt"].info.format = ".3f"
+    horizons_table["ang_diam"].info.format = ".2f"
 
-    dat.meta["response_text"] = resp.text
-    dat.meta["response_json"] = resp_json
+    horizons_table.meta["response_text"] = resp.text
+    horizons_table.meta["response_json"] = response_json
 
-    del dat["null1"]
-    del dat["null2"]
-    del dat["null3"]
+    del horizons_table["null1"]
+    del horizons_table["null2"]
+    del horizons_table["null3"]
 
-    return dat
+    return horizons_table
 
 
 @dataclass
