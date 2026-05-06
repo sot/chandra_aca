@@ -8,7 +8,7 @@ from astropy.table import Table, vstack
 from cheta.utils import state_intervals
 from cxotime import CxoTime
 
-from chandra_aca.planets import BRIGHT_PLANET_LIST, MAG_ACTION, get_planet_horizons
+from chandra_aca.planets import BRIGHT_PLANETS, MAG_ACTION_BINS, get_planet_horizons
 
 
 # %%
@@ -38,14 +38,16 @@ def make_planet_mag_states(planet):
     else:
         dat = dat[np.isfinite(dat["mag"])]
     dat["magid"] = 0
-    for bin_id, bin in enumerate(MAG_ACTION):
-        sel = (dat["mag"] >= bin["mag_start"]) & (dat["mag"] < bin["mag_stop"])
+    for bin_id, mag_action_bin in enumerate(MAG_ACTION_BINS):
+        sel = (dat["mag"] >= mag_action_bin["mag_start"]) & (
+            dat["mag"] < mag_action_bin["mag_stop"]
+        )
         dat["magid"][sel] = bin_id
     states = state_intervals(CxoTime(dat["time"]).secs, dat["magid"])
     # relabel the states with the information about the bins
-    state_labels = [MAG_ACTION[s["val"]]["label"] for s in states]
-    mag_start = [MAG_ACTION[s["val"]]["mag_start"] for s in states]
-    mag_stop = [MAG_ACTION[s["val"]]["mag_stop"] for s in states]
+    state_labels = [MAG_ACTION_BINS[s["val"]]["label"] for s in states]
+    mag_start = [MAG_ACTION_BINS[s["val"]]["mag_start"] for s in states]
+    mag_stop = [MAG_ACTION_BINS[s["val"]]["mag_stop"] for s in states]
     states["label"] = state_labels
     states["mag_start"] = mag_start
     states["mag_stop"] = mag_stop
@@ -54,7 +56,7 @@ def make_planet_mag_states(planet):
 
 
 # %%
-for planet in BRIGHT_PLANET_LIST:
+for planet in BRIGHT_PLANETS:
     states = make_planet_mag_states(planet)
     states.write(
         f"chandra_aca/data/planet_mag_states_{planet}.dat",
