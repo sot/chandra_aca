@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import warnings
+from dataclasses import dataclass
 
 import agasc
 import mica.starcheck
@@ -14,7 +15,64 @@ from Ska.Numpy import interpolate
 
 from chandra_aca import transform
 
-R2A = 206264.81  # Convert from radians to arcsec
+R2A = np.rad2deg(1) * 3600  # Convert from radians to arcsec
+
+
+@dataclass
+class TimeBase:
+    """Provide base `times` attr and indexing for classes with time-based attrs."""
+
+    times: np.ndarray[np.float64]
+
+    def __post_init__(self):
+        self.times = np.asarray(self.times, dtype=np.float64)
+
+    def __getitem__(self, item):
+        item = self._get_slice_or_item(item)
+
+        # Apply this to all attributes that are arrays of the same length as times
+        out = {}
+        for attr in self.__dataclass_fields__:
+            val = getattr(self, attr)
+            if isinstance(val, np.ndarray) and len(val) == len(self.times):
+                out[attr] = val[item]
+            else:
+                out[attr] = val
+        return self.__class__(**out)
+
+    def _get_slice_or_item(self, item):
+        # Not a slice, just return the item to let np indexing handle it
+        if not isinstance(item, slice):
+            return item
+
+        start, stop = item.start, item.stop
+
+        # Slice with integer start or stop => normal index slicing
+        if isinstance(start, int | None) and isinstance(stop, int | None):
+            return item
+
+        if not (isinstance(start, float | None) and isinstance(stop, float | None)):
+            raise ValueError(
+                "slice start, stop must be all int/None or all float/None, "
+                f"got start={start} ({type(start)}), stop={stop} ({type(stop)})"
+            )
+
+        out = [None, None, item.step]
+        for idx, attr in enumerate(["start", "stop"]):
+            val = getattr(item, attr)
+            if val is not None:
+                if val < 0:
+                    time = self.times[-1] + val
+                else:
+                    time = self.times[0] + val
+                out[idx] = np.searchsorted(self.times, time)
+        return slice(*out)
+
+
+@dataclass
+class CentroidsOneAxis(TimeBase):
+    angs: np.ndarray | None = None
+    dangs: np.ndarray | None = None
 
 
 class CentroidResiduals(object):
