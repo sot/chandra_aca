@@ -198,9 +198,7 @@ def get_planet_mag_states(planet, start, stop):
     """
     # Let's validate that planet is just one of the supported planets
     if planet not in BRIGHT_PLANETS:
-        raise ValueError(
-            f"{planet} is not supported, must be one of {BRIGHT_PLANETS}"
-        )
+        raise ValueError(f"{planet} is not supported, must be one of {BRIGHT_PLANETS}")
     start_secs = CxoTime(start).secs
     stop_secs = CxoTime(stop).secs
     states_path = Path(__file__).parent / "data" / f"planet_mag_states_{planet}.dat"

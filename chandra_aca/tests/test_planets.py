@@ -262,7 +262,9 @@ def test_get_planet_chandra_ccd_position_filters_on_ccd(monkeypatch):
     def fake_yagzag_to_pixels(yag, zag, allow_bad=True):
         return np.array([500.0, 620.0, -300.0]), np.array([500.0, 100.0, -700.0])
 
-    monkeypatch.setattr("chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra)
+    monkeypatch.setattr(
+        "chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra
+    )
     monkeypatch.setattr("chandra_aca.planets.eci_to_radec", fake_eci_to_radec)
     monkeypatch.setattr("chandra_aca.planets.radec_to_yagzag", fake_radec_to_yagzag)
     monkeypatch.setattr("chandra_aca.planets.yagzag_to_pixels", fake_yagzag_to_pixels)
@@ -295,7 +297,9 @@ def test_get_planet_chandra_ccd_position_empty(monkeypatch):
     def fake_yagzag_to_pixels(yag, zag, allow_bad=True):
         return np.array([900.0, -900.0, 800.0]), np.array([900.0, -900.0, 800.0])
 
-    monkeypatch.setattr("chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra)
+    monkeypatch.setattr(
+        "chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra
+    )
     monkeypatch.setattr("chandra_aca.planets.eci_to_radec", fake_eci_to_radec)
     monkeypatch.setattr("chandra_aca.planets.radec_to_yagzag", fake_radec_to_yagzag)
     monkeypatch.setattr("chandra_aca.planets.yagzag_to_pixels", fake_yagzag_to_pixels)
@@ -332,7 +336,9 @@ def test_get_planet_chandra_ccd_position_forwards_ephem_and_boundary(monkeypatch
         # For ccd_pad=100, rows/cols at +-612 are included, beyond that excluded.
         return np.array([612.0, -612.0, 613.0]), np.array([0.0, 0.0, 0.0])
 
-    monkeypatch.setattr("chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra)
+    monkeypatch.setattr(
+        "chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra
+    )
     monkeypatch.setattr("chandra_aca.planets.eci_to_radec", fake_eci_to_radec)
     monkeypatch.setattr("chandra_aca.planets.radec_to_yagzag", fake_radec_to_yagzag)
     monkeypatch.setattr("chandra_aca.planets.yagzag_to_pixels", fake_yagzag_to_pixels)
