@@ -1,6 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import warnings
 from dataclasses import dataclass
+from functools import cached_property
+from typing import get_type_hints
 
 import agasc
 import mica.starcheck
@@ -16,6 +18,7 @@ from Ska.Numpy import interpolate
 from chandra_aca import transform
 
 R2A = np.rad2deg(1) * 3600  # Convert from radians to arcsec
+TimeLike = np.ndarray[np.float64] | None
 
 
 @dataclass
@@ -26,6 +29,28 @@ class TimeBase:
 
     def __post_init__(self):
         self.times = np.asarray(self.times, dtype=np.float64)
+
+        for attr in self.timelike_cols:
+            if (val := getattr(self, attr)) is not None:
+                # Trigger setter to check length and convert to array
+                setattr(self, attr, val)
+
+    @cached_property
+    def timelike_cols(self) -> tuple[str, ...]:
+        hints = get_type_hints(self.__class__)
+        return tuple(attr for attr, typ in hints.items() if typ == TimeLike)
+
+    def __setattr__(self, key, value):
+        if key not in self.timelike_cols or value is None:
+            super().__setattr__(key, value)
+        else:
+            value = np.asarray(value, dtype=np.float64)
+            if len(value) != len(self.times):
+                raise ValueError(
+                    f"Length of {key} ({len(value)}) does not match length of "
+                    f"times ({len(self.times)})"
+                )
+            super().__setattr__(key, value)
 
     def __getitem__(self, item):
         item = self._get_slice_or_item(item)
@@ -70,9 +95,15 @@ class TimeBase:
 
 
 @dataclass
-class CentroidsOneAxis(TimeBase):
-    angs: np.ndarray | None = None
-    dangs: np.ndarray | None = None
+class CentroidsSlot(TimeBase):
+    yags: TimeLike
+    zags: TimeLike
+    dyags: TimeLike
+    dzags: TimeLike
+
+
+class Centroids(dict):
+    """Container for centroids and residuals on a slot-by-slot basis."""
 
 
 class CentroidResiduals(object):
