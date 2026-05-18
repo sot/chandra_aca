@@ -1,6 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
+Solar system object positions relative to Chandra, Earth, or Solar System Barycenter.
 
 Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
 Horizons positions are used as the "truth".
@@ -44,6 +44,7 @@ __all__ = (
     "get_planet_angular_sep",
     "get_earth_boresight_angle",
     "get_earth_blocks",
+    "get_earth_moon_limb_angles",
     "EarthBoresightAngles",
     "NoEphemerisError",
     "GET_PLANET_ECI_ERRORS",
@@ -748,3 +749,109 @@ def get_earth_blocks(
     eba = get_earth_boresight_angle(start, stop)
     blocks = logical_intervals(eba.times.secs, eba.earth_limb_angle < min_limb_angle)
     return blocks
+
+
+def _get_limb_angle(
+    ss_body_name: str,
+    q_att_t: np.ndarray,
+    p_ss_body_chandra_eci: np.ndarray,
+) -> np.ndarray[np.float32]:
+    """Helper function to get limb angle of Chandra pointing from Solar System object.
+
+    Parameters
+    ----------
+    ss_body_name : str
+        Name of Solar System body ('earth' or 'moon')
+    q_att_t : np.ndarray
+        Attitude transform matrices (n_times, 3, 3) from inertial to Chandra frame
+    p_ss_body_chandra_eci : np.ndarray
+        Position vectors (n_times, 3) of Solar System body relative to Chandra in ECI
+        coordinates
+
+    Returns
+    -------
+    ss_body_limb_angle : np.ndarray[np.float32]
+        Limb angle of Solar System body in degrees (n_times,)
+    """
+    RADIUS_SS_BODY = {
+        "earth": 6371.0 * 1000,  # m
+        "moon": 1737.4 * 1000,
+    }
+    # Vector from Chandra to SS body in Chandra body coordinates:
+    # Q_att^-1 * p_ss_body_chandra_eci
+    p_ss_body_body = np.einsum(
+        "ijk,ik->ij", q_att_t.transpose((0, 2, 1)), p_ss_body_chandra_eci
+    )
+    ss_body_distance = np.linalg.norm(p_ss_body_body, axis=1)
+    # Unit vector
+    p_ss_body_body_unit = p_ss_body_body / ss_body_distance[:, None]
+    ss_body_angle = np.rad2deg(np.arccos(np.clip(p_ss_body_body_unit[:, 0], -1.0, 1.0)))
+    open_angle = np.rad2deg(np.arcsin(RADIUS_SS_BODY[ss_body_name] / ss_body_distance))
+    ss_body_limb_angle = ss_body_angle - open_angle
+
+    return ss_body_limb_angle.astype(np.float32)
+
+
+def get_earth_moon_limb_angles(
+    times: CxoTimeLike | list | np.ndarray,
+) -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
+    """Get Earth and Moon limb angles for monitor images at specified times.
+
+    This function calculates the limb angles of Earth and Moon as seen from Chandra at
+    the given observation times. The limb angle is the angle from the ACA boresight to
+    the limb of the body.
+
+    The function fetches the necessary ephemeris data (Chandra position, Moon position,
+    and attitude quaternion) from the cheta telemetry archive.
+
+    Parameters
+    ----------
+    times : CxoTimeLike | list | np.ndarray
+        Time or times for which to calculate limb angles. Can be a CxoTime object,
+        scalar time, list of times, or numpy array of times.
+
+    Returns
+    -------
+    tuple[np.ndarray[np.float32], np.ndarray[np.float32]]
+        A tuple of (earth_limb_angle, moon_limb_angle) where each is a numpy array of
+        float32 values in degrees. The array length matches the number of input times.
+    """
+    from cheta import fetch
+
+    times = np.atleast_1d(CxoTime(times).secs)
+    n_imgs = len(times)
+    start = CxoTime(np.min(times)) - 6 * u.min
+    stop = CxoTime(np.max(times)) + 6 * u.min
+
+    q_att_msid = fetch.Msid("quat_aoattqt", start, stop)
+    orbitephem = {}
+    orbitephem["x"] = fetch.Msid("orbitephem0_x", start, stop)
+    orbitephem["y"] = fetch.Msid("orbitephem0_y", start, stop)
+    orbitephem["z"] = fetch.Msid("orbitephem0_z", start, stop)
+
+    lunarephem = {}
+    lunarephem["x"] = fetch.Msid("lunarephem0_x", start, stop)
+    lunarephem["y"] = fetch.Msid("lunarephem0_y", start, stop)
+    lunarephem["z"] = fetch.Msid("lunarephem0_z", start, stop)
+
+    # Interpolate ephem vectors to mon_imgs["times"]
+    p_chandra_eci = np.zeros(shape=(n_imgs, 3))
+    p_moon_eci = np.zeros(shape=(n_imgs, 3))
+    for ii, axis in enumerate(["x", "y", "z"]):
+        p_chandra_eci[:, ii] = np.interp(
+            x=times, xp=orbitephem[axis].times, fp=orbitephem[axis].vals
+        )
+        p_moon_eci[:, ii] = np.interp(
+            x=times, xp=lunarephem[axis].times, fp=lunarephem[axis].vals
+        )
+
+    q_att_msid.interpolate(times=times)
+    q_att_t = q_att_msid.vals.transform
+
+    p_moon_chandra_eci = p_moon_eci - p_chandra_eci
+    p_earth_chandra_eci = -p_chandra_eci
+
+    earth_limb_angle = _get_limb_angle("earth", q_att_t, p_earth_chandra_eci)
+    moon_limb_angle = _get_limb_angle("moon", q_att_t, p_moon_chandra_eci)
+
+    return earth_limb_angle, moon_limb_angle
