@@ -824,6 +824,12 @@ def get_earth_moon_limb_angles(
     stop = CxoTime(np.max(times)) + 6 * u.min
 
     q_att_msid = fetch.Msid("quat_aoattqt", start, stop)
+    if q_att_msid.times[-1] < times[-1]:
+        raise ValueError(
+            f"Attitude quaternion data does extend through requested last "
+            f"time {CxoTime(times[-1]).date}. Last available quaternion time "
+            f"is {CxoTime(q_att_msid.times[-1]).date}."
+        )
     orbitephem = {}
     orbitephem["x"] = fetch.Msid("orbitephem0_x", start, stop)
     orbitephem["y"] = fetch.Msid("orbitephem0_y", start, stop)
