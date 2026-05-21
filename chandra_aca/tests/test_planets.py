@@ -11,6 +11,7 @@ from testr.test_helper import has_internet
 from chandra_aca.planets import (
     convert_time_format_spk,
     get_earth_blocks,
+    get_earth_moon_limb_angles,
     get_planet_angular_sep,
     get_planet_barycentric,
     get_planet_chandra,
@@ -20,6 +21,13 @@ from chandra_aca.planets import (
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 
 HAS_INTERNET = has_internet()
+
+EXP_EARTH_LIMB_ANGLE = np.array(
+    [43.9, 48.8, 53.8, 58.9, 63.9, 68.8, 73.4, 77.2, 79.8, 81.6, 82.4]
+)
+EXP_MOON_LIMB_ANGLE = np.array(
+    [30.4, 25.6, 20.6, 15.6, 10.4, 5.3, 0.7, 3.8, 7.0, 9.3, 10.5]
+)
 
 
 @pytest.mark.skipif(not HAS_INTERNET, reason="Requires network access")
@@ -241,3 +249,62 @@ def test_earth_boresight():
 
     blocks = get_earth_blocks(start, stop, min_limb_angle=10.0)
     assert blocks["datestart", "datestop", "duration"].pformat() == exp
+
+
+def test_get_earth_moon_limb_angles_regression():
+    """Limited regression test for this function.
+
+    This has been functionally tested more fully in the maneuver monitor window
+    processing and analysis. These data values qualitatively match those from the
+    functions used there.
+    """
+    times = CxoTime.linspace("2025:016:13:20:00", "2025:016:13:40:00", 10)
+    earth_limb_angle, moon_limb_angle = get_earth_moon_limb_angles(times)
+
+    assert np.all(
+        np.isclose(
+            earth_limb_angle,
+            EXP_EARTH_LIMB_ANGLE,
+            rtol=0,
+            atol=0.05,
+        )
+    )
+    assert np.all(
+        np.isclose(
+            moon_limb_angle,
+            EXP_MOON_LIMB_ANGLE,
+            rtol=0,
+            atol=0.05,
+        )
+    )
+    assert earth_limb_angle.shape == times.shape
+    assert moon_limb_angle.shape == times.shape
+    assert earth_limb_angle.dtype == np.float32
+    assert moon_limb_angle.dtype == np.float32
+
+
+def test_get_earth_moon_limb_angles_scalar():
+    ela, mla = get_earth_moon_limb_angles("2025:016:13:20:00")
+    assert np.isclose(ela, EXP_EARTH_LIMB_ANGLE[0], rtol=0, atol=0.05)
+    assert np.isclose(mla, EXP_MOON_LIMB_ANGLE[0], rtol=0, atol=0.05)
+
+
+def test_get_earth_moon_limb_angles_list():
+    times = ["2025:016:13:20:00", "2025:016:13:40:00"]
+    ela, mla = get_earth_moon_limb_angles(times)
+    assert np.all(
+        np.isclose(
+            ela,
+            EXP_EARTH_LIMB_ANGLE[[0, -1]],
+            rtol=0,
+            atol=0.05,
+        )
+    )
+    assert np.all(
+        np.isclose(
+            mla,
+            EXP_MOON_LIMB_ANGLE[[0, -1]],
+            rtol=0,
+            atol=0.05,
+        )
+    )
