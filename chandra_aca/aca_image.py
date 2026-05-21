@@ -1015,7 +1015,7 @@ def get_ccd_quadrant(row, col, pix_zero_loc="center"):
     elif pix_zero_loc != "edge":
         raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
 
-    quadrants = np.empty(shape=shape, dtype="<U1")
+    quadrants = np.empty(shape=shape, dtype="U1")
     quadrants[(row < 0) & (col >= 0)] = "a"
     quadrants[(row < 0) & (col < 0)] = "b"
     quadrants[(row >= 0) & (col >= 0)] = "c"
