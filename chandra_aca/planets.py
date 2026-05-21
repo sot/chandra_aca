@@ -801,8 +801,8 @@ def get_earth_moon_limb_angles(
     the given observation times. The limb angle is the angle from the ACA boresight to
     the limb of the body.
 
-    The function fetches the necessary ephemeris data (Chandra position, Moon position,
-    and attitude quaternion) from the cheta telemetry archive.
+    The function fetches the necessary predictive ephemeris data (Chandra position, Moon
+    position, and attitude quaternion) from the cheta telemetry archive.
 
     Parameters
     ----------
@@ -840,7 +840,7 @@ def get_earth_moon_limb_angles(
     lunarephem["y"] = fetch.Msid("lunarephem0_y", start, stop)
     lunarephem["z"] = fetch.Msid("lunarephem0_z", start, stop)
 
-    # Interpolate ephem vectors to mon_imgs["times"]
+    # Interpolate ephem vectors to times
     p_chandra_eci = np.zeros(shape=(n_imgs, 3))
     p_moon_eci = np.zeros(shape=(n_imgs, 3))
     for ii, axis in enumerate(["x", "y", "z"]):
