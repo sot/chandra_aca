@@ -966,3 +966,55 @@ def get_aca_images(
         imgs_table["T_CCD_SMOOTH"] = np.zeros(shape=0)
 
     return imgs_table
+
+
+def get_ccd_quadrant(row, col, pix_zero_loc="center"):
+    """
+    Get CCD quadrant for given row and column.
+
+    For ``row`` and ``col`` values in the "edge" coordinate system where the center
+    of the CCD is at exactly (0.0, 0.0), the quadrants are defined as follows:
+
+    - a: row < 0 and col >= 0
+    - b: row < 0 and col < 0
+    - c: row >= 0 and col >= 0
+    - d: row >= 0 and col < 0
+
+    Parameters
+    ----------
+    row : float, np.ndarray[float]
+        Row value(s) of pixel(s)
+    col : float, np.ndarray[float]
+        Column value(s) of pixel(s)
+    pix_zero_loc : str
+        Location of pixel zero, either 'center' or 'edge'. Default is 'center'.
+
+    Returns
+    -------
+    quadrant : str or np.ndarray[str]
+        CCD quadrant ('a', 'b', 'c', or 'd') for each input row and column value. If
+        input row and col are scalars, returns a single string. If input row and col are
+        arrays, returns an array of strings with the same shape as the broadcasted shape
+        of row and col.
+    """
+    if pix_zero_loc == "center":
+        # Transform row/col values from 'center' convention to 'edge' convention, so
+        # that (0.0, 0.0) is the exact quadrant boundary center.
+        row = row + 0.5
+        col = col + 0.5
+    elif pix_zero_loc != "edge":
+        raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
+
+    row, col = np.broadcast_arrays(np.asarray(row), np.asarray(col))
+    shape = row.shape
+
+    quadrants = np.empty(shape=shape, dtype="<U1")
+    quadrants[(row < 0) & (col >= 0)] = "a"
+    quadrants[(row < 0) & (col < 0)] = "b"
+    quadrants[(row >= 0) & (col >= 0)] = "c"
+    quadrants[(row >= 0) & (col < 0)] = "d"
+
+    if shape == ():
+        return quadrants.item()
+
+    return quadrants

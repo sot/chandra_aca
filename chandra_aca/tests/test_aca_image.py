@@ -9,7 +9,7 @@ from cxotime import CxoTime
 from mica.archive.aca_dark import get_dark_cal_props
 
 import chandra_aca.aca_image
-from chandra_aca.aca_image import ACAImage, centroid_fm
+from chandra_aca.aca_image import ACAImage, centroid_fm, get_ccd_quadrant
 
 im6 = np.arange(6**2).reshape((6, 6))
 im8 = np.arange(8**2).reshape((8, 8))
@@ -649,3 +649,35 @@ def test_get_aca_images_cxc_and_maude():
     assert np.allclose(img_table_maude["TIME"], img_table_cxc["TIME"])
     assert np.allclose(img_table_maude_bgsub["IMG"], img_table_cxc_bgsub["IMG"])
     assert np.allclose(img_table_maude_bgsub["TIME"], img_table_cxc_bgsub["TIME"])
+
+
+def test_get_ccd_quadrant():
+    assert get_ccd_quadrant(-1, 1) == "a"
+    assert get_ccd_quadrant(-1, -1) == "b"
+    assert get_ccd_quadrant(1, 1) == "c"
+    assert get_ccd_quadrant(1, -1) == "d"
+
+    # With pix_zero_loc='center', the pixel center at (0, 0) lies in quadrant c.
+    assert get_ccd_quadrant(0, 0) == "c"
+
+    # With pix_zero_loc='edge', the exact quadrant boundaries are at row=0 and col=0.
+    assert get_ccd_quadrant(-0.1, 0.1, pix_zero_loc="edge") == "a"
+    assert get_ccd_quadrant(-0.1, -0.1, pix_zero_loc="edge") == "b"
+    assert get_ccd_quadrant(0.1, 0.1, pix_zero_loc="edge") == "c"
+    assert get_ccd_quadrant(0.1, -0.1, pix_zero_loc="edge") == "d"
+
+    row = [-1, -1, 1, 1]
+    col = [1, -1, 1, -1]
+    assert np.all(get_ccd_quadrant(row, col) == np.array(["a", "b", "c", "d"]))
+
+    row = np.array([-0.1, -0.1, 0.1, 0.1])
+    col = np.array([0.1, -0.1, 0.1, -0.1])
+    assert np.all(
+        get_ccd_quadrant(row, col, pix_zero_loc="edge")
+        == np.array(["a", "b", "c", "d"])
+    )
+
+
+def test_get_ccd_quadrant_fail():
+    with pytest.raises(ValueError, match="pix_zero_loc"):
+        get_ccd_quadrant(0, 0, pix_zero_loc="bad")
