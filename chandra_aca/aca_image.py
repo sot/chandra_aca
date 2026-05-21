@@ -997,6 +997,9 @@ def get_ccd_quadrant(row, col, pix_zero_loc="center"):
         arrays, returns an array of strings with the same shape as the broadcasted shape
         of row and col.
     """
+    row, col = np.broadcast_arrays(np.asarray(row), np.asarray(col))
+    shape = row.shape
+
     if pix_zero_loc == "center":
         # Transform row/col values from 'center' convention to 'edge' convention, so
         # that (0.0, 0.0) is the exact quadrant boundary center.
@@ -1004,9 +1007,6 @@ def get_ccd_quadrant(row, col, pix_zero_loc="center"):
         col = col + 0.5
     elif pix_zero_loc != "edge":
         raise ValueError("pix_zero_loc can be only 'edge' or 'center'")
-
-    row, col = np.broadcast_arrays(np.asarray(row), np.asarray(col))
-    shape = row.shape
 
     quadrants = np.empty(shape=shape, dtype="<U1")
     quadrants[(row < 0) & (col >= 0)] = "a"
