@@ -18,7 +18,14 @@ from astropy.table import Table
 from cxotime import CxoTimeLike
 from ska_helpers import retry
 
-__all__ = ["ACAImage", "centroid_fm", "AcaPsfLibrary", "EIGHT_LABELS", "get_aca_images"]
+__all__ = [
+    "ACAImage",
+    "centroid_fm",
+    "AcaPsfLibrary",
+    "EIGHT_LABELS",
+    "get_aca_images",
+    "get_ccd_quadrant",
+]
 
 EIGHT_LABELS = np.array(
     [
