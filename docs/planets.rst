@@ -73,7 +73,7 @@ Bright Planet States
 --------------------
 
 get_planet_mag_states
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 Use ``get_planet_mag_states(planet, start, stop)`` to get intervals where a bright
 planet is in a specific mitigation/action band. The function reads precomputed state
@@ -96,7 +96,7 @@ Returned columns include:
 - ``mag_start`` and ``mag_stop``
 
 Magnitude Action Bands
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 The action bands are defined by the ``MAG_ACTION_BINS`` table in
 ``chandra_aca.planets``. The bins are half-open intervals
@@ -123,7 +123,7 @@ at about 1-hour resolution.
      - no action
 
 Example
--------
+~~~~~~~
 
 .. code-block:: python
 
