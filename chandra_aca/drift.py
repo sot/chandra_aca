@@ -163,7 +163,8 @@ class AcaDriftModel(object):
         jump_times = CxoTime([j[0] for j in self.jumps]).secs
         jump_values = np.concatenate(([0], np.cumsum([j[1] for j in self.jumps])))
         out = (
-            (t_ccd_degF - self.offset) * self.scale + dyears * self.trend
+            (t_ccd_degF - self.offset) * self.scale
+            + dyears * self.trend
             + jump_values[np.searchsorted(jump_times, times)]
         )
 
