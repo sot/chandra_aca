@@ -17,7 +17,6 @@ from pathlib import Path
 import numpy as np
 from astropy.table import Table
 from astropy.utils.data import download_file
-from Chandra.Time import DateTime
 from cxotime import CxoTime, CxoTimeLike
 from ska_helpers import chandra_models
 from ska_helpers.utils import LazyDict
@@ -145,28 +144,29 @@ class AcaDriftModel(object):
 
         times, t_ccd_degF = np.broadcast_arrays(times, t_ccd_degF)
         is_scalar = times.ndim == 0 and t_ccd_degF.ndim == 0
-        times = DateTime(np.atleast_1d(times)).secs
+        times = CxoTime(np.atleast_1d(times)).secs
         t_ccd_degF = np.atleast_1d(t_ccd_degF)
 
         if times.shape != t_ccd_degF.shape:
             raise ValueError("times and t_ccd args must match in shape")
 
-        if np.any(np.diff(times) < 0):
-            raise ValueError("times arg must be monotonically increasing")
-
-        if times[0] < DateTime("2012:001:12:00:00").secs:
+        if times[0] < CxoTime("2012:001:12:00:00").secs:
             raise ValueError("model is not applicable before 2012")
 
         # Years from model `year0`
-        dyears = DateTime(times, format="secs").frac_year - self.year0
+        dyears = CxoTime(times, format="secs").frac_year - self.year0
 
         # Raw offsets without jumps
         out = (t_ccd_degF - self.offset) * self.scale + dyears * self.trend
 
         # Put in the step function jumps
-        for jump_date, jump in self.jumps:
-            jump_idx = np.searchsorted(times, DateTime(jump_date).secs)
-            out[jump_idx:] += jump
+        jump_times = CxoTime([j[0] for j in self.jumps]).secs
+        jump_values = np.concatenate(([0], np.cumsum([j[1] for j in self.jumps])))
+        out = (
+            (t_ccd_degF - self.offset) * self.scale
+            + dyears * self.trend
+            + jump_values[np.searchsorted(jump_times, times)]
+        )
 
         return out[0] if is_scalar else out
 
@@ -364,7 +364,7 @@ def get_target_aimpoint(date, cycle, detector, too=False, zero_offset_table=None
     if zero_offset_table is None:
         zero_offset_table = get_default_zero_offset_table()
     zero_offset_table.sort(["date_effective", "cycle_effective"])
-    date = DateTime(date).iso[:10]
+    date = CxoTime(date).iso[:10]
     # Entries for this detector before the 'date' given
     ok = (zero_offset_table["detector"] == detector) & (
         zero_offset_table["date_effective"] <= date
