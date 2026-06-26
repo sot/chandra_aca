@@ -159,6 +159,67 @@ def test_scale():
     )
 
 
+def test_raw_aca_packets_input():
+    # get_aca_packets (and get_aca_images, via kwargs) can be fed the raw ACA packets
+    # dict (the output of get_raw_aca_packets) directly, bypassing the MAUDE fetch.
+    start, stop = 686111010, 686111040
+    # drop the cached 'decom_packets' key so we can verify the input is not mutated
+    raw = {
+        key: value
+        for key, value in test_data["686111010-686111040"]["raw"].items()
+        if key != "decom_packets"
+    }
+
+    result = maude_decom.get_aca_packets(start, stop, level0=True, raw_aca_packets=raw)
+
+    # This is equivalent to feeding the same raw dict straight to _get_aca_packets.
+    ref = maude_decom._get_aca_packets(
+        copy.deepcopy(raw),
+        start,
+        stop,
+        combine=True,
+        adjust_time=True,
+        calibrate=True,
+    )
+    compare_tables(result, ref)
+
+    # The caller's dict must not be mutated (_get_aca_packets adds 'decom_packets').
+    assert "decom_packets" not in raw
+
+    # get_aca_images forwards raw_aca_packets through kwargs and yields the same images.
+    imgs = maude_decom.get_aca_images(start, stop, raw_aca_packets=raw)
+    assert len(imgs) == len(result)
+    for col in [
+        "TIME",
+        "VCDUCTR",
+        "MJF",
+        "MNF",
+        "IMGNUM",
+        "IMGTYPE",
+        "IMGROW0",
+        "IMGCOL0",
+        "INTEG",
+    ]:
+        assert np.all(
+            np.isclose(
+                np.asarray(imgs[col], dtype=float), np.asarray(result[col], dtype=float)
+            )
+        )
+    img_imgs = np.ma.getdata(imgs["IMG"])
+    img_ref = np.ma.getdata(result["IMG"])
+    not_masked = ~np.ma.getmaskarray(result["IMG"])
+    assert np.all(np.isclose(img_imgs[not_masked], img_ref[not_masked]))
+
+
+def test_raw_aca_packets_exclusive():
+    # raw_aca_packets is mutually exclusive with frames/blobs.
+    raw = test_data["686111010-686111040"]["raw"]
+    with pytest.raises(ValueError, match="one and only one"):
+        maude_decom.get_aca_packets(
+            686111010, 686111040, frames=True, raw_aca_packets=raw
+        )
+
+
 def test_partial_images():
     mask = {
         "4X41": np.array(

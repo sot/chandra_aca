@@ -819,6 +819,7 @@ def get_aca_packets(
     calibrate=False,
     blobs=None,
     frames=None,
+    raw_aca_packets=None,
     dtype=None,
     **maude_kwargs,
 ):
@@ -980,6 +981,8 @@ def get_aca_packets(
     frames : bool or dict
         If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
         output of maude.get_frames ({'data': ... }).
+    raw_aca_packets : dict
+        If set, data is assembled from the raw ACA packets.
     dtype : np.dtype. Optional.
         the dtype to use when creating the resulting table. This is useful to add columns
         including MSIDs that are present in blobs. If used with frames, most probably you will get
@@ -992,11 +995,17 @@ def get_aca_packets(
     -------
     astropy.table.Table
     """
-    if not blobs and not frames:
+    n_sources = sum(
+        x is not None and x is not False for x in [blobs, frames, raw_aca_packets]
+    )
+    if n_sources == 0:
         frames = True
+        n_sources = 1
 
-    if (not blobs and not frames) or (frames and blobs):
-        raise ValueError("Specify one and only one of 'blobs' or 'frames'")
+    if n_sources != 1:
+        raise ValueError(
+            "Specify one and only one of 'blobs', 'frames', or 'raw_aca_packets'"
+        )
 
     if level0:
         adjust_time = True
@@ -1017,7 +1026,18 @@ def get_aca_packets(
     if combine:
         stop_pad += 3.08 * u.s  # there can be trailing frames
 
-    if frames:
+    if raw_aca_packets is not None:
+        # shallow copy: _get_aca_packets adds a 'decom_packets' key to the input dict
+        aca_data = _get_aca_packets(
+            dict(raw_aca_packets),
+            date_start,
+            date_stop,
+            combine=combine,
+            adjust_time=adjust_time,
+            calibrate=calibrate,
+            dtype=dtype,
+        )
+    elif frames:
         n = int(np.ceil((date_stop - date_start).sec / 300))
         dt = (date_stop - date_start) / n
         batches = [(date_start + i * dt, date_start + (i + 1) * dt) for i in range(n)]
