@@ -1191,8 +1191,9 @@ def get_aca_images(
 
              name            dtype  unit
       --------------------- ------- -----------
-         IMG_BGSUB          float64  DN IMG_DARK           float64  DN T_CCD_SMOOTH
-         float64  degC
+         IMG_BGSUB          float64  DN
+         IMG_DARK           float64  DN
+         T_CCD_SMOOTH       float64  degC
 
     where:
 
