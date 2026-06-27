@@ -11,10 +11,10 @@ from itertools import chain, count
 from math import floor
 from pathlib import Path
 
+import astropy.table as apt
 import numba
 import numpy as np
 import requests
-from astropy.table import Table
 from cxotime import CxoTimeLike
 from ska_helpers import retry
 
@@ -740,7 +740,6 @@ class AcaPsfLibrary(object):
     """
 
     def __init__(self, filename=None):
-        from astropy.table import Table  # Table is a somewhat-heavy import
 
         psfs = {}
 
@@ -748,7 +747,7 @@ class AcaPsfLibrary(object):
             filename = os.path.join(
                 os.path.dirname(__file__), "data", "aca_psf_lib.dat"
             )
-        dat = Table.read(filename, format="ascii.basic", guess=False)
+        dat = apt.Table.read(filename, format="ascii.basic", guess=False)
         self.dat = dat
 
         # Sub-pixel grid spacing in pixels.  This assumes the sub-pixels are
