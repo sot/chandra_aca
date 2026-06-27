@@ -5,11 +5,13 @@ Classes and utilities related to ACA readout images.
 See :ref:`aca_image` for more details and examples.
 """
 
+import fnmatch
 import os
 from copy import deepcopy
 from itertools import chain, count
 from math import floor
 from pathlib import Path
+from typing import Sequence
 
 import astropy.table as apt
 import numba
@@ -857,18 +859,329 @@ class AcaPsfLibrary(object):
         return out
 
 
+ACA_CHETA_MSIDS = [
+    "BGDAVG",
+    "BGDRMS",
+    "BGDSTAT",
+    "BGDTYP",
+    "COMMCNT",
+    "COMMPROG",
+    "GLBSTAT",
+    "HD3TLM62",
+    "HD3TLM63",
+    "HD3TLM64",
+    "HD3TLM65",
+    "HD3TLM66",
+    "HD3TLM67",
+    "HD3TLM72",
+    "HD3TLM73",
+    "HD3TLM74",
+    "HD3TLM75",
+    "HD3TLM76",
+    "HD3TLM77",
+    "IMGCOL0",
+    "IMGFID",
+    "IMGFUNC",
+    "IMGNUM",
+    "IMGROW0",
+    "IMGSCALE",
+    "IMGSTAT",
+    "IMGTLM",
+    "INTEG",
+    "MJF",
+    "MNF",
+    "PIXTLM",
+    "TEMPCCD",
+    "TEMPHOUS",
+    "TEMPPRIM",
+    "TEMPSEC",
+]
+
+
+def get_aca_images_cheta(
+    start: CxoTimeLike,
+    stop: CxoTimeLike,
+    msids=None,
+    slots=(0, 1, 2, 3, 4, 5, 6, 7),
+    sort=False,
+    scale_img=True,
+    native_cheta_columns=False,
+    unit_system="sci",
+) -> apt.Table:
+    """Get ACA image telemetry from cheta for selected ACA slots.
+
+    This fetches telemetry for the requested ACA image MSIDs from cheta for each
+    requested slot (``aca{slot}_*``), removes rows flagged bad in any fetched MSID for a
+    slot, and returns a single table with one row per slot and readout.
+
+    Available MSIDs for selection with the ``msids`` option are:
+
+    - BGDAVG, BGDRMS, BGDSTAT, BGDTYP
+    - COMMCNT, COMMPROG, GLBSTAT
+    - HD3TLM62, HD3TLM63, HD3TLM64, HD3TLM65, HD3TLM66, HD3TLM67
+    - HD3TLM72, HD3TLM73, HD3TLM74, HD3TLM75, HD3TLM76, HD3TLM77
+    - IMGCOL0, IMGFID, IMGFUNC, IMGNUM, IMGROW0, IMGSCALE, IMGSTAT, IMGTLM
+    - INTEG, MJF, MNF, PIXTLM
+    - TEMPCCD, TEMPHOUS, TEMPPRIM, TEMPSEC (degC)
+
+    Notes:
+
+    - ``IMGTLM`` is 8x8 images as telemetered 10-bit unsigned integers.
+    - ``IMGNUM`` is always included in output table to identify slot for each row.
+
+    Parameters
+    ----------
+    start, stop
+        Time range passed to ``cheta.fetch_sci.MSID``.
+    msids : None, str, or sequence of str
+        Requested ACA image telemetry MSIDs or glob patterns (for example,
+        ``"HD3TLM*"``). If `None`, all entries in ``ACA_CHETA_MSIDS`` are used. Default
+        is ``"IMG*"`` to fetch the image telemetry and related columns.
+    slots : Sequence of int, default ``(0, 1, 2, 3, 4, 5, 6, 7)``
+        ACA image slots to fetch.
+    sort : bool, default `False`
+        If `True`, sort the output by (time, slot). This can be time consuming so the
+        default ordering is by (slot, time).
+    scale_img : bool, default `True`
+        If `True`, return an ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0`` column in DN
+        instead of the raw 10-bit ``IMGTLM`` column.
+    native_cheta_columns : bool, default `False`
+        If `True`, return the native cheta MSID column names matching those in the the
+        ``msids`` selection list. By default, apply name munging and add bit status
+        columns to match the API of :func:`chandra_aca.aca_images.get_aca_images`.
+    unit_system : {"sci", "eng", "cxc"}, default "sci"
+        Fetch data using the unit system. This only impacts temperatures, which will be
+        in degC for "sci", K for "cxc" and degF for "eng".
+
+    Returns
+    -------
+    astropy.table.Table
+        ACA image telemetry for the requested slots and MSIDs.
+    """
+
+    from cheta import fetch, fetch_eng, fetch_sci
+
+    # Support setting the unit system via the different fetch modules
+    fetch_funcs = {"sci": fetch_sci, "eng": fetch_eng, "cxc": fetch}
+    if (fetch_func := fetch_funcs.get(unit_system)) is None:
+        raise ValueError(
+            f"unit_system must be one of ['sci', 'eng', 'cxc'], got {unit_system!r}"
+        )
+
+    out_msids = _expand_cheta_aca_images_msids(msids)
+
+    if "IMGNUM" not in out_msids:
+        out_msids.append("IMGNUM")
+    if scale_img and "IMGSCALE" not in out_msids and "IMGTLM" in out_msids:
+        out_msids.append("IMGSCALE")
+
+    # List of tables of ACA image telemetry from cheta
+    dats = [
+        _get_cheta_slot(start, stop, scale_img, fetch_func, out_msids, slot)
+        for slot in slots
+    ]
+
+    out = apt.vstack(dats)
+    if sort:
+        out.sort(["TIME", "IMGNUM"])
+    if not native_cheta_columns:
+        _munge_cheta_aca_images(out)
+
+    return out
+
+
+def _get_cheta_slot(start, stop, scale_img, fetch_func, out_msids, slot):
+    """Fetch and assemble cheta ACA telemetry for a single slot.
+
+    For each requested MSID, this fetches ``aca{slot}_{MSID}`` over the given
+    time interval, combines values into one table, and removes rows flagged bad
+    by any fetched MSID.
+
+    If ``scale_img`` is True, image telemetry is converted from raw ``IMGTLM``
+    values to DN via ``IMGTLM * (IMGSCALE / 32.0) - 50.0`` and the column is
+    renamed to ``IMG``.
+
+    Parameters
+    ----------
+    start, stop
+        Start and stop times passed to ``fetch_func.MSID``.
+    scale_img : bool
+        If True, scale image telemetry from ``IMGTLM`` to ``IMG`` in DN.
+    fetch_func
+        cheta fetch module (for example ``cheta.fetch_sci``) that provides
+        an ``MSID`` fetch API.
+    out_msids : sequence of str
+        MSIDs to fetch for this slot.
+    slot : int
+        ACA slot number.
+
+    Returns
+    -------
+    astropy.table.Table
+        Slot telemetry table with bad rows removed.
+    """
+    tbl_cols = {}
+    for msid in out_msids:
+        msid_slot = f"aca{slot}_" + msid
+        dat = fetch_func.MSID(msid_slot, start=start, stop=stop)
+        if "TIME" not in tbl_cols:
+            tbl_cols["TIME"] = dat.times
+        if "bads" not in tbl_cols:
+            tbl_cols["bads"] = dat.bads
+        else:
+            tbl_cols["bads"] |= dat.bads
+        tbl_cols[msid] = dat.vals
+
+    dat = apt.Table(tbl_cols)
+    if np.any(tbl_cols["bads"]):
+        dat = dat[~tbl_cols["bads"]]
+    del dat["bads"]
+
+    if scale_img:
+        # Scale image data. Parentheses (imgscale / 32.0) are important since
+        # IMGTLM * IMGSCALE / 32.0 will overflow the 16-bit unsigned int.
+        imgs_dn = dat["IMGTLM"] * (dat["IMGSCALE"][:, None, None] / 32.0) - 50.0
+        # Replace then rename column to preserve column ordering
+        dat["IMGTLM"] = imgs_dn.astype(np.float32)
+        dat.rename_column("IMGTLM", "IMG")
+
+    return dat
+
+
+def _expand_cheta_aca_images_msids(msids: None | str | Sequence[str]) -> list[str]:
+    """Expand and validate cheta ACA image telemetry MSID selections.
+
+    Parameters
+    ----------
+    msids : None, str, or sequence of str
+        MSID names or shell-style glob patterns matched against
+        ``ACA_CHETA_MSIDS``. If ``None``, use all available ACA image MSIDs.
+
+    Returns
+    -------
+    list of str
+        Expanded MSID list.
+
+    Raises
+    ------
+    ValueError
+        If any requested MSID pattern does not match known ACA image MSIDs.
+    """
+    if msids is None:
+        return ACA_CHETA_MSIDS
+
+    if isinstance(msids, str):
+        msids = [msids]
+
+    # Assemble list of matches from ACA_CHETA_MSIDS using file globbing
+    out_msids = []
+    for msid in msids:
+        matches = fnmatch.filter(ACA_CHETA_MSIDS, msid.upper())
+        if not matches:
+            raise ValueError(
+                f"msid {msid!r} does not match any known ACA image telemetry MSIDs"
+            )
+        out_msids.extend(matches)
+
+    return out_msids
+
+
+def _munge_cheta_aca_images(imgs: apt.Table) -> None:
+    """Normalize cheta ACA image columns to the standard get_aca_images schema.
+
+    This mutates ``imgs`` in place so that tables fetched from cheta match the column
+    naming and decoded-bit conventions returned by
+    :func:`mica.archive.aca_l0.get_aca_images`. The code is adapted from that function,
+    which in turn is matching the API of :func:`chandra_aca.maude_decom.get_aca_images`.
+
+    The function adds derived columns such as ``IMGSIZE``, ``IMGTYPE``,
+    ``END_INTEG_TIME``, ``IMGROW_A1``/``IMGCOL_A1``, ``IMGROW0_8X8``/ ``IMGCOL0_8X8``,
+    and VCDU counters. It also renames selected columns (for example ``BGDTYP`` ->
+    ``AABGDTYP`` and ``PIXTLM`` -> ``AAPIXTLM``) and expands packed status/telemetry
+    bytes into boolean or integer fields.
+
+    Parameters
+    ----------
+    imgs
+        ACA image telemetry table from cheta. The table is modified in place.
+
+    Returns
+    -------
+    None
+        The input table is updated in-place.
+    """
+    from mica.archive.aca_l0 import GLBSTAT_NAMES, IMGSTAT_NAMES, _extract_bits_as_uint8
+
+    def has(colname):
+        return colname in imgs.colnames
+
+    # Rename and rejigger colums to match chandra_aca.maude_decum.get_aca_images
+    imgs["IMGSIZE"] = 8
+    if has("INTEG"):
+        imgs["END_INTEG_TIME"] = imgs["TIME"] + imgs["INTEG"] / 2
+
+    for rc in ["ROW", "COL"]:
+        # IMGROW/COL0 are row/col of lower/left of 4x4, 6x6, or 8x8 image
+        # Make these new columns:
+        # IMGROW/COL_A1: row/col of pixel A1 of 4x4, 6x6, or 8x8 image
+        # IMGROW/COL0_8x8: row/col of lower/left of 8x8 image with smaller img centered
+        if has(f"IMG{rc}0"):
+            imgs[f"IMG{rc}_A1"] = imgs[f"IMG{rc}0"]
+            imgs[f"IMG{rc}0_8X8"] = imgs[f"IMG{rc}0"]
+
+    imgs["IMGTYPE"] = np.full(shape=len(imgs), fill_value=4)  # 8x8
+
+    # imgs.rename_column("IMGRAW", "IMG")
+    if has("BGDTYP"):
+        imgs.rename_column("BGDTYP", "AABGDTYP")
+    if has("PIXTLM"):
+        imgs.rename_column("PIXTLM", "AAPIXTLM")
+
+    # maude_decom.get_aca_images() provides both VCDUCTR (VCDU for each sub-image) and
+    # IMG_VCDUCTR (VCDU of first sub-image). For combined images, these are identical.
+    if has("MJF") and has("MNF"):
+        imgs["VCDUCTR"] = imgs["MJF"] * 128 + imgs["MNF"]
+        imgs["IMG_VCDUCTR"] = imgs["VCDUCTR"]
+
+    # Split uint8 GLBSTAT and IMGSTAT into individual bits. The stat_bit_names are
+    # in MSB order so we need to reverse them below.
+    for stat_name, stat_bit_names in (
+        ("GLBSTAT", GLBSTAT_NAMES),
+        ("IMGSTAT", IMGSTAT_NAMES),
+    ):
+        if has(stat_name):
+            for bit, name in zip(range(8), reversed(stat_bit_names), strict=False):
+                imgs[name] = (imgs[stat_name] & (1 << bit)) > 0
+
+    if has("COMMCNT"):
+        # Extract fields from the mica L0 8-bit COMMCNT value which is really three MSIDs.
+        # We need to use .data attribute of MaskedColumn to get a numpy masked array. The
+        # unpackbits function fails on MaskedColumn because it looks for a _mask attribute.
+        bits = np.unpackbits(imgs["COMMCNT"].data).reshape(-1, 8)
+        bits_rev = bits[:, ::-1]  # MSB is on the right (index=7)
+        imgs["COMMCNT"] = _extract_bits_as_uint8(bits_rev, 2, 8)
+        imgs["COMMCNT_CHECKSUM_FAIL"] = bits_rev[:, 0] > 0
+        imgs["COMMCNT_SYNTAX_ERROR"] = bits_rev[:, 1] > 0
+
+    if has("COMMPROG"):
+        # Extract fields from the mica L0 8-bit COMMPROG value which is really two MSIDs
+        bits = np.unpackbits(imgs["COMMPROG"].data).reshape(-1, 8)
+        bits_rev = bits[:, ::-1]
+        imgs["COMMPROG"] = _extract_bits_as_uint8(bits_rev, 2, 8)
+        imgs["COMMPROG_REPEAT"] = _extract_bits_as_uint8(bits_rev, 0, 2)
+
+
 @retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_aca_images(
-    start: CxoTimeLike, stop: CxoTimeLike, bgsub=False, source="maude", **maude_kwargs
-) -> Table:
+    start: CxoTimeLike, stop: CxoTimeLike, bgsub=False, source="maude", **kwargs
+) -> apt.Table:
     """
     Get ACA images and ancillary data from either the MAUDE or CXC data sources.
 
-    The returned table of ACA images and ancillary data will include the default
-    columns returned by chandra_aca.maude_decom.get_aca_images or
-    mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be
-    added to the maude_decom aca_images so images from either source will have
-    that column::
+    The returned table of ACA images and ancillary data will include the default columns
+    returned by chandra_aca.maude_decom.get_aca_images or
+    mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be added to
+    the maude_decom aca_images so images from either source will have that column::
 
              name            dtype  unit
       --------------------- ------- -----------
@@ -878,9 +1191,8 @@ def get_aca_images(
 
              name            dtype  unit
       --------------------- ------- -----------
-         IMG_BGSUB          float64  DN
-         IMG_DARK           float64  DN
-         T_CCD_SMOOTH       float64  degC
+         IMG_BGSUB          float64  DN IMG_DARK           float64  DN T_CCD_SMOOTH
+         float64  degC
 
     where:
 
@@ -888,9 +1200,9 @@ def get_aca_images(
     - 'IMG_DARK': dark current image
     - 'T_CCD_SMOOTH': smoothed CCD temperature
 
-    The IMG_DARK individual values are only calculated if within the 1024x1024
-    dark current map, otherwise they are set to 0.  In practice this is not an
-    issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.
+    The IMG_DARK individual values are only calculated if within the 1024x1024 dark
+    current map, otherwise they are set to 0.  In practice this is not an issue in that
+    IMG and IMG_BGSUB must be within the CCD to be tracked.
 
     Parameters
     ----------
@@ -901,11 +1213,13 @@ def get_aca_images(
     bgsub : bool
         Include background subtracted images in output table. Default is False.
     source : str
-        Data source for image and temperature telemetry ('maude' or 'cxc'). For 'cxc',
-        the image telemetry is from mica and temperature telemetry is from CXC L0 via
-        cheta.
-    **maude_kwargs
-        Additional kwargs for maude data source.
+        Data source for image and temperature telemetry ('maude','cxc', or 'cheta'). For
+        'cxc', the image telemetry is from mica and temperature telemetry is from CXC L0
+        via cheta.
+    **kwargs
+        Additional kwargs for source-specific image data retrieval functions. See: -
+        :func:`chandra_aca.maude_decom.get_aca_images` -
+        :func:`mica.archive.aca_l0.get_aca_images` - :func:`get_aca_images_cheta`
 
     Returns
     -------
@@ -923,13 +1237,15 @@ def get_aca_images(
         get_aca_images_func = chandra_aca.maude_decom.get_aca_images
     elif source == "cxc":
         get_aca_images_func = mica.archive.aca_l0.get_aca_images
-        # Explicitly set maude_kwargs to empty dict for cxc source
-        maude_kwargs = {}
+    elif source == "cheta":
+        get_aca_images_func = get_aca_images_cheta
+        # Force option for cheta to match the API of the other sources.
+        kwargs["native_cheta_columns"] = False
     else:
-        raise ValueError(f"source must be 'maude' or 'cxc', not {source}")
+        raise ValueError(f"source must be 'maude', 'cxc', or 'cheta', not {source}")
 
     # Get images
-    imgs_table = get_aca_images_func(start, stop, **maude_kwargs)
+    imgs_table = get_aca_images_func(start, stop, **kwargs)
 
     # Add an IMGSIZE column if not present (maude)
     # IMGTYPE 4 -> 8, 1 -> 6, 0 -> 4
@@ -954,7 +1270,7 @@ def get_aca_images(
         img_dark = dark_data["image"]
         tccd_dark = dark_data["ccd_temp"]
         t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-            imgs_table["TIME"], source=source, **maude_kwargs
+            imgs_table["TIME"], source=source, **kwargs
         )
         imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
             imgs_table, img_dark, tccd_dark, t_ccds
