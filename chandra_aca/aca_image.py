@@ -903,7 +903,7 @@ def get_aca_images_cheta(
     stop: CxoTimeLike,
     msids=None,
     slots=(0, 1, 2, 3, 4, 5, 6, 7),
-    sort=False,
+    sort_by_time=False,
     scale_img=True,
     native_cheta_columns=False,
     unit_system="sci",
@@ -939,7 +939,7 @@ def get_aca_images_cheta(
         is ``"IMG*"`` to fetch the image telemetry and related columns.
     slots : Sequence of int, default ``(0, 1, 2, 3, 4, 5, 6, 7)``
         ACA image slots to fetch.
-    sort : bool, default `False`
+    sort_by_time : bool, default `False`
         If `True`, sort the output by (time, slot). This can be time consuming so the
         default ordering is by (slot, time).
     scale_img : bool, default `True`
@@ -948,7 +948,7 @@ def get_aca_images_cheta(
     native_cheta_columns : bool, default `False`
         If `True`, return the native cheta MSID column names matching those in the the
         ``msids`` selection list. By default, apply name munging and add bit status
-        columns to match the API of :func:`chandra_aca.aca_images.get_aca_images`.
+        columns to match the API of :func:`get_aca_images`.
     unit_system : {"sci", "eng", "cxc"}, default "sci"
         Fetch data using the unit system. This only impacts temperatures, which will be
         in degC for "sci", K for "cxc" and degF for "eng".
@@ -982,7 +982,7 @@ def get_aca_images_cheta(
     ]
 
     out = apt.vstack(dats)
-    if sort:
+    if sort_by_time:
         out.sort(["TIME", "IMGNUM"])
     if not native_cheta_columns:
         _munge_cheta_aca_images(out)
