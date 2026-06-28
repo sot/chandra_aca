@@ -1171,7 +1171,6 @@ def _munge_cheta_aca_images(imgs: apt.Table) -> None:
         imgs["COMMPROG_REPEAT"] = _extract_bits_as_uint8(bits_rev, 0, 2)
 
 
-@retry.retry(exceptions=requests.exceptions.RequestException, delay=5, tries=3)
 def get_aca_images(
     start: CxoTimeLike, stop: CxoTimeLike, bgsub=False, source="maude", **kwargs
 ) -> apt.Table:
@@ -1235,7 +1234,12 @@ def get_aca_images(
 
     # Set up configuration for maude or cxc
     if source == "maude":
-        get_aca_images_func = chandra_aca.maude_decom.get_aca_images
+        get_aca_images_func = retry.retry_func(
+            chandra_aca.maude_decom.get_aca_images,
+            exceptions=requests.exceptions.RequestException,
+            delay=5,
+            tries=3,
+        )
     elif source == "cxc":
         get_aca_images_func = mica.archive.aca_l0.get_aca_images
     elif source == "cheta":
