@@ -1121,7 +1121,7 @@ def _munge_cheta_aca_images(imgs: apt.Table) -> None:
     def has(colname):
         return colname in imgs.colnames
 
-    # Rename and rejigger colums to match chandra_aca.maude_decum.get_aca_images
+    # Rename and rejigger columns to match chandra_aca.maude_decom.get_aca_images
     imgs["IMGSIZE"] = 8
     if has("INTEG"):
         imgs["END_INTEG_TIME"] = imgs["TIME"] + imgs["INTEG"] / 2

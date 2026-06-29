@@ -774,7 +774,7 @@ def test_get_aca_images_cheta_slots_0_4_imgnum_values():
 def test_get_aca_images_cheta_sort_by_time(sort_by_time, sort_keys):
     start, stop = "2026:001:00:00:00", "2026:001:00:01:00"
 
-    # Use image telemetry so default scale_img=True has required inputs.
+    # Use a scalar MSID to keep the test lightweight; sorting is independent of scale_img.
     imgs = chandra_aca.aca_image.get_aca_images_cheta(
         start, stop, sort_by_time=sort_by_time, msids="BGDAVG"
     )
