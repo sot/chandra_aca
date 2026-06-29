@@ -859,7 +859,7 @@ class AcaPsfLibrary(object):
         return out
 
 
-ACA_CHETA_MSIDS = [
+ACA_CHETA_MSIDS = (
     "BGDAVG",
     "BGDRMS",
     "BGDSTAT",
@@ -895,7 +895,7 @@ ACA_CHETA_MSIDS = [
     "TEMPHOUS",
     "TEMPPRIM",
     "TEMPSEC",
-]
+)
 
 
 def get_aca_images_cheta(
@@ -1074,7 +1074,7 @@ def _expand_cheta_aca_images_msids(msids: None | str | Sequence[str]) -> list[st
         If any requested MSID pattern does not match known ACA image MSIDs.
     """
     if msids is None:
-        return ACA_CHETA_MSIDS
+        return list(ACA_CHETA_MSIDS)
 
     if isinstance(msids, str):
         msids = [msids]
