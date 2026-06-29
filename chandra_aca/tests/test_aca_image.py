@@ -781,7 +781,7 @@ def test_get_aca_images_cheta_sort_by_time(sort_by_time, sort_keys):
 
     imgs_expected = imgs.copy()
     imgs_expected.sort(sort_keys)
-    for msid in ("IMGNUM", "TIME"):
+    for msid in ("IMGNUM", "TIME", "BGDAVG"):
         npt.assert_array_equal(imgs[msid], imgs_expected[msid])
 
 
