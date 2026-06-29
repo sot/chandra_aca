@@ -707,7 +707,7 @@ def test_get_aca_images_cheta_matches_cxc():
     [
         pytest.param(
             None,
-            ["TIME"] + chandra_aca.aca_image.ACA_CHETA_MSIDS,
+            ["TIME"] + list(chandra_aca.aca_image.ACA_CHETA_MSIDS),
             id="msids-none",
         ),
         pytest.param(
