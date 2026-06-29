@@ -914,20 +914,25 @@ def get_aca_images_cheta(
     requested slot (``aca{slot}_*``), removes rows flagged bad in any fetched MSID for a
     slot, and returns a single table with one row per slot and readout.
 
-    Available MSIDs for selection with the ``msids`` option are:
+    Available MSIDs for selection with the ``msids`` option are::
 
-    - BGDAVG, BGDRMS, BGDSTAT, BGDTYP
-    - COMMCNT, COMMPROG, GLBSTAT
-    - HD3TLM62, HD3TLM63, HD3TLM64, HD3TLM65, HD3TLM66, HD3TLM67
-    - HD3TLM72, HD3TLM73, HD3TLM74, HD3TLM75, HD3TLM76, HD3TLM77
-    - IMGCOL0, IMGFID, IMGFUNC, IMGNUM, IMGROW0, IMGSCALE, IMGSTAT, IMGTLM
-    - INTEG, MJF, MNF, PIXTLM
-    - TEMPCCD, TEMPHOUS, TEMPPRIM, TEMPSEC (degC)
+      BGDAVG, BGDRMS, BGDSTAT, BGDTYP
+      COMMCNT, COMMPROG, GLBSTAT
+      HD3TLM62, HD3TLM63, HD3TLM64, HD3TLM65, HD3TLM66, HD3TLM67
+      HD3TLM72, HD3TLM73, HD3TLM74, HD3TLM75, HD3TLM76, HD3TLM77
+      IMGCOL0, IMGFID, IMGFUNC, IMGNUM, IMGROW0, IMGSCALE, IMGSTAT, IMGTLM (8x8)
+      INTEG, MJF, MNF, PIXTLM
+      TEMPCCD, TEMPHOUS, TEMPPRIM, TEMPSEC
 
     Notes:
 
-    - ``IMGTLM`` is 8x8 images as telemetered 10-bit unsigned integers.
+    - ``IMGTLM`` is 8x8 images as telemetered 10-bit unsigned integers. By default with
+      ``scale_img=True``, the output table will instead include a column ``IMG`` with
+      the scaled image in DN, computed as ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0``.
     - ``IMGNUM`` is always included in output table to identify slot for each row.
+    - If ``IMGTLM`` is requested then ``IMGSCALE`` is included in the output table.
+    - Providing ``msids="IMG*"`` will fetch all the image telemetry and is about twice
+      as fast as the default fetching all MSIDs.
 
     Parameters
     ----------
@@ -943,7 +948,7 @@ def get_aca_images_cheta(
         If `True`, sort the output by (time, slot). This can be time consuming so the
         default ordering is by (slot, time).
     scale_img : bool, default `True`
-        If `True`, return an ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0`` column in DN
+        If `True`, return a column ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0`` in DN
         instead of the raw 10-bit ``IMGTLM`` column.
     native_cheta_columns : bool, default `False`
         If `True`, return the native cheta MSID column names matching those in the the
@@ -970,9 +975,11 @@ def get_aca_images_cheta(
 
     out_msids = _expand_cheta_aca_images_msids(msids)
 
+    # Always need slot identification
     if "IMGNUM" not in out_msids:
         out_msids.append("IMGNUM")
-    if scale_img and "IMGSCALE" not in out_msids and "IMGTLM" in out_msids:
+    # Always want IMGSCALE if asking for IMGTLM (even if not scaling it is good to have)
+    if "IMGSCALE" not in out_msids and "IMGTLM" in out_msids:
         out_msids.append("IMGSCALE")
 
     # List of tables of ACA image telemetry from cheta
@@ -1037,7 +1044,7 @@ def _get_cheta_slot(start, stop, scale_img, fetch_func, out_msids, slot):
         dat = dat[~tbl_cols["bads"]]
     del dat["bads"]
 
-    if scale_img:
+    if scale_img and "IMGTLM" in out_msids:
         # Scale image data. Parentheses (imgscale / 32.0) are important since
         # IMGTLM * IMGSCALE / 32.0 will overflow the 16-bit unsigned int.
         imgs_dn = dat["IMGTLM"] * (dat["IMGSCALE"][:, None, None] / 32.0) - 50.0
@@ -1175,34 +1182,33 @@ def get_aca_images(
     start: CxoTimeLike, stop: CxoTimeLike, bgsub=False, source="maude", **kwargs
 ) -> apt.Table:
     """
-    Get ACA images and ancillary data from either the MAUDE or CXC data sources.
+    Get ACA image telemetry from the specified ``source``.
 
-    The returned table of ACA images and ancillary data will include the default columns
-    returned by chandra_aca.maude_decom.get_aca_images or
-    mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be added to
-    the maude_decom aca_images so images from either source will have that column::
+    By default the returned table of ACA image telemetry will include these columns::
 
-             name            dtype  unit
-      --------------------- ------- -----------
-         IMGSIZE              int32  pixels
+      TIME (mid-integration, cxcsec), INTEG (sec), END_INTEG_TIME (cxcsec)
+      MJF, MNF, VCDUCTR, IMG_VCDUCTR
+      AAPIXTLM, AABGDTYP
+      BGDAVG (DN), BGDRMS (DN), BGDSTAT
+      COMMCNT, COMMCNT_CHECKSUM_FAIL, COMMCNT_SYNTAX_ERROR
+      COMMPROG, COMMPROG_REPEAT, COMM_CHECKSUM_FAIL
+      GLBSTAT, SYNTAX_ERROR, RESET, CAL_FAIL, POWER_FAIL, ROM_FAIL, RAM_FAIL
+      IMG (8x8 DN), IMGFID, IMGFUNC, IMGNUM, IMGSCALE, IMGSIZE, IMGTYPE, IMGSTAT
+      IMGCOL0, IMGROW0, IMGROW_A1, IMGCOL_A1, IMGROW0_8X8, IMGCOL0_8X8
+      HIGH_BGD, ION_RAD, MULTI_STAR, COMMON_COL, QUAD_BOUND, DEF_PIXEL, SAT_PIXEL
+      TEMPCCD (K), TEMPHOUS (K), TEMPPRIM (K), TEMPSEC (K)
+      HD3TLM62, HD3TLM63, HD3TLM64, HD3TLM65, HD3TLM66, HD3TLM67
+      HD3TLM72, HD3TLM73, HD3TLM74, HD3TLM75, HD3TLM76, HD3TLM77
 
-    If bgsub is True then the table will also include columns::
+    If ``bgsub`` is `True` then the table will also include float columns::
 
-             name            dtype  unit
-      --------------------- ------- -----------
-         IMG_BGSUB          float64  DN
-         IMG_DARK           float64  DN
-         T_CCD_SMOOTH       float64  degC
+      IMG_BGSUB (DN) : background subtracted image
+      IMG_DARK (DN) : dark current image
+      T_CCD_SMOOTH (degC) : smoothed CCD temperature
 
-    where:
-
-    - 'IMG_BGSUB': background subtracted image
-    - 'IMG_DARK': dark current image
-    - 'T_CCD_SMOOTH': smoothed CCD temperature
-
-    The IMG_DARK individual values are only calculated if within the 1024x1024 dark
-    current map, otherwise they are set to 0.  In practice this is not an issue in that
-    IMG and IMG_BGSUB must be within the CCD to be tracked.
+    With ``source="cheta"``, the ``msids`` keyword can be used to select a subset of the
+    available ACA image telemetry MSIDs and the ``unit_system`` keyword can select the
+    unit of the temperatures.  See :func:`get_aca_images_cheta` for details.
 
     Parameters
     ----------
@@ -1244,8 +1250,9 @@ def get_aca_images(
         get_aca_images_func = mica.archive.aca_l0.get_aca_images
     elif source == "cheta":
         get_aca_images_func = get_aca_images_cheta
-        # Force option for cheta to match the API of the other sources.
-        kwargs["native_cheta_columns"] = False
+        # Set options for cheta to match the API of the other sources.
+        kwargs["native_cheta_columns"] = False  # always required
+        kwargs.setdefault("unit_system", "cxc")  # default can be changed
     else:
         raise ValueError(f"source must be 'maude', 'cxc', or 'cheta', not {source}")
 
