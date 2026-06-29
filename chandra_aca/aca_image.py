@@ -940,8 +940,7 @@ def get_aca_images_cheta(
         Time range passed to ``cheta.fetch_sci.MSID``.
     msids : None, str, or sequence of str
         Requested ACA image telemetry MSIDs or glob patterns (for example,
-        ``"HD3TLM*"``). If `None`, all entries in ``ACA_CHETA_MSIDS`` are used. Default
-        is ``"IMG*"`` to fetch the image telemetry and related columns.
+        ``"HD3TLM*"``). If `None` (default), all entries in ``ACA_CHETA_MSIDS`` are used.
     slots : Sequence of int, default ``(0, 1, 2, 3, 4, 5, 6, 7)``
         ACA image slots to fetch.
     sort_by_time : bool, default `False`
@@ -951,7 +950,7 @@ def get_aca_images_cheta(
         If `True`, return a column ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0`` in DN
         instead of the raw 10-bit ``IMGTLM`` column.
     native_cheta_columns : bool, default `False`
-        If `True`, return the native cheta MSID column names matching those in the the
+        If `True`, return the native cheta MSID column names matching those in the
         ``msids`` selection list. By default, apply name munging and add bit status
         columns to match the API of :func:`get_aca_images`.
     unit_system : {"sci", "eng", "cxc"}, default "sci"
