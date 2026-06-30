@@ -989,7 +989,13 @@ def get_aca_images_cheta(
 
     out = apt.vstack(dats)
     if sort_by_time:
-        out.sort(["TIME", "IMGNUM"])
+        # Since the time stamps are always either identical or separated by > 1.0 sec,
+        # we can do a lexical sort on (TIME, IMGNUM) by nudging the time stamps by
+        # IMGNUM * 0.01 sec. The 64-bit float has sufficient precision to distinguish
+        # between the 0.01 sec differences. This about 30 times faster than
+        # `out.sort(["TIME", "IMGNUM"])`.
+        idxs = np.argsort(out["TIME"] + out["IMGNUM"] * 0.01)
+        out = out[idxs]
     if not native_cheta_columns:
         _munge_cheta_aca_images(out)
 
