@@ -903,7 +903,7 @@ def get_aca_images_cheta(
     stop: CxoTimeLike,
     msids=None,
     slots=(0, 1, 2, 3, 4, 5, 6, 7),
-    sort_by_time=False,
+    sort_by_time=True,
     scale_img=True,
     native_cheta_columns=False,
     unit_system="sci",
@@ -943,9 +943,9 @@ def get_aca_images_cheta(
         ``"HD3TLM*"``). If `None` (default), all entries in ``ACA_CHETA_MSIDS`` are used.
     slots : Sequence of int, default ``(0, 1, 2, 3, 4, 5, 6, 7)``
         ACA image slots to fetch.
-    sort_by_time : bool, default `False`
+    sort_by_time : bool, default `True`
         If `True`, sort the output by (time, slot). This is 5-10% slower than the
-        default (slot, time) ordering.
+        (slot, time) ordering which is native to the cheta data structure.
     scale_img : bool, default `True`
         If `True`, return a column ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0`` in DN
         instead of the raw 10-bit ``IMGTLM`` column.
