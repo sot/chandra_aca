@@ -944,8 +944,8 @@ def get_aca_images_cheta(
     slots : Sequence of int, default ``(0, 1, 2, 3, 4, 5, 6, 7)``
         ACA image slots to fetch.
     sort_by_time : bool, default `False`
-        If `True`, sort the output by (time, slot). This can be time consuming so the
-        default ordering is by (slot, time).
+        If `True`, sort the output by (time, slot). This is 5-10% slower than the
+        default (slot, time) ordering.
     scale_img : bool, default `True`
         If `True`, return a column ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0`` in DN
         instead of the raw 10-bit ``IMGTLM`` column.
