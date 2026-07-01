@@ -810,6 +810,51 @@ def _aca_packets_to_table(aca_packets, dtype=None):
     return table
 
 
+def _fill_frame_counters(raw_aca_packets):
+    """
+    Fill in missing frame counters in a raw ACA packets dictionary, in place.
+
+    The frame counters MJF/MNF (major/minor frame) and VCDUCTR are related by
+    ``VCDUCTR = MJF * 128 + MNF``, so either representation determines the other. The
+    input must supply at least one of them (both 'MJF' and 'MNF', or 'VCDUCTR'); the
+    other is derived. Values may be scalars or arrays.
+
+    Parameters
+    ----------
+    raw_aca_packets : dict
+        Raw ACA packets dictionary (modified in place and returned).
+
+    Returns
+    -------
+    dict
+        The same dictionary with 'MJF', 'MNF', and 'VCDUCTR' all present.
+
+    Raises
+    ------
+    ValueError
+        If neither 'VCDUCTR' nor both 'MJF' and 'MNF' are present.
+    """
+    has_mjf_mnf = "MJF" in raw_aca_packets and "MNF" in raw_aca_packets
+    has_vcductr = "VCDUCTR" in raw_aca_packets
+
+    if not has_mjf_mnf and not has_vcductr:
+        raise ValueError(
+            "raw_aca_packets must include frame counters: either both 'MJF' and 'MNF', "
+            "or 'VCDUCTR'"
+        )
+
+    if has_vcductr and not has_mjf_mnf:
+        raw_aca_packets["MNF"] = raw_aca_packets["VCDUCTR"] % (1 << 7)
+        raw_aca_packets["MJF"] = raw_aca_packets["VCDUCTR"] // (1 << 7)
+
+    if has_mjf_mnf and not has_vcductr:
+        raw_aca_packets["VCDUCTR"] = (
+            raw_aca_packets["MJF"] * (1 << 7) + raw_aca_packets["MNF"]
+        )
+
+    return raw_aca_packets
+
+
 def get_aca_packets(
     start,
     stop,
@@ -1027,9 +1072,12 @@ def get_aca_packets(
         stop_pad += 3.08 * u.s  # there can be trailing frames
 
     if raw_aca_packets is not None:
-        # shallow copy: _get_aca_packets adds a 'decom_packets' key to the input dict
+        # shallow copy: _get_aca_packets adds a 'decom_packets' key to the input dict,
+        # and _fill_frame_counters adds frame counters if they are missing.
+        raw_aca_packets = _fill_frame_counters(dict(raw_aca_packets))
+
         aca_data = _get_aca_packets(
-            dict(raw_aca_packets),
+            raw_aca_packets,
             date_start,
             date_stop,
             combine=combine,

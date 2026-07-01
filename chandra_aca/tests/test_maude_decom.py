@@ -220,6 +220,49 @@ def test_raw_aca_packets_exclusive():
         )
 
 
+def _raw_without(*drop):
+    """Copy of the reference raw dict with 'decom_packets' and ``drop`` keys removed."""
+    return {
+        key: value
+        for key, value in test_data["686111010-686111040"]["raw"].items()
+        if key != "decom_packets" and key not in drop
+    }
+
+
+@pytest.mark.parametrize("drop", [(), ("VCDUCTR",), ("MJF", "MNF")])
+def test_raw_aca_packets_optional_frame_counters(drop):
+    # The frame counters can be supplied as VCDUCTR, as MJF+MNF, or both: whichever is
+    # missing is reconstructed and the resulting images are identical.
+    start, stop = 686111010, 686111040
+    ref = maude_decom.get_aca_packets(
+        start, stop, level0=True, raw_aca_packets=_raw_without()
+    )
+
+    raw = _raw_without(*drop)
+    for key in drop:
+        assert key not in raw
+    result = maude_decom.get_aca_packets(start, stop, level0=True, raw_aca_packets=raw)
+    compare_tables(result, ref)
+
+
+@pytest.mark.parametrize(
+    "drop",
+    [
+        ("VCDUCTR", "MJF", "MNF"),  # no frame counters at all
+        ("VCDUCTR", "MNF"),  # only MJF, MNF is missing
+        ("VCDUCTR", "MJF"),  # only MNF, MJF is missing
+    ],
+)
+def test_raw_aca_packets_missing_frame_counters(drop):
+    # Without a full set of counters (VCDUCTR, or both MJF and MNF) the input cannot be
+    # decommutated, so a clear ValueError is raised instead of a later KeyError.
+    raw = _raw_without(*drop)
+    with pytest.raises(ValueError, match="must include frame counters"):
+        maude_decom.get_aca_packets(
+            686111010, 686111040, level0=True, raw_aca_packets=raw
+        )
+
+
 def test_partial_images():
     mask = {
         "4X41": np.array(
