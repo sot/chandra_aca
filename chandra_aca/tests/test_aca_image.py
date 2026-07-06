@@ -558,10 +558,11 @@ def images_check_range(start, stop, img_table, *, bgsub):
     # Check that all the slots are in there
     assert np.all(np.isin(np.arange(8), img_table["IMGNUM"]))
 
-    # Check that if the table has BGSUB column that IMG - DARK = BGSUB
+    # Check that if the table has BGSUB column that IMG - DARK = BGSUB, floored at 0
     if bgsub:
         assert np.allclose(
-            img_table["IMG"] - img_table["IMG_DARK"], img_table["IMG_BGSUB"]
+            np.clip(img_table["IMG"] - img_table["IMG_DARK"], 0, None),
+            img_table["IMG_BGSUB"],
         )
 
     # If there's a DARK column, then check it against the dark image from the dark cal

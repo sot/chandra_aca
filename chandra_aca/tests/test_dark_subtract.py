@@ -152,8 +152,37 @@ def test_dcsub_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
     )
     assert imgs_bgsub.shape == (8, 8, 8)
     # Note that the mock unsubtracted data is originally 16 * 1.696 / 5
-    exp = 16 - dc_imgs_dn
+    # dc_imgs_dn exceeds 16 for some pixels, so the expected value must be
+    # floored at 0 to match the clipping applied by get_aca_images_bgd_sub.
+    assert np.any(dc_imgs_dn > 16)
+    exp = np.clip(16 - dc_imgs_dn, 0, None)
     assert np.allclose(imgs_bgsub * 5 / 1.696, exp, atol=1e-6, rtol=0)
+
+
+def test_get_aca_images_bgd_sub_floors_negative_values_at_zero():
+    """
+    Confirm that get_aca_images_bgd_sub floors negative background-subtracted
+    values at 0 instead of returning them unclipped.
+    """
+    img_table = Table()
+    img_table["TIME"] = np.arange(1)
+    img_table["IMGROW0_8X8"] = np.array([-512])
+    img_table["IMGCOL0_8X8"] = np.array([-512])
+    img_table["IMG"] = np.zeros((1, 8, 8))
+    img_table["IMGNUM"] = 0
+
+    # A dark current image much larger than the (zero) raw image guarantees
+    # IMG - IMG_DARK is negative everywhere.
+    img_dark = np.full((1024, 1024), fill_value=100.0)
+
+    imgs_bgsub, imgs_dark = get_aca_images_bgd_sub(
+        img_table=img_table,
+        img_dark=img_dark,
+        tccd_dark=-10,
+        t_ccd_vals=np.array([-10]),
+    )
+    assert np.all(imgs_dark > 0)
+    assert np.all(imgs_bgsub == 0)
 
 
 def test_get_tccd_data():
@@ -189,7 +218,7 @@ def test_get_aca_images(mock_dc, mock_img_table, dc_imgs_dn):
         t_ccd_vals=np.repeat(-10, 8),
     )
     assert imgs_bgsub.shape == (8, 8, 8)
-    exp = 16 - dc_imgs_dn
+    exp = np.clip(16 - dc_imgs_dn, 0, None)
     assert np.allclose(imgs_bgsub * 5 / 1.696, exp, atol=1e-6, rtol=0)
 
 
