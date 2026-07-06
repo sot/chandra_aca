@@ -960,8 +960,7 @@ def get_aca_images(
         imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
             imgs_table, img_dark, tccd_dark, t_ccds
         )
-        imgs_bgsub = imgs_table["IMG"] - imgs_dark
-        imgs_bgsub.clip(0, None)
+        imgs_bgsub = (imgs_table["IMG"] - imgs_dark).clip(0, None)
 
         imgs_table["IMG_BGSUB"] = imgs_bgsub
         imgs_table["IMG_DARK"] = imgs_dark

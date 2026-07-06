@@ -110,8 +110,7 @@ def get_aca_images_bgd_sub(img_table, t_ccd_vals, img_dark, tccd_dark):
             Dark current images (DN).
     """
     imgs_dark = get_dark_current_imgs(img_table, img_dark, tccd_dark, t_ccd_vals)
-    imgs_bgsub = img_table["IMG"] - imgs_dark
-    imgs_bgsub.clip(0, None)
+    imgs_bgsub = (img_table["IMG"] - imgs_dark).clip(0, None)
 
     return imgs_bgsub, imgs_dark
 
