@@ -1133,10 +1133,10 @@ def _munge_cheta_aca_images(imgs: apt.Table) -> None:
         imgs["END_INTEG_TIME"] = imgs["TIME"] + imgs["INTEG"] / 2
 
     for rc in ["ROW", "COL"]:
-        # IMGROW/COL0 are row/col of lower/left of 4x4, 6x6, or 8x8 image
+        # IMGROW/COL0 are row/col of lower/left of 8x8 image
         # Make these new columns:
-        # IMGROW/COL_A1: row/col of pixel A1 of 4x4, 6x6, or 8x8 image
-        # IMGROW/COL0_8x8: row/col of lower/left of 8x8 image with smaller img centered
+        # IMGROW/COL_A1: row/col of pixel A1 of 8x8 image
+        # IMGROW/COL0_8x8: row/col of lower/left of 8x8 image
         if has(f"IMG{rc}0"):
             imgs[f"IMG{rc}_A1"] = imgs[f"IMG{rc}0"]
             imgs[f"IMG{rc}0_8X8"] = imgs[f"IMG{rc}0"]
