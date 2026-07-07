@@ -146,6 +146,22 @@ def test_fid_offset_array(t, t_ccd, expected_dy, expected_dz):
     assert np.allclose(dz, expected_dz, atol=0.01)
 
 
+def test_fid_offset_array_sorted():
+    """
+    Test that the get_fid_offset function returns expected values when given
+    arrays of inputs.
+    """
+    t, t_ccd, expected_dy, expected_dz = (
+        np.array(["2018:284", "2022:293", "2018:286", "2022:295"]),
+        np.array([-14.0, -5.0, -18.0, 0]),
+        [7.96, -9.85, 35.92, -21.2],
+        [1.92, -7.65, 15.21, -15.16],
+    )
+    dy, dz = drift.get_fid_offset(t, t_ccd)
+    assert np.allclose(dy, expected_dy, atol=0.01)
+    assert np.allclose(dz, expected_dz, atol=0.01)
+
+
 @pytest.mark.parametrize(
     "t, t_ccd, expected_dy, expected_dz",
     [

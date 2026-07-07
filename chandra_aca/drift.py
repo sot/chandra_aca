@@ -150,8 +150,13 @@ class AcaDriftModel(object):
         if times.shape != t_ccd_degF.shape:
             raise ValueError("times and t_ccd args must match in shape")
 
-        if np.any(np.diff(times) < 0):
-            raise ValueError("times arg must be monotonically increasing")
+        # sort the times and t_ccd arrays so that the jumps can be applied in order.
+        if np.all(np.diff(times) >= 0):
+            idx = ...
+        else:
+            idx = np.argsort(times)
+        times = times[idx]
+        t_ccd_degF = t_ccd_degF[idx]
 
         if times[0] < CxoTime("2012:001:12:00:00").secs:
             raise ValueError("model is not applicable before 2012")
@@ -166,6 +171,8 @@ class AcaDriftModel(object):
         for jump_date, jump in self.jumps:
             jump_idx = np.searchsorted(times, CxoTime(jump_date).secs)
             out[jump_idx:] += jump
+
+        out[idx] = out  # Put back in original order
 
         return out[0] if is_scalar else out
 
