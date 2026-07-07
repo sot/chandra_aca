@@ -4,6 +4,7 @@ from pathlib import Path
 import astropy.units as u
 import mica.common
 import numpy as np
+import numpy.testing as npt
 import pytest
 from cxotime import CxoTime
 from mica.archive.aca_dark import get_dark_cal_props
@@ -607,8 +608,8 @@ def test_get_aca_images_cxc_and_maude():
 
     This checks that the dark images are reasonable and the answers match maude.
     """
-    tstart = "2012:270:02:44:00"
-    tstop = "2012:270:02:47:00"
+    tstart = "2025:270:02:44:00"
+    tstop = "2025:270:02:47:00"
 
     # Get CXC data and check that it looks reasonable
     img_table_cxc = chandra_aca.aca_image.get_aca_images(
@@ -620,6 +621,17 @@ def test_get_aca_images_cxc_and_maude():
         tstart, tstop, source="cxc", bgsub=True
     )
     images_check_range(tstart, tstop, img_table_cxc_bgsub, bgsub=True)
+
+    # Get cheta data and check that it looks reasonable
+    img_table_cheta = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="cheta", bgsub=False
+    )
+    images_check_range(tstart, tstop, img_table_cheta, bgsub=False)
+
+    img_table_cheta_bgsub = chandra_aca.aca_image.get_aca_images(
+        tstart, tstop, source="cheta", bgsub=True
+    )
+    images_check_range(tstart, tstop, img_table_cheta_bgsub, bgsub=True)
 
     # Get MAUDE data and check that it looks reasonable
     img_table_maude = chandra_aca.aca_image.get_aca_images(
@@ -639,16 +651,26 @@ def test_get_aca_images_cxc_and_maude():
     assert np.allclose(img_table_cxc["IMG"], img_table_cxc_bgsub["IMG"])
     assert np.allclose(img_table_cxc["TIME"], img_table_cxc_bgsub["TIME"])
 
+    # Check that the two cheta tables are the same in the key columns
+    assert np.allclose(img_table_cheta["IMG"], img_table_cheta_bgsub["IMG"])
+    assert np.allclose(img_table_cheta["TIME"], img_table_cheta_bgsub["TIME"])
+
     # Check that the tables are the same
     img_table_maude.sort(["TIME", "IMGNUM"])
     img_table_maude_bgsub.sort(["TIME", "IMGNUM"])
     img_table_cxc.sort(["TIME", "IMGNUM"])
     img_table_cxc_bgsub.sort(["TIME", "IMGNUM"])
+    img_table_cheta.sort(["TIME", "IMGNUM"])
+    img_table_cheta_bgsub.sort(["TIME", "IMGNUM"])
 
     assert np.allclose(img_table_maude["IMG"], img_table_cxc["IMG"])
     assert np.allclose(img_table_maude["TIME"], img_table_cxc["TIME"])
+    assert np.allclose(img_table_cheta["IMG"], img_table_cxc["IMG"])
+    assert np.allclose(img_table_cheta["TIME"], img_table_cxc["TIME"])
     assert np.allclose(img_table_maude_bgsub["IMG"], img_table_cxc_bgsub["IMG"])
     assert np.allclose(img_table_maude_bgsub["TIME"], img_table_cxc_bgsub["TIME"])
+    assert np.allclose(img_table_cheta_bgsub["IMG"], img_table_cxc_bgsub["IMG"])
+    assert np.allclose(img_table_cheta_bgsub["TIME"], img_table_cxc_bgsub["TIME"])
 
 
 def test_get_ccd_quadrant():
@@ -681,3 +703,178 @@ def test_get_ccd_quadrant():
 def test_get_ccd_quadrant_fail():
     with pytest.raises(ValueError, match="pix_zero_loc"):
         get_ccd_quadrant(0, 0, pix_zero_loc="bad")
+
+
+def test_get_aca_images_cheta_matches_cxc():
+    start, stop = "2026:001:00:00:00", "2026:001:00:30:00"
+    imgs_cxc = chandra_aca.aca_image.get_aca_images(start, stop, source="cxc")
+    imgs_cxc = imgs_cxc[imgs_cxc["IMGSIZE"] == 8]
+    imgs_cheta = chandra_aca.aca_image.get_aca_images(
+        start, stop, source="cheta", sort_by_time=True
+    )
+    assert len(imgs_cheta) == 3512
+    assert sorted(imgs_cheta.colnames) == sorted(imgs_cxc.colnames)
+    for colname in imgs_cheta.colnames:
+        if colname == "END_INTEG_TIME":
+            npt.assert_allclose(
+                imgs_cheta[colname], imgs_cxc[colname], atol=1e-6, rtol=0
+            )
+        else:
+            npt.assert_array_equal(imgs_cheta[colname], imgs_cxc[colname])
+
+
+@pytest.mark.parametrize(
+    "msids, expected_colnames",
+    [
+        pytest.param(
+            None,
+            ["TIME"] + list(chandra_aca.aca_image.ACA_CHETA_MSIDS),
+            id="msids-none",
+        ),
+        pytest.param(
+            "IMG*",
+            [
+                "TIME",
+                "IMGCOL0",
+                "IMGFID",
+                "IMGFUNC",
+                "IMGNUM",
+                "IMGROW0",
+                "IMGSCALE",
+                "IMGSTAT",
+                "IMGTLM",
+            ],
+            id="msids-img-star",
+        ),
+        pytest.param(
+            ["img*", "tempccd"],
+            [
+                "TIME",
+                "IMGCOL0",
+                "IMGFID",
+                "IMGFUNC",
+                "IMGNUM",
+                "IMGROW0",
+                "IMGSCALE",
+                "IMGSTAT",
+                "IMGTLM",
+                "TEMPCCD",
+            ],
+            id="msids-img-star-plus-tempccd",
+        ),
+    ],
+)
+def test_get_aca_images_cheta_msids_column_names(msids, expected_colnames):
+    start, stop = "2026:001:00:00:00", "2026:001:00:01:00"
+
+    imgs = chandra_aca.aca_image.get_aca_images_cheta(
+        start,
+        stop,
+        msids=msids,
+        scale_img=False,
+        native_cheta_columns=True,
+    )
+    assert imgs.colnames == expected_colnames
+
+
+def test_get_aca_images_cheta_slots_0_4_imgnum_values():
+    start, stop = "2026:001:00:00:00", "2026:001:00:01:00"
+    imgs = chandra_aca.aca_image.get_aca_images_cheta(start, stop, slots=[0, 4])
+
+    assert len(imgs) > 0
+    assert np.all(np.isin(imgs["IMGNUM"], [0, 4]))
+
+
+@pytest.mark.parametrize(
+    "sort_by_time, sort_keys",
+    [
+        pytest.param(False, ["IMGNUM", "TIME"], id="sort-by-slot-then-time"),
+        pytest.param(True, ["TIME", "IMGNUM"], id="sort-by-time-then-slot"),
+    ],
+)
+def test_get_aca_images_cheta_sort_by_time(sort_by_time, sort_keys):
+    start, stop = "2026:001:00:00:00", "2026:001:00:01:00"
+
+    # Use a scalar MSID to keep the test lightweight; sorting is independent of scale_img.
+    imgs = chandra_aca.aca_image.get_aca_images_cheta(
+        start, stop, sort_by_time=sort_by_time, msids="BGDAVG"
+    )
+
+    imgs_expected = imgs.copy()
+    imgs_expected.sort(sort_keys)
+    for msid in ("IMGNUM", "TIME", "BGDAVG"):
+        npt.assert_array_equal(imgs[msid], imgs_expected[msid])
+
+
+def test_get_aca_images_cheta_scale_img():
+    start, stop = "2026:001:00:00:00", "2026:001:00:01:00"
+
+    imgs_scaled = chandra_aca.aca_image.get_aca_images_cheta(
+        start, stop, msids="IMGTLM", scale_img=True
+    )
+    imgs_raw = chandra_aca.aca_image.get_aca_images_cheta(
+        start, stop, msids="IMGTLM", scale_img=False
+    )
+
+    assert "IMG" in imgs_scaled.colnames
+    assert "IMGTLM" not in imgs_scaled.colnames
+    assert "IMG" not in imgs_raw.colnames
+    assert "IMGTLM" in imgs_raw.colnames
+
+    # Dtype should be uint16, allowing for explicit byte-order variants.
+    assert imgs_raw["IMGTLM"].dtype.type is np.uint16
+
+    imgs_raw_scaled = (
+        imgs_raw["IMGTLM"] * (imgs_raw["IMGSCALE"][:, None, None] / 32.0) - 50.0
+    )
+    npt.assert_allclose(imgs_scaled["IMG"], imgs_raw_scaled, atol=1e-6, rtol=0)
+
+
+def test_get_aca_images_cheta_unit_system_temp_msids():
+    start, stop = "2026:001:00:00:00", "2026:001:00:01:00"
+
+    imgs_sci = chandra_aca.aca_image.get_aca_images_cheta(
+        start, stop, msids="TEMP*", unit_system="sci"
+    )
+    imgs_cxc = chandra_aca.aca_image.get_aca_images_cheta(
+        start, stop, msids="TEMP*", unit_system="cxc"
+    )
+    imgs_eng = chandra_aca.aca_image.get_aca_images_cheta(
+        start, stop, msids="TEMP*", unit_system="eng"
+    )
+
+    temp_cols = ["TEMPCCD", "TEMPHOUS", "TEMPPRIM", "TEMPSEC"]
+    for col in temp_cols:
+        # cxc is Kelvin, sci is Celsius, eng is Fahrenheit.
+        npt.assert_allclose(imgs_cxc[col], imgs_sci[col] + 273.15, atol=1e-3, rtol=0)
+        npt.assert_allclose(
+            imgs_eng[col], imgs_sci[col] * 9.0 / 5.0 + 32.0, atol=1e-3, rtol=0
+        )
+
+
+def test_cheta_expand_msids():
+    """Ensure expansion is unique and retains order"""
+    msids1 = chandra_aca.aca_image._expand_cheta_aca_images_msids(["imgstat", "img*"])
+    assert msids1 == [
+        "IMGSTAT",  # first
+        "IMGCOL0",
+        "IMGFID",
+        "IMGFUNC",
+        "IMGNUM",
+        "IMGROW0",
+        "IMGSCALE",
+        "IMGTLM",
+    ]
+    msids2 = chandra_aca.aca_image._expand_cheta_aca_images_msids(["img*", "imgstat"])
+    assert msids2 == [
+        "IMGCOL0",
+        "IMGFID",
+        "IMGFUNC",
+        "IMGNUM",
+        "IMGROW0",
+        "IMGSCALE",
+        "IMGSTAT",  # original order
+        "IMGTLM",
+    ]
+    msids3 = chandra_aca.aca_image._expand_cheta_aca_images_msids(["img*"])
+    assert msids3 == msids2
