@@ -957,10 +957,12 @@ def get_aca_images(
         t_ccds = chandra_aca.dark_subtract.get_tccd_data(
             imgs_table["TIME"], source=source, **maude_kwargs
         )
-        imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
-            imgs_table, img_dark, tccd_dark, t_ccds
+        imgs_bgsub, imgs_dark = chandra_aca.dark_subtract.get_aca_images_bgd_sub(
+            img_table=imgs_table,
+            t_ccd_vals=t_ccds,
+            img_dark=img_dark,
+            tccd_dark=tccd_dark,
         )
-        imgs_bgsub = (imgs_table["IMG"] - imgs_dark).clip(0, None)
 
         imgs_table["IMG_BGSUB"] = imgs_bgsub
         imgs_table["IMG_DARK"] = imgs_dark
