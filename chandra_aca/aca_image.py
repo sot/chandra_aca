@@ -1095,7 +1095,7 @@ def _expand_cheta_aca_images_msids(msids: None | str | Sequence[str]) -> list[st
             )
         out_msids.extend(matches)
 
-    return out_msids
+    return list(dict.fromkeys(out_msids))
 
 
 def _munge_cheta_aca_images(imgs: apt.Table) -> None:

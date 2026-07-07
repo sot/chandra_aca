@@ -850,3 +850,31 @@ def test_get_aca_images_cheta_unit_system_temp_msids():
         npt.assert_allclose(
             imgs_eng[col], imgs_sci[col] * 9.0 / 5.0 + 32.0, atol=1e-3, rtol=0
         )
+
+
+def test_cheta_expand_msids():
+    """Ensure expansion is unique and retains order"""
+    msids1 = chandra_aca.aca_image._expand_cheta_aca_images_msids(["imgstat", "img*"])
+    assert msids1 == [
+        "IMGSTAT",  # first
+        "IMGCOL0",
+        "IMGFID",
+        "IMGFUNC",
+        "IMGNUM",
+        "IMGROW0",
+        "IMGSCALE",
+        "IMGTLM",
+    ]
+    msids2 = chandra_aca.aca_image._expand_cheta_aca_images_msids(["img*", "imgstat"])
+    assert msids2 == [
+        "IMGCOL0",
+        "IMGFID",
+        "IMGFUNC",
+        "IMGNUM",
+        "IMGROW0",
+        "IMGSCALE",
+        "IMGSTAT",  # original order
+        "IMGTLM",
+    ]
+    msids3 = chandra_aca.aca_image._expand_cheta_aca_images_msids(["img*"])
+    assert msids3 == msids2
