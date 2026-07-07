@@ -1287,7 +1287,7 @@ def get_aca_images(
         img_dark = dark_data["image"]
         tccd_dark = dark_data["ccd_temp"]
         t_ccds = chandra_aca.dark_subtract.get_tccd_data(
-            imgs_table["TIME"], source=source, **kwargs
+            imgs_table["TIME"], source=source, channel=kwargs.get("channel")
         )
         imgs_dark = chandra_aca.dark_subtract.get_dark_current_imgs(
             imgs_table, img_dark, tccd_dark, t_ccds

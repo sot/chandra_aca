@@ -31,7 +31,8 @@ def get_tccd_data(
     times: np.array (float)
         Sampling times for CCD temperature data (CXC seconds).
     source : str, optional
-        Source of CCD temperature data ('maude' (default) or 'cxc' for cheta archive).
+        Source of CCD temperature data ('maude' (default) or 'cxc' or 'cheta' for cheta
+        archive).
     median_window : int, optional
         Median filter window to remove outliers (default=3).
     smooth_window : int, optional
@@ -64,7 +65,7 @@ def get_tccd_data(
             data_source += f" channel='{channel}'"
         with fetch_sci.data_source(data_source):
             dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
-    elif source == "cxc":
+    elif source in ("cxc", "cheta"):
         with fetch_sci.data_source("cxc"):
             dat = fetch_sci.Msid("aacccdpt", fetch_start, fetch_stop)
     else:
