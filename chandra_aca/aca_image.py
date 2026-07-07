@@ -1143,7 +1143,6 @@ def _munge_cheta_aca_images(imgs: apt.Table) -> None:
 
     imgs["IMGTYPE"] = np.full(shape=len(imgs), fill_value=4)  # 8x8
 
-    # imgs.rename_column("IMGRAW", "IMG")
     if has("BGDTYP"):
         imgs.rename_column("BGDTYP", "AABGDTYP")
     if has("PIXTLM"):
