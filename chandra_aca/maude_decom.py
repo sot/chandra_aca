@@ -1009,7 +1009,7 @@ def get_aca_packets(
     stop : CxoTimeLike
         Stop time for the ACA packets
     level0 : bool.
-        Implies combine=True, adjust_time=True, calibrate=True
+        level0=True implies combine=True, adjust_time=True, calibrate=True
     combine : bool.
         If True, ACA subimages are combined to form a full image (depending on size),
         If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.
@@ -1231,7 +1231,7 @@ def _get_aca_packets(
     return table
 
 
-def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
+def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, level0=True, **kwargs):
     """
     Fetch ACA image telemetry
 
@@ -1321,6 +1321,13 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
         timestamp, CxoTimeLike
     stop
         timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT
+    level0 : bool.
+        Default is False. level0=True implies:
+
+            - `combine=True`: sub-images are combined in a single image
+            - `adjust_time=True`: image times are shifted to the middle of the integration window
+            - `calibrate=True`: image values are scaled (`IMG * IMGSCALE / 32 - 50`),
+              temperatures values are scaled (`0.4 * VALUE + 273.15`)
     kwargs
         keyword args passed to get_aca_packets
 
@@ -1345,7 +1352,7 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
         get_aca_packets(
             start=istart,
             stop=istop,
-            level0=True,
+            level0=level0,
             **kwargs,
         )
         for istart, istop in itertools.pairwise(maude_fetch_times)
