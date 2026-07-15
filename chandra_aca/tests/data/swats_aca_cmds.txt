@@ -1,3 +1,14 @@
+
+# Initial output print configuration
+#             CCD I/O?   Function Steps?  Timing Info?  To-Dos?   Star Selection Info?   Search Segment Info?
+1 OUT_CFG       0              0              0            0             0                       0
+
+# Use PEA code patches
+1 CODE_CFG   1
+
+# Command Dynamic background
+4 5802 9401 1001
+
 ########################################### Test case #5735
 #   ACA Temperature   = -5.800000
 #   Pred. ACA Temp    = -5.100000

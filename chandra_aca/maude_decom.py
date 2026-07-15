@@ -471,6 +471,76 @@ def unpack_aca_telemetry(packet):
     return slots
 
 
+def unpack_obc_telemetry(packet):
+    """
+    Unpack ACA telemetry 60-byte packets.
+
+    The packet layout is: two bytes of integration time (16 ms LSB), one byte of
+    global status, one byte of command progress, then eight 7-byte image blocks
+    (flags, then ZAG and YAG as 18-bit signed centroid angles, then magnitude).
+    See Aspect Camera User Guide for details.
+
+    Values are converted to engineering units:
+
+        - INTEG in seconds,
+        - YAG/ZAG in arcsec (0.025 arcsec LSB),
+        - MAG in magnitudes (-2.0 + counts * 0.0625)
+
+    When a slot's image function is not TRAK (IMGFUNC != 1), the OBC sets YAG/ZAG to the
+    $20000 sentinel (decodes to -3276.8 arcsec) and MAG to $FF (13.9375 mag).
+
+    Parameters
+    ----------
+    packet
+        bytes-like object of length 60
+
+    Returns
+    -------
+    dict
+    A dictionary of global values, plus an "image_data" list with one dict per slot.
+    """
+    if len(packet) != 60:
+        raise ValueError(f"expected a 60-byte packet, got {len(packet)} bytes")
+
+    bits = np.unpackbits(np.array(_unpack("BBBB", packet[:4]), dtype=np.uint8))
+    result = {
+        "INTEG": _packbits(bits[0:16]) * 0.016,
+        "GLBSTAT": packet[2],
+        "HIGH_BGD": bool(bits[16]),
+        "RAM_FAIL": bool(bits[17]),
+        "ROM_FAIL": bool(bits[18]),
+        "POWER_FAIL": bool(bits[19]),
+        "CAL_FAIL": bool(bits[20]),
+        "COMM_CHECKSUM_FAIL": bool(bits[21]),
+        "RESET": bool(bits[22]),
+        "SYNTAX_ERROR": bool(bits[23]),
+        "COMMPROG": _packbits(bits[24:30]),
+        "COMMPROG_REPEAT": _packbits(bits[30:32]),
+        "image_data": [],
+    }
+    for i in range(4, 60, 7):
+        b = np.unpackbits(
+            np.array(_unpack("BBBBBBB", packet[i : i + 7]), dtype=np.uint8)
+        )
+        result["image_data"].append(
+            {
+                "IMGFID": bool(b[0]),
+                "IMGNUM": _packbits(b[1:4]),
+                "IMGFUNC": _packbits(b[4:6]),
+                "SAT_PIXEL": bool(b[6]),
+                "DEF_PIXEL": bool(b[7]),
+                "QUAD_BOUND": bool(b[8]),
+                "COMMON_COL": bool(b[9]),
+                "MULTI_STAR": bool(b[10]),
+                "ION_RAD": bool(b[11]),
+                "ZAG": _packbits(b[12:30], unsigned=False) * 0.025,
+                "YAG": _packbits(b[30:48], unsigned=False) * 0.025,
+                "MAG": -2.0 + _packbits(b[48:56]) * 0.0625,
+            }
+        )
+    return result
+
+
 def _combine_aca_packets(aca_packets):
     """
     Combine a list of ACA packets into a single record.

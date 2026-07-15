@@ -21,6 +21,13 @@ _ACA_PACKET_RE = re.compile(
     r"[\n\r]+# IO RAM Address set to: 0[26]00[\n\r]+([0-9A-F ]{558,562})[\n\r]"
 )
 
+# Matches the 60-byte OBC telemetry blocks (address 0100/0500) in an OBC_TLM.DAT dump,
+# skipping the 448-byte RAM dumps at the same addresses. A 60-byte data line is
+# 30 words x "XXXX " = 30*4 + 29 spaces = 149 chars, inside the {148,152} window.
+_OBC_PACKET_RE = re.compile(
+    r"[\n\r]+# IO RAM Address set to: 0[15]00[\n\r]+([0-9A-F ]{148,152})[\n\r]"
+)
+
 _DT_ACA = 1.025  # ACA readout period [s] -> one 224-byte packet per period
 _VCDU_PER_PACKET = 4  # VCDU minor frames per ACA packet (counter step)
 
@@ -36,11 +43,32 @@ def _read_aca_packets_(path):
     return packets
 
 
+def _read_obc_packets_(path):
+    """
+    Return the list of 60-byte OBC telemetry packets (bytes) found in an OBC_TLM.DAT file.
+    """
+    text = open(path).read()
+    packets = [bytes.fromhex(m.replace(" ", "")) for m in _OBC_PACKET_RE.findall(text)]
+    if not all(len(p) == 60 for p in packets):
+        raise ValueError("expected all packets to be 60 bytes")
+    return packets
+
+
 def read_aca_packets(path):
     """
     Return the 224-byte ACA packets found in an ASP_TLM.DAT file as a dict for get_aca_images.
     """
     return build_raw_aca_packets(_read_aca_packets_(path))
+
+
+def read_obc_packets(path):
+    """
+    Return the decommuted OBC telemetry packets found in an OBC_TLM.DAT file.
+
+    Each packet is decoded with ``chandra_aca.maude_decom.unpack_obc_telemetry``,
+    so this returns a list of dicts.
+    """
+    return [maude_decom.unpack_obc_telemetry(p) for p in _read_obc_packets_(path)]
 
 
 def build_raw_aca_packets(packets, t0=0.0, vcdu0=0):
