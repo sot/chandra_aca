@@ -1,0 +1,49 @@
+chandra_aca.aca_image.get_ccd_quadrant
+======================================
+
+.. py:function:: chandra_aca.aca_image.get_ccd_quadrant(row, col, pix_zero_loc='center')
+
+   
+   Get CCD quadrant for given row and column.
+
+   For ``row`` and ``col`` values in the "edge" coordinate system where the center
+   of the CCD is at exactly (0.0, 0.0), the quadrants are defined as follows:
+
+   - a: row < 0 and col >= 0
+   - b: row < 0 and col < 0
+   - c: row >= 0 and col >= 0
+   - d: row >= 0 and col < 0
+
+   :Parameters:
+
+       **row** : float, np.ndarray[float]
+           Row value(s) of pixel(s)
+
+       **col** : float, np.ndarray[float]
+           Column value(s) of pixel(s)
+
+       **pix_zero_loc** : str
+           Location of pixel zero, either 'center' or 'edge'. Default is 'center'.
+
+
+
+   :Returns:
+
+       **quadrant** : str or np.ndarray[str]
+           CCD quadrant ('a', 'b', 'c', or 'd') for each input row and column value. If
+           input row and col are scalars, returns a single string. If input row and col are
+           arrays, returns an array of strings with the same shape as the broadcasted shape
+           of row and col.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

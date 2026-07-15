@@ -1,0 +1,41 @@
+chandra_aca.planets.get_earth_moon_limb_angles
+==============================================
+
+.. py:function:: chandra_aca.planets.get_earth_moon_limb_angles(times)
+
+   
+   Get Earth and Moon limb angles for monitor images at specified times.
+
+   This function calculates the limb angles of Earth and Moon as seen from Chandra at
+   the given observation times. The limb angle is the angle from the ACA boresight to
+   the limb of the body.
+
+   The function fetches the necessary predictive ephemeris data (Chandra position, Moon
+   position, and attitude quaternion) from the cheta telemetry archive.
+
+   :Parameters:
+
+       **times** : CxoTimeLike | list | np.ndarray
+           Time or times for which to calculate limb angles. Can be a CxoTime object,
+           scalar time, list of times, or numpy array of times.
+
+
+
+   :Returns:
+
+       tuple[np.ndarray[np.float32], np.ndarray[np.float32]]
+           A tuple of (earth_limb_angle, moon_limb_angle) where each is a numpy array of
+           float32 values in degrees. The array length matches the number of input times.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

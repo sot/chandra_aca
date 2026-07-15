@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.aca_image.get_aca_images &#8212; chandra_aca 4.55.0 documentation</title>
+    <title>chandra_aca.aca_image.get_aca_images &#8212; chandra_aca 4.56.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=b416e8fc"></script>
+    <script src="../../../_static/documentation_options.js?v=26693617"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,11 +50,11 @@
     <link rel="canonical" href="https://sot.github.io/chandra_aca/api/chandra_aca/aca_image/get_aca_images.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="chandra_aca.attitude" href="../attitude/index.html" />
+    <link rel="next" title="chandra_aca.aca_image.get_ccd_quadrant" href="get_ccd_quadrant.html" />
     <link rel="prev" title="chandra_aca.aca_image.centroid_fm" href="centroid_fm.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.55.0" />
+  <meta name="docsearch:version" content="4.56.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.55.0</span></div>
+<span style="font-size: x-large;">4.56.0</span></div>
     
   </div>
   
@@ -351,35 +351,33 @@
 <h1>chandra_aca.aca_image.get_aca_images<a class="headerlink" href="#chandra-aca-aca-image-get-aca-images" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.aca_image.get_aca_images">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgsub</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'maude'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">maude_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.aca_image.get_aca_images" title="Link to this definition">#</a></dt>
-<dd><p>Get ACA images and ancillary data from either the MAUDE or CXC data sources.</p>
-<p>The returned table of ACA images and ancillary data will include the default
-columns returned by chandra_aca.maude_decom.get_aca_images or
-mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be
-added to the maude_decom aca_images so images from either source will have
-that column:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       <span class="n">name</span>            <span class="n">dtype</span>  <span class="n">unit</span>
-<span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
-   <span class="n">IMGSIZE</span>              <span class="n">int32</span>  <span class="n">pixels</span>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.aca_image.</span></span><span class="sig-name descname"><span class="pre">get_aca_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgsub</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'maude'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.aca_image.get_aca_images" title="Link to this definition">#</a></dt>
+<dd><p>Get ACA image telemetry from the specified <code class="docutils literal notranslate"><span class="pre">source</span></code>.</p>
+<p>By default the returned table of ACA image telemetry will include these columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TIME</span> <span class="p">(</span><span class="n">mid</span><span class="o">-</span><span class="n">integration</span><span class="p">,</span> <span class="n">cxcsec</span><span class="p">),</span> <span class="n">INTEG</span> <span class="p">(</span><span class="n">sec</span><span class="p">),</span> <span class="n">END_INTEG_TIME</span> <span class="p">(</span><span class="n">cxcsec</span><span class="p">)</span>
+<span class="n">MJF</span><span class="p">,</span> <span class="n">MNF</span><span class="p">,</span> <span class="n">VCDUCTR</span><span class="p">,</span> <span class="n">IMG_VCDUCTR</span>
+<span class="n">AAPIXTLM</span><span class="p">,</span> <span class="n">AABGDTYP</span>
+<span class="n">BGDAVG</span> <span class="p">(</span><span class="n">DN</span><span class="p">),</span> <span class="n">BGDRMS</span> <span class="p">(</span><span class="n">DN</span><span class="p">),</span> <span class="n">BGDSTAT</span>
+<span class="n">COMMCNT</span><span class="p">,</span> <span class="n">COMMCNT_CHECKSUM_FAIL</span><span class="p">,</span> <span class="n">COMMCNT_SYNTAX_ERROR</span>
+<span class="n">COMMPROG</span><span class="p">,</span> <span class="n">COMMPROG_REPEAT</span><span class="p">,</span> <span class="n">COMM_CHECKSUM_FAIL</span>
+<span class="n">GLBSTAT</span><span class="p">,</span> <span class="n">SYNTAX_ERROR</span><span class="p">,</span> <span class="n">RESET</span><span class="p">,</span> <span class="n">CAL_FAIL</span><span class="p">,</span> <span class="n">POWER_FAIL</span><span class="p">,</span> <span class="n">ROM_FAIL</span><span class="p">,</span> <span class="n">RAM_FAIL</span>
+<span class="n">IMG</span> <span class="p">(</span><span class="mi">8</span><span class="n">x8</span> <span class="n">DN</span><span class="p">),</span> <span class="n">IMGFID</span><span class="p">,</span> <span class="n">IMGFUNC</span><span class="p">,</span> <span class="n">IMGNUM</span><span class="p">,</span> <span class="n">IMGSCALE</span><span class="p">,</span> <span class="n">IMGSIZE</span><span class="p">,</span> <span class="n">IMGTYPE</span><span class="p">,</span> <span class="n">IMGSTAT</span>
+<span class="n">IMGCOL0</span><span class="p">,</span> <span class="n">IMGROW0</span><span class="p">,</span> <span class="n">IMGROW_A1</span><span class="p">,</span> <span class="n">IMGCOL_A1</span><span class="p">,</span> <span class="n">IMGROW0_8X8</span><span class="p">,</span> <span class="n">IMGCOL0_8X8</span>
+<span class="n">HIGH_BGD</span><span class="p">,</span> <span class="n">ION_RAD</span><span class="p">,</span> <span class="n">MULTI_STAR</span><span class="p">,</span> <span class="n">COMMON_COL</span><span class="p">,</span> <span class="n">QUAD_BOUND</span><span class="p">,</span> <span class="n">DEF_PIXEL</span><span class="p">,</span> <span class="n">SAT_PIXEL</span>
+<span class="n">TEMPCCD</span> <span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">TEMPHOUS</span> <span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">TEMPPRIM</span> <span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">TEMPSEC</span> <span class="p">(</span><span class="n">K</span><span class="p">)</span>
+<span class="n">HD3TLM62</span><span class="p">,</span> <span class="n">HD3TLM63</span><span class="p">,</span> <span class="n">HD3TLM64</span><span class="p">,</span> <span class="n">HD3TLM65</span><span class="p">,</span> <span class="n">HD3TLM66</span><span class="p">,</span> <span class="n">HD3TLM67</span>
+<span class="n">HD3TLM72</span><span class="p">,</span> <span class="n">HD3TLM73</span><span class="p">,</span> <span class="n">HD3TLM74</span><span class="p">,</span> <span class="n">HD3TLM75</span><span class="p">,</span> <span class="n">HD3TLM76</span><span class="p">,</span> <span class="n">HD3TLM77</span>
 </pre></div>
 </div>
-<p>If bgsub is True then the table will also include columns:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       <span class="n">name</span>            <span class="n">dtype</span>  <span class="n">unit</span>
-<span class="o">---------------------</span> <span class="o">-------</span> <span class="o">-----------</span>
-   <span class="n">IMG_BGSUB</span>          <span class="n">float64</span>  <span class="n">DN</span>
-   <span class="n">IMG_DARK</span>           <span class="n">float64</span>  <span class="n">DN</span>
-   <span class="n">T_CCD_SMOOTH</span>       <span class="n">float64</span>  <span class="n">degC</span>
+<p>If <code class="docutils literal notranslate"><span class="pre">bgsub</span></code> is <cite>True</cite> then the table will also include float columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IMG_BGSUB</span> <span class="p">(</span><span class="n">DN</span><span class="p">)</span> <span class="p">:</span> <span class="n">background</span> <span class="n">subtracted</span> <span class="n">image</span>
+<span class="n">IMG_DARK</span> <span class="p">(</span><span class="n">DN</span><span class="p">)</span> <span class="p">:</span> <span class="n">dark</span> <span class="n">current</span> <span class="n">image</span>
+<span class="n">T_CCD_SMOOTH</span> <span class="p">(</span><span class="n">degC</span><span class="p">)</span> <span class="p">:</span> <span class="n">smoothed</span> <span class="n">CCD</span> <span class="n">temperature</span>
 </pre></div>
 </div>
-<p>where:</p>
-<ul class="simple">
-<li><p>‘IMG_BGSUB’: background subtracted image</p></li>
-<li><p>‘IMG_DARK’: dark current image</p></li>
-<li><p>‘T_CCD_SMOOTH’: smoothed CCD temperature</p></li>
-</ul>
-<p>The IMG_DARK individual values are only calculated if within the 1024x1024
-dark current map, otherwise they are set to 0.  In practice this is not an
-issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">source=&quot;cheta&quot;</span></code>, the <code class="docutils literal notranslate"><span class="pre">msids</span></code> keyword can be used to select a subset of the
+available ACA image telemetry MSIDs and the <code class="docutils literal notranslate"><span class="pre">unit_system</span></code> keyword can select the
+unit of the temperatures.  See <code class="xref py py-func docutils literal notranslate"><span class="pre">get_aca_images_cheta()</span></code> for details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -389,11 +387,13 @@ issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.</p>
 </dd>
 <dt><strong>bgsub</strong><span class="classifier">bool</span></dt><dd><p>Include background subtracted images in output table. Default is False.</p>
 </dd>
-<dt><strong>source</strong><span class="classifier">str</span></dt><dd><p>Data source for image and temperature telemetry (‘maude’ or ‘cxc’). For ‘cxc’,
-the image telemetry is from mica and temperature telemetry is from CXC L0 via
-cheta.</p>
+<dt><strong>source</strong><span class="classifier">str</span></dt><dd><p>Data source for image and temperature telemetry (‘maude’,’cxc’, or ‘cheta’). For
+‘cxc’, the image telemetry is from mica and temperature telemetry is from CXC L0
+via cheta.</p>
 </dd>
-<dt><strong>**maude_kwargs</strong></dt><dd><p>Additional kwargs for maude data source.</p>
+<dt><strong>**kwargs</strong></dt><dd><p>Additional kwargs for source-specific image data retrieval functions. See: -
+<a class="reference internal" href="../maude_decom/get_aca_images.html#chandra_aca.maude_decom.get_aca_images" title="chandra_aca.maude_decom.get_aca_images"><code class="xref py py-func docutils literal notranslate"><span class="pre">chandra_aca.maude_decom.get_aca_images()</span></code></a> -
+<code class="xref py py-func docutils literal notranslate"><span class="pre">mica.archive.aca_l0.get_aca_images()</span></code> - <code class="xref py py-func docutils literal notranslate"><span class="pre">get_aca_images_cheta()</span></code></p>
 </dd>
 </dl>
 </dd>
@@ -428,11 +428,11 @@ cheta.</p>
       </div>
     </a>
     <a class="right-next"
-       href="../attitude/index.html"
+       href="get_ccd_quadrant.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">chandra_aca.attitude</p>
+        <p class="prev-next-title">chandra_aca.aca_image.get_ccd_quadrant</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

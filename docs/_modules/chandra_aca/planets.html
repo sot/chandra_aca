@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.planets &#8212; chandra_aca 4.55.0 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.56.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=b416e8fc"></script>
+    <script src="../../_static/documentation_options.js?v=26693617"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.55.0" />
+  <meta name="docsearch:version" content="4.56.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.55.0</span></div>
+<span style="font-size: x-large;">4.56.0</span></div>
     
   </div>
   
@@ -342,7 +342,7 @@
   <h1>Source code for chandra_aca.planets</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.</span>
+<span class="sd">Solar system object positions relative to Chandra, Earth, or Solar System Barycenter.</span>
 
 <span class="sd">Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL</span>
 <span class="sd">Horizons positions are used as the &quot;truth&quot;.</span>
@@ -386,6 +386,7 @@
     <span class="s2">&quot;get_planet_angular_sep&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_earth_boresight_angle&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_earth_blocks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_earth_moon_limb_angles&quot;</span><span class="p">,</span>
     <span class="s2">&quot;EarthBoresightAngles&quot;</span><span class="p">,</span>
     <span class="s2">&quot;NoEphemerisError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;GET_PLANET_ECI_ERRORS&quot;</span><span class="p">,</span>
@@ -1096,6 +1097,118 @@
     <span class="n">eba</span> <span class="o">=</span> <span class="n">get_earth_boresight_angle</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
     <span class="n">blocks</span> <span class="o">=</span> <span class="n">logical_intervals</span><span class="p">(</span><span class="n">eba</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">secs</span><span class="p">,</span> <span class="n">eba</span><span class="o">.</span><span class="n">earth_limb_angle</span> <span class="o">&lt;</span> <span class="n">min_limb_angle</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">blocks</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_limb_angle</span><span class="p">(</span>
+    <span class="n">ss_body_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">q_att_t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">p_ss_body_chandra_eci</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to get limb angle of Chandra pointing from Solar System object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ss_body_name : str</span>
+<span class="sd">        Name of Solar System body (&#39;earth&#39; or &#39;moon&#39;)</span>
+<span class="sd">    q_att_t : np.ndarray</span>
+<span class="sd">        Attitude transform matrices (n_times, 3, 3) from inertial to Chandra frame</span>
+<span class="sd">    p_ss_body_chandra_eci : np.ndarray</span>
+<span class="sd">        Position vectors (n_times, 3) of Solar System body relative to Chandra in ECI</span>
+<span class="sd">        coordinates</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ss_body_limb_angle : np.ndarray[np.float32]</span>
+<span class="sd">        Limb angle of Solar System body in degrees (n_times,)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">RADIUS_SS_BODY</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;earth&quot;</span><span class="p">:</span> <span class="mf">6371.0</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span>  <span class="c1"># m</span>
+        <span class="s2">&quot;moon&quot;</span><span class="p">:</span> <span class="mf">1737.4</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="c1"># Vector from Chandra to SS body in Chandra body coordinates:</span>
+    <span class="c1"># Q_att^-1 * p_ss_body_chandra_eci</span>
+    <span class="n">p_ss_body_body</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+        <span class="s2">&quot;ijk,ik-&gt;ij&quot;</span><span class="p">,</span> <span class="n">q_att_t</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">p_ss_body_chandra_eci</span>
+    <span class="p">)</span>
+    <span class="n">ss_body_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p_ss_body_body</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Unit vector</span>
+    <span class="n">p_ss_body_body_unit</span> <span class="o">=</span> <span class="n">p_ss_body_body</span> <span class="o">/</span> <span class="n">ss_body_distance</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">ss_body_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p_ss_body_body_unit</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)))</span>
+    <span class="n">open_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">RADIUS_SS_BODY</span><span class="p">[</span><span class="n">ss_body_name</span><span class="p">]</span> <span class="o">/</span> <span class="n">ss_body_distance</span><span class="p">))</span>
+    <span class="n">ss_body_limb_angle</span> <span class="o">=</span> <span class="n">ss_body_angle</span> <span class="o">-</span> <span class="n">open_angle</span>
+
+    <span class="k">return</span> <span class="n">ss_body_limb_angle</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_earth_moon_limb_angles</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">:</span> <span class="n">CxoTimeLike</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Earth and Moon limb angles for monitor images at specified times.</span>
+
+<span class="sd">    This function calculates the limb angles of Earth and Moon as seen from Chandra at</span>
+<span class="sd">    the given observation times. The limb angle is the angle from the ACA boresight to</span>
+<span class="sd">    the limb of the body.</span>
+
+<span class="sd">    The function fetches the necessary predictive ephemeris data (Chandra position, Moon</span>
+<span class="sd">    position, and attitude quaternion) from the cheta telemetry archive.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : CxoTimeLike | list | np.ndarray</span>
+<span class="sd">        Time or times for which to calculate limb angles. Can be a CxoTime object,</span>
+<span class="sd">        scalar time, list of times, or numpy array of times.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple[np.ndarray[np.float32], np.ndarray[np.float32]]</span>
+<span class="sd">        A tuple of (earth_limb_angle, moon_limb_angle) where each is a numpy array of</span>
+<span class="sd">        float32 values in degrees. The array length matches the number of input times.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">cheta</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">CxoTime</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">.</span><span class="n">secs</span><span class="p">)</span>
+    <span class="n">n_imgs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">times</span><span class="p">))</span> <span class="o">-</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">CxoTime</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">times</span><span class="p">))</span> <span class="o">+</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span>
+
+    <span class="n">q_att_msid</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;quat_aoattqt&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">q_att_msid</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Attitude quaternion data does extend through requested last &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;time </span><span class="si">{</span><span class="n">CxoTime</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">date</span><span class="si">}</span><span class="s2">. Last available quaternion time &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;is </span><span class="si">{</span><span class="n">CxoTime</span><span class="p">(</span><span class="n">q_att_msid</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">date</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">orbitephem</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">orbitephem</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;orbitephem0_x&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+    <span class="n">orbitephem</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;orbitephem0_y&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+    <span class="n">orbitephem</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;orbitephem0_z&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+
+    <span class="n">lunarephem</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">lunarephem</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;lunarephem0_x&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+    <span class="n">lunarephem</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;lunarephem0_y&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+    <span class="n">lunarephem</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">Msid</span><span class="p">(</span><span class="s2">&quot;lunarephem0_z&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+
+    <span class="c1"># Interpolate ephem vectors to times</span>
+    <span class="n">p_chandra_eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_imgs</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">p_moon_eci</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_imgs</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]):</span>
+        <span class="n">p_chandra_eci</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">orbitephem</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">orbitephem</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span>
+        <span class="p">)</span>
+        <span class="n">p_moon_eci</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">lunarephem</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">lunarephem</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span><span class="o">.</span><span class="n">vals</span>
+        <span class="p">)</span>
+
+    <span class="n">q_att_msid</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+    <span class="n">q_att_t</span> <span class="o">=</span> <span class="n">q_att_msid</span><span class="o">.</span><span class="n">vals</span><span class="o">.</span><span class="n">transform</span>
+
+    <span class="n">p_moon_chandra_eci</span> <span class="o">=</span> <span class="n">p_moon_eci</span> <span class="o">-</span> <span class="n">p_chandra_eci</span>
+    <span class="n">p_earth_chandra_eci</span> <span class="o">=</span> <span class="o">-</span><span class="n">p_chandra_eci</span>
+
+    <span class="n">earth_limb_angle</span> <span class="o">=</span> <span class="n">_get_limb_angle</span><span class="p">(</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span> <span class="n">q_att_t</span><span class="p">,</span> <span class="n">p_earth_chandra_eci</span><span class="p">)</span>
+    <span class="n">moon_limb_angle</span> <span class="o">=</span> <span class="n">_get_limb_angle</span><span class="p">(</span><span class="s2">&quot;moon&quot;</span><span class="p">,</span> <span class="n">q_att_t</span><span class="p">,</span> <span class="n">p_moon_chandra_eci</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">earth_limb_angle</span><span class="p">,</span> <span class="n">moon_limb_angle</span>
 </pre></div>
 
                 </article>

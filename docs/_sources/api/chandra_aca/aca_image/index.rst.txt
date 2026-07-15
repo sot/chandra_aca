@@ -44,11 +44,13 @@ Functions
 
    /api/chandra_aca/aca_image/centroid_fm
    /api/chandra_aca/aca_image/get_aca_images
+   /api/chandra_aca/aca_image/get_ccd_quadrant
 
 .. autoapisummary::
 
    chandra_aca.aca_image.centroid_fm
    chandra_aca.aca_image.get_aca_images
+   chandra_aca.aca_image.get_ccd_quadrant
 
 
 Module Contents

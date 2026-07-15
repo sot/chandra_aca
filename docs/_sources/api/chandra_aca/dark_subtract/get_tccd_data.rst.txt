@@ -15,7 +15,8 @@ chandra_aca.dark_subtract.get_tccd_data
            Sampling times for CCD temperature data (CXC seconds).
 
        **source** : str, optional
-           Source of CCD temperature data ('maude' (default) or 'cxc' for cheta archive).
+           Source of CCD temperature data ('maude' (default) or 'cxc' or 'cheta' for cheta
+           archive).
 
        **median_window** : int, optional
            Median filter window to remove outliers (default=3).

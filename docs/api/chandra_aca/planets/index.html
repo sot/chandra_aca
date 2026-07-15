@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.planets &#8212; chandra_aca 4.55.0 documentation</title>
+    <title>chandra_aca.planets &#8212; chandra_aca 4.56.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=b416e8fc"></script>
+    <script src="../../../_static/documentation_options.js?v=26693617"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.maude_decom.blob_to_aca_image_dict" href="../maude_decom/blob_to_aca_image_dict.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.55.0" />
+  <meta name="docsearch:version" content="4.56.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.55.0</span></div>
+<span style="font-size: x-large;">4.56.0</span></div>
     
   </div>
   
@@ -346,7 +346,7 @@
                   
   <section id="module-chandra_aca.planets">
 <span id="chandra-aca-planets"></span><h1>chandra_aca.planets<a class="headerlink" href="#module-chandra_aca.planets" title="Link to this heading">#</a></h1>
-<p>Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.</p>
+<p>Solar system object positions relative to Chandra, Earth, or Solar System Barycenter.</p>
 <p>Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
 Horizons positions are used as the “truth”.</p>
 <ul class="simple">
@@ -438,6 +438,9 @@ Horizons positions are used as the “truth”.</p>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="get_earth_blocks.html#chandra_aca.planets.get_earth_blocks" title="chandra_aca.planets.get_earth_blocks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_earth_blocks</span></code></a>(start[, stop, min_limb_angle])</p></td>
 <td><p>Get intervals of Earth blocks in <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">stop</span></code> time interval.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="get_earth_moon_limb_angles.html#chandra_aca.planets.get_earth_moon_limb_angles" title="chandra_aca.planets.get_earth_moon_limb_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_earth_moon_limb_angles</span></code></a>(times)</p></td>
+<td><p>Get Earth and Moon limb angles for monitor images at specified times.</p></td>
 </tr>
 </tbody>
 </table>

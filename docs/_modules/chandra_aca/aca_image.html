@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.aca_image &#8212; chandra_aca 4.55.0 documentation</title>
+    <title>chandra_aca.aca_image &#8212; chandra_aca 4.56.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=b416e8fc"></script>
+    <script src="../../_static/documentation_options.js?v=26693617"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.55.0" />
+  <meta name="docsearch:version" content="4.56.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.55.0</span></div>
+<span style="font-size: x-large;">4.56.0</span></div>
     
   </div>
   
@@ -347,20 +347,29 @@
 <span class="sd">See :ref:`aca_image` for more details and examples.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">count</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">floor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">apt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cxotime</span><span class="w"> </span><span class="kn">import</span> <span class="n">CxoTimeLike</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ska_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ACAImage&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid_fm&quot;</span><span class="p">,</span> <span class="s2">&quot;AcaPsfLibrary&quot;</span><span class="p">,</span> <span class="s2">&quot;EIGHT_LABELS&quot;</span><span class="p">,</span> <span class="s2">&quot;get_aca_images&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;ACAImage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;centroid_fm&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AcaPsfLibrary&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EIGHT_LABELS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_aca_images&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_ccd_quadrant&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
 <div class="viewcode-block" id="EIGHT_LABELS">
 <a class="viewcode-back" href="../../api/chandra_aca/aca_image/index.html#chandra_aca.aca_image.EIGHT_LABELS">[docs]</a>
@@ -1078,7 +1087,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>  <span class="c1"># Table is a somewhat-heavy import</span>
 
         <span class="n">psfs</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -1086,7 +1094,7 @@
             <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;aca_psf_lib.dat&quot;</span>
             <span class="p">)</span>
-        <span class="n">dat</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ascii.basic&quot;</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ascii.basic&quot;</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span>
 
         <span class="c1"># Sub-pixel grid spacing in pixels.  This assumes the sub-pixels are</span>
@@ -1196,40 +1204,360 @@
         <span class="k">return</span> <span class="n">out</span>
 
 
-<span class="nd">@retry</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exceptions</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">tries</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ACA_CHETA_MSIDS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;BGDAVG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BGDRMS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BGDSTAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BGDTYP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMMCNT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMMPROG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GLBSTAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM62&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM63&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM64&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM65&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM66&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM67&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM72&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM73&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM74&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM75&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM76&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HD3TLM77&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGCOL0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGFID&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGFUNC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGNUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGROW0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGSCALE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGSTAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMGTLM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INTEG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MJF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MNF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PIXTLM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TEMPCCD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TEMPHOUS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TEMPPRIM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TEMPSEC&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_aca_images_cheta</span><span class="p">(</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
+    <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span>
+    <span class="n">msids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">slots</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+    <span class="n">sort_by_time</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">scale_img</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">native_cheta_columns</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">unit_system</span><span class="o">=</span><span class="s2">&quot;sci&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get ACA image telemetry from cheta for selected ACA slots.</span>
+
+<span class="sd">    This fetches telemetry for the requested ACA image MSIDs from cheta for each</span>
+<span class="sd">    requested slot (``aca{slot}_*``), removes rows flagged bad in any fetched MSID for a</span>
+<span class="sd">    slot, and returns a single table with one row per slot and readout.</span>
+
+<span class="sd">    Available MSIDs for selection with the ``msids`` option are::</span>
+
+<span class="sd">      BGDAVG, BGDRMS, BGDSTAT, BGDTYP</span>
+<span class="sd">      COMMCNT, COMMPROG, GLBSTAT</span>
+<span class="sd">      HD3TLM62, HD3TLM63, HD3TLM64, HD3TLM65, HD3TLM66, HD3TLM67</span>
+<span class="sd">      HD3TLM72, HD3TLM73, HD3TLM74, HD3TLM75, HD3TLM76, HD3TLM77</span>
+<span class="sd">      IMGCOL0, IMGFID, IMGFUNC, IMGNUM, IMGROW0, IMGSCALE, IMGSTAT, IMGTLM (8x8)</span>
+<span class="sd">      INTEG, MJF, MNF, PIXTLM</span>
+<span class="sd">      TEMPCCD, TEMPHOUS, TEMPPRIM, TEMPSEC</span>
+
+<span class="sd">    Notes:</span>
+
+<span class="sd">    - ``IMGTLM`` is 8x8 images as telemetered 10-bit unsigned integers. By default with</span>
+<span class="sd">      ``scale_img=True``, the output table will instead include a column ``IMG`` with</span>
+<span class="sd">      the scaled image in DN, computed as ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0``.</span>
+<span class="sd">    - ``IMGNUM`` is always included in output table to identify slot for each row.</span>
+<span class="sd">    - If ``IMGTLM`` is requested then ``IMGSCALE`` is included in the output table.</span>
+<span class="sd">    - Providing ``msids=&quot;IMG*&quot;`` will fetch all the image telemetry and is about twice</span>
+<span class="sd">      as fast as the default fetching all MSIDs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start, stop</span>
+<span class="sd">        Time range passed to ``cheta.fetch_sci.MSID``.</span>
+<span class="sd">    msids : None, str, or sequence of str</span>
+<span class="sd">        Requested ACA image telemetry MSIDs or glob patterns (for example,</span>
+<span class="sd">        ``&quot;HD3TLM*&quot;``). If `None` (default), all entries in ``ACA_CHETA_MSIDS`` are used.</span>
+<span class="sd">    slots : Sequence of int, default ``(0, 1, 2, 3, 4, 5, 6, 7)``</span>
+<span class="sd">        ACA image slots to fetch.</span>
+<span class="sd">    sort_by_time : bool, default `True`</span>
+<span class="sd">        If `True`, sort the output by (time, slot). This is 5-10% slower than the</span>
+<span class="sd">        (slot, time) ordering which is native to the cheta data structure.</span>
+<span class="sd">    scale_img : bool, default `True`</span>
+<span class="sd">        If `True`, return a column ``IMG = IMGTLM * (IMGSCALE / 32.0) - 50.0`` in DN</span>
+<span class="sd">        instead of the raw 10-bit ``IMGTLM`` column.</span>
+<span class="sd">    native_cheta_columns : bool, default `False`</span>
+<span class="sd">        If `True`, return the native cheta MSID column names matching those in the</span>
+<span class="sd">        ``msids`` selection list. By default, apply name munging and add bit status</span>
+<span class="sd">        columns to match the API of :func:`get_aca_images`.</span>
+<span class="sd">    unit_system : {&quot;sci&quot;, &quot;eng&quot;, &quot;cxc&quot;}, default &quot;sci&quot;</span>
+<span class="sd">        Fetch data using the unit system. This only impacts temperatures, which will be</span>
+<span class="sd">        in degC for &quot;sci&quot;, K for &quot;cxc&quot; and degF for &quot;eng&quot;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    astropy.table.Table</span>
+<span class="sd">        ACA image telemetry for the requested slots and MSIDs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">cheta</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch</span><span class="p">,</span> <span class="n">fetch_eng</span><span class="p">,</span> <span class="n">fetch_sci</span>
+
+    <span class="c1"># Support setting the unit system via the different fetch modules</span>
+    <span class="n">fetch_funcs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sci&quot;</span><span class="p">:</span> <span class="n">fetch_sci</span><span class="p">,</span> <span class="s2">&quot;eng&quot;</span><span class="p">:</span> <span class="n">fetch_eng</span><span class="p">,</span> <span class="s2">&quot;cxc&quot;</span><span class="p">:</span> <span class="n">fetch</span><span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fetch_func</span> <span class="o">:=</span> <span class="n">fetch_funcs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">unit_system</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;unit_system must be one of [&#39;sci&#39;, &#39;eng&#39;, &#39;cxc&#39;], got </span><span class="si">{</span><span class="n">unit_system</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">out_msids</span> <span class="o">=</span> <span class="n">_expand_cheta_aca_images_msids</span><span class="p">(</span><span class="n">msids</span><span class="p">)</span>
+
+    <span class="c1"># Always need slot identification</span>
+    <span class="k">if</span> <span class="s2">&quot;IMGNUM&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out_msids</span><span class="p">:</span>
+        <span class="n">out_msids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;IMGNUM&quot;</span><span class="p">)</span>
+    <span class="c1"># Always want IMGSCALE if asking for IMGTLM (even if not scaling it is good to have)</span>
+    <span class="k">if</span> <span class="s2">&quot;IMGSCALE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out_msids</span> <span class="ow">and</span> <span class="s2">&quot;IMGTLM&quot;</span> <span class="ow">in</span> <span class="n">out_msids</span><span class="p">:</span>
+        <span class="n">out_msids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;IMGSCALE&quot;</span><span class="p">)</span>
+
+    <span class="c1"># List of tables of ACA image telemetry from cheta</span>
+    <span class="n">dats</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_get_cheta_slot</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">scale_img</span><span class="p">,</span> <span class="n">fetch_func</span><span class="p">,</span> <span class="n">out_msids</span><span class="p">,</span> <span class="n">slot</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">slots</span>
+    <span class="p">]</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">apt</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">dats</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sort_by_time</span><span class="p">:</span>
+        <span class="c1"># Since the time stamps are always either identical or separated by &gt; 1.0 sec,</span>
+        <span class="c1"># we can do a lexical sort on (TIME, IMGNUM) by nudging the time stamps by</span>
+        <span class="c1"># IMGNUM * 0.01 sec. The 64-bit float has sufficient precision to distinguish</span>
+        <span class="c1"># between the 0.01 sec differences. This about 30 times faster than</span>
+        <span class="c1"># `out.sort([&quot;TIME&quot;, &quot;IMGNUM&quot;])`.</span>
+        <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;IMGNUM&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="n">idxs</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">native_cheta_columns</span><span class="p">:</span>
+        <span class="n">_munge_cheta_aca_images</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_cheta_slot</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">scale_img</span><span class="p">,</span> <span class="n">fetch_func</span><span class="p">,</span> <span class="n">out_msids</span><span class="p">,</span> <span class="n">slot</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch and assemble cheta ACA telemetry for a single slot.</span>
+
+<span class="sd">    For each requested MSID, this fetches ``aca{slot}_{MSID}`` over the given</span>
+<span class="sd">    time interval, combines values into one table, and removes rows flagged bad</span>
+<span class="sd">    by any fetched MSID.</span>
+
+<span class="sd">    If ``scale_img`` is True, image telemetry is converted from raw ``IMGTLM``</span>
+<span class="sd">    values to DN via ``IMGTLM * (IMGSCALE / 32.0) - 50.0`` and the column is</span>
+<span class="sd">    renamed to ``IMG``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start, stop</span>
+<span class="sd">        Start and stop times passed to ``fetch_func.MSID``.</span>
+<span class="sd">    scale_img : bool</span>
+<span class="sd">        If True, scale image telemetry from ``IMGTLM`` to ``IMG`` in DN.</span>
+<span class="sd">    fetch_func</span>
+<span class="sd">        cheta fetch module (for example ``cheta.fetch_sci``) that provides</span>
+<span class="sd">        an ``MSID`` fetch API.</span>
+<span class="sd">    out_msids : sequence of str</span>
+<span class="sd">        MSIDs to fetch for this slot.</span>
+<span class="sd">    slot : int</span>
+<span class="sd">        ACA slot number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    astropy.table.Table</span>
+<span class="sd">        Slot telemetry table with bad rows removed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tbl_cols</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">msid</span> <span class="ow">in</span> <span class="n">out_msids</span><span class="p">:</span>
+        <span class="n">msid_slot</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;aca</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="n">msid</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">fetch_func</span><span class="o">.</span><span class="n">MSID</span><span class="p">(</span><span class="n">msid_slot</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;TIME&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tbl_cols</span><span class="p">:</span>
+            <span class="n">tbl_cols</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">times</span>
+        <span class="k">if</span> <span class="s2">&quot;bads&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tbl_cols</span><span class="p">:</span>
+            <span class="n">tbl_cols</span><span class="p">[</span><span class="s2">&quot;bads&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">bads</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tbl_cols</span><span class="p">[</span><span class="s2">&quot;bads&quot;</span><span class="p">]</span> <span class="o">|=</span> <span class="n">dat</span><span class="o">.</span><span class="n">bads</span>
+        <span class="n">tbl_cols</span><span class="p">[</span><span class="n">msid</span><span class="p">]</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">vals</span>
+
+    <span class="n">dat</span> <span class="o">=</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">tbl_cols</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">tbl_cols</span><span class="p">[</span><span class="s2">&quot;bads&quot;</span><span class="p">]):</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="o">~</span><span class="n">tbl_cols</span><span class="p">[</span><span class="s2">&quot;bads&quot;</span><span class="p">]]</span>
+    <span class="k">del</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;bads&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">scale_img</span> <span class="ow">and</span> <span class="s2">&quot;IMGTLM&quot;</span> <span class="ow">in</span> <span class="n">out_msids</span><span class="p">:</span>
+        <span class="c1"># Scale image data. Parentheses (imgscale / 32.0) are important since</span>
+        <span class="c1"># IMGTLM * IMGSCALE / 32.0 will overflow the 16-bit unsigned int.</span>
+        <span class="n">imgs_dn</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;IMGTLM&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;IMGSCALE&quot;</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">/</span> <span class="mf">32.0</span><span class="p">)</span> <span class="o">-</span> <span class="mf">50.0</span>
+        <span class="c1"># Replace then rename column to preserve column ordering</span>
+        <span class="n">dat</span><span class="p">[</span><span class="s2">&quot;IMGTLM&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs_dn</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">dat</span><span class="o">.</span><span class="n">rename_column</span><span class="p">(</span><span class="s2">&quot;IMGTLM&quot;</span><span class="p">,</span> <span class="s2">&quot;IMG&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dat</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_expand_cheta_aca_images_msids</span><span class="p">(</span><span class="n">msids</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expand and validate cheta ACA image telemetry MSID selections.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    msids : None, str, or sequence of str</span>
+<span class="sd">        MSID names or shell-style glob patterns matched against</span>
+<span class="sd">        ``ACA_CHETA_MSIDS``. If ``None``, use all available ACA image MSIDs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of str</span>
+<span class="sd">        Expanded MSID list.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If any requested MSID pattern does not match known ACA image MSIDs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">msids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">ACA_CHETA_MSIDS</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">msids</span> <span class="o">=</span> <span class="p">[</span><span class="n">msids</span><span class="p">]</span>
+
+    <span class="c1"># Assemble list of matches from ACA_CHETA_MSIDS using file globbing</span>
+    <span class="n">out_msids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">msid</span> <span class="ow">in</span> <span class="n">msids</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">ACA_CHETA_MSIDS</span><span class="p">,</span> <span class="n">msid</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;msid </span><span class="si">{</span><span class="n">msid</span><span class="si">!r}</span><span class="s2"> does not match any known ACA image telemetry MSIDs&quot;</span>
+            <span class="p">)</span>
+        <span class="n">out_msids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">out_msids</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_munge_cheta_aca_images</span><span class="p">(</span><span class="n">imgs</span><span class="p">:</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize cheta ACA image columns to the standard get_aca_images schema.</span>
+
+<span class="sd">    This mutates ``imgs`` in place so that tables fetched from cheta match the column</span>
+<span class="sd">    naming and decoded-bit conventions returned by</span>
+<span class="sd">    :func:`mica.archive.aca_l0.get_aca_images`. The code is adapted from that function,</span>
+<span class="sd">    which in turn is matching the API of :func:`chandra_aca.maude_decom.get_aca_images`.</span>
+
+<span class="sd">    The function adds derived columns such as ``IMGSIZE``, ``IMGTYPE``,</span>
+<span class="sd">    ``END_INTEG_TIME``, ``IMGROW_A1``/``IMGCOL_A1``, ``IMGROW0_8X8``/ ``IMGCOL0_8X8``,</span>
+<span class="sd">    and VCDU counters. It also renames selected columns (for example ``BGDTYP`` -&gt;</span>
+<span class="sd">    ``AABGDTYP`` and ``PIXTLM`` -&gt; ``AAPIXTLM``) and expands packed status/telemetry</span>
+<span class="sd">    bytes into boolean or integer fields.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    imgs</span>
+<span class="sd">        ACA image telemetry table from cheta. The table is modified in place.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        The input table is updated in-place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mica.archive.aca_l0</span><span class="w"> </span><span class="kn">import</span> <span class="n">GLBSTAT_NAMES</span><span class="p">,</span> <span class="n">IMGSTAT_NAMES</span><span class="p">,</span> <span class="n">_extract_bits_as_uint8</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">has</span><span class="p">(</span><span class="n">colname</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">colname</span> <span class="ow">in</span> <span class="n">imgs</span><span class="o">.</span><span class="n">colnames</span>
+
+    <span class="c1"># Rename and rejigger columns to match chandra_aca.maude_decom.get_aca_images</span>
+    <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;IMGSIZE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="s2">&quot;INTEG&quot;</span><span class="p">):</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;END_INTEG_TIME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;INTEG&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="k">for</span> <span class="n">rc</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ROW&quot;</span><span class="p">,</span> <span class="s2">&quot;COL&quot;</span><span class="p">]:</span>
+        <span class="c1"># IMGROW/COL0 are row/col of lower/left of 8x8 image</span>
+        <span class="c1"># Make these new columns:</span>
+        <span class="c1"># IMGROW/COL_A1: row/col of pixel A1 of 8x8 image</span>
+        <span class="c1"># IMGROW/COL0_8x8: row/col of lower/left of 8x8 image</span>
+        <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IMG</span><span class="si">{</span><span class="n">rc</span><span class="si">}</span><span class="s2">0&quot;</span><span class="p">):</span>
+            <span class="n">imgs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;IMG</span><span class="si">{</span><span class="n">rc</span><span class="si">}</span><span class="s2">_A1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;IMG</span><span class="si">{</span><span class="n">rc</span><span class="si">}</span><span class="s2">0&quot;</span><span class="p">]</span>
+            <span class="n">imgs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;IMG</span><span class="si">{</span><span class="n">rc</span><span class="si">}</span><span class="s2">0_8X8&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;IMG</span><span class="si">{</span><span class="n">rc</span><span class="si">}</span><span class="s2">0&quot;</span><span class="p">]</span>
+
+    <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;IMGTYPE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">imgs</span><span class="p">),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># 8x8</span>
+
+    <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="s2">&quot;BGDTYP&quot;</span><span class="p">):</span>
+        <span class="n">imgs</span><span class="o">.</span><span class="n">rename_column</span><span class="p">(</span><span class="s2">&quot;BGDTYP&quot;</span><span class="p">,</span> <span class="s2">&quot;AABGDTYP&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="s2">&quot;PIXTLM&quot;</span><span class="p">):</span>
+        <span class="n">imgs</span><span class="o">.</span><span class="n">rename_column</span><span class="p">(</span><span class="s2">&quot;PIXTLM&quot;</span><span class="p">,</span> <span class="s2">&quot;AAPIXTLM&quot;</span><span class="p">)</span>
+
+    <span class="c1"># maude_decom.get_aca_images() provides both VCDUCTR (VCDU for each sub-image) and</span>
+    <span class="c1"># IMG_VCDUCTR (VCDU of first sub-image). For combined images, these are identical.</span>
+    <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="s2">&quot;MJF&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">has</span><span class="p">(</span><span class="s2">&quot;MNF&quot;</span><span class="p">):</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;VCDUCTR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;MJF&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">128</span> <span class="o">+</span> <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;MNF&quot;</span><span class="p">]</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;IMG_VCDUCTR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;VCDUCTR&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Split uint8 GLBSTAT and IMGSTAT into individual bits. The stat_bit_names are</span>
+    <span class="c1"># in MSB order so we need to reverse them below.</span>
+    <span class="k">for</span> <span class="n">stat_name</span><span class="p">,</span> <span class="n">stat_bit_names</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;GLBSTAT&quot;</span><span class="p">,</span> <span class="n">GLBSTAT_NAMES</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;IMGSTAT&quot;</span><span class="p">,</span> <span class="n">IMGSTAT_NAMES</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="n">stat_name</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">bit</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">stat_bit_names</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="n">imgs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="n">stat_name</span><span class="p">]</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="s2">&quot;COMMCNT&quot;</span><span class="p">):</span>
+        <span class="c1"># Extract fields from the mica L0 8-bit COMMCNT value which is really three MSIDs.</span>
+        <span class="c1"># We need to use .data attribute of MaskedColumn to get a numpy masked array. The</span>
+        <span class="c1"># unpackbits function fails on MaskedColumn because it looks for a _mask attribute.</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unpackbits</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;COMMCNT&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="n">bits_rev</span> <span class="o">=</span> <span class="n">bits</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># MSB is on the right (index=7)</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;COMMCNT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_extract_bits_as_uint8</span><span class="p">(</span><span class="n">bits_rev</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;COMMCNT_CHECKSUM_FAIL&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bits_rev</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;COMMCNT_SYNTAX_ERROR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bits_rev</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="s2">&quot;COMMPROG&quot;</span><span class="p">):</span>
+        <span class="c1"># Extract fields from the mica L0 8-bit COMMPROG value which is really two MSIDs</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unpackbits</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;COMMPROG&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="n">bits_rev</span> <span class="o">=</span> <span class="n">bits</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;COMMPROG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_extract_bits_as_uint8</span><span class="p">(</span><span class="n">bits_rev</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="n">imgs</span><span class="p">[</span><span class="s2">&quot;COMMPROG_REPEAT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_extract_bits_as_uint8</span><span class="p">(</span><span class="n">bits_rev</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">get_aca_images</span><span class="p">(</span>
-    <span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">bgsub</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;maude&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">CxoTimeLike</span><span class="p">,</span> <span class="n">bgsub</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;maude&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get ACA images and ancillary data from either the MAUDE or CXC data sources.</span>
+<span class="sd">    Get ACA image telemetry from the specified ``source``.</span>
 
-<span class="sd">    The returned table of ACA images and ancillary data will include the default</span>
-<span class="sd">    columns returned by chandra_aca.maude_decom.get_aca_images or</span>
-<span class="sd">    mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be</span>
-<span class="sd">    added to the maude_decom aca_images so images from either source will have</span>
-<span class="sd">    that column::</span>
+<span class="sd">    By default the returned table of ACA image telemetry will include these columns::</span>
 
-<span class="sd">             name            dtype  unit</span>
-<span class="sd">      --------------------- ------- -----------</span>
-<span class="sd">         IMGSIZE              int32  pixels</span>
+<span class="sd">      TIME (mid-integration, cxcsec), INTEG (sec), END_INTEG_TIME (cxcsec)</span>
+<span class="sd">      MJF, MNF, VCDUCTR, IMG_VCDUCTR</span>
+<span class="sd">      AAPIXTLM, AABGDTYP</span>
+<span class="sd">      BGDAVG (DN), BGDRMS (DN), BGDSTAT</span>
+<span class="sd">      COMMCNT, COMMCNT_CHECKSUM_FAIL, COMMCNT_SYNTAX_ERROR</span>
+<span class="sd">      COMMPROG, COMMPROG_REPEAT, COMM_CHECKSUM_FAIL</span>
+<span class="sd">      GLBSTAT, SYNTAX_ERROR, RESET, CAL_FAIL, POWER_FAIL, ROM_FAIL, RAM_FAIL</span>
+<span class="sd">      IMG (8x8 DN), IMGFID, IMGFUNC, IMGNUM, IMGSCALE, IMGSIZE, IMGTYPE, IMGSTAT</span>
+<span class="sd">      IMGCOL0, IMGROW0, IMGROW_A1, IMGCOL_A1, IMGROW0_8X8, IMGCOL0_8X8</span>
+<span class="sd">      HIGH_BGD, ION_RAD, MULTI_STAR, COMMON_COL, QUAD_BOUND, DEF_PIXEL, SAT_PIXEL</span>
+<span class="sd">      TEMPCCD (K), TEMPHOUS (K), TEMPPRIM (K), TEMPSEC (K)</span>
+<span class="sd">      HD3TLM62, HD3TLM63, HD3TLM64, HD3TLM65, HD3TLM66, HD3TLM67</span>
+<span class="sd">      HD3TLM72, HD3TLM73, HD3TLM74, HD3TLM75, HD3TLM76, HD3TLM77</span>
 
-<span class="sd">    If bgsub is True then the table will also include columns::</span>
+<span class="sd">    If ``bgsub`` is `True` then the table will also include float columns::</span>
 
-<span class="sd">             name            dtype  unit</span>
-<span class="sd">      --------------------- ------- -----------</span>
-<span class="sd">         IMG_BGSUB          float64  DN</span>
-<span class="sd">         IMG_DARK           float64  DN</span>
-<span class="sd">         T_CCD_SMOOTH       float64  degC</span>
+<span class="sd">      IMG_BGSUB (DN) : background subtracted image</span>
+<span class="sd">      IMG_DARK (DN) : dark current image</span>
+<span class="sd">      T_CCD_SMOOTH (degC) : smoothed CCD temperature</span>
 
-<span class="sd">    where:</span>
-
-<span class="sd">    - &#39;IMG_BGSUB&#39;: background subtracted image</span>
-<span class="sd">    - &#39;IMG_DARK&#39;: dark current image</span>
-<span class="sd">    - &#39;T_CCD_SMOOTH&#39;: smoothed CCD temperature</span>
-
-<span class="sd">    The IMG_DARK individual values are only calculated if within the 1024x1024</span>
-<span class="sd">    dark current map, otherwise they are set to 0.  In practice this is not an</span>
-<span class="sd">    issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.</span>
+<span class="sd">    With ``source=&quot;cheta&quot;``, the ``msids`` keyword can be used to select a subset of the</span>
+<span class="sd">    available ACA image telemetry MSIDs and the ``unit_system`` keyword can select the</span>
+<span class="sd">    unit of the temperatures.  See :func:`get_aca_images_cheta` for details.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1240,11 +1568,13 @@
 <span class="sd">    bgsub : bool</span>
 <span class="sd">        Include background subtracted images in output table. Default is False.</span>
 <span class="sd">    source : str</span>
-<span class="sd">        Data source for image and temperature telemetry (&#39;maude&#39; or &#39;cxc&#39;). For &#39;cxc&#39;,</span>
-<span class="sd">        the image telemetry is from mica and temperature telemetry is from CXC L0 via</span>
-<span class="sd">        cheta.</span>
-<span class="sd">    **maude_kwargs</span>
-<span class="sd">        Additional kwargs for maude data source.</span>
+<span class="sd">        Data source for image and temperature telemetry (&#39;maude&#39;,&#39;cxc&#39;, or &#39;cheta&#39;). For</span>
+<span class="sd">        &#39;cxc&#39;, the image telemetry is from mica and temperature telemetry is from CXC L0</span>
+<span class="sd">        via cheta.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Additional kwargs for source-specific image data retrieval functions. See: -</span>
+<span class="sd">        :func:`chandra_aca.maude_decom.get_aca_images` -</span>
+<span class="sd">        :func:`mica.archive.aca_l0.get_aca_images` - :func:`get_aca_images_cheta`</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1259,16 +1589,24 @@
 
     <span class="c1"># Set up configuration for maude or cxc</span>
     <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;maude&quot;</span><span class="p">:</span>
-        <span class="n">get_aca_images_func</span> <span class="o">=</span> <span class="n">chandra_aca</span><span class="o">.</span><span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_images</span>
+        <span class="n">get_aca_images_func</span> <span class="o">=</span> <span class="n">retry</span><span class="o">.</span><span class="n">retry_func</span><span class="p">(</span>
+            <span class="n">chandra_aca</span><span class="o">.</span><span class="n">maude_decom</span><span class="o">.</span><span class="n">get_aca_images</span><span class="p">,</span>
+            <span class="n">exceptions</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">,</span>
+            <span class="n">delay</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">tries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;cxc&quot;</span><span class="p">:</span>
         <span class="n">get_aca_images_func</span> <span class="o">=</span> <span class="n">mica</span><span class="o">.</span><span class="n">archive</span><span class="o">.</span><span class="n">aca_l0</span><span class="o">.</span><span class="n">get_aca_images</span>
-        <span class="c1"># Explicitly set maude_kwargs to empty dict for cxc source</span>
-        <span class="n">maude_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;cheta&quot;</span><span class="p">:</span>
+        <span class="n">get_aca_images_func</span> <span class="o">=</span> <span class="n">get_aca_images_cheta</span>
+        <span class="c1"># Set options for cheta to match the API of the other sources.</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;native_cheta_columns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># always required</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;unit_system&quot;</span><span class="p">,</span> <span class="s2">&quot;cxc&quot;</span><span class="p">)</span>  <span class="c1"># default can be changed</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;source must be &#39;maude&#39; or &#39;cxc&#39;, not </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;source must be &#39;maude&#39;, &#39;cxc&#39;, or &#39;cheta&#39;, not </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Get images</span>
-    <span class="n">imgs_table</span> <span class="o">=</span> <span class="n">get_aca_images_func</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span><span class="p">)</span>
+    <span class="n">imgs_table</span> <span class="o">=</span> <span class="n">get_aca_images_func</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c1"># Add an IMGSIZE column if not present (maude)</span>
     <span class="c1"># IMGTYPE 4 -&gt; 8, 1 -&gt; 6, 0 -&gt; 4</span>
@@ -1293,13 +1631,14 @@
         <span class="n">img_dark</span> <span class="o">=</span> <span class="n">dark_data</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
         <span class="n">tccd_dark</span> <span class="o">=</span> <span class="n">dark_data</span><span class="p">[</span><span class="s2">&quot;ccd_temp&quot;</span><span class="p">]</span>
         <span class="n">t_ccds</span> <span class="o">=</span> <span class="n">chandra_aca</span><span class="o">.</span><span class="n">dark_subtract</span><span class="o">.</span><span class="n">get_tccd_data</span><span class="p">(</span>
-            <span class="n">imgs_table</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">],</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">maude_kwargs</span>
+            <span class="n">imgs_table</span><span class="p">[</span><span class="s2">&quot;TIME&quot;</span><span class="p">],</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;channel&quot;</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">imgs_dark</span> <span class="o">=</span> <span class="n">chandra_aca</span><span class="o">.</span><span class="n">dark_subtract</span><span class="o">.</span><span class="n">get_dark_current_imgs</span><span class="p">(</span>
-            <span class="n">imgs_table</span><span class="p">,</span> <span class="n">img_dark</span><span class="p">,</span> <span class="n">tccd_dark</span><span class="p">,</span> <span class="n">t_ccds</span>
+        <span class="n">imgs_bgsub</span><span class="p">,</span> <span class="n">imgs_dark</span> <span class="o">=</span> <span class="n">chandra_aca</span><span class="o">.</span><span class="n">dark_subtract</span><span class="o">.</span><span class="n">get_aca_images_bgd_sub</span><span class="p">(</span>
+            <span class="n">img_table</span><span class="o">=</span><span class="n">imgs_table</span><span class="p">,</span>
+            <span class="n">t_ccd_vals</span><span class="o">=</span><span class="n">t_ccds</span><span class="p">,</span>
+            <span class="n">img_dark</span><span class="o">=</span><span class="n">img_dark</span><span class="p">,</span>
+            <span class="n">tccd_dark</span><span class="o">=</span><span class="n">tccd_dark</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">imgs_bgsub</span> <span class="o">=</span> <span class="n">imgs_table</span><span class="p">[</span><span class="s2">&quot;IMG&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">imgs_dark</span>
-        <span class="n">imgs_bgsub</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="n">imgs_table</span><span class="p">[</span><span class="s2">&quot;IMG_BGSUB&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs_bgsub</span>
         <span class="n">imgs_table</span><span class="p">[</span><span class="s2">&quot;IMG_DARK&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs_dark</span>
@@ -1311,6 +1650,58 @@
         <span class="n">imgs_table</span><span class="p">[</span><span class="s2">&quot;T_CCD_SMOOTH&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">imgs_table</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_ccd_quadrant</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">pix_zero_loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get CCD quadrant for given row and column.</span>
+
+<span class="sd">    For ``row`` and ``col`` values in the &quot;edge&quot; coordinate system where the center</span>
+<span class="sd">    of the CCD is at exactly (0.0, 0.0), the quadrants are defined as follows:</span>
+
+<span class="sd">    - a: row &lt; 0 and col &gt;= 0</span>
+<span class="sd">    - b: row &lt; 0 and col &lt; 0</span>
+<span class="sd">    - c: row &gt;= 0 and col &gt;= 0</span>
+<span class="sd">    - d: row &gt;= 0 and col &lt; 0</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    row : float, np.ndarray[float]</span>
+<span class="sd">        Row value(s) of pixel(s)</span>
+<span class="sd">    col : float, np.ndarray[float]</span>
+<span class="sd">        Column value(s) of pixel(s)</span>
+<span class="sd">    pix_zero_loc : str</span>
+<span class="sd">        Location of pixel zero, either &#39;center&#39; or &#39;edge&#39;. Default is &#39;center&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    quadrant : str or np.ndarray[str]</span>
+<span class="sd">        CCD quadrant (&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, or &#39;d&#39;) for each input row and column value. If</span>
+<span class="sd">        input row and col are scalars, returns a single string. If input row and col are</span>
+<span class="sd">        arrays, returns an array of strings with the same shape as the broadcasted shape</span>
+<span class="sd">        of row and col.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">col</span><span class="p">))</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">pix_zero_loc</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
+        <span class="c1"># Transform row/col values from &#39;center&#39; convention to &#39;edge&#39; convention, so</span>
+        <span class="c1"># that (0.0, 0.0) is the exact quadrant boundary center.</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">row</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">col</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="k">elif</span> <span class="n">pix_zero_loc</span> <span class="o">!=</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pix_zero_loc can be only &#39;edge&#39; or &#39;center&#39;&quot;</span><span class="p">)</span>
+
+    <span class="n">quadrants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;U1&quot;</span><span class="p">)</span>
+    <span class="n">quadrants</span><span class="p">[(</span><span class="n">row</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+    <span class="n">quadrants</span><span class="p">[(</span><span class="n">row</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;b&quot;</span>
+    <span class="n">quadrants</span><span class="p">[(</span><span class="n">row</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span>
+    <span class="n">quadrants</span><span class="p">[(</span><span class="n">row</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;d&quot;</span>
+
+    <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+        <span class="k">return</span> <span class="n">quadrants</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">quadrants</span>
 </pre></div>
 
                 </article>

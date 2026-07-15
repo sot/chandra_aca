@@ -5,7 +5,7 @@ chandra_aca.planets
 
 .. autoapi-nested-parse::
 
-   Functions for planet position relative to Chandra, Earth, or Solar System Barycenter.
+   Solar system object positions relative to Chandra, Earth, or Solar System Barycenter.
 
    Estimated accuracy of planet coordinates (RA, Dec) is as follows, where the JPL
    Horizons positions are used as the "truth".
@@ -76,6 +76,7 @@ Functions
    /api/chandra_aca/planets/get_planet_chandra_horizons
    /api/chandra_aca/planets/get_earth_boresight_angle
    /api/chandra_aca/planets/get_earth_blocks
+   /api/chandra_aca/planets/get_earth_moon_limb_angles
 
 .. autoapisummary::
 
@@ -86,6 +87,7 @@ Functions
    chandra_aca.planets.get_planet_chandra_horizons
    chandra_aca.planets.get_earth_boresight_angle
    chandra_aca.planets.get_earth_blocks
+   chandra_aca.planets.get_earth_moon_limb_angles
 
 
 Module Contents

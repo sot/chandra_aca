@@ -47,10 +47,10 @@ chandra_aca.maude_decom.get_aca_images
                      INTEG float64 s
                     BGDAVG  uint16 DN
                     BGDRMS  uint16 DN
-                   TEMPCCD float32 degC
-                  TEMPHOUS float32 degC
-                  TEMPPRIM float32 degC
-                   TEMPSEC float32 degC
+                   TEMPCCD float32 K
+                  TEMPHOUS float32 K
+                  TEMPPRIM float32 K
+                   TEMPSEC float32 K
                    BGDSTAT   uint8
                   HIGH_BGD    bool
                   RAM_FAIL    bool

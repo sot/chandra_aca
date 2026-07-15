@@ -1,38 +1,36 @@
 chandra_aca.aca_image.get_aca_images
 ====================================
 
-.. py:function:: chandra_aca.aca_image.get_aca_images(start, stop, bgsub=False, source='maude', **maude_kwargs)
+.. py:function:: chandra_aca.aca_image.get_aca_images(start, stop, bgsub=False, source='maude', **kwargs)
 
    
-   Get ACA images and ancillary data from either the MAUDE or CXC data sources.
+   Get ACA image telemetry from the specified ``source``.
 
-   The returned table of ACA images and ancillary data will include the default
-   columns returned by chandra_aca.maude_decom.get_aca_images or
-   mica.archive.aca_l0.get_aca_images. Additionally, an IMGSIZE column will be
-   added to the maude_decom aca_images so images from either source will have
-   that column::
+   By default the returned table of ACA image telemetry will include these columns::
 
-            name            dtype  unit
-     --------------------- ------- -----------
-        IMGSIZE              int32  pixels
+     TIME (mid-integration, cxcsec), INTEG (sec), END_INTEG_TIME (cxcsec)
+     MJF, MNF, VCDUCTR, IMG_VCDUCTR
+     AAPIXTLM, AABGDTYP
+     BGDAVG (DN), BGDRMS (DN), BGDSTAT
+     COMMCNT, COMMCNT_CHECKSUM_FAIL, COMMCNT_SYNTAX_ERROR
+     COMMPROG, COMMPROG_REPEAT, COMM_CHECKSUM_FAIL
+     GLBSTAT, SYNTAX_ERROR, RESET, CAL_FAIL, POWER_FAIL, ROM_FAIL, RAM_FAIL
+     IMG (8x8 DN), IMGFID, IMGFUNC, IMGNUM, IMGSCALE, IMGSIZE, IMGTYPE, IMGSTAT
+     IMGCOL0, IMGROW0, IMGROW_A1, IMGCOL_A1, IMGROW0_8X8, IMGCOL0_8X8
+     HIGH_BGD, ION_RAD, MULTI_STAR, COMMON_COL, QUAD_BOUND, DEF_PIXEL, SAT_PIXEL
+     TEMPCCD (K), TEMPHOUS (K), TEMPPRIM (K), TEMPSEC (K)
+     HD3TLM62, HD3TLM63, HD3TLM64, HD3TLM65, HD3TLM66, HD3TLM67
+     HD3TLM72, HD3TLM73, HD3TLM74, HD3TLM75, HD3TLM76, HD3TLM77
 
-   If bgsub is True then the table will also include columns::
+   If ``bgsub`` is `True` then the table will also include float columns::
 
-            name            dtype  unit
-     --------------------- ------- -----------
-        IMG_BGSUB          float64  DN
-        IMG_DARK           float64  DN
-        T_CCD_SMOOTH       float64  degC
+     IMG_BGSUB (DN) : background subtracted image
+     IMG_DARK (DN) : dark current image
+     T_CCD_SMOOTH (degC) : smoothed CCD temperature
 
-   where:
-
-   - 'IMG_BGSUB': background subtracted image
-   - 'IMG_DARK': dark current image
-   - 'T_CCD_SMOOTH': smoothed CCD temperature
-
-   The IMG_DARK individual values are only calculated if within the 1024x1024
-   dark current map, otherwise they are set to 0.  In practice this is not an
-   issue in that IMG and IMG_BGSUB must be within the CCD to be tracked.
+   With ``source="cheta"``, the ``msids`` keyword can be used to select a subset of the
+   available ACA image telemetry MSIDs and the ``unit_system`` keyword can select the
+   unit of the temperatures.  See :func:`get_aca_images_cheta` for details.
 
    :Parameters:
 
@@ -46,12 +44,14 @@ chandra_aca.aca_image.get_aca_images
            Include background subtracted images in output table. Default is False.
 
        **source** : str
-           Data source for image and temperature telemetry ('maude' or 'cxc'). For 'cxc',
-           the image telemetry is from mica and temperature telemetry is from CXC L0 via
-           cheta.
+           Data source for image and temperature telemetry ('maude','cxc', or 'cheta'). For
+           'cxc', the image telemetry is from mica and temperature telemetry is from CXC L0
+           via cheta.
 
-       **\*\*maude_kwargs**
-           Additional kwargs for maude data source.
+       **\*\*kwargs**
+           Additional kwargs for source-specific image data retrieval functions. See: -
+           :func:`chandra_aca.maude_decom.get_aca_images` -
+           :func:`mica.archive.aca_l0.get_aca_images` - :func:`get_aca_images_cheta`
 
 
 
