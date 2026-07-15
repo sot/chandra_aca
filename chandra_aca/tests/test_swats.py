@@ -16,7 +16,11 @@ import numpy as np
 import pytest
 
 from chandra_aca import maude_decom
-from chandra_aca.swats import build_raw_aca_packets, read_aca_packets
+from chandra_aca.swats import (
+    _fix_pixel_bit_order,
+    build_raw_aca_packets,
+    read_aca_packets,
+)
 
 DATA = Path(__file__).resolve().parent / "data"
 ASP_TLM = DATA / "swats_asp_tlm.txt"
@@ -64,6 +68,65 @@ def test_build_raw_aca_packets_increments():
     assert wrap["VCDUCTR"].tolist() == [two24 - 4, 0, 4]
     assert wrap["MJF"][0] == 131071  # 2**17 - 1: major counter at its max ...
     assert wrap["MJF"][1] == 0 and wrap["MNF"][1] == 0  # ... then wraps to zero
+
+
+def test_fix_pixel_bit_order():
+    # Build a packet whose slot-0 pixel field encodes known 10-bit values in the
+    # PEA-dump order ([2 LSBs][8 MSBs] per pixel). After _fix_pixel_bit_order, the
+    # standard maude_decom decoder must return the original values.
+    values = np.arange(16) * 61 + 42  # 16 distinct 10-bit values, up to 957
+    dump_groups = np.zeros((16, 10), dtype=np.uint8)
+    for j, v in enumerate(values):
+        lsb2 = [(v >> 1) & 1, v & 1]
+        msb8 = [(v >> k) & 1 for k in range(9, 1, -1)]
+        dump_groups[j] = lsb2 + msb8
+    packet = bytearray(224)
+    packet[8 + 7 : 8 + 27] = np.packbits(dump_groups.reshape(-1)).tobytes()
+
+    fixed = _fix_pixel_bit_order(bytes(packet))
+    slots = maude_decom.unpack_aca_telemetry(fixed)
+    assert np.array_equal(slots[0]["pixels"], values)
+
+    # The re-packing must not touch anything outside the pixel fields.
+    assert fixed[:15] == bytes(packet[:15])
+
+
+def test_images_contain_stars():
+    # Each complete 8x8 tracking image must look like a star: most of the
+    # background-subtracted flux concentrated in the 3x3 box around the peak, and the
+    # peak within 2 px of the window center. This catches pixel bit-order regressions
+    # (a mis-packed pixel field decodes to spatially uncorrelated noise).
+    # The pixel bit-order fix is opt-in; enable it while reading the dump so the
+    # decoded images contain actual star data (see _fix_pixel_bit_order).
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("CHANDRA_ACA_FIX_PIXEL_BIT_ORDER", "1")
+        raw = read_aca_packets(ASP_TLM)
+    start, stop = raw["TIME"][0], raw["TIME"][-1] + 1.025
+    images = maude_decom.get_aca_images(start, stop, raw_aca_packets=raw)
+
+    sel = images[images["IMGTYPE"] == 4]
+    img = np.asarray([r["IMG"] for r in sel], dtype=float)
+    complete = ~np.isnan(img).any(axis=(1, 2))
+    assert complete.sum() > 100
+    img = img[complete]
+
+    bkg = np.median(img, axis=(1, 2), keepdims=True)
+    flux = np.clip(img - bkg, 0, None)
+    peak = flux.reshape(len(flux), -1).argmax(axis=1)
+    prow, pcol = np.unravel_index(peak, (8, 8))
+
+    # peak concentration: sum of the 3x3 around the peak over the total
+    rows = np.clip(prow[:, None] + np.array([-1, 0, 1]), 0, 7)
+    cols = np.clip(pcol[:, None] + np.array([-1, 0, 1]), 0, 7)
+    idx = np.arange(len(flux))[:, None, None]
+    core = flux[idx, rows[:, :, None], cols[:, None, :]].sum(axis=(1, 2))
+    concentration = core / flux.sum(axis=(1, 2))
+    assert np.mean(concentration) > 0.5
+
+    # Tracked stars sit at the window center (rows/cols 3-4). This is an acquisition
+    # run, so allow for stretches where a slot has not converged yet.
+    centered = (np.abs(prow - 3.5) <= 2) & (np.abs(pcol - 3.5) <= 2)
+    assert np.mean(centered) > 0.85
 
 
 def test_integ_matches_commanded_int_time(images):

@@ -8,6 +8,7 @@ counters are synthesized starting at zero and incrementing at the ACA readout ca
 one 224-byte packet per 1.025 s update period, with the VCDU counter stepping by 4.
 """
 
+import os
 import re
 
 import numpy as np
@@ -25,6 +26,20 @@ _DT_ACA = 1.025  # ACA readout period [s] -> one 224-byte packet per period
 _VCDU_PER_PACKET = 4  # VCDU minor frames per ACA packet (counter step)
 
 
+def _fix_pixel_bit_order(packet):
+    """Re-pack pixel fields from SWATS dump order to the expected order.
+
+    rotate each 10-bit group left by 2 to recover the standard packing.
+    """
+    b = bytearray(packet)
+    for i in range(8, 224, 27):
+        bits = np.unpackbits(np.frombuffer(packet[i + 7 : i + 27], dtype=np.uint8))
+        b[i + 7 : i + 27] = np.packbits(
+            np.roll(bits.reshape(16, 10), -2, axis=1)
+        ).tobytes()
+    return bytes(b)
+
+
 def _read_aca_packets_(path):
     """
     Return the list of 224-byte ACA packets (bytes) found in an ASP_TLM.DAT file.
@@ -33,6 +48,8 @@ def _read_aca_packets_(path):
     packets = [bytes.fromhex(m.replace(" ", "")) for m in _ACA_PACKET_RE.findall(text)]
     if not all(len(p) == 224 for p in packets):
         raise ValueError("expected all packets to be 224 bytes")
+    if os.environ.get("CHANDRA_ACA_FIX_PIXEL_BIT_ORDER", None) is not None:
+        return [_fix_pixel_bit_order(p) for p in packets]
     return packets
 
 
