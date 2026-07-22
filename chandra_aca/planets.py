@@ -32,19 +32,24 @@ import numpy as np
 from astropy.io import ascii
 from astropy.table import Table
 from cxotime import CxoTime, CxoTimeLike
+from Quaternion import QuatLike
 from ska_helpers.utils import LazyVal
 
-from chandra_aca.transform import eci_to_radec
+from chandra_aca.transform import eci_to_radec, radec_to_yagzag, yagzag_to_pixels
 
 __all__ = (
     "get_planet_chandra",
     "get_planet_barycentric",
     "get_planet_eci",
     "get_planet_chandra_horizons",
+    "get_planet_horizons",
     "get_planet_angular_sep",
+    "get_planet_mag_states",
+    "get_planet_chandra_ccd_position",
     "get_earth_boresight_angle",
     "get_earth_blocks",
     "get_earth_moon_limb_angles",
+    "PlanetPositionTable",
     "EarthBoresightAngles",
     "NoEphemerisError",
     "GET_PLANET_ECI_ERRORS",
@@ -63,6 +68,21 @@ GET_PLANET_CHANDRA_ERRORS = {
     "Jupiter": 0.8 * u.arcsec,
     "Saturn": 0.5 * u.arcsec,
 }
+
+# Table of magnitude ranges and actions for ACA bright objects
+# Ordered by severity (most severe first)
+# These bins are used to compress ephemeris-derived magnitude time series into
+# state intervals so packaged data remains small while preserving about 1-hour
+# timing fidelity.
+MAG_ACTION_BINS = [
+    {"mag_start": -30.0, "mag_stop": -5.0, "label": "obo too bright"},
+    {"mag_start": -5.0, "mag_stop": -2.9, "label": "full mitigation"},
+    {"mag_start": -2.9, "mag_stop": -2.0, "label": "partial mitigation"},
+    {"mag_start": -2.0, "mag_stop": 0.0, "label": "instrument notify"},
+    {"mag_start": 0.0, "mag_stop": 40.0, "label": "no action"},
+]
+
+BRIGHT_PLANETS = ("jupiter", "saturn", "mars", "venus")
 
 
 class NoEphemerisError(Exception):
@@ -157,6 +177,36 @@ def convert_time_format_spk(time, fmt_out):
         out = time
 
     return out
+
+
+def get_planet_mag_states(planet, start, stop):
+    """
+    Get planet magnitude states from chandra_aca data files.
+
+    Parameters
+    ----------
+    planet : str
+        Planet name (lower case planet name)
+    start : CxoTimeLike
+        Start time
+    stop : CxoTimeLike
+        Stop time
+    Returns
+    -------
+    astropy Table
+        Planet magnitude states overlapping the start/stop times.
+    """
+    # Let's validate that planet is just one of the supported planets
+    if planet not in BRIGHT_PLANETS:
+        raise ValueError(f"{planet} is not supported, must be one of {BRIGHT_PLANETS}")
+    start_secs = CxoTime(start).secs
+    stop_secs = CxoTime(stop).secs
+    states_path = Path(__file__).parent / "data" / f"planet_mag_states_{planet}.dat"
+    states_table = Table.read(states_path, format="ascii")
+    overlaps = (states_table["tstart"] < stop_secs) & (
+        states_table["tstop"] > start_secs
+    )
+    return states_table[overlaps]
 
 
 def get_planet_angular_sep(
@@ -451,6 +501,82 @@ def get_planet_chandra(body: str, time: CxoTimeLike = None, ephem_source: str = 
     return planet_chandra
 
 
+class PlanetPositionTable(Table):
+    """
+    A subclass of astropy Table for planet positions.
+
+    This is mainly to provide a specific docstring and type alias, but it does
+    implicitly document that the table should have 'time', 'row', and 'col' columns
+    and provides an `empty` class method to create an empty table with those columns.
+    """
+
+    @classmethod
+    def empty(cls):
+        return cls({"time": [], "row": [], "col": []})
+
+
+def get_planet_chandra_ccd_position(
+    planet: str,
+    date: CxoTimeLike,
+    duration: float,
+    att: QuatLike,
+    ccd_pad: float = 0.0,
+    ephem_source: str = "cxc",
+) -> PlanetPositionTable:
+    """
+    Get the position of the given planet on the ACA CCD.
+
+    Parameters
+    ----------
+    planet : str
+        Planet name supported by `get_planet_chandra`, e.g. 'jupiter'.
+    date : CxoTimeLike
+        The start date of the observation (acquisition time)
+    duration : float
+        The duration of the observation in seconds.
+    att : Quaternion or Quat-compatible
+        The attitude Quaternion.
+    ccd_pad : float, optional
+        Padding in pixels to add to the CCD size when determining if position
+        is included in the returned list (default=0.0).
+    ephem_source : str
+        Source of Chandra ephemeris: 'cxc' (default) or 'stk'.
+
+    Returns
+    -------
+    PlanetPositionTable
+        A table with columns 'time', 'row', 'col' for the times when the given planet
+        is on the CCD (or on CCD with padding). If the planet is never on the padded CCD this
+        is a table with zero rows.
+    """
+    date0 = CxoTime(date)
+    # dates is a 1-d array with a minimum of 2 points (the end points)
+    dates = CxoTime.linspace(date0, date0 + duration * u.s, step_max=1000 * u.s)
+    times = dates.secs
+
+    eci = get_planet_chandra(planet, dates, ephem_source=ephem_source)
+
+    # Convert ECI position to RA, Dec => yag, zag => row, col
+    ra, dec = eci_to_radec(eci)
+    yag, zag = radec_to_yagzag(ra, dec, att)
+    row, col = yagzag_to_pixels(yag, zag, allow_bad=True)
+
+    # Row/col limit in pixels to check for bright object - if a positive ccd_pad is
+    # supplied, this is padded past the edge of the CCD so the checks will continue
+    ccd_limit = 512 + ccd_pad
+
+    # Limit data to entries within or just outside the CCD
+    ok = (np.abs(row) <= ccd_limit) & (np.abs(col) <= ccd_limit)
+    positions = PlanetPositionTable(
+        {
+            "time": times[ok],
+            "row": row[ok],
+            "col": col[ok],
+        }
+    )
+    return positions
+
+
 def get_planet_chandra_horizons(
     body: Union[str, int],
     timestart: CxoTimeLike,
@@ -507,6 +633,62 @@ def get_planet_chandra_horizons(
     -------
     Table of information
     """
+    return get_planet_horizons(
+        body, timestart, timestop, n_times, timeout, center="@-151"
+    )
+
+
+def get_planet_horizons(
+    body: Union[str, int],
+    timestart: CxoTimeLike,
+    timestop: CxoTimeLike,
+    n_times: int = 10,
+    timeout: float = 10,
+    center: str = "@399",
+    step_size: Optional[str] = None,
+):
+    """
+    Get body position and other info as seen from specified center using JPL Horizons.
+
+    In addition to the planet names, the ``body`` argument can be any identifier that
+    Horizon supports, e.g. ``sun`` or ``geo`` (Earth geocenter).
+
+    This function queries the JPL Horizons site using the web API interface
+    (See https://ssd-api.jpl.nasa.gov/doc/horizons.html for docs).
+
+    The return value is an astropy Table with columns: time, ra, dec, rate_ra,
+    rate_dec, mag, surf_brt, ang_diam. The units are included in the table
+    columns. The ``time`` column is a ``CxoTime`` object.
+
+    The returned Table has a meta key value ``response_text`` with the full text
+    of the Horizons response and a ``response_json`` key with the parsed JSON.
+
+    Parameters
+    ----------
+    body : str or int
+        One of 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
+        or any other body that Horizons supports.
+    timestart
+        start time (any CxoTime-compatible time)
+    timestop
+        stop time (any CxoTime-compatible time)
+    n_times
+        number of time samples (inclusive, default=10)
+    timeout
+        timeout for requests query to Horizons (secs)
+    center : str
+        Center of observation (default='@399' for Earth geocenter)
+    step_size : str, optional
+        Step size for time sampling (e.g. '1 h' or '30 m').
+        If not supplied, the step size is computed to give ``n_times`` samples.
+
+    Returns
+    -------
+    astropy Table
+        Table with columns: time, ra, dec, rate_ra, rate_dec, mag, surf_brt, ang_diam.
+        The ``time`` column is a ``CxoTime`` object. The table meta includes
+        ``response_text`` (full Horizons response) and ``response_json`` (parsed JSON).
+    """
     import requests
 
     timestart = CxoTime(timestart)
@@ -521,17 +703,20 @@ def get_planet_chandra_horizons(
         "neptune": "899",
     }
 
+    param_step_size = step_size if step_size is not None else str(n_times - 1)
+
     params = {
         "COMMAND": planet_ids.get(body, str(body).lower()),
         "MAKE_EPHEM": "YES",
-        "CENTER": "@-151",
+        "CENTER": center,
         "TABLE_TYPE": "OBSERVER",
         "ANG_FORMAT": "DEG",
-        "START_TIME": timestart.datetime.strftime("%Y-%b-%d %H:%M"),
-        "STOP_TIME": timestop.datetime.strftime("%Y-%b-%d %H:%M"),
-        "STEP_SIZE": str(n_times - 1),
+        "START_TIME": timestart.datetime.strftime("%Y-%b-%d %H:%M:%S"),
+        "STOP_TIME": timestop.datetime.strftime("%Y-%b-%d %H:%M:%S"),
+        "STEP_SIZE": param_step_size,
         "QUANTITIES": "1,3,9,13",
         "CSV_FORMAT": "YES",
+        "TIME_DIGITS": "SECONDS",
     }
 
     # The HORIZONS web API seems to require all params to be quoted strings.
@@ -545,8 +730,8 @@ def get_planet_chandra_horizons(
             f"request {resp.url} failed: {resp.reason} ({resp.status_code})"
         )
 
-    resp_json: dict = resp.json()
-    result: str = resp_json["result"]
+    response_json: dict = resp.json()
+    result: str = response_json["result"]
     lines = result.splitlines()
 
     if "$$SOE" not in lines:
@@ -556,7 +741,7 @@ def get_planet_chandra_horizons(
     idx0 = lines.index("$$SOE") + 1
     idx1 = lines.index("$$EOE")
     lines = lines[idx0:idx1]
-    dat = ascii.read(
+    horizons_table = ascii.read(
         lines,
         format="no_header",
         delimiter=",",
@@ -575,34 +760,36 @@ def get_planet_chandra_horizons(
         ],
         fill_values=[("n.a.", "0")],
     )
+    times = [
+        datetime.strptime(val[:20], "%Y-%b-%d %H:%M:%S")
+        for val in horizons_table["time"]
+    ]
+    horizons_table["time"] = CxoTime(times, format="datetime")
+    horizons_table["time"].format = "date"
+    horizons_table["ra"].info.unit = u.deg
+    horizons_table["dec"].info.unit = u.deg
+    horizons_table["rate_ra"].info.unit = u.arcsec / u.hr
+    horizons_table["rate_dec"].info.unit = u.arcsec / u.hr
+    horizons_table["mag"].info.unit = u.mag
+    horizons_table["surf_brt"].info.unit = u.mag / (u.arcsec**2)
+    horizons_table["ang_diam"].info.unit = u.arcsec
 
-    times = [datetime.strptime(val[:20], "%Y-%b-%d %H:%M:%S") for val in dat["time"]]
-    dat["time"] = CxoTime(times, format="datetime")
-    dat["time"].format = "date"
-    dat["ra"].info.unit = u.deg
-    dat["dec"].info.unit = u.deg
-    dat["rate_ra"].info.unit = u.arcsec / u.hr
-    dat["rate_dec"].info.unit = u.arcsec / u.hr
-    dat["mag"].info.unit = u.mag
-    dat["surf_brt"].info.unit = u.mag / (u.arcsec**2)
-    dat["ang_diam"].info.unit = u.arcsec
+    horizons_table["ra"].info.format = ".5f"
+    horizons_table["dec"].info.format = ".5f"
+    horizons_table["rate_ra"].info.format = ".2f"
+    horizons_table["rate_dec"].info.format = ".2f"
+    horizons_table["mag"].info.format = ".3f"
+    horizons_table["surf_brt"].info.format = ".3f"
+    horizons_table["ang_diam"].info.format = ".2f"
 
-    dat["ra"].info.format = ".5f"
-    dat["dec"].info.format = ".5f"
-    dat["rate_ra"].info.format = ".2f"
-    dat["rate_dec"].info.format = ".2f"
-    dat["mag"].info.format = ".3f"
-    dat["surf_brt"].info.format = ".3f"
-    dat["ang_diam"].info.format = ".2f"
+    horizons_table.meta["response_text"] = resp.text
+    horizons_table.meta["response_json"] = response_json
 
-    dat.meta["response_text"] = resp.text
-    dat.meta["response_json"] = resp_json
+    del horizons_table["null1"]
+    del horizons_table["null2"]
+    del horizons_table["null3"]
 
-    del dat["null1"]
-    del dat["null2"]
-    del dat["null3"]
-
-    return dat
+    return horizons_table
 
 
 @dataclass

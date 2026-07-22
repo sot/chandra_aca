@@ -14,10 +14,12 @@ from cxotime import CxoTime
 from Quaternion import Quat
 from Ska.quatutil import radec2yagzag
 
-from chandra_aca.planets import get_planet_chandra, get_planet_eci
+from chandra_aca.planets import (
+    get_planet_chandra_ccd_position,
+)
 
-from .planets import GET_PLANET_ECI_ERRORS, NoEphemerisError, get_planet_angular_sep
-from .transform import eci_to_radec, radec_to_yagzag, yagzag_to_pixels
+from .planets import get_planet_angular_sep
+from .transform import yagzag_to_pixels
 
 # rc definitions
 frontcolor = "black"
@@ -409,9 +411,9 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
     duration : float
         Duration of plot (secs)
     lim0 : float
-        Lower limit on x, y axis (row)
+        Lower limit on row, col
     lim1 : float
-        Upper limit on x, y axis (col)
+        Upper limit on row, col
 
     Returns
     -------
@@ -422,9 +424,6 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
         att = Quat(att)
 
     date0 = CxoTime(date0)
-    n_times = int(duration / 1000) + 1
-    dates = date0 + np.linspace(0, duration, n_times) * u.s
-
     planets = ("venus", "mars", "jupiter", "saturn")
     has_planet = False
 
@@ -443,19 +442,17 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
             continue
 
         # Compute ACA row, col for planet each ksec (approx) over the duration.
-        # This uses get_planet_chandra which is accurate to 4 arcsec for Venus
-        # and < 1 arcsec for Jupiter, Saturn.
-        try:
-            eci = get_planet_chandra(planet, dates)
-            from_earth = False
-        except NoEphemerisError:
-            # Get the position from Earth using built-in DE432
-            eci = get_planet_eci(planet, dates)
-            from_earth = True
-
-        ra, dec = eci_to_radec(eci)
-        yag, zag = radec_to_yagzag(ra, dec, att)
-        row, col = yagzag_to_pixels(yag, zag, allow_bad=True)
+        # Use a ccd_pad of 100 pixels to filter later with lim0 and lim1.
+        positions = get_planet_chandra_ccd_position(
+            planet,
+            date=date0,
+            duration=duration,
+            att=att,
+            ccd_pad=100,
+            ephem_source="stk",
+        )
+        row = positions["row"]
+        col = positions["col"]
 
         # Only plot planet within the image limits
         ok = (row >= lim0) & (row <= lim1) & (col >= lim0) & (col <= lim1)
@@ -467,9 +464,6 @@ def _plot_planets(ax, att, date0, duration, lim0, lim1):
             ax.plot(row, col, ".", color="m", alpha=0.5)
             ax.plot(row[0], col[0], ".", color="g")
             label = planet.capitalize()
-            if from_earth:
-                err = GET_PLANET_ECI_ERRORS[planet].to(u.arcsec)
-                label += f" (from Earth, errors to {err})"
 
             ax.plot(row[-1], col[-1], ".", color="r", label=label)
 
