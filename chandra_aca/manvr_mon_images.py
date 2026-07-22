@@ -60,6 +60,7 @@ def read_manvr_mon_images(  # noqa: PLR0915
     filter_constraints: bool | dict = False,
     require_same_row_col: bool = True,
     exact_interval: bool = False,
+    min_samples: int = 1,
     data_dir: Path | str | None = None,
 ) -> apt.Table:
     """Read ACA maneuver monitor window images from archived data files.
@@ -93,6 +94,8 @@ def read_manvr_mon_images(  # noqa: PLR0915
         If True, only include images with times exactly within start and stop.
         Otherwise include all times within the maneuvers that are included within start
         and stop. Default is False.
+    min_samples : int, optional
+        Minimum number of samples required for each maneuver. Default is 1.
     data_dir : Path or str, optional
         Root directory containing the archived image files organized as
         ``data_dir/YYYY/DOY/*.npz``. Default is ``$SKA/data/manvr_mon_images``.
@@ -145,6 +148,8 @@ def read_manvr_mon_images(  # noqa: PLR0915
         for path in sorted(dir.glob("*.npz")):
             with np.load(path) as dat:
                 n_samp = len(dat["t_ccd"])
+                if n_samp < min_samples:
+                    continue
                 # Move the sample dimension (-1) to the front so they concat properly.
                 # Imgs will then be indexed as [sample, slot, row, col].
                 imgs_list.append(np.moveaxis(dat["slot_imgs"], -1, 0))
