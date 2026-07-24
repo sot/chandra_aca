@@ -1,5 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import warnings
+from dataclasses import dataclass
+from functools import cached_property
+from typing import get_type_hints
 
 import agasc
 import mica.starcheck
@@ -14,7 +17,93 @@ from Ska.Numpy import interpolate
 
 from chandra_aca import transform
 
-R2A = 206264.81  # Convert from radians to arcsec
+R2A = np.rad2deg(1) * 3600  # Convert from radians to arcsec
+TimeLike = np.ndarray[np.float64] | None
+
+
+@dataclass
+class TimeBase:
+    """Provide base `times` attr and indexing for classes with time-based attrs."""
+
+    times: np.ndarray[np.float64]
+
+    def __post_init__(self):
+        self.times = np.asarray(self.times, dtype=np.float64)
+
+        for attr in self.timelike_cols:
+            if (val := getattr(self, attr)) is not None:
+                # Trigger setter to check length and convert to array
+                setattr(self, attr, val)
+
+    @cached_property
+    def timelike_cols(self) -> tuple[str, ...]:
+        hints = get_type_hints(self.__class__)
+        return tuple(attr for attr, typ in hints.items() if typ == TimeLike)
+
+    def __setattr__(self, key, value):
+        if key not in self.timelike_cols or value is None:
+            super().__setattr__(key, value)
+        else:
+            value = np.asarray(value, dtype=np.float64)
+            if len(value) != len(self.times):
+                raise ValueError(
+                    f"Length of {key} ({len(value)}) does not match length of "
+                    f"times ({len(self.times)})"
+                )
+            super().__setattr__(key, value)
+
+    def __getitem__(self, item):
+        item = self._get_slice_or_item(item)
+
+        # Apply this to all attributes that are arrays of the same length as times
+        out = {}
+        for attr in self.__dataclass_fields__:
+            val = getattr(self, attr)
+            if isinstance(val, np.ndarray) and len(val) == len(self.times):
+                out[attr] = val[item]
+            else:
+                out[attr] = val
+        return self.__class__(**out)
+
+    def _get_slice_or_item(self, item):
+        # Not a slice, just return the item to let np indexing handle it
+        if not isinstance(item, slice):
+            return item
+
+        start, stop = item.start, item.stop
+
+        # Slice with integer start or stop => normal index slicing
+        if isinstance(start, int | None) and isinstance(stop, int | None):
+            return item
+
+        if not (isinstance(start, float | None) and isinstance(stop, float | None)):
+            raise ValueError(
+                "slice start, stop must be all int/None or all float/None, "
+                f"got start={start} ({type(start)}), stop={stop} ({type(stop)})"
+            )
+
+        out = [None, None, item.step]
+        for idx, attr in enumerate(["start", "stop"]):
+            val = getattr(item, attr)
+            if val is not None:
+                if val < 0:
+                    time = self.times[-1] + val
+                else:
+                    time = self.times[0] + val
+                out[idx] = np.searchsorted(self.times, time)
+        return slice(*out)
+
+
+@dataclass
+class CentroidsSlot(TimeBase):
+    yags: TimeLike
+    zags: TimeLike
+    dyags: TimeLike
+    dzags: TimeLike
+
+
+class Centroids(dict):
+    """Container for centroids and residuals on a slot-by-slot basis."""
 
 
 class CentroidResiduals(object):
