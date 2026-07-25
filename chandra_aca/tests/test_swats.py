@@ -10,6 +10,7 @@ All bench files live in the test data directory and are committed to the repo.
 """
 
 import re
+import tarfile
 from pathlib import Path
 
 import numpy as np
@@ -17,9 +18,12 @@ import pytest
 
 from chandra_aca import maude_decom
 from chandra_aca.swats import (
+    OBC_ACA_INDEX_OFFSET,
     build_raw_aca_packets,
+    obc_telemetry_tables,
     read_aca_packets,
     read_obc_packets,
+    read_swats_tar,
 )
 
 DATA = Path(__file__).resolve().parent / "data"
@@ -223,6 +227,169 @@ def test_unpack_obc_telemetry():
 def test_unpack_obc_telemetry_bad_length():
     with pytest.raises(ValueError, match="60-byte packet"):
         maude_decom.unpack_obc_telemetry(bytes(59))
+
+
+@pytest.fixture()
+def swats_tar(tmp_path):
+    """A SWATS tar archive built from the three committed bench dump files."""
+    path = tmp_path / "swats.tar"
+    with tarfile.open(path, "w") as tar:
+        for source in [ASP_TLM, OBC_TLM, ACA_CMDS]:
+            tar.add(source, arcname=source.name)
+    return path
+
+
+def test_read_swats_tar(swats_tar):
+    result = read_swats_tar(swats_tar)
+    assert sorted(result) == ["aca_packets", "cmds", "obc_packets"]
+
+    # identical to reading the members directly
+    direct = read_aca_packets(ASP_TLM)
+    assert result["aca_packets"]["packets"] == direct["packets"]
+    assert np.array_equal(result["aca_packets"]["TIME"], direct["TIME"])
+    assert len(result["obc_packets"]) == len(read_obc_packets(OBC_TLM))
+    assert "Int Time" in result["cmds"]
+
+
+def test_read_swats_tar_missing_member(tmp_path):
+    path = tmp_path / "incomplete.tar"
+    with tarfile.open(path, "w") as tar:
+        tar.add(ASP_TLM, arcname=ASP_TLM.name)
+        tar.add(ACA_CMDS, arcname=ACA_CMDS.name)
+    with pytest.raises(ValueError, match="OBC_TLM"):
+        read_swats_tar(path)
+
+
+def test_read_swats_tar_ambiguous_member(tmp_path):
+    path = tmp_path / "ambiguous.tar"
+    with tarfile.open(path, "w") as tar:
+        tar.add(ASP_TLM, arcname=ASP_TLM.name)
+        tar.add(ASP_TLM, arcname="another_asp_tlm.txt")
+        tar.add(OBC_TLM, arcname=OBC_TLM.name)
+        tar.add(ACA_CMDS, arcname=ACA_CMDS.name)
+    with pytest.raises(ValueError, match="multiple members"):
+        read_swats_tar(path)
+
+
+def test_read_swats_tar_not_a_tar():
+    # a bare ASP_TLM dump (the pre-tar SWATS input) must be rejected loudly
+    with pytest.raises(ValueError, match="not a tar archive"):
+        read_swats_tar(ASP_TLM)
+
+
+def test_readers_accept_file_objects():
+    with open(ASP_TLM, "rb") as fh:
+        from_file = read_aca_packets(fh)
+    from_path = read_aca_packets(ASP_TLM)
+    assert from_file["packets"] == from_path["packets"]
+
+    with open(OBC_TLM) as fh:
+        assert read_obc_packets(fh) == read_obc_packets(OBC_TLM)
+
+
+def test_obc_telemetry_tables_sentinels():
+    # Non-tracking slots carry the $20000/$FF sentinels in the raw packets; the tables
+    # must mask YAG/ZAG/MAG there and leave tracked slots unmasked with sane values.
+    aca = read_aca_packets(ASP_TLM)
+    obc = read_obc_packets(OBC_TLM)
+    tables = obc_telemetry_tables(obc, aca)
+
+    global_data, slot_data = tables["global"], tables["slot"]
+    assert len(global_data) == len(obc)
+    assert len(slot_data) == 8 * len(obc)
+
+    # timing columns come from the ACA synthetic timeline
+    aca_times = set(np.asarray(aca["TIME"]).tolist())
+    assert set(np.asarray(global_data["TIME"]).tolist()) <= aca_times
+
+    tracking = np.asarray(slot_data["IMGFUNC"]) == 1
+    assert tracking.any() and not tracking.all()
+    for key in ["YAG", "ZAG", "MAG"]:
+        assert not slot_data[key].mask[tracking].any()
+        assert slot_data[key].mask[~tracking].all()
+    # sentinel engineering values never appear unmasked
+    assert (np.asarray(slot_data["MAG"])[tracking] < 13.9).all()
+    assert (np.abs(np.asarray(slot_data["YAG"])[tracking]) < 3000).all()
+
+
+def _track_onsets(func_by_index):
+    """Return per-slot lists of indices where IMGFUNC transitions into 1 (tracking)."""
+    onsets = {}
+    for slot in range(8):
+        series = func_by_index[:, slot]
+        valid = series >= 0
+        idx = np.flatnonzero(valid)
+        values = series[idx]
+        change = (values[1:] == 1) & (values[:-1] != 1)
+        onsets[slot] = set(idx[1:][change].tolist())
+    return onsets
+
+
+def test_obc_aca_alignment():
+    # Regression test for OBC_ACA_INDEX_OFFSET. The discriminating signal in the bench
+    # dumps is the track-onset transitions (IMGFUNC -> 1), which the PEA reports on the
+    # same 1.025 s cycle in both the image telemetry and the OBC data path: at the
+    # correct offset every onset matches exactly, at an offset one packet off none do
+    # (verified over [-4, 4] when the offset was determined). Also sanity-check that
+    # the aligned OBC centroids agree with the image positions at the arcsec level.
+    raw = read_aca_packets(ASP_TLM)
+    obc = read_obc_packets(OBC_TLM)
+    n_aca = len(raw["packets"])
+
+    packets = maude_decom.get_aca_packets(
+        raw["TIME"][0], raw["TIME"][-1] + 1.025, raw_aca_packets=raw, combine=False
+    )
+    aca_func = np.full((n_aca, 8), -1, dtype=int)
+    for r in packets:
+        i = int(round((float(r["TIME"]) - raw["TIME"][0]) / 1.025))
+        if not np.ma.is_masked(r["IMGFUNC"]):
+            aca_func[i, int(r["IMGNUM"])] = int(r["IMGFUNC"])
+
+    obc_func = np.full((len(obc), 8), -1, dtype=int)
+    for j, telemetry in enumerate(obc):
+        for slot in telemetry["image_data"]:
+            obc_func[j, slot["IMGNUM"]] = slot["IMGFUNC"]
+
+    aca_onsets = _track_onsets(aca_func)
+    obc_onsets = _track_onsets(obc_func)
+    n_onsets = sum(len(v) for v in obc_onsets.values())
+    assert n_onsets > 50
+
+    def n_matched(offset):
+        return sum(
+            (j + offset) in aca_onsets[slot]
+            for slot in range(8)
+            for j in obc_onsets[slot]
+        )
+
+    assert n_matched(OBC_ACA_INDEX_OFFSET) == n_onsets
+    assert n_matched(OBC_ACA_INDEX_OFFSET - 1) < n_onsets / 2
+    assert n_matched(OBC_ACA_INDEX_OFFSET + 1) < n_onsets / 2
+
+    # aligned OBC centroids vs the 8x8 tracking-window centers (coarse unit/sign check)
+    tables = obc_telemetry_tables(obc, raw)
+    slot_data = tables["slot"]
+    images = maude_decom.get_aca_images(
+        raw["TIME"][0], raw["TIME"][-1] + 1.025, raw_aca_packets=raw
+    )
+    from chandra_aca.transform import pixels_to_yagzag
+
+    window = {}
+    for r in images[images["IMGTYPE"] == 4]:
+        yag, zag = pixels_to_yagzag(
+            r["IMGROW0_8X8"] + 3.5, r["IMGCOL0_8X8"] + 3.5, allow_bad=True
+        )
+        window[(int(r["VCDUCTR"]), int(r["IMGNUM"]))] = (float(yag), float(zag))
+
+    residuals = []
+    tracked = slot_data[np.asarray(slot_data["IMGFUNC"]) == 1]
+    for r in tracked:
+        key = (int(r["VCDUCTR"]), int(r["IMGNUM"]))
+        if key in window:
+            yag, zag = window[key]
+            residuals.append(np.hypot(r["YAG"] - yag, r["ZAG"] - zag))
+    assert len(residuals) > 100
+    assert np.median(residuals) < 10.0
 
 
 def test_obc_matches_commanded():
