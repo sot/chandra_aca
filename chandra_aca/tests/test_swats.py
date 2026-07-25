@@ -260,6 +260,17 @@ def test_read_swats_tar_missing_member(tmp_path):
         read_swats_tar(path)
 
 
+def test_read_swats_tar_ignores_appledouble(tmp_path):
+    # macOS tar adds "._*" AppleDouble members; they must not trip the ambiguity check
+    path = tmp_path / "macos.tar"
+    with tarfile.open(path, "w") as tar:
+        for source in [ASP_TLM, OBC_TLM, ACA_CMDS]:
+            tar.add(source, arcname=source.name)
+            tar.add(ACA_CMDS, arcname=f"._{source.name}")
+    result = read_swats_tar(path)
+    assert len(result["aca_packets"]["packets"]) > 0
+
+
 def test_read_swats_tar_ambiguous_member(tmp_path):
     path = tmp_path / "ambiguous.tar"
     with tarfile.open(path, "w") as tar:

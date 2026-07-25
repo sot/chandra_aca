@@ -144,7 +144,12 @@ def read_swats_tar(path):
         )
 
     with tarfile.open(path) as tar:
-        members = [m for m in tar.getmembers() if m.isfile()]
+        members = [
+            m
+            for m in tar.getmembers()
+            # skip the AppleDouble ("._*") members that macOS tar adds
+            if m.isfile() and not PurePath(m.name).name.startswith("._")
+        ]
         selected = {}
         for key, pattern in _TAR_MEMBERS.items():
             matches = [m for m in members if pattern.search(PurePath(m.name).name)]
