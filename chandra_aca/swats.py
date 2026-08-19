@@ -37,6 +37,11 @@ _OBC_PACKET_RE = re.compile(
 _DT_ACA = 1.025  # ACA readout period [s] -> one 224-byte packet per period
 _VCDU_PER_PACKET = 4  # VCDU minor frames per ACA packet (counter step)
 
+# Integration-cycle markers interleaved with the IO-RAM dumps. The cycle numbers are
+# the "step" numbers used in the companion ACA_CMDS file, so they tie each packet to
+# the test case being run when it was produced.
+_CYCLE_RE = re.compile(r"# Integration Cycle # (\d+)")
+
 
 def _read_text(source):
     """
@@ -48,35 +53,49 @@ def _read_text(source):
     return open(source).read()
 
 
+def _extract_packets(text, packet_re, size):
+    """
+    Return ``(packets, cycles)`` for the packets matching ``packet_re`` in ``text``.
+
+    Each packet is tagged with the number of the last ``# Integration Cycle # N``
+    marker preceding it in the dump (0 if there is none).
+    """
+    marker_pos = np.array([m.start() for m in _CYCLE_RE.finditer(text)])
+    marker_num = np.array([int(m.group(1)) for m in _CYCLE_RE.finditer(text)])
+    packets = []
+    cycles = []
+    for m in packet_re.finditer(text):
+        packets.append(bytes.fromhex(m.group(1).replace(" ", "")))
+        idx = np.searchsorted(marker_pos, m.start()) - 1
+        cycles.append(int(marker_num[idx]) if idx >= 0 else 0)
+    if not all(len(p) == size for p in packets):
+        raise ValueError(f"expected all packets to be {size} bytes")
+    return packets, cycles
+
+
 def _read_aca_packets_(source):
     """
-    Return the list of 224-byte ACA packets (bytes) found in an ASP_TLM.DAT file.
+    Return ``(packets, cycles)`` for the 224-byte ACA packets in an ASP_TLM.DAT file.
     """
-    text = _read_text(source)
-    packets = [bytes.fromhex(m.replace(" ", "")) for m in _ACA_PACKET_RE.findall(text)]
-    if not all(len(p) == 224 for p in packets):
-        raise ValueError("expected all packets to be 224 bytes")
-    return packets
+    return _extract_packets(_read_text(source), _ACA_PACKET_RE, 224)
 
 
 def _read_obc_packets_(source):
     """
-    Return the list of 60-byte OBC telemetry packets (bytes) found in an OBC_TLM.DAT file.
+    Return ``(packets, cycles)`` for the 60-byte OBC packets in an OBC_TLM.DAT file.
     """
-    text = _read_text(source)
-    packets = [bytes.fromhex(m.replace(" ", "")) for m in _OBC_PACKET_RE.findall(text)]
-    if not all(len(p) == 60 for p in packets):
-        raise ValueError("expected all packets to be 60 bytes")
-    return packets
+    return _extract_packets(_read_text(source), _OBC_PACKET_RE, 60)
 
 
 def read_aca_packets(source):
     """
     Return the 224-byte ACA packets found in an ASP_TLM.DAT file as a dict for get_aca_images.
 
-    ``source`` is a path or a file object.
+    ``source`` is a path or a file object. The dict includes a CYCLE entry with the
+    integration-cycle number of each packet.
     """
-    return build_raw_aca_packets(_read_aca_packets_(source))
+    packets, cycles = _read_aca_packets_(source)
+    return build_raw_aca_packets(packets, cycles=cycles)
 
 
 def read_obc_packets(source):
@@ -84,23 +103,29 @@ def read_obc_packets(source):
     Return the decommuted OBC telemetry packets found in an OBC_TLM.DAT file.
 
     Each packet is decoded with ``chandra_aca.maude_decom.unpack_obc_telemetry``,
-    so this returns a list of dicts. ``source`` is a path or a file object.
+    so this returns a list of dicts, each with a CYCLE key giving the packet's
+    integration-cycle number. ``source`` is a path or a file object.
     """
-    return [maude_decom.unpack_obc_telemetry(p) for p in _read_obc_packets_(source)]
+    packets, cycles = _read_obc_packets_(source)
+    return [
+        maude_decom.unpack_obc_telemetry(packet) | {"CYCLE": cycle}
+        for packet, cycle in zip(packets, cycles, strict=True)
+    ]
 
 
-def build_raw_aca_packets(packets, t0=0.0, vcdu0=0):
+def build_raw_aca_packets(packets, t0=0.0, vcdu0=0, cycles=None):
     """Build the raw_aca_packets dict for maude_decom.get_aca_images.
 
     TIME starts at ``t0`` (default 0) and steps by 1.025 s; VCDUCTR starts at ``vcdu0``
     (default 0) and steps by 4. MNF/MJF are derived from VCDUCTR. The VCDU counter rolls back to 0
-    at 2**24.
+    at 2**24. If ``cycles`` (integration-cycle number per packet) is given, it is
+    included as CYCLE.
     """
     n = len(packets)
     vcductr = (
         (vcdu0 + _VCDU_PER_PACKET * np.arange(n)) % (maude_decom.MAX_VCDU + 1)
     ).astype(np.uint32)
-    return {
+    result = {
         "flags": 0,
         "packets": packets,
         "TIME": t0 + _DT_ACA * np.arange(n),
@@ -108,6 +133,9 @@ def build_raw_aca_packets(packets, t0=0.0, vcdu0=0):
         "MNF": vcductr % (1 << 7),  # 128
         "MJF": vcductr // (1 << 7),
     }
+    if cycles is not None:
+        result["CYCLE"] = np.asarray(cycles, dtype=np.int32)
+    return result
 
 
 # A SWATS tar archive must contain exactly one member matching each of these patterns
@@ -133,7 +161,7 @@ def read_swats_tar(path):
         - ``aca_packets``: raw_aca_packets dict (see :func:`read_aca_packets`)
         - ``obc_packets``: list of decommuted OBC telemetry dicts
           (see :func:`read_obc_packets`)
-        - ``cmds``: str, the raw text of the ACA_CMDS member (not parsed)
+        - ``cmds``: list of test-case dicts (see :func:`parse_aca_cmds`)
     :raises ValueError: if ``path`` is not a tar archive or a member is
         missing/ambiguous
     """
@@ -170,8 +198,89 @@ def read_swats_tar(path):
         return {
             "aca_packets": read_aca_packets(tar.extractfile(selected["aca_packets"])),
             "obc_packets": read_obc_packets(tar.extractfile(selected["obc_packets"])),
-            "cmds": _read_text(tar.extractfile(selected["cmds"])),
+            "cmds": parse_aca_cmds(_read_text(tar.extractfile(selected["cmds"]))),
         }
+
+
+# Test-case block separator in an ACA_CMDS file, e.g.
+# "########################################### Test case #5735"
+_CMDS_CASE_RE = re.compile(r"^#{2,} *Test case *#?(\d+)?.*$", re.MULTILINE)
+
+# (key, label, converter) for the "# <label> = <value>" comment lines of a test-case
+# block. Labels are matched whitespace-tolerantly; missing lines give None.
+_CMDS_FIELDS = [
+    ("aca_temperature", "ACA Temperature", float),
+    ("pred_aca_temp", r"Pred\. ACA Temp", float),
+    ("int_time", "Int Time", float),
+    ("obsid", "ObsID", int),
+    ("target_quat", "Target Quat", None),
+    ("est_flight_quat", "Est Flight Quat", None),
+    ("search_box_hw", "Search Box HW", None),
+    ("yang", "Yang", None),
+    ("zang", "Zang", None),
+    ("cat_mags", "Cat Mags", None),
+    ("star_mags", "Star Mags", None),
+    ("mag_limits", "Mag Limits", None),
+    ("flight_time", "Flight Time", str),
+]
+
+_CMDS_STAR_LOCATION_RE = re.compile(
+    r"^# *Star #(\d+) Location *= *(\S+) +(\S+)", re.MULTILINE
+)
+
+
+def _parse_cmds_block(block, test_case=None):
+    """
+    Parse one test-case block of an ACA_CMDS file into a dict.
+    """
+    result = {"test_case": test_case}
+    for key, label, converter in _CMDS_FIELDS:
+        match = re.search(rf"^# *{label} *=([^\n]*)", block, re.MULTILINE)
+        if match is None:
+            result[key] = None
+            continue
+        value = match.group(1).strip()
+        result[key] = (
+            converter(value) if converter else [float(v) for v in value.split()]
+        )
+    result["star_locations"] = {
+        int(m.group(1)): (float(m.group(2)), float(m.group(3)))
+        for m in _CMDS_STAR_LOCATION_RE.finditer(block)
+    }
+    # the leading integer of the command lines is the integration cycle at which the
+    # block's commands execute
+    match = re.search(r"^ *(\d+) +\S", block, re.MULTILINE)
+    result["step"] = int(match.group(1)) if match else None
+    return result
+
+
+def parse_aca_cmds(text):
+    """
+    Parse the text of an ACA_CMDS file into a list of test-case dicts.
+
+    Each ``#### Test case #NNNN`` block gives one dict with keys ``test_case``,
+    ``step`` (the integration cycle at which the block's commands execute, matching
+    the CYCLE numbers of :func:`read_aca_packets`/:func:`read_obc_packets`),
+    ``aca_temperature``, ``pred_aca_temp``, ``int_time``, ``obsid``, ``target_quat``,
+    ``est_flight_quat`` (lists of 4), ``search_box_hw``, ``yang``, ``zang``,
+    ``cat_mags``, ``star_mags``, ``mag_limits`` (lists of 8), ``flight_time`` and
+    ``star_locations`` ({slot: (row, col)}). Missing values are None. Text without
+    block separators is parsed as a single block if it has recognizable keys.
+
+    :param text: str, content of an ACA_CMDS file
+    :return: list of dicts, in file (= execution) order
+    """
+    separators = list(_CMDS_CASE_RE.finditer(text))
+    if not separators:
+        if re.search(r"^# *(Target Quat|Yang) *=", text, re.MULTILINE):
+            return [_parse_cmds_block(text)]
+        return []
+    blocks = []
+    for match, next_match in zip(separators, separators[1:] + [None], strict=True):
+        end = next_match.start() if next_match else len(text)
+        test_case = int(match.group(1)) if match.group(1) else None
+        blocks.append(_parse_cmds_block(text[match.end() : end], test_case))
+    return blocks
 
 
 # OBC packet j reports on the same 1.025 s cycle as ACA image packet index
@@ -230,6 +339,9 @@ def obc_telemetry_tables(obc_packets, aca_packets):
           INTEG, GLBSTAT, the status flags, COMMPROG, COMMPROG_REPEAT)
         - ``slot``: Table with eight rows per aligned OBC packet (timing columns plus
           the per-slot image flags and YAG, ZAG, MAG)
+
+    Both tables include a CYCLE column (the packets' integration-cycle numbers) when
+    the OBC packets carry one.
     """
     n_aca = len(aca_packets["TIME"])
     aca_index = np.arange(len(obc_packets)) + OBC_ACA_INDEX_OFFSET
@@ -238,11 +350,17 @@ def obc_telemetry_tables(obc_packets, aca_packets):
     idx = np.array([i for _, i in kept], dtype=int)
     timing = {key: np.asarray(aca_packets[key])[idx] for key in _TIMING_KEYS}
 
+    have_cycles = bool(obc_packets) and "CYCLE" in obc_packets[0]
+    if have_cycles:
+        timing["CYCLE"] = np.array(
+            [obc_packets[j]["CYCLE"] for j, _ in kept], dtype=np.int32
+        )
+
     global_data = Table(timing)
     for key in _OBC_GLOBAL_KEYS:
         global_data[key] = [obc_packets[j][key] for j, _ in kept]
 
-    slot_data = Table({key: np.repeat(timing[key], 8) for key in _TIMING_KEYS})
+    slot_data = Table({key: np.repeat(timing[key], 8) for key in timing})
     for key in _OBC_SLOT_KEYS:
         slot_data[key] = [
             obc_packets[j]["image_data"][num][key] for j, _ in kept for num in range(8)

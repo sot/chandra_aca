@@ -9,7 +9,6 @@ Two kinds of checks:
 All bench files live in the test data directory and are committed to the repo.
 """
 
-import re
 import tarfile
 from pathlib import Path
 
@@ -21,6 +20,7 @@ from chandra_aca.swats import (
     OBC_ACA_INDEX_OFFSET,
     build_raw_aca_packets,
     obc_telemetry_tables,
+    parse_aca_cmds,
     read_aca_packets,
     read_obc_packets,
     read_swats_tar,
@@ -36,17 +36,13 @@ INTEG_UNIT = 0.016  # ACA integration-time LSB [s]
 
 def _commanded_star_locations(text):
     """Return {slot: (row, col)} from the first test case in ACA_CMDS.txt."""
-    star = {}
-    for m in re.finditer(r"Star #(\d+) Location\s*=\s*([-\d.]+)\s+([-\d.]+)", text):
-        star.setdefault(int(m.group(1)), (float(m.group(2)), float(m.group(3))))
-    return star
+    return parse_aca_cmds(text)[0]["star_locations"]
 
 
 def _commanded_yang_zang(text):
     """Return the 8 commanded (Yang, Zang) [arcsec] from the first test case in ACA_CMDS.txt."""
-    yang = [float(v) for v in re.search(r"Yang\s*=([^\n#]+)", text).group(1).split()]
-    zang = [float(v) for v in re.search(r"Zang\s*=([^\n#]+)", text).group(1).split()]
-    return list(zip(yang, zang, strict=True))
+    block = parse_aca_cmds(text)[0]
+    return list(zip(block["yang"], block["zang"], strict=True))
 
 
 @pytest.fixture(scope="module")
@@ -121,9 +117,7 @@ def test_images_contain_stars():
 def test_integ_matches_commanded_int_time(images):
     # This is a sanity check that verifies that the commanded integration time in ACA_CMDS.txt
     # matches the integration time in the decommutated images.
-    commanded = float(
-        re.search(r"Int Time\s*=\s*([\d.]+)", ACA_CMDS.read_text()).group(1)
-    )
+    commanded = parse_aca_cmds(ACA_CMDS.read_text())[0]["int_time"]
     quantized = round(commanded / INTEG_UNIT) * INTEG_UNIT  # 1.696 s
 
     integ = np.asarray(images["INTEG"], dtype=float)
@@ -148,6 +142,76 @@ def test_star_locations_match_tracking_windows(images):
     assert len(matched) >= 6, (
         f"only {len(matched)}/8 slots matched: residuals={residuals}"
     )
+
+
+def test_read_cycles():
+    # Every packet gets the integration-cycle number of the last "# Integration
+    # Cycle # N" marker before it in the dump. The cycle numbers are the command
+    # step numbers of the ACA_CMDS file, so they tie packets to test cases.
+    raw = read_aca_packets(ASP_TLM)
+    cycles = raw["CYCLE"]
+    assert len(cycles) == len(raw["packets"])
+    assert np.all(np.diff(cycles) >= 0)
+    assert cycles[0] == 1 and cycles[-1] == 330
+
+    obc = read_obc_packets(OBC_TLM)
+    obc_cycles = np.array([t["CYCLE"] for t in obc])
+    assert np.all(np.diff(obc_cycles) >= 0)
+    assert obc_cycles[0] == 1 and obc_cycles[-1] == 330
+
+    # cycles are coarser than packets: most cycles dump both ping/pong buffers
+    assert len(cycles) > 330
+
+    tables = obc_telemetry_tables(obc, raw)
+    assert np.array_equal(tables["global"]["CYCLE"], obc_cycles[: len(raw["TIME"])])
+    assert np.array_equal(
+        tables["slot"]["CYCLE"], np.repeat(tables["global"]["CYCLE"], 8)
+    )
+
+
+def test_parse_aca_cmds():
+    blocks = parse_aca_cmds(ACA_CMDS.read_text())
+    assert len(blocks) == 10
+    assert [b["step"] for b in blocks] == list(range(22, 320, 30))
+
+    first = blocks[0]
+    assert first["test_case"] == 5735
+    assert first["obsid"] == 28664
+    assert first["aca_temperature"] == -5.8
+    assert first["pred_aca_temp"] == -5.1
+    assert first["int_time"] == 1.7
+    assert first["flight_time"] == "2023:364:04:24:43.494"
+    assert np.allclose(
+        first["target_quat"], [-0.31019721, -0.63539762, -0.69132219, 0.14873194]
+    )
+    assert np.allclose(
+        first["est_flight_quat"], [-0.31016172, -0.63540509, -0.69133408, 0.14871878]
+    )
+    for key in ["search_box_hw", "yang", "zang", "cat_mags", "star_mags", "mag_limits"]:
+        assert all(len(b[key]) == 8 for b in blocks), key
+    assert first["yang"][0] == 1352 and first["zang"][0] == -117
+    assert sorted(first["star_locations"]) == list(range(8))
+    assert first["star_locations"][0] == (-268.83, -17.24)
+
+    # consecutive blocks are temperature pairs with the same catalog
+    assert blocks[1]["test_case"] == 5736
+    assert blocks[1]["obsid"] == first["obsid"]
+    assert blocks[1]["aca_temperature"] == 0.2
+
+
+def test_parse_aca_cmds_single_block():
+    # text without "Test case" separators parses as a single block if it has
+    # recognizable keys, and as no blocks otherwise
+    text = ACA_CMDS.read_text()
+    start = text.index("#   ACA Temperature")  # strip preamble and first separator
+    end = text.index("Test case", start)
+    blocks = parse_aca_cmds(text[start:end])
+    assert len(blocks) == 1
+    assert blocks[0]["test_case"] is None
+    assert blocks[0]["obsid"] == 28664
+    assert blocks[0]["step"] == 22
+
+    assert parse_aca_cmds("# no commands here\n1 OUT_CFG 0\n") == []
 
 
 def _bits(value, n):
@@ -248,7 +312,7 @@ def test_read_swats_tar(swats_tar):
     assert result["aca_packets"]["packets"] == direct["packets"]
     assert np.array_equal(result["aca_packets"]["TIME"], direct["TIME"])
     assert len(result["obc_packets"]) == len(read_obc_packets(OBC_TLM))
-    assert "Int Time" in result["cmds"]
+    assert result["cmds"] == parse_aca_cmds(ACA_CMDS.read_text())
 
 
 def test_read_swats_tar_missing_member(tmp_path):
@@ -413,9 +477,7 @@ def test_obc_matches_commanded():
     telemetry = read_obc_packets(OBC_TLM)
     assert len(telemetry) > 100
 
-    commanded = float(
-        re.search(r"Int Time\s*=\s*([\d.]+)", ACA_CMDS.read_text()).group(1)
-    )
+    commanded = parse_aca_cmds(ACA_CMDS.read_text())[0]["int_time"]
     quantized = round(commanded / INTEG_UNIT) * INTEG_UNIT  # 1.696 s
     integ = np.array([t["INTEG"] for t in telemetry])
     assert np.any(np.isclose(integ, quantized, atol=1e-3))
