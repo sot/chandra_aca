@@ -471,6 +471,76 @@ def unpack_aca_telemetry(packet):
     return slots
 
 
+def unpack_obc_telemetry(packet):
+    """
+    Unpack ACA telemetry 60-byte packets.
+
+    The packet layout is: two bytes of integration time (16 ms LSB), one byte of
+    global status, one byte of command progress, then eight 7-byte image blocks
+    (flags, then ZAG and YAG as 18-bit signed centroid angles, then magnitude).
+    See Aspect Camera User Guide for details.
+
+    Values are converted to engineering units:
+
+        - INTEG in seconds,
+        - YAG/ZAG in arcsec (0.025 arcsec LSB),
+        - MAG in magnitudes (-2.0 + counts * 0.0625)
+
+    When a slot's image function is not TRAK (IMGFUNC != 1), the OBC sets YAG/ZAG to the
+    $20000 sentinel (decodes to -3276.8 arcsec) and MAG to $FF (13.9375 mag).
+
+    Parameters
+    ----------
+    packet
+        bytes-like object of length 60
+
+    Returns
+    -------
+    dict
+    A dictionary of global values, plus an "image_data" list with one dict per slot.
+    """
+    if len(packet) != 60:
+        raise ValueError(f"expected a 60-byte packet, got {len(packet)} bytes")
+
+    bits = np.unpackbits(np.array(_unpack("BBBB", packet[:4]), dtype=np.uint8))
+    result = {
+        "INTEG": _packbits(bits[0:16]) * 0.016,
+        "GLBSTAT": packet[2],
+        "HIGH_BGD": bool(bits[16]),
+        "RAM_FAIL": bool(bits[17]),
+        "ROM_FAIL": bool(bits[18]),
+        "POWER_FAIL": bool(bits[19]),
+        "CAL_FAIL": bool(bits[20]),
+        "COMM_CHECKSUM_FAIL": bool(bits[21]),
+        "RESET": bool(bits[22]),
+        "SYNTAX_ERROR": bool(bits[23]),
+        "COMMPROG": _packbits(bits[24:30]),
+        "COMMPROG_REPEAT": _packbits(bits[30:32]),
+        "image_data": [],
+    }
+    for i in range(4, 60, 7):
+        b = np.unpackbits(
+            np.array(_unpack("BBBBBBB", packet[i : i + 7]), dtype=np.uint8)
+        )
+        result["image_data"].append(
+            {
+                "IMGFID": bool(b[0]),
+                "IMGNUM": _packbits(b[1:4]),
+                "IMGFUNC": _packbits(b[4:6]),
+                "SAT_PIXEL": bool(b[6]),
+                "DEF_PIXEL": bool(b[7]),
+                "QUAD_BOUND": bool(b[8]),
+                "COMMON_COL": bool(b[9]),
+                "MULTI_STAR": bool(b[10]),
+                "ION_RAD": bool(b[11]),
+                "ZAG": _packbits(b[12:30], unsigned=False) * 0.025,
+                "YAG": _packbits(b[30:48], unsigned=False) * 0.025,
+                "MAG": -2.0 + _packbits(b[48:56]) * 0.0625,
+            }
+        )
+    return result
+
+
 def _combine_aca_packets(aca_packets):
     """
     Combine a list of ACA packets into a single record.
@@ -810,6 +880,51 @@ def _aca_packets_to_table(aca_packets, dtype=None):
     return table
 
 
+def _fill_frame_counters(raw_aca_packets):
+    """
+    Fill in missing frame counters in a raw ACA packets dictionary, in place.
+
+    The frame counters MJF/MNF (major/minor frame) and VCDUCTR are related by
+    ``VCDUCTR = MJF * 128 + MNF``, so either representation determines the other. The
+    input must supply at least one of them (both 'MJF' and 'MNF', or 'VCDUCTR'); the
+    other is derived. Values may be scalars or arrays.
+
+    Parameters
+    ----------
+    raw_aca_packets : dict
+        Raw ACA packets dictionary (modified in place and returned).
+
+    Returns
+    -------
+    dict
+        The same dictionary with 'MJF', 'MNF', and 'VCDUCTR' all present.
+
+    Raises
+    ------
+    ValueError
+        If neither 'VCDUCTR' nor both 'MJF' and 'MNF' are present.
+    """
+    has_mjf_mnf = "MJF" in raw_aca_packets and "MNF" in raw_aca_packets
+    has_vcductr = "VCDUCTR" in raw_aca_packets
+
+    if not has_mjf_mnf and not has_vcductr:
+        raise ValueError(
+            "raw_aca_packets must include frame counters: either both 'MJF' and 'MNF', "
+            "or 'VCDUCTR'"
+        )
+
+    if has_vcductr and not has_mjf_mnf:
+        raw_aca_packets["MNF"] = raw_aca_packets["VCDUCTR"] % (1 << 7)
+        raw_aca_packets["MJF"] = raw_aca_packets["VCDUCTR"] // (1 << 7)
+
+    if has_mjf_mnf and not has_vcductr:
+        raw_aca_packets["VCDUCTR"] = (
+            raw_aca_packets["MJF"] * (1 << 7) + raw_aca_packets["MNF"]
+        )
+
+    return raw_aca_packets
+
+
 def get_aca_packets(
     start,
     stop,
@@ -819,6 +934,7 @@ def get_aca_packets(
     calibrate=False,
     blobs=None,
     frames=None,
+    raw_aca_packets=None,
     dtype=None,
     **maude_kwargs,
 ):
@@ -963,7 +1079,7 @@ def get_aca_packets(
     stop : CxoTimeLike
         Stop time for the ACA packets
     level0 : bool.
-        Implies combine=True, adjust_time=True, calibrate=True
+        level0=True implies combine=True, adjust_time=True, calibrate=True
     combine : bool.
         If True, ACA subimages are combined to form a full image (depending on size),
         If False, ACA subimages are not combined, resulting in multiple rows for 6x6 and 8x8 images.
@@ -980,6 +1096,8 @@ def get_aca_packets(
     frames : bool or dict
         If set, data is assembled from MAUDE frames. If it is a dictionary, it must be the
         output of maude.get_frames ({'data': ... }).
+    raw_aca_packets : dict
+        If set, data is assembled from the raw ACA packets.
     dtype : np.dtype. Optional.
         the dtype to use when creating the resulting table. This is useful to add columns
         including MSIDs that are present in blobs. If used with frames, most probably you will get
@@ -992,11 +1110,17 @@ def get_aca_packets(
     -------
     astropy.table.Table
     """
-    if not blobs and not frames:
+    n_sources = sum(
+        x is not None and x is not False for x in [blobs, frames, raw_aca_packets]
+    )
+    if n_sources == 0:
         frames = True
+        n_sources = 1
 
-    if (not blobs and not frames) or (frames and blobs):
-        raise ValueError("Specify one and only one of 'blobs' or 'frames'")
+    if n_sources != 1:
+        raise ValueError(
+            "Specify one and only one of 'blobs', 'frames', or 'raw_aca_packets'"
+        )
 
     if level0:
         adjust_time = True
@@ -1017,7 +1141,21 @@ def get_aca_packets(
     if combine:
         stop_pad += 3.08 * u.s  # there can be trailing frames
 
-    if frames:
+    if raw_aca_packets is not None:
+        # shallow copy: _get_aca_packets adds a 'decom_packets' key to the input dict,
+        # and _fill_frame_counters adds frame counters if they are missing.
+        raw_aca_packets = _fill_frame_counters(dict(raw_aca_packets))
+
+        aca_data = _get_aca_packets(
+            raw_aca_packets,
+            date_start,
+            date_stop,
+            combine=combine,
+            adjust_time=adjust_time,
+            calibrate=calibrate,
+            dtype=dtype,
+        )
+    elif frames:
         n = int(np.ceil((date_stop - date_start).sec / 300))
         dt = (date_stop - date_start) / n
         batches = [(date_start + i * dt, date_start + (i + 1) * dt) for i in range(n)]
@@ -1163,7 +1301,7 @@ def _get_aca_packets(
     return table
 
 
-def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
+def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, level0=True, **kwargs):
     """
     Fetch ACA image telemetry
 
@@ -1253,6 +1391,13 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
         timestamp, CxoTimeLike
     stop
         timestamp, CxoTimeLike.  stop - start cannot be greater than MAUDE_FETCH_LIMIT
+    level0 : bool.
+        Default is False. level0=True implies:
+
+            - `combine=True`: sub-images are combined in a single image
+            - `adjust_time=True`: image times are shifted to the middle of the integration window
+            - `calibrate=True`: image values are scaled (`IMG * IMGSCALE / 32 - 50`),
+              temperatures values are scaled (`0.4 * VALUE + 273.15`)
     kwargs
         keyword args passed to get_aca_packets
 
@@ -1277,7 +1422,7 @@ def get_aca_images(start: CxoTimeLike, stop: CxoTimeLike, **kwargs):
         get_aca_packets(
             start=istart,
             stop=istop,
-            level0=True,
+            level0=level0,
             **kwargs,
         )
         for istart, istop in itertools.pairwise(maude_fetch_times)
