@@ -16,11 +16,6 @@ from chandra_aca import transform
 
 R2A = 206264.81  # Convert from radians to arcsec
 
-# AOACYAN / AOACZAN report a bad-data value of -3276.8 when the OBC has no star in
-# the slot. This is the threshold used to detect it, matching the long-standing filter
-# in ``set_centroids``.
-YAG_ZAG_BAD_MIN = -3276
-
 
 class CentroidResiduals(object):
     """
