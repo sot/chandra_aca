@@ -18,26 +18,15 @@ R2A = 206264.81  # Convert from radians to arcsec
 
 
 class CentroidResiduals(object):
-    """
-    Class to calculate star centroid residuals.
+    """Class to calculate star centroid residuals.
 
-    This class is designed to set up and perform the residual calculations on
-    any desired combination of source centroids and source attitudes.  For the common use cases,
-    centroids, attitudes, and commanded star positions are retrieved automatically from archived
-    sources.
+    This class is designed to set up and perform the residual calculations on any
+    desired combination of source centroids and source attitudes.  For the common use
+    cases, centroids, attitudes, and commanded star positions are retrieved
+    automatically from archived sources.
 
-    Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:
-
-    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
-
-    and
-
-    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
-
-    Users should see the class method ``for_slot`` for a convenient way to get centroid
-    residuals on an ``obsid`` for an ACA ``slot`` (aka image number).
-
-    Example usage::
+    Typically you should use the class method ``for_slot`` to get centroid residuals on
+    an ``obsid`` for an ACA ``slot``::
 
      >>> import numpy as np
      >>> from chandra_aca.centroid_resid import CentroidResiduals
@@ -51,11 +40,7 @@ class CentroidResiduals(object):
      >>> cr.agasc_id
      649201816
 
-    This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
-    and ground centroids.  Here is another example that does the same thing without using the
-    ``for_slot`` convenience.
-
-    Example usage::
+    This example does a similar operations but without the ``for_slot`` convenience::
 
      >>> import numpy as np
      >>> from chandra_aca.centroid_resid import CentroidResiduals
@@ -67,19 +52,17 @@ class CentroidResiduals(object):
      >>> np.max(np.abs(cr.dyags))
      0.87602233734844503
 
+    Based on analysis, time offsets are applied to centroid times by default.  See fit
+    notebooks in:
 
-    :param start: start time of interval for residuals (DateTime compatible)
-    :param stop: stop time of interval for residuals (DateTime compatible)
-    :param set_no_track_to_nan: set centroids to NaN where the OBC was not tracking
-        instead of dropping those samples (default=False, 'obc' centroid source only)
+    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
 
     By default, OBC centroid samples where the OBC had no star in the slot are dropped
-    from the time series entirely, leaving an unmarked gap. Because the residuals on
-    either side of the gap are small, anything that draws or interpolates a line across
-    it (a plot, or ``np.interp`` onto a uniform grid) produces smooth small values that
-    look just like good tracking. With ``set_no_track_to_nan=True`` every sample is
-    kept and those with no star are set to NaN instead, so the dropout stays visible in
-    ``yags`` / ``zags`` and propagates into ``dyags`` / ``dzags``::
+    from the time series entirely, leaving an unmarked gap. With
+    ``set_no_track_to_nan=True`` every sample is kept and those with no star tracking
+    are set to NaN instead, so the dropout stays visible in ``yags`` / ``zags`` and
+    propagates into ``dyags`` / ``dzags``::
 
      >>> cr = CentroidResiduals.for_slot(obsid=15175, slot=6, att_source='obc',
      ...                                 centroid_source='obc',
@@ -89,11 +72,56 @@ class CentroidResiduals(object):
      >>> float(np.nanmax(np.abs(cr.dyags)))
      3.9186003402858205
 
-    The 482 samples with no star are kept as NaN here instead of being dropped, and the
-    residuals that remain are unchanged. Note that NaN-aware functions
-    (``np.nanmedian``, ``np.nanstd`` and friends) are then needed for statistics, since
-    ``np.max`` and friends return NaN.
+    Parameters
+    ----------
+    start : CxoTime compatible
+        Start time of interval for residuals.
+    stop : CxoTime compatible
+        Stop time of interval for residuals.
+    set_no_track_to_nan : bool, optional
+        Set centroids to NaN where the OBC was not tracking instead of dropping those
+        samples. Only supported for ``centroid_source='obc'``. Default is False.
 
+    Attributes
+    ----------
+    start, stop : CxoTime compatible
+        Time range for the residuals, as supplied on initialization.
+    obsid : int
+        Obsid, either supplied to ``for_slot`` or determined by ``set_atts`` from
+        COBSRQID telemetry ('obc') or the aspect solution OBS_ID ('ground').
+    centroid_source : str
+        Source of the centroids, 'ground' | 'obc'. Set by ``set_centroids``.
+    att_source : str
+        Source of the attitudes, 'ground' | 'obc'. Set by ``set_atts``.
+    agasc_id : int
+        AGASC id of the guide star. Set by ``set_star``.
+    ra, dec : float
+        Proper motion corrected star position in degrees. Set by ``set_star``.
+    atts : np.array
+        Attitude quaternions, shape (N, 4). Set by ``set_atts``.
+    att_times : np.array
+        Times of ``atts`` in CXC seconds.
+    yags, zags : np.array
+        Observed centroid Y and Z angles in arcsec. These are NaN where the OBC was
+        not tracking if ``set_no_track_to_nan=True``.
+    yag_times, zag_times : np.array
+        Times of ``yags`` / ``zags`` in CXC seconds, including the ``centroid_dt``
+        offset. These are sampled independently of ``att_times``.
+    pred_yags, pred_zags : np.array
+        Y and Z angles in arcsec predicted from ``atts`` and the star position,
+        interpolated onto ``yag_times`` / ``zag_times``. Set by ``calc_residuals``.
+    dyags, dzags : np.array
+        Centroid residuals in arcsec, ``yags - pred_yags`` and ``zags - pred_zags``.
+        Set by ``calc_residuals``.
+    centroid_dt : float
+        Time offset in seconds applied to the centroid times, or 0.0 if
+        ``apply_dt=False`` was used. Set by ``set_offsets``.
+
+    Notes
+    -----
+    The attributes above are only available once the corresponding method has run, so
+    for a hand-built object (rather than ``for_slot``) they appear in the order the
+    ``set_*`` methods are called.
     """
 
     centroid_source = None
