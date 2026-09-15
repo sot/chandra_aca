@@ -449,6 +449,53 @@ class CentroidResiduals(object):
         centroid_source="ground",
         set_no_track_to_nan=False,
     ):
+        """Get centroid residuals for one ACA slot in a single call.
+
+        This is the convenient entry point for the common case. It creates the object,
+        gets the attitudes, centroids and commanded star position from archived
+        sources, and calculates the residuals, which are then available in ``dyags``
+        and ``dzags``. See the class docstring for examples.
+
+        Specify either ``obsid`` or both ``start`` and ``stop``, but not both. For an
+        ``obsid`` the time range spans from the start of its first dwell to the stop of
+        its last dwell.
+
+        The star is looked up by slot in the starcheck catalog database, so this
+        requires the slot to have a guide star (GUI or BOT) in the catalog.
+
+        Parameters
+        ----------
+        obsid : int, optional
+            Obsid to get residuals for. The time range is taken from the dwells for
+            this obsid. Default is None.
+        start : DateTime compatible, optional
+            Start time of interval for residuals. Not allowed with ``obsid``.
+            Default is None.
+        stop : DateTime compatible, optional
+            Stop time of interval for residuals. Not allowed with ``obsid``.
+            Default is None.
+        slot : int
+            ACA slot (aka image number).
+        att_source : str, optional
+            Attitude source, 'ground' | 'obc'. Default is 'ground'.
+        centroid_source : str, optional
+            Centroid source, 'ground' | 'obc'. Default is 'ground'.
+        set_no_track_to_nan : bool, optional
+            Set centroids to NaN where the OBC was not tracking instead of dropping
+            those samples. Only supported for ``centroid_source='obc'``. Default is
+            False.
+
+        Returns
+        -------
+        cr : CentroidResiduals
+            Object with residuals in ``dyags`` / ``dzags`` and predicted centroids in
+            ``pred_yags`` / ``pred_zags``.
+
+        Raises
+        ------
+        ValueError
+            If both ``obsid`` and ``start`` / ``stop`` are specified, or if neither is.
+        """
         if obsid is not None:
             if start is not None or stop is not None:
                 raise ValueError("cannot specify both obsid and start / stop")
