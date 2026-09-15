@@ -5,7 +5,7 @@ import agasc
 import mica.starcheck
 import numpy as np
 from astropy.table import Table, vstack
-from Chandra.Time import DateTime
+from cxotime import CxoTime
 from kadi import events
 from mica.archive import asp_l1
 from Quaternion import Quat
@@ -184,8 +184,8 @@ class CentroidResiduals(object):
                 (acen["slot"] == slot)
                 & (acen["alg"] == alg)
                 & (acen["status"] == 0)
-                & (acen["time"] >= DateTime(start).secs)
-                & (acen["time"] <= DateTime(stop).secs)
+                & (acen["time"] >= CxoTime(start).secs)
+                & (acen["time"] <= CxoTime(stop).secs)
             )
             yags = np.array(acen[ok]["ang_y"] * 3600)
             zags = np.array(acen[ok]["ang_z"] * 3600)
@@ -244,8 +244,8 @@ class CentroidResiduals(object):
         One could also just set atts and att_times attributes directly.
         """
         self.att_source = source
-        tstart = DateTime(self.start).secs
-        tstop = DateTime(self.stop).secs
+        tstart = CxoTime(self.start).secs
+        tstop = CxoTime(self.stop).secs
         # Get attitudes and times
         if source == "obc":
             telem = fetch.Msidset(["aoattqt*"], tstart, tstop)
@@ -309,7 +309,7 @@ class CentroidResiduals(object):
             if not len(stars):
                 raise ValueError(
                     f"No GUI or BOT in slot {slot} at time "
-                    f"{DateTime(self.start).date} in dwell"
+                    f"{CxoTime(self.start).date} in dwell"
                 )
             star = agasc.get_star(stars[0]["id"], date=self.start)
         else:
@@ -496,10 +496,10 @@ class CentroidResiduals(object):
         obsid : int, optional
             Obsid to get residuals for. The time range is taken from the dwells for
             this obsid. Default is None.
-        start : DateTime compatible, optional
+        start : CxoTime compatible, optional
             Start time of interval for residuals. Not allowed with ``obsid``.
             Default is None.
-        stop : DateTime compatible, optional
+        stop : CxoTime compatible, optional
             Stop time of interval for residuals. Not allowed with ``obsid``.
             Default is None.
         slot : int
