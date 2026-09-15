@@ -5,16 +5,37 @@ import agasc
 import mica.starcheck
 import numpy as np
 from astropy.table import Table, vstack
+from cheta import fetch
 from cxotime import CxoTime
 from kadi import events
 from mica.archive import asp_l1
 from Quaternion import Quat
-from Ska.engarchive import fetch
-from Ska.Numpy import interpolate
+from ska_numpy import interpolate
 
 from chandra_aca import transform
 
 R2A = 206264.81  # Convert from radians to arcsec
+
+
+def _is_fetch_msid_like(obj):
+    """Return True if ``obj`` looks like a fetch MSID object.
+
+    This is a duck-type check on the ``vals``, ``times`` and ``msid`` attributes instead
+    of an isinstance check, because the ``cheta`` and legacy ``Ska.engarchive`` fetch
+    modules define distinct MSID classes. An isinstance check against either one
+    silently mishandles an object from the other, turning it into a 0-d object array.
+
+    Parameters
+    ----------
+    obj : object
+        Object to check.
+
+    Returns
+    -------
+    bool
+        True if ``obj`` has ``vals``, ``times`` and ``msid`` attributes.
+    """
+    return all(hasattr(obj, attr) for attr in ("vals", "times", "msid"))
 
 
 class CentroidResiduals(object):
@@ -326,7 +347,7 @@ class CentroidResiduals(object):
 
     @yags.setter
     def yags(self, vals):
-        if isinstance(vals, fetch.MSID):
+        if _is_fetch_msid_like(vals):
             self._yags = np.array(vals.vals)
             self._yag_times = vals.times
         else:
@@ -346,7 +367,7 @@ class CentroidResiduals(object):
 
     @zags.setter
     def zags(self, vals):
-        if isinstance(vals, fetch.MSID):
+        if _is_fetch_msid_like(vals):
             self._zags = np.array(vals.vals)
             self._zag_times = vals.times
         else:

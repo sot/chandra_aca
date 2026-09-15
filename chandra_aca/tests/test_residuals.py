@@ -12,7 +12,7 @@ HAS_STARCHECK_ARCHIVE = os.path.exists(
     os.path.join(mica.common.MICA_ARCHIVE, "starcheck")
 )
 try:
-    from Ska.engarchive import fetch
+    from cheta import fetch
 
     fetch.Msidset(["aoattqt*"], "2018:001:00:00:00", "2018:001:00:01:00")
     HAS_QUAT_TELEM = True
@@ -52,9 +52,7 @@ def test_obc_centroids():
 @pytest.mark.skipif(
     "not HAS_STARCHECK_ARCHIVE", reason="No for_slot without a starcheck mica archive"
 )
-@pytest.mark.skipif(
-    "not HAS_QUAT_TELEM", reason="No AOATTQT* telemetry in Ska.engarchive"
-)
+@pytest.mark.skipif("not HAS_QUAT_TELEM", reason="No AOATTQT* telemetry in cheta")
 def test_obc():
     cr = CentroidResiduals.for_slot(
         obsid=15175, slot=6, att_source="obc", centroid_source="obc"
@@ -68,9 +66,7 @@ def test_obc():
 @pytest.mark.skipif(
     "not HAS_STARCHECK_ARCHIVE", reason="No for_slot without a starcheck mica archive"
 )
-@pytest.mark.skipif(
-    "not HAS_QUAT_TELEM", reason="No AOATTQT* telemetry in Ska.engarchive"
-)
+@pytest.mark.skipif("not HAS_QUAT_TELEM", reason="No AOATTQT* telemetry in cheta")
 def test_er():
     cr = CentroidResiduals.for_slot(
         obsid=57635, slot=6, att_source="obc", centroid_source="obc"
@@ -97,9 +93,7 @@ def test_or_manual():
 @pytest.mark.skipif(
     "not HAS_STARCHECK_ARCHIVE", reason="No for_slot without a starcheck mica archive"
 )
-@pytest.mark.skipif(
-    "not HAS_QUAT_TELEM", reason="No AOATTQT* telemetry in Ska.engarchive"
-)
+@pytest.mark.skipif("not HAS_QUAT_TELEM", reason="No AOATTQT* telemetry in cheta")
 def test_set_no_track_to_nan():
     """Not-tracking samples are kept as NaN instead of leaving an unmarked gap."""
     kwargs = {
