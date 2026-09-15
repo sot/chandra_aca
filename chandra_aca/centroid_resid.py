@@ -123,6 +123,8 @@ class CentroidResiduals(object):
         For the supported sources (ground, obc) the centroids are fetched from the mica L1
         archive or telemetry.
 
+        yag_times and zag_times are always identical.
+
         yag, zag, yag_times an zag_times can also be set directly without use of this method.
 
         Parameters
@@ -143,9 +145,9 @@ class CentroidResiduals(object):
         if self.set_no_track_to_nan and source != "obc":
             raise ValueError(
                 "set_no_track_to_nan is only supported for centroid source 'obc', "
-                "got {!r}. Ground L1 centroids have no per-sample OBC track status, "
-                "and the ACACENT rows for a slot are already absent (not flagged) "
-                "where there was no star.".format(source)
+                f"got {source!r}. Ground L1 centroids have no per-sample OBC track "
+                "status, and the ACACENT rows for a slot are already absent (not "
+                "flagged) where there was no star."
             )
         # Get centroids from Ska eng archive or mica L1 archive
         if source == "ground":
@@ -225,7 +227,7 @@ class CentroidResiduals(object):
         if source == "obc":
             telem = fetch.Msidset(["aoattqt*"], tstart, tstop)
             atts = np.vstack(
-                [telem["aoattqt{}".format(idx)].vals for idx in [1, 2, 3, 4]]
+                [telem[f"aoattqt{idx}"].vals for idx in [1, 2, 3, 4]]
             ).transpose()
             att_times = telem["aoattqt1"].times
             # Fetch COBSQID at beginning and end of interval, check they match, and define obsid
@@ -233,11 +235,11 @@ class CentroidResiduals(object):
                 obsid_start = fetch.Msid("COBSRQID", tstart, tstart + 60)
                 obsid_stop = fetch.Msid("COBSRQID", tstop - 60, tstop)
                 if len(obsid_start.vals) == 0 or len(obsid_stop.vals) == 0:
+                    fetch_source = fetch.data_source.sources()[0]
                     raise ValueError(
                         "Error getting COBSRQID telem for "
-                        "tstart:{} tstop:{} from fetch_source:{}".format(
-                            tstart, tstop, fetch.data_source.sources()[0]
-                        )
+                        f"tstart:{tstart} tstop:{tstop} "
+                        f"from fetch_source:{fetch_source}"
                     )
                 self.obsid = obsid_start.vals[-1]
         elif source == "ground":
@@ -283,9 +285,8 @@ class CentroidResiduals(object):
             ]
             if not len(stars):
                 raise ValueError(
-                    "No GUI or BOT in slot {} at time {} in dwell".format(
-                        slot, DateTime(self.start).date
-                    )
+                    f"No GUI or BOT in slot {slot} at time "
+                    f"{DateTime(self.start).date} in dwell"
                 )
             star = agasc.get_star(stars[0]["id"], date=self.start)
         else:
