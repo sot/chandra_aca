@@ -167,42 +167,43 @@ class CentroidResiduals(object):
             yag_times = np.array(acen[ok]["time"])
             zag_times = np.array(acen[ok]["time"])
         elif source == "obc":
-            msids = ["AOACYAN{}".format(slot), "AOACZAN{}".format(slot)]
-            if self.set_no_track_to_nan:
-                msids.append("AOACFCT{}".format(slot))
+            msids = [
+                f"AOACYAN{slot}",
+                f"AOACZAN{slot}",
+                f"AOACFCT{slot}",
+            ]
             telem = fetch.MSIDset(msids, start, stop)
             # Same content type for all MSIDs so they have exactly the same times and we
             # can interpolate to these times (which are guaranteed to be at 1.025 sec
             # spacing).
-            times = telem["AOACYAN{}".format(slot)].times
+            times = telem[f"AOACYAN{slot}"].times
             telem.interpolate(times=times, bad_union=True, filter_bad=False)
-            yan = telem["AOACYAN{}".format(slot)]
-            zan = telem["AOACZAN{}".format(slot)]
+            yan = telem[f"AOACYAN{slot}"]
+            zan = telem[f"AOACZAN{slot}"]
+            fct = telem[f"AOACFCT{slot}"]
+            # AOACFCT comes from the same telemetry sampling as AOACYAN / AOACZAN,
+            # so the track status lines up with the centroids sample for sample.
+            # Find intervals of no track, where any bona fide bad data in telemetry
+            # (from extremely rare data loss in dumps) is also considered no track.
+            no_track = (fct.vals != "TRAK") | yan.bads | zan.bads
+            # Convert from 32-bit native vals to 64-bit for convenience later.
+            yags = yan.vals.astype(np.float64)
+            zags = zan.vals.astype(np.float64)
 
             if self.set_no_track_to_nan:
-                # AOACFCT comes from the same telemetry sampling as AOACYAN / AOACZAN,
-                # so the track status lines up with the centroids sample for sample and
-                # no interpolation is needed. Keep every sample and flag the ones with
-                # no star as NaN, so the dropout stays visible in the residuals instead
-                # of becoming an unmarked gap in the time series.
-                fct = telem["AOACFCT{}".format(slot)]
-                no_track = (fct.vals != "TRAK") | yan.bads | zan.bads
-                yags = yan.vals.astype(np.float64)
-                zags = zan.vals.astype(np.float64)
-                yag_times = times
-                zag_times = times
                 yags[no_track] = np.nan
                 zags[no_track] = np.nan
+                yag_times = times
+                zag_times = times
             else:
-                # Filter centroids for reasonble-ness
-                yok = yan.vals > YAG_ZAG_BAD_MIN
-                zok = zan.vals > YAG_ZAG_BAD_MIN
-                yags = yan.vals[yok]
-                yag_times = yan.times[yok]
-                zags = zan.vals[zok]
-                zag_times = zan.times[zok]
+                track = ~no_track
+                yags = yags[track]
+                zags = zags[track]
+                yag_times = times[track]
+                zag_times = times[track]
         else:
             raise ValueError("centroid_source must be 'obc' or 'ground'")
+
         self.yags = yags
         self.yag_times = yag_times
         self.zags = zags
