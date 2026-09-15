@@ -22,44 +22,6 @@ R2A = 206264.81  # Convert from radians to arcsec
 YAG_ZAG_BAD_MIN = -3276
 
 
-def _get_no_track_mask(fct, times, yzags):
-    """Get mask of ``times`` where the OBC was not tracking a star.
-
-    ``fct`` is the AOACFCT telemetry for the slot, which normally comes from the same
-    ``Msidset`` fetch as the centroids and so is on exactly the same time base. Bad
-    data filtering is per-MSID, though, so a sample can in principle be present in one
-    MSID and not the other. Times are therefore matched exactly, and a centroid sample
-    with no corresponding AOACFCT sample is taken to be not tracking, since the status
-    needed to trust it is missing.
-
-    The AOACYAN / AOACZAN bad-data value is included in the mask as well, so a sample
-    is flagged if either the track status or the centroid value says there is no star.
-
-    Parameters
-    ----------
-    fct : fetch.Msid
-        AOACFCT telemetry for the slot.
-    times : np.array
-        Centroid sample times.
-    yzags : np.array
-        Centroid values (AOACYAN or AOACZAN) at ``times``.
-
-    Returns
-    -------
-    np.array
-        Boolean mask which is True where the OBC was not tracking.
-    """
-    # Exact time match, so an unmatched centroid sample keeps the default of True.
-    no_track = np.ones(len(times), dtype=bool)
-    if len(fct.times) > 0:
-        idx = np.searchsorted(fct.times, times).clip(0, len(fct.times) - 1)
-        match = fct.times[idx] == times
-        no_track[match] = fct.vals[idx][match] != "TRAK"
-
-    # The centroid bad-data value means no star regardless of the track status.
-    return no_track | (yzags <= YAG_ZAG_BAD_MIN)
-
-
 class CentroidResiduals(object):
     """
     Class to calculate star centroid residuals.
@@ -208,7 +170,12 @@ class CentroidResiduals(object):
             msids = ["AOACYAN{}".format(slot), "AOACZAN{}".format(slot)]
             if self.set_no_track_to_nan:
                 msids.append("AOACFCT{}".format(slot))
-            telem = fetch.Msidset(msids, start, stop)
+            telem = fetch.MSIDset(msids, start, stop)
+            # Same content type for all MSIDs so they have exactly the same times and we
+            # can interpolate to these times (which are guaranteed to be at 1.025 sec
+            # spacing).
+            times = telem["AOACYAN{}".format(slot)].times
+            telem.interpolate(times=times, bad_union=True, filter_bad=False)
             yan = telem["AOACYAN{}".format(slot)]
             zan = telem["AOACZAN{}".format(slot)]
 
@@ -219,12 +186,13 @@ class CentroidResiduals(object):
                 # no star as NaN, so the dropout stays visible in the residuals instead
                 # of becoming an unmarked gap in the time series.
                 fct = telem["AOACFCT{}".format(slot)]
+                no_track = (fct.vals != "TRAK") | yan.bads | zan.bads
                 yags = yan.vals.astype(np.float64)
                 zags = zan.vals.astype(np.float64)
-                yag_times = yan.times
-                zag_times = zan.times
-                yags[_get_no_track_mask(fct, yag_times, yags)] = np.nan
-                zags[_get_no_track_mask(fct, zag_times, zags)] = np.nan
+                yag_times = times
+                zag_times = times
+                yags[no_track] = np.nan
+                zags[no_track] = np.nan
             else:
                 # Filter centroids for reasonble-ness
                 yok = yan.vals > YAG_ZAG_BAD_MIN

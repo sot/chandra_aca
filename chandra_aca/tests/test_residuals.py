@@ -5,7 +5,7 @@ import mica.common
 import numpy as np
 import pytest
 
-from chandra_aca.centroid_resid import CentroidResiduals, _get_no_track_mask
+from chandra_aca.centroid_resid import CentroidResiduals
 
 HAS_L1_ARCHIVE = os.path.exists(os.path.join(mica.common.MICA_ARCHIVE, "asp1"))
 HAS_STARCHECK_ARCHIVE = os.path.exists(
@@ -92,64 +92,6 @@ def test_or_manual():
         cr.set_centroids("obc", slot=5)
         cr.set_star(agasc_id=649201816)
         cr.calc_residuals()
-
-
-class FctStub:
-    """Stub for an AOACFCT fetch with a known set of not-tracking samples."""
-
-    def __init__(self, times, vals):
-        self.times = np.asarray(times, dtype=np.float64)
-        self.vals = np.asarray(vals)
-
-
-def test_get_no_track_mask():
-    times = 1000.0 + np.arange(10) * 1.025
-    vals = np.full(10, "TRAK")
-    vals[3:6] = ["RACQ", "SRCH", "NONE"]
-    fct = FctStub(times, vals)
-    yags = np.zeros(10)
-
-    mask = _get_no_track_mask(fct, times, yags)
-
-    np.testing.assert_array_equal(np.flatnonzero(mask), [3, 4, 5])
-
-
-def test_get_no_track_mask_includes_bad_centroid_value():
-    """A bad-data centroid value is flagged even if AOACFCT says TRAK."""
-    times = 1000.0 + np.arange(5) * 1.025
-    fct = FctStub(times, np.full(5, "TRAK"))
-    yags = np.zeros(5)
-    yags[2] = -3276.8
-
-    mask = _get_no_track_mask(fct, times, yags)
-
-    np.testing.assert_array_equal(np.flatnonzero(mask), [2])
-
-
-def test_get_no_track_mask_unmatched_time_is_no_track():
-    """A centroid sample with no AOACFCT sample at that time is not trusted.
-
-    Bad data filtering is per-MSID, so AOACFCT can be missing a sample that the
-    centroid MSIDs have. Without the track status there is no basis to trust it.
-    """
-    times = 1000.0 + np.arange(5) * 1.025
-    # AOACFCT is missing the sample at index 2.
-    keep = np.array([0, 1, 3, 4])
-    fct = FctStub(times[keep], np.full(4, "TRAK"))
-    yags = np.zeros(5)
-
-    mask = _get_no_track_mask(fct, times, yags)
-
-    np.testing.assert_array_equal(np.flatnonzero(mask), [2])
-
-
-def test_get_no_track_mask_empty_fct():
-    times = 1000.0 + np.arange(3) * 1.025
-    fct = FctStub([], [])
-
-    mask = _get_no_track_mask(fct, times, np.zeros(3))
-
-    assert np.all(mask)
 
 
 @pytest.mark.skipif(
