@@ -440,6 +440,7 @@ class CentroidResiduals(object):
     @classmethod
     def for_slot(
         cls,
+        *,
         obsid=None,
         start=None,
         stop=None,
