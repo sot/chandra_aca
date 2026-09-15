@@ -5,7 +5,7 @@ import mica.common
 import numpy as np
 import pytest
 
-from chandra_aca.centroid_resid import CentroidResiduals
+from chandra_aca.centroid_resid import CentroidResiduals, _get_no_track_mask
 
 HAS_L1_ARCHIVE = os.path.exists(os.path.join(mica.common.MICA_ARCHIVE, "asp1"))
 HAS_STARCHECK_ARCHIVE = os.path.exists(
@@ -92,3 +92,111 @@ def test_or_manual():
         cr.set_centroids("obc", slot=5)
         cr.set_star(agasc_id=649201816)
         cr.calc_residuals()
+
+
+class FctStub:
+    """Stub for an AOACFCT fetch with a known set of not-tracking samples."""
+
+    def __init__(self, times, vals):
+        self.times = np.asarray(times, dtype=np.float64)
+        self.vals = np.asarray(vals)
+
+
+def test_get_no_track_mask():
+    times = 1000.0 + np.arange(10) * 1.025
+    vals = np.full(10, "TRAK")
+    vals[3:6] = ["RACQ", "SRCH", "NONE"]
+    fct = FctStub(times, vals)
+    yags = np.zeros(10)
+
+    mask = _get_no_track_mask(fct, times, yags)
+
+    np.testing.assert_array_equal(np.flatnonzero(mask), [3, 4, 5])
+
+
+def test_get_no_track_mask_includes_bad_centroid_value():
+    """A bad-data centroid value is flagged even if AOACFCT says TRAK."""
+    times = 1000.0 + np.arange(5) * 1.025
+    fct = FctStub(times, np.full(5, "TRAK"))
+    yags = np.zeros(5)
+    yags[2] = -3276.8
+
+    mask = _get_no_track_mask(fct, times, yags)
+
+    np.testing.assert_array_equal(np.flatnonzero(mask), [2])
+
+
+def test_get_no_track_mask_unmatched_time_is_no_track():
+    """A centroid sample with no AOACFCT sample at that time is not trusted.
+
+    Bad data filtering is per-MSID, so AOACFCT can be missing a sample that the
+    centroid MSIDs have. Without the track status there is no basis to trust it.
+    """
+    times = 1000.0 + np.arange(5) * 1.025
+    # AOACFCT is missing the sample at index 2.
+    keep = np.array([0, 1, 3, 4])
+    fct = FctStub(times[keep], np.full(4, "TRAK"))
+    yags = np.zeros(5)
+
+    mask = _get_no_track_mask(fct, times, yags)
+
+    np.testing.assert_array_equal(np.flatnonzero(mask), [2])
+
+
+def test_get_no_track_mask_empty_fct():
+    times = 1000.0 + np.arange(3) * 1.025
+    fct = FctStub([], [])
+
+    mask = _get_no_track_mask(fct, times, np.zeros(3))
+
+    assert np.all(mask)
+
+
+@pytest.mark.skipif(
+    "not HAS_STARCHECK_ARCHIVE", reason="No for_slot without a starcheck mica archive"
+)
+@pytest.mark.skipif(
+    "not HAS_QUAT_TELEM", reason="No AOATTQT* telemetry in Ska.engarchive"
+)
+def test_set_no_track_to_nan():
+    """Not-tracking samples are kept as NaN instead of leaving an unmarked gap."""
+    kwargs = {
+        "obsid": 15175,
+        "slot": 6,
+        "att_source": "obc",
+        "centroid_source": "obc",
+    }
+    cr_nan = CentroidResiduals.for_slot(**kwargs, set_no_track_to_nan=True)
+    cr = CentroidResiduals.for_slot(**kwargs)
+
+    n_no_track = len(cr_nan.dyags) - len(cr.dyags)
+    assert n_no_track == 482
+    assert np.count_nonzero(np.isnan(cr_nan.dyags)) == n_no_track
+    assert np.count_nonzero(np.isnan(cr_nan.dzags)) == n_no_track
+
+    # The residuals that are not NaN are exactly the ones from the default path.
+    ok = ~np.isnan(cr_nan.dyags)
+    np.testing.assert_array_equal(cr_nan.dyags[ok], cr.dyags)
+    np.testing.assert_array_equal(cr_nan.yag_times[ok], cr.yag_times)
+    ok = ~np.isnan(cr_nan.dzags)
+    np.testing.assert_array_equal(cr_nan.dzags[ok], cr.dzags)
+    np.testing.assert_array_equal(cr_nan.zag_times[ok], cr.zag_times)
+
+    # The time base has no gaps, so no interpolation can bridge a dropout.
+    dt = np.diff(cr_nan.yag_times)
+    assert np.allclose(dt, np.median(dt))
+
+    # Time offsets are applied the same way as for the default path.
+    assert cr_nan.centroid_dt == cr.centroid_dt
+
+
+@pytest.mark.skipif(
+    "not HAS_L1_ARCHIVE", reason="No ground solutions without an aspl1 mica archive"
+)
+@pytest.mark.skipif(
+    "not HAS_STARCHECK_ARCHIVE", reason="No for_slot without a starcheck mica archive"
+)
+def test_set_no_track_to_nan_ground_raises():
+    """The option has no meaning for ground centroids, so it is refused."""
+    with pytest.raises(ValueError, match="only supported for centroid source 'obc'"):
+        CentroidResiduals.for_slot(obsid=15175, slot=4, set_no_track_to_nan=True)

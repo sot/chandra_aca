@@ -16,6 +16,49 @@ from chandra_aca import transform
 
 R2A = 206264.81  # Convert from radians to arcsec
 
+# AOACYAN / AOACZAN report a bad-data value of -3276.8 when the OBC has no star in
+# the slot. This is the threshold used to detect it, matching the long-standing filter
+# in ``set_centroids``.
+YAG_ZAG_BAD_MIN = -3276
+
+
+def _get_no_track_mask(fct, times, yzags):
+    """Get mask of ``times`` where the OBC was not tracking a star.
+
+    ``fct`` is the AOACFCT telemetry for the slot, which normally comes from the same
+    ``Msidset`` fetch as the centroids and so is on exactly the same time base. Bad
+    data filtering is per-MSID, though, so a sample can in principle be present in one
+    MSID and not the other. Times are therefore matched exactly, and a centroid sample
+    with no corresponding AOACFCT sample is taken to be not tracking, since the status
+    needed to trust it is missing.
+
+    The AOACYAN / AOACZAN bad-data value is included in the mask as well, so a sample
+    is flagged if either the track status or the centroid value says there is no star.
+
+    Parameters
+    ----------
+    fct : fetch.Msid
+        AOACFCT telemetry for the slot.
+    times : np.array
+        Centroid sample times.
+    yzags : np.array
+        Centroid values (AOACYAN or AOACZAN) at ``times``.
+
+    Returns
+    -------
+    np.array
+        Boolean mask which is True where the OBC was not tracking.
+    """
+    # Exact time match, so an unmatched centroid sample keeps the default of True.
+    no_track = np.ones(len(times), dtype=bool)
+    if len(fct.times) > 0:
+        idx = np.searchsorted(fct.times, times).clip(0, len(fct.times) - 1)
+        match = fct.times[idx] == times
+        no_track[match] = fct.vals[idx][match] != "TRAK"
+
+    # The centroid bad-data value means no star regardless of the track status.
+    return no_track | (yzags <= YAG_ZAG_BAD_MIN)
+
 
 class CentroidResiduals(object):
     """
@@ -70,6 +113,29 @@ class CentroidResiduals(object):
 
     :param start: start time of interval for residuals (DateTime compatible)
     :param stop: stop time of interval for residuals (DateTime compatible)
+    :param set_no_track_to_nan: set centroids to NaN where the OBC was not tracking
+        instead of dropping those samples (default=False, 'obc' centroid source only)
+
+    By default, OBC centroid samples where the OBC had no star in the slot are dropped
+    from the time series entirely, leaving an unmarked gap. Because the residuals on
+    either side of the gap are small, anything that draws or interpolates a line across
+    it (a plot, or ``np.interp`` onto a uniform grid) produces smooth small values that
+    look just like good tracking. With ``set_no_track_to_nan=True`` every sample is
+    kept and those with no star are set to NaN instead, so the dropout stays visible in
+    ``yags`` / ``zags`` and propagates into ``dyags`` / ``dzags``::
+
+     >>> cr = CentroidResiduals.for_slot(obsid=15175, slot=6, att_source='obc',
+     ...                                 centroid_source='obc',
+     ...                                 set_no_track_to_nan=True)
+     >>> len(cr.dyags), int(np.count_nonzero(np.isnan(cr.dyags)))
+     (59363, 482)
+     >>> float(np.nanmax(np.abs(cr.dyags)))
+     3.9186003402858205
+
+    The 482 samples with no star are kept as NaN here instead of being dropped, and the
+    residuals that remain are unchanged. Note that NaN-aware functions
+    (``np.nanmedian``, ``np.nanstd`` and friends) are then needed for statistics, since
+    ``np.max`` and friends return NaN.
 
     """
 
@@ -80,9 +146,10 @@ class CentroidResiduals(object):
     centroid_dt = None
     obsid = None
 
-    def __init__(self, start, stop):
+    def __init__(self, start, stop, set_no_track_to_nan=False):
         self.start = start
         self.stop = stop
+        self.set_no_track_to_nan = set_no_track_to_nan
 
     def set_centroids(self, source, slot, alg=8, apply_dt=True):
         """
@@ -111,6 +178,13 @@ class CentroidResiduals(object):
         self.centroid_dt = None
         start = self.start
         stop = self.stop
+        if self.set_no_track_to_nan and source != "obc":
+            raise ValueError(
+                "set_no_track_to_nan is only supported for centroid source 'obc', "
+                "got {!r}. Ground L1 centroids have no per-sample OBC track status, "
+                "and the ACACENT rows for a slot are already absent (not flagged) "
+                "where there was no star.".format(source)
+            )
         # Get centroids from Ska eng archive or mica L1 archive
         if source == "ground":
             acen_files = sorted(
@@ -131,16 +205,34 @@ class CentroidResiduals(object):
             yag_times = np.array(acen[ok]["time"])
             zag_times = np.array(acen[ok]["time"])
         elif source == "obc":
-            telem = fetch.Msidset(
-                ["AOACYAN{}".format(slot), "AOACZAN{}".format(slot)], start, stop
-            )
-            # Filter centroids for reasonble-ness
-            yok = telem["AOACYAN{}".format(slot)].vals > -3276
-            zok = telem["AOACZAN{}".format(slot)].vals > -3276
-            yags = telem["AOACYAN{}".format(slot)].vals[yok]
-            yag_times = telem["AOACYAN{}".format(slot)].times[yok]
-            zags = telem["AOACZAN{}".format(slot)].vals[zok]
-            zag_times = telem["AOACZAN{}".format(slot)].times[zok]
+            msids = ["AOACYAN{}".format(slot), "AOACZAN{}".format(slot)]
+            if self.set_no_track_to_nan:
+                msids.append("AOACFCT{}".format(slot))
+            telem = fetch.Msidset(msids, start, stop)
+            yan = telem["AOACYAN{}".format(slot)]
+            zan = telem["AOACZAN{}".format(slot)]
+
+            if self.set_no_track_to_nan:
+                # AOACFCT comes from the same telemetry sampling as AOACYAN / AOACZAN,
+                # so the track status lines up with the centroids sample for sample and
+                # no interpolation is needed. Keep every sample and flag the ones with
+                # no star as NaN, so the dropout stays visible in the residuals instead
+                # of becoming an unmarked gap in the time series.
+                fct = telem["AOACFCT{}".format(slot)]
+                yags = yan.vals.astype(np.float64)
+                zags = zan.vals.astype(np.float64)
+                yag_times = yan.times
+                zag_times = zan.times
+                yags[_get_no_track_mask(fct, yag_times, yags)] = np.nan
+                zags[_get_no_track_mask(fct, zag_times, zags)] = np.nan
+            else:
+                # Filter centroids for reasonble-ness
+                yok = yan.vals > YAG_ZAG_BAD_MIN
+                zok = zan.vals > YAG_ZAG_BAD_MIN
+                yags = yan.vals[yok]
+                yag_times = yan.times[yok]
+                zags = zan.vals[zok]
+                zag_times = zan.times[zok]
         else:
             raise ValueError("centroid_source must be 'obc' or 'ground'")
         self.yags = yags
@@ -389,6 +481,7 @@ class CentroidResiduals(object):
         slot=None,
         att_source="ground",
         centroid_source="ground",
+        set_no_track_to_nan=False,
     ):
         if obsid is not None:
             if start is not None or stop is not None:
@@ -398,7 +491,7 @@ class CentroidResiduals(object):
             stop = ds[len(ds) - 1].stop
         if start is None or stop is None:
             raise ValueError("must specify obsid or start / stop")
-        cr = cls(start, stop)
+        cr = cls(start, stop, set_no_track_to_nan=set_no_track_to_nan)
         if obsid is not None:
             cr.obsid = obsid
         cr.set_atts(att_source)
