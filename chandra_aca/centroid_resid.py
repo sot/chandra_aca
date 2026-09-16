@@ -5,39 +5,49 @@ import agasc
 import mica.starcheck
 import numpy as np
 from astropy.table import Table, vstack
-from Chandra.Time import DateTime
+from cheta import fetch
+from cxotime import CxoTime
 from kadi import events
 from mica.archive import asp_l1
 from Quaternion import Quat
-from Ska.engarchive import fetch
-from Ska.Numpy import interpolate
+from ska_numpy import interpolate
 
 from chandra_aca import transform
 
 R2A = 206264.81  # Convert from radians to arcsec
 
 
-class CentroidResiduals(object):
+def _is_fetch_msid_like(obj):
+    """Return True if ``obj`` looks like a fetch MSID object.
+
+    This is a duck-type check on the ``vals``, ``times`` and ``msid`` attributes instead
+    of an isinstance check, because the ``cheta`` and legacy ``Ska.engarchive`` fetch
+    modules define distinct MSID classes. An isinstance check against either one
+    silently mishandles an object from the other, turning it into a 0-d object array.
+
+    Parameters
+    ----------
+    obj : object
+        Object to check.
+
+    Returns
+    -------
+    bool
+        True if ``obj`` has ``vals``, ``times`` and ``msid`` attributes.
     """
-    Class to calculate star centroid residuals.
+    return all(hasattr(obj, attr) for attr in ("vals", "times", "msid"))
 
-    This class is designed to set up and perform the residual calculations on
-    any desired combination of source centroids and source attitudes.  For the common use cases,
-    centroids, attitudes, and commanded star positions are retrieved automatically from archived
-    sources.
 
-    Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:
+class CentroidResiduals(object):
+    """Class to calculate star centroid residuals.
 
-    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+    This class is designed to set up and perform the residual calculations on any
+    desired combination of source centroids and source attitudes.  For the common use
+    cases, centroids, attitudes, and commanded star positions are retrieved
+    automatically from archived sources.
 
-    and
-
-    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
-
-    Users should see the class method ``for_slot`` for a convenient way to get centroid
-    residuals on an ``obsid`` for an ACA ``slot`` (aka image number).
-
-    Example usage::
+    Typically you should use the class method ``for_slot`` to get centroid residuals on
+    an ``obsid`` for an ACA ``slot``::
 
      >>> import numpy as np
      >>> from chandra_aca.centroid_resid import CentroidResiduals
@@ -51,11 +61,7 @@ class CentroidResiduals(object):
      >>> cr.agasc_id
      649201816
 
-    This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
-    and ground centroids.  Here is another example that does the same thing without using the
-    ``for_slot`` convenience.
-
-    Example usage::
+    This example does a similar operations but without the ``for_slot`` convenience::
 
      >>> import numpy as np
      >>> from chandra_aca.centroid_resid import CentroidResiduals
@@ -67,10 +73,76 @@ class CentroidResiduals(object):
      >>> np.max(np.abs(cr.dyags))
      0.87602233734844503
 
+    Based on analysis, time offsets are applied to centroid times by default.  See fit
+    notebooks in:
 
-    :param start: start time of interval for residuals (DateTime compatible)
-    :param stop: stop time of interval for residuals (DateTime compatible)
+    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+    http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
 
+    By default, OBC centroid samples where the OBC had no star in the slot are dropped
+    from the time series entirely, leaving an unmarked gap. With
+    ``set_no_track_to_nan=True`` every sample is kept and those with no star tracking
+    are set to NaN instead, so the dropout stays visible in ``yags`` / ``zags`` and
+    propagates into ``dyags`` / ``dzags``::
+
+     >>> cr = CentroidResiduals.for_slot(obsid=15175, slot=6, att_source='obc',
+     ...                                 centroid_source='obc',
+     ...                                 set_no_track_to_nan=True)
+     >>> len(cr.dyags), int(np.count_nonzero(np.isnan(cr.dyags)))
+     (59363, 482)
+     >>> float(np.nanmax(np.abs(cr.dyags)))
+     3.9186003402858205
+
+    Parameters
+    ----------
+    start : CxoTime compatible
+        Start time of interval for residuals.
+    stop : CxoTime compatible
+        Stop time of interval for residuals.
+    set_no_track_to_nan : bool, optional
+        Set centroids to NaN where the OBC was not tracking instead of dropping those
+        samples. Only supported for ``centroid_source='obc'``. Default is False.
+
+    Attributes
+    ----------
+    start, stop : CxoTime compatible
+        Time range for the residuals, as supplied on initialization.
+    obsid : int
+        Obsid, either supplied to ``for_slot`` or determined by ``set_atts`` from
+        COBSRQID telemetry ('obc') or the aspect solution OBS_ID ('ground').
+    centroid_source : str
+        Source of the centroids, 'ground' | 'obc'. Set by ``set_centroids``.
+    att_source : str
+        Source of the attitudes, 'ground' | 'obc'. Set by ``set_atts``.
+    agasc_id : int
+        AGASC id of the guide star. Set by ``set_star``.
+    ra, dec : float
+        Proper motion corrected star position in degrees. Set by ``set_star``.
+    atts : np.array
+        Attitude quaternions, shape (N, 4). Set by ``set_atts``.
+    att_times : np.array
+        Times of ``atts`` in CXC seconds.
+    yags, zags : np.array
+        Observed centroid Y and Z angles in arcsec. These are NaN where the OBC was
+        not tracking if ``set_no_track_to_nan=True``.
+    yag_times, zag_times : np.array
+        Times of ``yags`` / ``zags`` in CXC seconds, including the ``centroid_dt``
+        offset. These are sampled independently of ``att_times``.
+    pred_yags, pred_zags : np.array
+        Y and Z angles in arcsec predicted from ``atts`` and the star position,
+        interpolated onto ``yag_times`` / ``zag_times``. Set by ``calc_residuals``.
+    dyags, dzags : np.array
+        Centroid residuals in arcsec, ``yags - pred_yags`` and ``zags - pred_zags``.
+        Set by ``calc_residuals``.
+    centroid_dt : float
+        Time offset in seconds applied to the centroid times, or 0.0 if
+        ``apply_dt=False`` was used. Set by ``set_offsets``.
+
+    Notes
+    -----
+    The attributes above are only available once the corresponding method has run, so
+    for a hand-built object (rather than ``for_slot``) they appear in the order the
+    ``set_*`` methods are called.
     """
 
     centroid_source = None
@@ -80,9 +152,10 @@ class CentroidResiduals(object):
     centroid_dt = None
     obsid = None
 
-    def __init__(self, start, stop):
+    def __init__(self, start, stop, set_no_track_to_nan=False):
         self.start = start
         self.stop = stop
+        self.set_no_track_to_nan = set_no_track_to_nan
 
     def set_centroids(self, source, slot, alg=8, apply_dt=True):
         """
@@ -93,6 +166,8 @@ class CentroidResiduals(object):
 
         For the supported sources (ground, obc) the centroids are fetched from the mica L1
         archive or telemetry.
+
+        yag_times and zag_times are always identical.
 
         yag, zag, yag_times an zag_times can also be set directly without use of this method.
 
@@ -111,6 +186,13 @@ class CentroidResiduals(object):
         self.centroid_dt = None
         start = self.start
         stop = self.stop
+        if self.set_no_track_to_nan and source != "obc":
+            raise ValueError(
+                "set_no_track_to_nan is only supported for centroid source 'obc', "
+                f"got {source!r}. Ground L1 centroids have no per-sample OBC track "
+                "status, and the ACACENT rows for a slot are already absent (not "
+                "flagged) where there was no star."
+            )
         # Get centroids from Ska eng archive or mica L1 archive
         if source == "ground":
             acen_files = sorted(
@@ -123,26 +205,51 @@ class CentroidResiduals(object):
                 (acen["slot"] == slot)
                 & (acen["alg"] == alg)
                 & (acen["status"] == 0)
-                & (acen["time"] >= DateTime(start).secs)
-                & (acen["time"] <= DateTime(stop).secs)
+                & (acen["time"] >= CxoTime(start).secs)
+                & (acen["time"] <= CxoTime(stop).secs)
             )
             yags = np.array(acen[ok]["ang_y"] * 3600)
             zags = np.array(acen[ok]["ang_z"] * 3600)
             yag_times = np.array(acen[ok]["time"])
             zag_times = np.array(acen[ok]["time"])
         elif source == "obc":
-            telem = fetch.Msidset(
-                ["AOACYAN{}".format(slot), "AOACZAN{}".format(slot)], start, stop
-            )
-            # Filter centroids for reasonble-ness
-            yok = telem["AOACYAN{}".format(slot)].vals > -3276
-            zok = telem["AOACZAN{}".format(slot)].vals > -3276
-            yags = telem["AOACYAN{}".format(slot)].vals[yok]
-            yag_times = telem["AOACYAN{}".format(slot)].times[yok]
-            zags = telem["AOACZAN{}".format(slot)].vals[zok]
-            zag_times = telem["AOACZAN{}".format(slot)].times[zok]
+            msids = [
+                f"AOACYAN{slot}",
+                f"AOACZAN{slot}",
+                f"AOACFCT{slot}",
+            ]
+            telem = fetch.MSIDset(msids, start, stop)
+            # Same content type for all MSIDs so they have exactly the same times and we
+            # can interpolate to these times (which are guaranteed to be at 1.025 sec
+            # spacing).
+            times = telem[f"AOACYAN{slot}"].times
+            telem.interpolate(times=times, bad_union=True, filter_bad=False)
+            yan = telem[f"AOACYAN{slot}"]
+            zan = telem[f"AOACZAN{slot}"]
+            fct = telem[f"AOACFCT{slot}"]
+            # AOACFCT comes from the same telemetry sampling as AOACYAN / AOACZAN,
+            # so the track status lines up with the centroids sample for sample.
+            # Find intervals of no track, where any bona fide bad data in telemetry
+            # (from extremely rare data loss in dumps) is also considered no track.
+            no_track = (fct.vals != "TRAK") | yan.bads | zan.bads
+            # Convert from 32-bit native vals to 64-bit for convenience later.
+            yags = yan.vals.astype(np.float64)
+            zags = zan.vals.astype(np.float64)
+
+            if self.set_no_track_to_nan:
+                yags[no_track] = np.nan
+                zags[no_track] = np.nan
+                yag_times = times
+                zag_times = times
+            else:
+                track = ~no_track
+                yags = yags[track]
+                zags = zags[track]
+                yag_times = times[track]
+                zag_times = times[track]
         else:
             raise ValueError("centroid_source must be 'obc' or 'ground'")
+
         self.yags = yags
         self.yag_times = yag_times
         self.zags = zags
@@ -158,13 +265,13 @@ class CentroidResiduals(object):
         One could also just set atts and att_times attributes directly.
         """
         self.att_source = source
-        tstart = DateTime(self.start).secs
-        tstop = DateTime(self.stop).secs
+        tstart = CxoTime(self.start).secs
+        tstop = CxoTime(self.stop).secs
         # Get attitudes and times
         if source == "obc":
             telem = fetch.Msidset(["aoattqt*"], tstart, tstop)
             atts = np.vstack(
-                [telem["aoattqt{}".format(idx)].vals for idx in [1, 2, 3, 4]]
+                [telem[f"aoattqt{idx}"].vals for idx in [1, 2, 3, 4]]
             ).transpose()
             att_times = telem["aoattqt1"].times
             # Fetch COBSQID at beginning and end of interval, check they match, and define obsid
@@ -172,11 +279,11 @@ class CentroidResiduals(object):
                 obsid_start = fetch.Msid("COBSRQID", tstart, tstart + 60)
                 obsid_stop = fetch.Msid("COBSRQID", tstop - 60, tstop)
                 if len(obsid_start.vals) == 0 or len(obsid_stop.vals) == 0:
+                    fetch_source = fetch.data_source.sources()[0]
                     raise ValueError(
                         "Error getting COBSRQID telem for "
-                        "tstart:{} tstop:{} from fetch_source:{}".format(
-                            tstart, tstop, fetch.data_source.sources()[0]
-                        )
+                        f"tstart:{tstart} tstop:{tstop} "
+                        f"from fetch_source:{fetch_source}"
                     )
                 self.obsid = obsid_start.vals[-1]
         elif source == "ground":
@@ -222,9 +329,8 @@ class CentroidResiduals(object):
             ]
             if not len(stars):
                 raise ValueError(
-                    "No GUI or BOT in slot {} at time {} in dwell".format(
-                        slot, DateTime(self.start).date
-                    )
+                    f"No GUI or BOT in slot {slot} at time "
+                    f"{CxoTime(self.start).date} in dwell"
                 )
             star = agasc.get_star(stars[0]["id"], date=self.start)
         else:
@@ -241,7 +347,7 @@ class CentroidResiduals(object):
 
     @yags.setter
     def yags(self, vals):
-        if isinstance(vals, fetch.MSID):
+        if _is_fetch_msid_like(vals):
             self._yags = np.array(vals.vals)
             self._yag_times = vals.times
         else:
@@ -261,7 +367,7 @@ class CentroidResiduals(object):
 
     @zags.setter
     def zags(self, vals):
-        if isinstance(vals, fetch.MSID):
+        if _is_fetch_msid_like(vals):
             self._zags = np.array(vals.vals)
             self._zag_times = vals.times
         else:
@@ -383,13 +489,62 @@ class CentroidResiduals(object):
     @classmethod
     def for_slot(
         cls,
+        *,
         obsid=None,
         start=None,
         stop=None,
         slot=None,
         att_source="ground",
         centroid_source="ground",
+        set_no_track_to_nan=False,
     ):
+        """Get centroid residuals for one ACA slot in a single call.
+
+        This is the convenient entry point for the common case. It creates the object,
+        gets the attitudes, centroids and commanded star position from archived
+        sources, and calculates the residuals, which are then available in ``dyags``
+        and ``dzags``. See the class docstring for examples.
+
+        Specify either ``obsid`` or both ``start`` and ``stop``, but not both. For an
+        ``obsid`` the time range spans from the start of its first dwell to the stop of
+        its last dwell.
+
+        The star is looked up by slot in the starcheck catalog database, so this
+        requires the slot to have a guide star (GUI or BOT) in the catalog.
+
+        Parameters
+        ----------
+        obsid : int, optional
+            Obsid to get residuals for. The time range is taken from the dwells for
+            this obsid. Default is None.
+        start : CxoTime compatible, optional
+            Start time of interval for residuals. Not allowed with ``obsid``.
+            Default is None.
+        stop : CxoTime compatible, optional
+            Stop time of interval for residuals. Not allowed with ``obsid``.
+            Default is None.
+        slot : int
+            ACA slot (aka image number).
+        att_source : str, optional
+            Attitude source, 'ground' | 'obc'. Default is 'ground'.
+        centroid_source : str, optional
+            Centroid source, 'ground' | 'obc'. Default is 'ground'.
+        set_no_track_to_nan : bool, optional
+            Set centroids to NaN where the OBC was not tracking instead of dropping
+            those samples. Only supported for ``centroid_source='obc'``. Default is
+            False.
+
+        Returns
+        -------
+        cr : CentroidResiduals
+            Object with residuals in ``dyags`` / ``dzags`` and predicted centroids in
+            ``pred_yags`` / ``pred_zags``.
+
+        Raises
+        ------
+        ValueError
+            If both ``obsid`` and ``start`` / ``stop`` are specified, or if neither is.
+        """
         if obsid is not None:
             if start is not None or stop is not None:
                 raise ValueError("cannot specify both obsid and start / stop")
@@ -398,7 +553,7 @@ class CentroidResiduals(object):
             stop = ds[len(ds) - 1].stop
         if start is None or stop is None:
             raise ValueError("must specify obsid or start / stop")
-        cr = cls(start, stop)
+        cr = cls(start, stop, set_no_track_to_nan=set_no_track_to_nan)
         if obsid is not None:
             cr.obsid = obsid
         cr.set_atts(att_source)
