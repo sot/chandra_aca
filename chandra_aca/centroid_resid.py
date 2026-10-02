@@ -61,7 +61,7 @@ class CentroidResiduals(object):
      >>> cr.agasc_id
      649201816
 
-    This example does a similar operations but without the ``for_slot`` convenience::
+    This example does a similar operation but without the ``for_slot`` convenience::
 
      >>> import numpy as np
      >>> from chandra_aca.centroid_resid import CentroidResiduals

@@ -126,13 +126,15 @@ def test_set_no_track_to_nan():
     assert cr_nan.centroid_dt == cr.centroid_dt
 
 
-@pytest.mark.skipif(
-    "not HAS_L1_ARCHIVE", reason="No ground solutions without an aspl1 mica archive"
-)
-@pytest.mark.skipif(
-    "not HAS_STARCHECK_ARCHIVE", reason="No for_slot without a starcheck mica archive"
-)
 def test_set_no_track_to_nan_ground_raises():
-    """The option has no meaning for ground centroids, so it is refused."""
+    """The option has no meaning for ground centroids, so it is refused.
+
+    This needs no archive data: set_centroids raises before reading any centroids.
+    """
+    cr = CentroidResiduals(
+        start="2013:099:09:32:32.829",
+        stop="2013:100:02:26:39.907",
+        set_no_track_to_nan=True,
+    )
     with pytest.raises(ValueError, match="only supported for centroid source 'obc'"):
-        CentroidResiduals.for_slot(obsid=15175, slot=4, set_no_track_to_nan=True)
+        cr.set_centroids("ground", slot=4)
