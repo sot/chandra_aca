@@ -9,14 +9,17 @@ from cxotime import CxoTime
 from testr.test_helper import has_internet
 
 from chandra_aca.planets import (
+    PlanetPositionTable,
     convert_time_format_spk,
     get_earth_blocks,
     get_earth_moon_limb_angles,
     get_planet_angular_sep,
     get_planet_barycentric,
     get_planet_chandra,
+    get_planet_chandra_ccd_position,
     get_planet_chandra_horizons,
     get_planet_eci,
+    get_planet_mag_states,
 )
 from chandra_aca.transform import eci_to_radec, radec_to_yagzag
 
@@ -217,6 +220,141 @@ def test_convert_time_format_spk_none():
     time1 = CxoTime(None).secs
     # Times within 10 seconds
     assert np.isclose(time0, time1, atol=10, rtol=0)
+
+
+def test_get_planet_mag_states():
+    mag_states = get_planet_mag_states("jupiter", start="2024:001", stop="2024:100")
+    assert mag_states.pformat() == [
+        "      datestart              datestop        duration      tstart        tstop           label        mag_start mag_stop",
+        "--------------------- --------------------- ---------- ------------- ------------- ------------------ --------- --------",
+        "2023:315:13:30:00.000 2024:127:00:30:00.000 15246000.0 816096669.184 831342669.184 partial mitigation      -2.9     -2.0",
+    ]
+
+    mag_states = get_planet_mag_states("venus", start="2020:001", stop="2020:002")
+    assert mag_states.pformat() == [
+        "      datestart              datestop         duration      tstart        tstop           label      mag_start mag_stop",
+        "--------------------- --------------------- ------------ ------------ -------------- --------------- --------- --------",
+        "1998:365:23:30:01.000 2041:001:00:30:00.000 1325466005.0 31534264.184 1357000269.184 full mitigation      -5.0     -2.9",
+    ]
+
+
+def test_get_planet_mag_states_invalid_planet():
+    with pytest.raises(ValueError, match="is not supported"):
+        get_planet_mag_states("pluto", start="2024:001", stop="2024:100")
+
+
+def test_get_planet_mag_states_no_overlap():
+    mag_states = get_planet_mag_states("jupiter", start="1998:001", stop="1998:002")
+    assert len(mag_states) == 0
+
+
+def test_get_planet_chandra_ccd_position_filters_on_ccd(monkeypatch):
+    def fake_get_planet_chandra(planet, dates, ephem_source):
+        return np.zeros((len(dates), 3))
+
+    def fake_eci_to_radec(eci):
+        n_vals = len(eci)
+        return np.zeros(n_vals), np.zeros(n_vals)
+
+    def fake_radec_to_yagzag(ra, dec, att):
+        return np.zeros(len(ra)), np.zeros(len(ra))
+
+    def fake_yagzag_to_pixels(yag, zag, allow_bad=True):
+        return np.array([500.0, 620.0, -300.0]), np.array([500.0, 100.0, -700.0])
+
+    monkeypatch.setattr(
+        "chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra
+    )
+    monkeypatch.setattr("chandra_aca.planets.eci_to_radec", fake_eci_to_radec)
+    monkeypatch.setattr("chandra_aca.planets.radec_to_yagzag", fake_radec_to_yagzag)
+    monkeypatch.setattr("chandra_aca.planets.yagzag_to_pixels", fake_yagzag_to_pixels)
+
+    out = get_planet_chandra_ccd_position(
+        "jupiter",
+        date="2024:001:00:00:00",
+        duration=2000,
+        att=[0, 0, 0, 1],
+        ccd_pad=100,
+        ephem_source="stk",
+    )
+
+    assert isinstance(out, PlanetPositionTable)
+    assert np.allclose(out["row"], [500.0])
+    assert np.allclose(out["col"], [500.0])
+
+
+def test_get_planet_chandra_ccd_position_empty(monkeypatch):
+    def fake_get_planet_chandra(planet, dates, ephem_source):
+        return np.zeros((len(dates), 3))
+
+    def fake_eci_to_radec(eci):
+        n_vals = len(eci)
+        return np.zeros(n_vals), np.zeros(n_vals)
+
+    def fake_radec_to_yagzag(ra, dec, att):
+        return np.zeros(len(ra)), np.zeros(len(ra))
+
+    def fake_yagzag_to_pixels(yag, zag, allow_bad=True):
+        return np.array([900.0, -900.0, 800.0]), np.array([900.0, -900.0, 800.0])
+
+    monkeypatch.setattr(
+        "chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra
+    )
+    monkeypatch.setattr("chandra_aca.planets.eci_to_radec", fake_eci_to_radec)
+    monkeypatch.setattr("chandra_aca.planets.radec_to_yagzag", fake_radec_to_yagzag)
+    monkeypatch.setattr("chandra_aca.planets.yagzag_to_pixels", fake_yagzag_to_pixels)
+
+    out = get_planet_chandra_ccd_position(
+        "jupiter",
+        date="2024:001:00:00:00",
+        duration=2000,
+        att=[0, 0, 0, 1],
+        ccd_pad=100,
+        ephem_source="stk",
+    )
+
+    assert isinstance(out, PlanetPositionTable)
+    assert len(out) == 0
+
+
+def test_get_planet_chandra_ccd_position_forwards_ephem_and_boundary(monkeypatch):
+    got = {}
+
+    def fake_get_planet_chandra(planet, dates, ephem_source):
+        got["planet"] = planet
+        got["ephem_source"] = ephem_source
+        return np.zeros((len(dates), 3))
+
+    def fake_eci_to_radec(eci):
+        n_vals = len(eci)
+        return np.zeros(n_vals), np.zeros(n_vals)
+
+    def fake_radec_to_yagzag(ra, dec, att):
+        return np.zeros(len(ra)), np.zeros(len(ra))
+
+    def fake_yagzag_to_pixels(yag, zag, allow_bad=True):
+        # For ccd_pad=100, rows/cols at +-612 are included, beyond that excluded.
+        return np.array([612.0, -612.0, 613.0]), np.array([0.0, 0.0, 0.0])
+
+    monkeypatch.setattr(
+        "chandra_aca.planets.get_planet_chandra", fake_get_planet_chandra
+    )
+    monkeypatch.setattr("chandra_aca.planets.eci_to_radec", fake_eci_to_radec)
+    monkeypatch.setattr("chandra_aca.planets.radec_to_yagzag", fake_radec_to_yagzag)
+    monkeypatch.setattr("chandra_aca.planets.yagzag_to_pixels", fake_yagzag_to_pixels)
+
+    out = get_planet_chandra_ccd_position(
+        "saturn",
+        date="2024:001:00:00:00",
+        duration=2000,
+        att=[0, 0, 0, 1],
+        ccd_pad=100,
+        ephem_source="stk",
+    )
+
+    assert got["planet"] == "saturn"
+    assert got["ephem_source"] == "stk"
+    assert np.allclose(out["row"], [612.0, -612.0])
 
 
 def test_earth_boresight():

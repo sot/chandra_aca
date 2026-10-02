@@ -7,6 +7,7 @@ A collection of Python modules for working with Chandra ACA data.
    :maxdepth: 1
 
    aca_image
+   planets
    maude_decom
 
 .. toctree::
