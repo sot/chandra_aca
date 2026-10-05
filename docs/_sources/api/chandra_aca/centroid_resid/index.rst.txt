@@ -25,6 +25,19 @@ Classes
    chandra_aca.centroid_resid.CentroidResiduals
 
 
+Functions
+---------
+
+.. toctree::
+   :hidden:
+
+   /api/chandra_aca/centroid_resid/_is_fetch_msid_like
+
+.. autoapisummary::
+
+   chandra_aca.centroid_resid._is_fetch_msid_like
+
+
 Module Contents
 ---------------
 

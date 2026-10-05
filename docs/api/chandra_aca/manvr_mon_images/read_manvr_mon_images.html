@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.manvr_mon_images.read_manvr_mon_images &#8212; chandra_aca 4.56.0 documentation</title>
+    <title>chandra_aca.manvr_mon_images.read_manvr_mon_images &#8212; chandra_aca 4.57.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=26693617"></script>
+    <script src="../../../_static/documentation_options.js?v=57bc7c4e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="chandra_aca.manvr_mon_images.imgs_root_dir_path" href="imgs_root_dir_path.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.56.0" />
+  <meta name="docsearch:version" content="4.57.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.56.0</span></div>
+<span style="font-size: x-large;">4.57.0</span></div>
     
   </div>
   
@@ -351,7 +351,7 @@
 <h1>chandra_aca.manvr_mon_images.read_manvr_mon_images<a class="headerlink" href="#chandra-aca-manvr-mon-images-read-manvr-mon-images" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="chandra_aca.manvr_mon_images.read_manvr_mon_images">
-<span class="sig-prename descclassname"><span class="pre">chandra_aca.manvr_mon_images.</span></span><span class="sig-name descname"><span class="pre">read_manvr_mon_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_4c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_same_row_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.manvr_mon_images.read_manvr_mon_images" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chandra_aca.manvr_mon_images.</span></span><span class="sig-name descname"><span class="pre">read_manvr_mon_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_ccd_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_4c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_same_row_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.manvr_mon_images.read_manvr_mon_images" title="Link to this definition">#</a></dt>
 <dd><p>Read ACA maneuver monitor window images from archived data files.</p>
 <p>This function loads processed monitor window images from the compressed .npz
 archive files created by save_imgs(). It concatenates data across multiple
@@ -381,6 +381,8 @@ Default is True.</p>
 <dt><strong>exact_interval</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, only include images with times exactly within start and stop.
 Otherwise include all times within the maneuvers that are included within start
 and stop. Default is False.</p>
+</dd>
+<dt><strong>min_samples</strong><span class="classifier">int, optional</span></dt><dd><p>Minimum number of samples required for each maneuver. Default is 1.</p>
 </dd>
 <dt><strong>data_dir</strong><span class="classifier">Path or str, optional</span></dt><dd><p>Root directory containing the archived image files organized as
 <code class="docutils literal notranslate"><span class="pre">data_dir/YYYY/DOY/*.npz</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">$SKA/data/manvr_mon_images</span></code>.</p>

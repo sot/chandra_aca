@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chandra_aca.centroid_resid.CentroidResiduals &#8212; chandra_aca 4.56.0 documentation</title>
+    <title>chandra_aca.centroid_resid.CentroidResiduals &#8212; chandra_aca 4.57.0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=26693617"></script>
+    <script src="../../../_static/documentation_options.js?v=57bc7c4e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,11 +50,11 @@
     <link rel="canonical" href="https://sot.github.io/chandra_aca/api/chandra_aca/centroid_resid/CentroidResiduals.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="chandra_aca.cubic_spline" href="../cubic_spline/index.html" />
+    <link rel="next" title="chandra_aca.centroid_resid._is_fetch_msid_like" href="_is_fetch_msid_like.html" />
     <link rel="prev" title="chandra_aca.centroid_resid" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.56.0" />
+  <meta name="docsearch:version" content="4.57.0" />
   </head>
   
   
@@ -107,7 +107,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.56.0</span></div>
+<span style="font-size: x-large;">4.57.0</span></div>
     
   </div>
   
@@ -351,20 +351,15 @@
 <h1>chandra_aca.centroid_resid.CentroidResiduals<a class="headerlink" href="#chandra-aca-centroid-resid-centroidresiduals" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chandra_aca.centroid_resid.</span></span><span class="sig-name descname"><span class="pre">CentroidResiduals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chandra_aca.centroid_resid.</span></span><span class="sig-name descname"><span class="pre">CentroidResiduals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_no_track_to_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class to calculate star centroid residuals.</p>
-<p>This class is designed to set up and perform the residual calculations on
-any desired combination of source centroids and source attitudes.  For the common use cases,
-centroids, attitudes, and commanded star positions are retrieved automatically from archived
-sources.</p>
-<p>Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:</p>
-<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</a></p>
-<p>and</p>
-<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</a></p>
-<p>Users should see the class method <code class="docutils literal notranslate"><span class="pre">for_slot</span></code> for a convenient way to get centroid
-residuals on an <code class="docutils literal notranslate"><span class="pre">obsid</span></code> for an ACA <code class="docutils literal notranslate"><span class="pre">slot</span></code> (aka image number).</p>
-<p>Example usage:</p>
+<p>This class is designed to set up and perform the residual calculations on any
+desired combination of source centroids and source attitudes.  For the common use
+cases, centroids, attitudes, and commanded star positions are retrieved
+automatically from archived sources.</p>
+<p>Typically you should use the class method <code class="docutils literal notranslate"><span class="pre">for_slot</span></code> to get centroid residuals on
+an <code class="docutils literal notranslate"><span class="pre">obsid</span></code> for an ACA <code class="docutils literal notranslate"><span class="pre">slot</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">chandra_aca.centroid_resid</span><span class="w"> </span><span class="kn">import</span> <span class="n">CentroidResiduals</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span> <span class="o">=</span> <span class="n">CentroidResiduals</span><span class="o">.</span><span class="n">for_slot</span><span class="p">(</span><span class="n">obsid</span><span class="o">=</span><span class="mi">20001</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
@@ -378,10 +373,7 @@ residuals on an <code class="docutils literal notranslate"><span class="pre">obs
 <span class="go">649201816</span>
 </pre></div>
 </div>
-<p>This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
-and ground centroids.  Here is another example that does the same thing without using the
-<code class="docutils literal notranslate"><span class="pre">for_slot</span></code> convenience.</p>
-<p>Example usage:</p>
+<p>This example does a similar operation but without the <code class="docutils literal notranslate"><span class="pre">for_slot</span></code> convenience:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">chandra_aca.centroid_resid</span><span class="w"> </span><span class="kn">import</span> <span class="n">CentroidResiduals</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span> <span class="o">=</span> <span class="n">CentroidResiduals</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s1">&#39;2017:169:18:54:50.138&#39;</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="s1">&#39;2017:170:05:13:58.190&#39;</span><span class="p">)</span>
@@ -393,14 +385,77 @@ and ground centroids.  Here is another example that does the same thing without 
 <span class="go">0.87602233734844503</span>
 </pre></div>
 </div>
+<p>Based on analysis, time offsets are applied to centroid times by default.  See fit
+notebooks in:</p>
+<p><a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb</a>
+<a class="reference external" href="http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb">http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb</a></p>
+<p>By default, OBC centroid samples where the OBC had no star in the slot are dropped
+from the time series entirely, leaving an unmarked gap. With
+<code class="docutils literal notranslate"><span class="pre">set_no_track_to_nan=True</span></code> every sample is kept and those with no star tracking
+are set to NaN instead, so the dropout stays visible in <code class="docutils literal notranslate"><span class="pre">yags</span></code> / <code class="docutils literal notranslate"><span class="pre">zags</span></code> and
+propagates into <code class="docutils literal notranslate"><span class="pre">dyags</span></code> / <code class="docutils literal notranslate"><span class="pre">dzags</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span> <span class="o">=</span> <span class="n">CentroidResiduals</span><span class="o">.</span><span class="n">for_slot</span><span class="p">(</span><span class="n">obsid</span><span class="o">=</span><span class="mi">15175</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">att_source</span><span class="o">=</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                                <span class="n">centroid_source</span><span class="o">=</span><span class="s1">&#39;obc&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                                <span class="n">set_no_track_to_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dyags</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dyags</span><span class="p">)))</span>
+<span class="go">(59363, 482)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cr</span><span class="o">.</span><span class="n">dyags</span><span class="p">)))</span>
+<span class="go">3.9186003402858205</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – start time of interval for residuals (DateTime compatible)</p></li>
-<li><p><strong>stop</strong> – stop time of interval for residuals (DateTime compatible)</p></li>
-</ul>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong><span class="classifier">CxoTime compatible</span></dt><dd><p>Start time of interval for residuals.</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">CxoTime compatible</span></dt><dd><p>Stop time of interval for residuals.</p>
+</dd>
+<dt><strong>set_no_track_to_nan</strong><span class="classifier">bool, optional</span></dt><dd><p>Set centroids to NaN where the OBC was not tracking instead of dropping those
+samples. Only supported for <code class="docutils literal notranslate"><span class="pre">centroid_source='obc'</span></code>. Default is False.</p>
 </dd>
 </dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>start, stop</strong><span class="classifier">CxoTime compatible</span></dt><dd><p>Time range for the residuals, as supplied on initialization.</p>
+</dd>
+<dt><strong>obsid</strong><span class="classifier">int</span></dt><dd><p>Obsid, either supplied to <code class="docutils literal notranslate"><span class="pre">for_slot</span></code> or determined by <code class="docutils literal notranslate"><span class="pre">set_atts</span></code> from
+COBSRQID telemetry (‘obc’) or the aspect solution OBS_ID (‘ground’).</p>
+</dd>
+<dt><strong>centroid_source</strong><span class="classifier">str</span></dt><dd><p>Source of the centroids, ‘ground’ | ‘obc’. Set by <code class="docutils literal notranslate"><span class="pre">set_centroids</span></code>.</p>
+</dd>
+<dt><strong>att_source</strong><span class="classifier">str</span></dt><dd><p>Source of the attitudes, ‘ground’ | ‘obc’. Set by <code class="docutils literal notranslate"><span class="pre">set_atts</span></code>.</p>
+</dd>
+<dt><strong>agasc_id</strong><span class="classifier">int</span></dt><dd><p>AGASC id of the guide star. Set by <code class="docutils literal notranslate"><span class="pre">set_star</span></code>.</p>
+</dd>
+<dt><strong>ra, dec</strong><span class="classifier">float</span></dt><dd><p>Proper motion corrected star position in degrees. Set by <code class="docutils literal notranslate"><span class="pre">set_star</span></code>.</p>
+</dd>
+<dt><strong>atts</strong><span class="classifier">np.array</span></dt><dd><p>Attitude quaternions, shape (N, 4). Set by <code class="docutils literal notranslate"><span class="pre">set_atts</span></code>.</p>
+</dd>
+<dt><strong>att_times</strong><span class="classifier">np.array</span></dt><dd><p>Times of <code class="docutils literal notranslate"><span class="pre">atts</span></code> in CXC seconds.</p>
+</dd>
+<dt><strong>yags, zags</strong><span class="classifier">np.array</span></dt><dd><p>Observed centroid Y and Z angles in arcsec. These are NaN where the OBC was
+not tracking if <code class="docutils literal notranslate"><span class="pre">set_no_track_to_nan=True</span></code>.</p>
+</dd>
+<dt><strong>yag_times, zag_times</strong><span class="classifier">np.array</span></dt><dd><p>Times of <code class="docutils literal notranslate"><span class="pre">yags</span></code> / <code class="docutils literal notranslate"><span class="pre">zags</span></code> in CXC seconds, including the <code class="docutils literal notranslate"><span class="pre">centroid_dt</span></code>
+offset. These are sampled independently of <code class="docutils literal notranslate"><span class="pre">att_times</span></code>.</p>
+</dd>
+<dt><strong>pred_yags, pred_zags</strong><span class="classifier">np.array</span></dt><dd><p>Y and Z angles in arcsec predicted from <code class="docutils literal notranslate"><span class="pre">atts</span></code> and the star position,
+interpolated onto <code class="docutils literal notranslate"><span class="pre">yag_times</span></code> / <code class="docutils literal notranslate"><span class="pre">zag_times</span></code>. Set by <code class="docutils literal notranslate"><span class="pre">calc_residuals</span></code>.</p>
+</dd>
+<dt><strong>dyags, dzags</strong><span class="classifier">np.array</span></dt><dd><p>Centroid residuals in arcsec, <code class="docutils literal notranslate"><span class="pre">yags</span> <span class="pre">-</span> <span class="pre">pred_yags</span></code> and <code class="docutils literal notranslate"><span class="pre">zags</span> <span class="pre">-</span> <span class="pre">pred_zags</span></code>.
+Set by <code class="docutils literal notranslate"><span class="pre">calc_residuals</span></code>.</p>
+</dd>
+<dt><strong>centroid_dt</strong><span class="classifier">float</span></dt><dd><p>Time offset in seconds applied to the centroid times, or 0.0 if
+<code class="docutils literal notranslate"><span class="pre">apply_dt=False</span></code> was used. Set by <code class="docutils literal notranslate"><span class="pre">set_offsets</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The attributes above are only available once the corresponding method has run, so
+for a hand-built object (rather than <code class="docutils literal notranslate"><span class="pre">for_slot</span></code>) they appear in the order the
+<code class="docutils literal notranslate"><span class="pre">set_*</span></code> methods are called.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.centroid_source">
 <span class="sig-name descname"><span class="pre">centroid_source</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.centroid_source" title="Link to this definition">#</a></dt>
@@ -441,6 +496,11 @@ and ground centroids.  Here is another example that does the same thing without 
 <span class="sig-name descname"><span class="pre">stop</span></span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.stop" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_no_track_to_nan">
+<span class="sig-name descname"><span class="pre">set_no_track_to_nan</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_no_track_to_nan" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.set_centroids">
 <span class="sig-name descname"><span class="pre">set_centroids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.set_centroids" title="Link to this definition">#</a></dt>
@@ -449,6 +509,7 @@ and ground centroids.  Here is another example that does the same thing without 
 (yag, zag, yag_times, zag_times)</p>
 <p>For the supported sources (ground, obc) the centroids are fetched from the mica L1
 archive or telemetry.</p>
+<p>yag_times and zag_times are always identical.</p>
 <p>yag, zag, yag_times an zag_times can also be set directly without use of this method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -531,8 +592,56 @@ Predicted values from attitude and star position in self.pred_yags and self.pred
 
 <dl class="py method">
 <dt class="sig sig-object py" id="chandra_aca.centroid_resid.CentroidResiduals.for_slot">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">for_slot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obsid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">att_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ground'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centroid_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ground'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.for_slot" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">for_slot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">att_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ground'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centroid_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ground'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_no_track_to_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chandra_aca.centroid_resid.CentroidResiduals.for_slot" title="Link to this definition">#</a></dt>
+<dd><p>Get centroid residuals for one ACA slot in a single call.</p>
+<p>This is the convenient entry point for the common case. It creates the object,
+gets the attitudes, centroids and commanded star position from archived
+sources, and calculates the residuals, which are then available in <code class="docutils literal notranslate"><span class="pre">dyags</span></code>
+and <code class="docutils literal notranslate"><span class="pre">dzags</span></code>. See the class docstring for examples.</p>
+<p>Specify either <code class="docutils literal notranslate"><span class="pre">obsid</span></code> or both <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">stop</span></code>, but not both. For an
+<code class="docutils literal notranslate"><span class="pre">obsid</span></code> the time range spans from the start of its first dwell to the stop of
+its last dwell.</p>
+<p>The star is looked up by slot in the starcheck catalog database, so this
+requires the slot to have a guide star (GUI or BOT) in the catalog.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obsid</strong><span class="classifier">int, optional</span></dt><dd><p>Obsid to get residuals for. The time range is taken from the dwells for
+this obsid. Default is None.</p>
+</dd>
+<dt><strong>start</strong><span class="classifier">CxoTime compatible, optional</span></dt><dd><p>Start time of interval for residuals. Not allowed with <code class="docutils literal notranslate"><span class="pre">obsid</span></code>.
+Default is None.</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">CxoTime compatible, optional</span></dt><dd><p>Stop time of interval for residuals. Not allowed with <code class="docutils literal notranslate"><span class="pre">obsid</span></code>.
+Default is None.</p>
+</dd>
+<dt><strong>slot</strong><span class="classifier">int</span></dt><dd><p>ACA slot (aka image number).</p>
+</dd>
+<dt><strong>att_source</strong><span class="classifier">str, optional</span></dt><dd><p>Attitude source, ‘ground’ | ‘obc’. Default is ‘ground’.</p>
+</dd>
+<dt><strong>centroid_source</strong><span class="classifier">str, optional</span></dt><dd><p>Centroid source, ‘ground’ | ‘obc’. Default is ‘ground’.</p>
+</dd>
+<dt><strong>set_no_track_to_nan</strong><span class="classifier">bool, optional</span></dt><dd><p>Set centroids to NaN where the OBC was not tracking instead of dropping
+those samples. Only supported for <code class="docutils literal notranslate"><span class="pre">centroid_source='obc'</span></code>. Default is
+False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>cr</strong><span class="classifier">CentroidResiduals</span></dt><dd><p>Object with residuals in <code class="docutils literal notranslate"><span class="pre">dyags</span></code> / <code class="docutils literal notranslate"><span class="pre">dzags</span></code> and predicted centroids in
+<code class="docutils literal notranslate"><span class="pre">pred_yags</span></code> / <code class="docutils literal notranslate"><span class="pre">pred_zags</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If both <code class="docutils literal notranslate"><span class="pre">obsid</span></code> and <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">stop</span></code> are specified, or if neither is.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -558,11 +667,11 @@ Predicted values from attitude and star position in self.pred_yags and self.pred
       </div>
     </a>
     <a class="right-next"
-       href="../cubic_spline/index.html"
+       href="_is_fetch_msid_like.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">chandra_aca.cubic_spline</p>
+        <p class="prev-next-title">chandra_aca.centroid_resid._is_fetch_msid_like</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -594,6 +703,7 @@ Predicted values from attitude and star position in self.pred_yags and self.pred
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.centroid_resid.CentroidResiduals.obsid"><code class="docutils literal notranslate"><span class="pre">chandra_aca.centroid_resid.CentroidResiduals.obsid</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.centroid_resid.CentroidResiduals.start"><code class="docutils literal notranslate"><span class="pre">chandra_aca.centroid_resid.CentroidResiduals.start</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.centroid_resid.CentroidResiduals.stop"><code class="docutils literal notranslate"><span class="pre">chandra_aca.centroid_resid.CentroidResiduals.stop</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.centroid_resid.CentroidResiduals.set_no_track_to_nan"><code class="docutils literal notranslate"><span class="pre">chandra_aca.centroid_resid.CentroidResiduals.set_no_track_to_nan</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.centroid_resid.CentroidResiduals.set_centroids"><code class="docutils literal notranslate"><span class="pre">chandra_aca.centroid_resid.CentroidResiduals.set_centroids()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.centroid_resid.CentroidResiduals.set_atts"><code class="docutils literal notranslate"><span class="pre">chandra_aca.centroid_resid.CentroidResiduals.set_atts()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chandra_aca.centroid_resid.CentroidResiduals.set_atts_from_solfiles"><code class="docutils literal notranslate"><span class="pre">chandra_aca.centroid_resid.CentroidResiduals.set_atts_from_solfiles()</span></code></a></li>

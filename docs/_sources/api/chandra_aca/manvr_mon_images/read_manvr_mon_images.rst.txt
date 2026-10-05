@@ -1,7 +1,7 @@
 chandra_aca.manvr_mon_images.read_manvr_mon_images
 ==================================================
 
-.. py:function:: chandra_aca.manvr_mon_images.read_manvr_mon_images(start, stop, t_ccd_ref = -10.0, scale_4c = None, filter_constraints = False, require_same_row_col = True, exact_interval = False, data_dir = None)
+.. py:function:: chandra_aca.manvr_mon_images.read_manvr_mon_images(start, stop, t_ccd_ref = -10.0, scale_4c = None, filter_constraints = False, require_same_row_col = True, exact_interval = False, min_samples = 1, data_dir = None)
 
    
    Read ACA maneuver monitor window images from archived data files.
@@ -41,6 +41,9 @@ chandra_aca.manvr_mon_images.read_manvr_mon_images
            If True, only include images with times exactly within start and stop.
            Otherwise include all times within the maneuvers that are included within start
            and stop. Default is False.
+
+       **min_samples** : int, optional
+           Minimum number of samples required for each maneuver. Default is 1.
 
        **data_dir** : Path or str, optional
            Root directory containing the archived image files organized as

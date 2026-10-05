@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chandra_aca.manvr_mon_images &#8212; chandra_aca 4.56.0 documentation</title>
+    <title>chandra_aca.manvr_mon_images &#8212; chandra_aca 4.57.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=26693617"></script>
+    <script src="../../_static/documentation_options.js?v=57bc7c4e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4.56.0" />
+  <meta name="docsearch:version" content="4.57.0" />
   </head>
   
   
@@ -104,7 +104,7 @@
     <span style="color: rgb(186, 70, 21); font-size: x-large;">chandra_aca</span>
 </a>
 &nbsp;
-<span style="font-size: x-large;">4.56.0</span></div>
+<span style="font-size: x-large;">4.57.0</span></div>
     
   </div>
   
@@ -411,6 +411,7 @@
     <span class="n">filter_constraints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">require_same_row_col</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">exact_interval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">min_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">data_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apt</span><span class="o">.</span><span class="n">Table</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read ACA maneuver monitor window images from archived data files.</span>
@@ -444,6 +445,8 @@
 <span class="sd">        If True, only include images with times exactly within start and stop.</span>
 <span class="sd">        Otherwise include all times within the maneuvers that are included within start</span>
 <span class="sd">        and stop. Default is False.</span>
+<span class="sd">    min_samples : int, optional</span>
+<span class="sd">        Minimum number of samples required for each maneuver. Default is 1.</span>
 <span class="sd">    data_dir : Path or str, optional</span>
 <span class="sd">        Root directory containing the archived image files organized as</span>
 <span class="sd">        ``data_dir/YYYY/DOY/*.npz``. Default is ``$SKA/data/manvr_mon_images``.</span>
@@ -496,6 +499,8 @@
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.npz&quot;</span><span class="p">)):</span>
             <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">dat</span><span class="p">:</span>
                 <span class="n">n_samp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;t_ccd&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">n_samp</span> <span class="o">&lt;</span> <span class="n">min_samples</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="c1"># Move the sample dimension (-1) to the front so they concat properly.</span>
                 <span class="c1"># Imgs will then be indexed as [sample, slot, row, col].</span>
                 <span class="n">imgs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;slot_imgs&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>

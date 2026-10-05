@@ -1,0 +1,37 @@
+chandra_aca.centroid_resid._is_fetch_msid_like
+==============================================
+
+.. py:function:: chandra_aca.centroid_resid._is_fetch_msid_like(obj)
+
+   
+   Return True if ``obj`` looks like a fetch MSID object.
+
+   This is a duck-type check on the ``vals``, ``times`` and ``msid`` attributes instead
+   of an isinstance check, because the ``cheta`` and legacy ``Ska.engarchive`` fetch
+   modules define distinct MSID classes. An isinstance check against either one
+   silently mishandles an object from the other, turning it into a 0-d object array.
+
+   :Parameters:
+
+       **obj** : object
+           Object to check.
+
+
+
+   :Returns:
+
+       bool
+           True if ``obj`` has ``vals``, ``times`` and ``msid`` attributes.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!

@@ -1,7 +1,7 @@
 chandra_aca.centroid_resid.CentroidResiduals
 ============================================
 
-.. py:class:: chandra_aca.centroid_resid.CentroidResiduals(start, stop)
+.. py:class:: chandra_aca.centroid_resid.CentroidResiduals(start, stop, set_no_track_to_nan=False)
 
    Bases: :py:obj:`object`
 
@@ -9,23 +9,13 @@ chandra_aca.centroid_resid.CentroidResiduals
    
    Class to calculate star centroid residuals.
 
-   This class is designed to set up and perform the residual calculations on
-   any desired combination of source centroids and source attitudes.  For the common use cases,
-   centroids, attitudes, and commanded star positions are retrieved automatically from archived
-   sources.
+   This class is designed to set up and perform the residual calculations on any
+   desired combination of source centroids and source attitudes.  For the common use
+   cases, centroids, attitudes, and commanded star positions are retrieved
+   automatically from archived sources.
 
-   Based on analysis, time offsets are applied to centroid times by default.  See fit notebooks in:
-
-   http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
-
-   and
-
-   http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
-
-   Users should see the class method ``for_slot`` for a convenient way to get centroid
-   residuals on an ``obsid`` for an ACA ``slot`` (aka image number).
-
-   Example usage::
+   Typically you should use the class method ``for_slot`` to get centroid residuals on
+   an ``obsid`` for an ACA ``slot``::
 
     >>> import numpy as np
     >>> from chandra_aca.centroid_resid import CentroidResiduals
@@ -39,11 +29,7 @@ chandra_aca.centroid_resid.CentroidResiduals
     >>> cr.agasc_id
     649201816
 
-   This example calculates the residuals on slot 5 of obsid 20001 using the ground aspect solution
-   and ground centroids.  Here is another example that does the same thing without using the
-   ``for_slot`` convenience.
-
-   Example usage::
+   This example does a similar operation but without the ``for_slot`` convenience::
 
     >>> import numpy as np
     >>> from chandra_aca.centroid_resid import CentroidResiduals
@@ -55,8 +41,84 @@ chandra_aca.centroid_resid.CentroidResiduals
     >>> np.max(np.abs(cr.dyags))
     0.87602233734844503
 
-   :param start: start time of interval for residuals (DateTime compatible)
-   :param stop: stop time of interval for residuals (DateTime compatible)
+   Based on analysis, time offsets are applied to centroid times by default.  See fit
+   notebooks in:
+
+   http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/OR.ipynb
+   http://nbviewer.jupyter.org/url/cxc.harvard.edu/mta/ASPECT/ipynb/centroid_time_offsets/ER.ipynb
+
+   By default, OBC centroid samples where the OBC had no star in the slot are dropped
+   from the time series entirely, leaving an unmarked gap. With
+   ``set_no_track_to_nan=True`` every sample is kept and those with no star tracking
+   are set to NaN instead, so the dropout stays visible in ``yags`` / ``zags`` and
+   propagates into ``dyags`` / ``dzags``::
+
+    >>> cr = CentroidResiduals.for_slot(obsid=15175, slot=6, att_source='obc',
+    ...                                 centroid_source='obc',
+    ...                                 set_no_track_to_nan=True)
+    >>> len(cr.dyags), int(np.count_nonzero(np.isnan(cr.dyags)))
+    (59363, 482)
+    >>> float(np.nanmax(np.abs(cr.dyags)))
+    3.9186003402858205
+
+   :Parameters:
+
+       **start** : CxoTime compatible
+           Start time of interval for residuals.
+
+       **stop** : CxoTime compatible
+           Stop time of interval for residuals.
+
+       **set_no_track_to_nan** : bool, optional
+           Set centroids to NaN where the OBC was not tracking instead of dropping those
+           samples. Only supported for ``centroid_source='obc'``. Default is False.
+
+   :Attributes:
+
+       **start, stop** : CxoTime compatible
+           Time range for the residuals, as supplied on initialization.
+
+       **obsid** : int
+           Obsid, either supplied to ``for_slot`` or determined by ``set_atts`` from
+           COBSRQID telemetry ('obc') or the aspect solution OBS_ID ('ground').
+
+       **centroid_source** : str
+           Source of the centroids, 'ground' | 'obc'. Set by ``set_centroids``.
+
+       **att_source** : str
+           Source of the attitudes, 'ground' | 'obc'. Set by ``set_atts``.
+
+       **agasc_id** : int
+           AGASC id of the guide star. Set by ``set_star``.
+
+       **ra, dec** : float
+           Proper motion corrected star position in degrees. Set by ``set_star``.
+
+       **atts** : np.array
+           Attitude quaternions, shape (N, 4). Set by ``set_atts``.
+
+       **att_times** : np.array
+           Times of ``atts`` in CXC seconds.
+
+       **yags, zags** : np.array
+           Observed centroid Y and Z angles in arcsec. These are NaN where the OBC was
+           not tracking if ``set_no_track_to_nan=True``.
+
+       **yag_times, zag_times** : np.array
+           Times of ``yags`` / ``zags`` in CXC seconds, including the ``centroid_dt``
+           offset. These are sampled independently of ``att_times``.
+
+       **pred_yags, pred_zags** : np.array
+           Y and Z angles in arcsec predicted from ``atts`` and the star position,
+           interpolated onto ``yag_times`` / ``zag_times``. Set by ``calc_residuals``.
+
+       **dyags, dzags** : np.array
+           Centroid residuals in arcsec, ``yags - pred_yags`` and ``zags - pred_zags``.
+           Set by ``calc_residuals``.
+
+       **centroid_dt** : float
+           Time offset in seconds applied to the centroid times, or 0.0 if
+           ``apply_dt=False`` was used. Set by ``set_offsets``.
 
 
 
@@ -67,8 +129,11 @@ chandra_aca.centroid_resid.CentroidResiduals
 
 
 
+   .. rubric:: Notes
 
-
+   The attributes above are only available once the corresponding method has run, so
+   for a hand-built object (rather than ``for_slot``) they appear in the order the
+   ``set_*`` methods are called.
 
 
 
@@ -111,6 +176,11 @@ chandra_aca.centroid_resid.CentroidResiduals
    .. py:attribute:: stop
 
 
+   .. py:attribute:: set_no_track_to_nan
+      :value: False
+
+
+
    .. py:method:: set_centroids(source, slot, alg=8, apply_dt=True)
 
       
@@ -121,6 +191,8 @@ chandra_aca.centroid_resid.CentroidResiduals
 
       For the supported sources (ground, obc) the centroids are fetched from the mica L1
       archive or telemetry.
+
+      yag_times and zag_times are always identical.
 
       yag, zag, yag_times an zag_times can also be set directly without use of this method.
 
@@ -285,7 +357,75 @@ chandra_aca.centroid_resid.CentroidResiduals
           !! processed by numpydoc !!
 
 
-   .. py:method:: for_slot(obsid=None, start=None, stop=None, slot=None, att_source='ground', centroid_source='ground')
+   .. py:method:: for_slot(*, obsid=None, start=None, stop=None, slot=None, att_source='ground', centroid_source='ground', set_no_track_to_nan=False)
       :classmethod:
 
+
+      
+      Get centroid residuals for one ACA slot in a single call.
+
+      This is the convenient entry point for the common case. It creates the object,
+      gets the attitudes, centroids and commanded star position from archived
+      sources, and calculates the residuals, which are then available in ``dyags``
+      and ``dzags``. See the class docstring for examples.
+
+      Specify either ``obsid`` or both ``start`` and ``stop``, but not both. For an
+      ``obsid`` the time range spans from the start of its first dwell to the stop of
+      its last dwell.
+
+      The star is looked up by slot in the starcheck catalog database, so this
+      requires the slot to have a guide star (GUI or BOT) in the catalog.
+
+      :Parameters:
+
+          **obsid** : int, optional
+              Obsid to get residuals for. The time range is taken from the dwells for
+              this obsid. Default is None.
+
+          **start** : CxoTime compatible, optional
+              Start time of interval for residuals. Not allowed with ``obsid``.
+              Default is None.
+
+          **stop** : CxoTime compatible, optional
+              Stop time of interval for residuals. Not allowed with ``obsid``.
+              Default is None.
+
+          **slot** : int
+              ACA slot (aka image number).
+
+          **att_source** : str, optional
+              Attitude source, 'ground' | 'obc'. Default is 'ground'.
+
+          **centroid_source** : str, optional
+              Centroid source, 'ground' | 'obc'. Default is 'ground'.
+
+          **set_no_track_to_nan** : bool, optional
+              Set centroids to NaN where the OBC was not tracking instead of dropping
+              those samples. Only supported for ``centroid_source='obc'``. Default is
+              False.
+
+
+
+      :Returns:
+
+          **cr** : CentroidResiduals
+              Object with residuals in ``dyags`` / ``dzags`` and predicted centroids in
+              ``pred_yags`` / ``pred_zags``.
+
+
+
+
+      :Raises:
+
+          ValueError
+              If both ``obsid`` and ``start`` / ``stop`` are specified, or if neither is.
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
