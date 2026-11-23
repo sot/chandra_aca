@@ -721,34 +721,53 @@ class AcaPsfLibrary(object):
     Access the ACA PSF library, whch is a library of 8x8 images providing the integrated
     (pixelated) ACA PSF over a grid of subpixel locations.
 
+    The PSF library data files were generated with the ``aca_psf_library`` repo.
+
     Example::
 
       >>> from chandra_aca.aca_image import AcaPsfLibrary
-      >>> apl = AcaPsfLibrary()  # Reads in PSF library data file
+      >>> apl = AcaPsfLibrary()  # Reads in 2026 PSF library data file
       >>> img = apl.get_psf_image(row=-10.456, col=250.123, norm=100000)
       >>> img
       <ACAImage row0=-14 col0=247
-      array([[   39,    54,    56,    52,    37,    33,    30,    21],
-             [   79,   144,   260,   252,   156,    86,    67,    36],
-             [  162,   544,  2474,  5269,  2012,   443,   163,    57],
-             [  255,  1420, 10083, 12688, 11273,  1627,   302,    78],
-             [  186,  1423,  8926,  8480, 12292,  2142,   231,    64],
-             [   80,   344,  1384,  6509,  4187,   665,   111,    43],
-             [   40,    78,   241,   828,   616,   188,    65,    29],
-             [   24,    39,    86,   157,   139,    69,    48,    32]])>
+      array([[   45,    61,    65,    58,    44,    32,    24,    20],
+             [   93,   173,   312,   285,   163,    76,    57,    33],
+             [  205,   767,  4118,  5401,  2004,   424,   170,    63],
+             [  320,  2485, 11471,  9349, 10373,  1735,   330,    75],
+             [  218,  1886,  7576,  6114, 10841,  3794,   296,    64],
+             [   89,   358,  1268,  5870,  6168,  1263,   150,    49],
+             [   45,    81,   236,   957,   870,   230,    67,    29],
+             [   26,    36,    86,   188,   154,    81,    48,    30]])>
 
-    :param filename: file name of ACA PSF library (default=built-in file)
+    :param filename: file name of ACA PSF library. Cannot be combined with ``version``.
+    :param version: str, version of the built-in ACA PSF library. Allowed values are
+        ``"2026"`` (based on 2025-2026 flight data) and ``"2011"``. Default is
+        ``"2026"`` if ``filename`` is not supplied.
     :returns: AcaPsfLibrary object
     """
 
-    def __init__(self, filename=None):
+    VERSIONS = ("2026", "2011")
+    DEFAULT_VERSION = "2026"
+
+    def __init__(self, filename=None, version=None):
 
         psfs = {}
 
+        if filename is not None and version is not None:
+            raise ValueError("cannot specify both filename and version")
+
         if filename is None:
+            if version is None:
+                version = self.DEFAULT_VERSION
+            if version not in self.VERSIONS:
+                raise ValueError(
+                    f"version must be one of {self.VERSIONS}, got {version!r}"
+                )
             filename = os.path.join(
-                os.path.dirname(__file__), "data", "aca_psf_lib.dat"
+                os.path.dirname(__file__), "data", f"aca_psf_lib_{version}.dat"
             )
+        self.version = version
+        self.filename = filename
         dat = apt.Table.read(filename, format="ascii.basic", guess=False)
         self.dat = dat
 
